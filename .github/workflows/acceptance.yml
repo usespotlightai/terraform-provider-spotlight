@@ -1,0 +1,46 @@
+name: Acceptance
+
+# Runs the TF_ACC tests against a dev control plane. Each run creates a
+# disposable workspace (tf-acc-<random>) and destroys it at the end.
+#   SPOTLIGHT_ACC_URL    the dev control plane, as in https://dev.spotlight.example.com
+#   SPOTLIGHT_ACC_TOKEN  an spt_ API token for a user there who may create workspaces
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "41 5 * * 1-5"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: acceptance
+  cancel-in-progress: false
+
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      TF_ACC: "1"
+      SPOTLIGHT_URL: ${{ secrets.SPOTLIGHT_ACC_URL }}
+      SPOTLIGHT_API_TOKEN: ${{ secrets.SPOTLIGHT_ACC_TOKEN }}
+    steps:
+      - name: Skip without a dev control plane
+        if: env.SPOTLIGHT_URL == '' || env.SPOTLIGHT_API_TOKEN == ''
+        run: echo "::notice::SPOTLIGHT_ACC_URL and SPOTLIGHT_ACC_TOKEN are not set; acceptance tests skipped."
+      - uses: actions/checkout@v4
+        if: env.SPOTLIGHT_URL != '' && env.SPOTLIGHT_API_TOKEN != ''
+      - uses: actions/setup-go@v5
+        if: env.SPOTLIGHT_URL != '' && env.SPOTLIGHT_API_TOKEN != ''
+        with:
+          go-version-file: go.mod
+      - uses: hashicorp/setup-terraform@v3
+        if: env.SPOTLIGHT_URL != '' && env.SPOTLIGHT_API_TOKEN != ''
+        with:
+          terraform_wrapper: false
+      - name: Acceptance tests
+        if: env.SPOTLIGHT_URL != '' && env.SPOTLIGHT_API_TOKEN != ''
+        run: make testacc

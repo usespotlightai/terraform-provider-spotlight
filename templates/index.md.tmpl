@@ -1,0 +1,36 @@
+---
+page_title: "Spotlight Provider"
+description: |-
+  Configure a Spotlight workspace as code: its teams, lines, skills and integrations.
+---
+
+# Spotlight Provider
+
+Configure a [Spotlight](https://github.com/usespotlightai) workspace as code: its teams, the lines their tasks move along, the skills their agents are given, and the integrations that connect them to other tools.
+
+`spotlight export` writes a workspace you already have as configuration for this provider, with an `import` block for each resource, so a first `terraform apply` adopts what is there and plans no change.
+
+## Authentication
+
+The provider calls the Spotlight control plane with an API token, sent as `Authorization: Bearer spt_...`. Create one in the web app and give it to the provider through the environment:
+
+```shell
+export SPOTLIGHT_URL=https://spotlight.example.com
+export SPOTLIGHT_API_TOKEN=spt_...
+```
+
+or through the provider block, as below. Keep the token out of version control.
+
+## Plans check expressions
+
+Integrations hold CEL expressions, written {{ "`$${{ ... }}`" }} in HCL so Terraform leaves them alone. `terraform plan` sends each one to the control plane to be type-checked where it is written, so a misspelt field fails the plan with the attribute that holds it named, rather than failing the apply.
+
+## Secrets
+
+Secret values will be written with write-only attributes (`value_wo`), which need Terraform 1.11 or later and never enter the plan or the state.
+
+## Example Usage
+
+{{ tffile "examples/provider/provider.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}

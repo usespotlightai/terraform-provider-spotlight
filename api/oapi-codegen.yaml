@@ -1,0 +1,34 @@
+package: apigen
+output: internal/client/apigen/apigen.gen.go
+generate:
+  client: true
+  models: true
+output-options:
+  include-operation-ids:
+    - createWorkspace
+    - readWorkspace
+    - updateWorkspace
+    - deleteWorkspace
+    - importWorkspace
+    - createTeam
+    - readTeam
+    - updateTeam
+    - deleteTeam
+    - importTeam
+    - createLine
+    - readLine
+    - updateLine
+    - deleteLine
+    - importLine
+    - createSkill
+    - readSkill
+    - updateSkill
+    - deleteSkill
+    - importSkill
+    - createIntegration
+    - readIntegration
+    - updateIntegration
+    - deleteIntegration
+    - importIntegration
+    - checkExpression
+    - listExpressionPositions

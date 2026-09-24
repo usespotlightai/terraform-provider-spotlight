@@ -1,0 +1,50 @@
+name: Generated client
+
+# Regenerates the API client from the control plane's openapi.json on develop
+# and fails when it differs from what is committed, so a schema change shows
+# up as a client diff to review. The control plane repository is private:
+# SPOTLIGHT_REPO_TOKEN is a fine-grained token with read access to its
+# contents.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "17 6 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Control plane ref to generate from
+        default: develop
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: usespotlightai/spotlight
+          ref: ${{ inputs.ref || 'develop' }}
+          token: ${{ secrets.SPOTLIGHT_REPO_TOKEN }}
+          path: spotlight
+          sparse-checkout: control-plane/openapi.json
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Vendor openapi.json
+        run: make openapi SPOTLIGHT_REPO=spotlight
+      - name: Regenerate the client
+        run: make client
+      - name: The committed client matches the schema
+        run: |
+          rm -rf spotlight
+          git diff --exit-code -- api internal/client/apigen || {
+            echo "::error::The control plane's API changed. Run 'make openapi client' and commit the diff."
+            exit 1
+          }
