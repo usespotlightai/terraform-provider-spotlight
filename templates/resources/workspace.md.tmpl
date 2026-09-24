@@ -1,0 +1,38 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.RenderedProviderName}}"
+subcategory: ""
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+## Adopt a workspace
+
+A workspace is created by a person signing up in the web app. Bring it under Terraform with an `import` block that names its slug, next to a `spotlight_workspace` whose `name` and `slug` match what is there, so the first plan imports it and changes nothing. Terraform then manages everything inside it: its teams, lines, skills, integrations and harness profiles, its secrets, and its runners.
+
+{{ tffile .ExampleFile }}
+
+## Creating a workspace
+
+Creating a workspace from Terraform needs a caller allowed to open workspaces. API tokens are not: a token acts only inside its own workspace, and opening one is refused with `403 Forbidden`. The provider reports that refusal with the `import` block to write instead.
+
+## Stop managing a workspace
+
+Destroying a `spotlight_workspace` asks Spotlight to delete the workspace. To stop managing it without deleting it, replace the resource with a `removed` block (Terraform 1.7 or later):
+
+{{ tffile "examples/resources/spotlight_workspace/removed.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with the workspace's slug as the `id`:
+
+{{ tffile .ImportIDConfigFile }}
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used too:
+
+{{ codefile "shell" .ImportFile }}

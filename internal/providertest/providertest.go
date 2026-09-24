@@ -4,6 +4,7 @@ package providertest
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
@@ -40,6 +41,31 @@ func NoneLeft(fake *fakeapi.Server, kinds ...string) func(*terraform.State) erro
 
 		return nil
 	}
+}
+
+// NothingHolds checks that no attribute of anything in the state holds any
+// of these values, as a write-only value must never be kept.
+func NothingHolds(values ...func() string) func(*terraform.State) error {
+	return func(state *terraform.State) error {
+		for _, module := range state.Modules {
+			for address, held := range module.Resources {
+				for name, kept := range held.Primary.Attributes {
+					for _, value := range values {
+						if secret := value(); secret != "" && strings.Contains(kept, secret) {
+							return fmt.Errorf("%s.%s holds a write-only value", address, name)
+						}
+					}
+				}
+			}
+		}
+
+		return nil
+	}
+}
+
+// Value is a value known before the test runs.
+func Value(value string) func() string {
+	return func() string { return value }
 }
 
 // Workspace is configuration for a workspace and a team in it, for the

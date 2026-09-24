@@ -1,8 +1,10 @@
 package client
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 
@@ -63,6 +65,10 @@ func problemOf(resp *http.Response, body []byte) *spotlight.Problem {
 		Detail: held.Detail,
 	}
 
+	if held.Permission != nil {
+		problem.Permission = spotlight.Permission(*held.Permission)
+	}
+
 	if held.Errors != nil {
 		problem.Errors = fieldErrors(*held.Errors)
 	}
@@ -100,4 +106,23 @@ func meta(id string, version float32, address string, warnings []apigen.FieldErr
 
 func entityTag(version int64) string {
 	return fmt.Sprintf("%q", fmt.Sprint(version))
+}
+
+const jsonContent = "application/json"
+
+func jsonBody(in any) (io.Reader, error) {
+	raw, err := json.Marshal(in)
+	if err != nil {
+		return nil, err
+	}
+
+	return bytes.NewReader(raw), nil
+}
+
+func orNone[T any](held []T) []T {
+	if held == nil {
+		return []T{}
+	}
+
+	return held
 }

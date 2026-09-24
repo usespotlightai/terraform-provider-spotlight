@@ -15,6 +15,10 @@ import (
 
 const kind = "workspace"
 
+const forbiddenToCreate = "An API token acts only inside its own workspace, so it may not open a new one. " +
+	"A person creates a workspace by signing up in the web app; import it rather than creating it, with an import block that names its slug:\n\n" +
+	"  import {\n    to = spotlight_workspace.<name>\n    id = \"<slug>\"\n  }"
+
 type model struct {
 	ID      types.String `tfsdk:"id"`
 	Version types.Int64  `tfsdk:"version"`
@@ -33,16 +37,18 @@ func New() resource.Resource {
 		Resources: func(api spotlight.API) spotlight.Resources[spotlight.WorkspaceInput, spotlight.Workspace] {
 			return api.Workspaces
 		},
-		Input:    inputOf,
-		Stored:   stored,
-		Meta:     func(w spotlight.Workspace) spotlight.Meta { return w.Meta },
-		Settable: func(w spotlight.Workspace) any { return spotlight.WorkspaceInput{Name: w.Name, Slug: w.Slug} },
-		Identity: func(m model) (string, int64) { return m.ID.ValueString(), m.Version.ValueInt64() },
+		Input:             inputOf,
+		Stored:            stored,
+		Meta:              func(w spotlight.Workspace) spotlight.Meta { return w.Meta },
+		Settable:          func(w spotlight.Workspace) any { return spotlight.WorkspaceInput{Name: w.Name, Slug: w.Slug} },
+		Identity:          func(m model) (string, int64) { return m.ID.ValueString(), m.Version.ValueInt64() },
+		ForbiddenToCreate: forbiddenToCreate,
 	})
 }
 
 var schemaOf = schema.Schema{
-	MarkdownDescription: "A Spotlight workspace, owned by whoever creates it. Import it by its slug.",
+	MarkdownDescription: "A Spotlight workspace. A person creates it by signing up in the web app; Terraform adopts it with an `import` block that names its slug, then manages everything inside it.\n\n" +
+		"Creating a workspace from Terraform needs a caller allowed to open workspaces, and API tokens are not: a token acts only inside its own workspace. Import the workspace rather than creating it.",
 	Attributes: map[string]schema.Attribute{
 		"id":      resourcekit.IDAttribute(kind),
 		"version": resourcekit.VersionAttribute(kind),
