@@ -190,7 +190,7 @@ func (r *HarnessProfileResource) Read(ctx context.Context, req resource.ReadRequ
 
 	harnessProfile, err := r.client.ReadHarnessProfile(ctx, state.ID.ValueString())
 	if client.IsNotFound(err) {
-		resp.State.RemoveResource(ctx)
+		removed(ctx, resp, state.ID.ValueString())
 		return
 	}
 	if err != nil {

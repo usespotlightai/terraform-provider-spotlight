@@ -114,7 +114,7 @@ func (r *WorkspaceResource) Read(ctx context.Context, req resource.ReadRequest, 
 
 	workspace, err := r.client.ReadWorkspace(ctx, state.ID.ValueString())
 	if client.IsNotFound(err) {
-		resp.State.RemoveResource(ctx)
+		removed(ctx, resp, state.ID.ValueString())
 		return
 	}
 	if err != nil {
