@@ -71,7 +71,10 @@ func TestAnExportAppliesFromScratchAndAdoptsWithNoDiff(t *testing.T) {
 
 	fromScratch := acctest.WithoutImports(exported, created...)
 	released := requiredProviders + acctest.Released(acctest.Addresses(exported))
-	variables := config.Variables{"secret_linear_api_key": config.StringVariable(exportedSecretValue)}
+	variables := config.Variables{
+		"secret_linear_api_key":                 config.StringVariable(exportedSecretValue),
+		"runner_pool_k8s-jobs_provision_secret": config.StringVariable(provisionFirst),
+	}
 
 	resource.UnitTest(t, resource.TestCase{
 		TerraformVersionChecks:   acctest.WriteOnly,
@@ -85,9 +88,11 @@ func TestAnExportAppliesFromScratchAndAdoptsWithNoDiff(t *testing.T) {
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
 					holdsOneOfEach(fake),
-					acctest.NothingHolds(acctest.Value(exportedSecretValue)),
+					acctest.NothingHolds(acctest.Value(exportedSecretValue), acctest.Value(provisionFirst)),
 					resource.TestCheckResourceAttr("spotlight_line.core_delivery", "station.1.profile", "careful"),
 					resource.TestCheckResourceAttr("spotlight_workspace_runners.acme", "runners.0", "build-1"),
+					resource.TestCheckResourceAttr("spotlight_workspace_runners.acme", "pools.#", "2"),
+					resource.TestCheckResourceAttr("spotlight_runner_pool.burst", "token_version", "2"),
 				),
 			},
 			{
@@ -118,7 +123,7 @@ func TestAnExportAppliesFromScratchAndAdoptsWithNoDiff(t *testing.T) {
 func holdsOneOfEach(fake *fakeapi.Server) resource.TestCheckFunc {
 	return func(*terraform.State) error {
 		for kind, want := range map[string]int{
-			"workspace": 1, "secret": 2, "runner": 1, "runner-trust": 1, "workspace-runners": 1,
+			"workspace": 1, "secret": 2, "runner": 1, "runner-trust": 1, "runner-pool": 2, "workspace-runners": 1,
 			"team": 1, "line": 1, "skill": 1, "integration": 1, "harness-profile": 1,
 		} {
 			if got := fake.Count(kind); got != want {
@@ -215,6 +220,19 @@ func seedExported(t *testing.T, cp acctest.ControlPlane, k acctest.Keys) (declar
 	})
 	must(err)
 
+	tokenVersion, secretVersion := int64(1), int64(1)
+	maxRuns := int64(2)
+	_, err = cp.Client.CreateRunnerPool(ctx, cp.Workspace.ID, client.RunnerPoolInput{
+		Key: k.Pool, Labels: []string{"tf-acc-linux"}, MaxRuns: &maxRuns, Token: acctest.RandomToken(), TokenVersion: &tokenVersion,
+	})
+	must(err)
+
+	_, err = cp.Client.CreateRunnerPool(ctx, cp.Workspace.ID, client.RunnerPoolInput{
+		Key: k.PushPool, Labels: []string{},
+		Provision: &client.PoolProvision{URL: "https://provision.example.com/runs", Secret: acctest.RandomSigningSecret(), SecretVersion: &secretVersion},
+	})
+	must(err)
+
 	team, err := cp.Client.CreateTeam(ctx, cp.Workspace.ID, client.TeamInput{Key: k.Team, Name: "Terraform acceptance " + k.Team})
 	must(err)
 
@@ -266,7 +284,7 @@ func seedExported(t *testing.T, cp acctest.ControlPlane, k acctest.Keys) (declar
 		return false
 	}
 
-	_, err = cp.Client.CreateWorkspaceRunners(ctx, cp.Workspace.ID, client.WorkspaceRunnersInput{Runners: []string{k.Runner}, Trusts: []string{k.Trust}})
+	_, err = cp.Client.CreateWorkspaceRunners(ctx, cp.Workspace.ID, client.WorkspaceRunnersInput{Runners: []string{k.Runner}, Trusts: []string{k.Trust}, Pools: []string{k.Pool, k.PushPool}})
 	must(err)
 
 	return true
@@ -287,7 +305,7 @@ func forgetSeeded(t *testing.T, cp acctest.ControlPlane, k acctest.Keys, declare
 }
 
 func createdFromScratch(imports map[string]string, workspace client.Workspace, k acctest.Keys, declares bool) []string {
-	names := []string{k.Secret, k.AWSSecret, k.Runner, k.Trust, k.Team}
+	names := []string{k.Secret, k.AWSSecret, k.Runner, k.Trust, k.Pool, k.PushPool, k.Team}
 	if declares {
 		names = append(names, workspace.Slug)
 	}
@@ -364,6 +382,9 @@ func TestAccExportAppliesAndReplansWithNoDiff(t *testing.T) {
 	for _, found := range exportedVariable.FindAllStringSubmatch(module["variables.tf"], -1) {
 		if !strings.Contains(found[0], "default") {
 			value := acctest.RandomToken()
+			if strings.HasSuffix(found[1], "_provision_secret") {
+				value = acctest.RandomSigningSecret()
+			}
 			variables[found[1]] = config.StringVariable(value)
 			values = append(values, acctest.Value(value))
 		}

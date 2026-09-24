@@ -51,6 +51,8 @@ func normalized(kind string, body map[string]any) (map[string]any, []fieldError)
 		return runner(body)
 	case "runner-trust":
 		return runnerTrust(body)
+	case "runner-pool":
+		return runnerPool(body)
 	case "workspace-runners":
 		return workspaceRunners(body)
 	default:

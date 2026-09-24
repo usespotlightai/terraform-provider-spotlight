@@ -2,6 +2,7 @@ package acctest
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"os"
@@ -24,8 +25,9 @@ import (
 const WorkspaceEnv = "SPOTLIGHT_ACC_WORKSPACE"
 
 // The prefixes of everything the acceptance tests create, which the
-// sweepers delete: KeyPrefix starts the keys and names of teams, runners
-// and runner trusts, and so the address of everything a team holds;
+// sweepers delete: KeyPrefix starts the keys and names of teams, runners,
+// runner trusts and runner pools, and so the address of everything a team
+// holds;
 // SecretPrefix starts the names of secrets.
 const (
 	KeyPrefix    = "tf-acc-"
@@ -99,6 +101,7 @@ type Keys struct {
 	Team, Line, Skill, Integration, Profile string
 	Secret, AWSSecret                       string
 	Runner, IssuedRunner, Trust             string
+	Pool, PushPool                          string
 }
 
 // RandomKeys answers keys no other test uses.
@@ -117,6 +120,8 @@ func RandomKeys() Keys {
 		Runner:       KeyPrefix + "build-" + suffix,
 		IssuedRunner: KeyPrefix + "issued-" + suffix,
 		Trust:        KeyPrefix + "cluster-" + suffix,
+		Pool:         KeyPrefix + "pool-" + suffix,
+		PushPool:     KeyPrefix + "push-" + suffix,
 	}
 }
 
@@ -124,6 +129,12 @@ func RandomKeys() Keys {
 // runner's token.
 func RandomToken() string {
 	return "tfacc" + acctest.RandStringFromCharSet(40, acctest.CharSetAlphaNum)
+}
+
+// RandomSigningSecret answers a random secret a push pool signs its
+// provision calls with, as Standard Webhooks write one.
+func RandomSigningSecret() string {
+	return "whsec_" + base64.StdEncoding.EncodeToString([]byte(acctest.RandStringFromCharSet(32, acctest.CharSetAlphaNum)))
 }
 
 // AdoptedWorkspace is configuration that imports the workspace and
@@ -231,6 +242,8 @@ func (cp ControlPlane) created(k Keys) []held {
 		holding("runner", api.ImportRunner, func(r client.Runner) client.Meta { return r.Meta }, api.DeleteRunner, id, k.Runner),
 		holding("runner", api.ImportRunner, func(r client.Runner) client.Meta { return r.Meta }, api.DeleteRunner, id, k.IssuedRunner),
 		holding("runner trust", api.ImportRunnerTrust, func(t client.RunnerTrust) client.Meta { return t.Meta }, api.DeleteRunnerTrust, id, k.Trust),
+		holding("runner pool", api.ImportRunnerPool, func(p client.RunnerPool) client.Meta { return p.Meta }, api.DeleteRunnerPool, id, k.Pool),
+		holding("runner pool", api.ImportRunnerPool, func(p client.RunnerPool) client.Meta { return p.Meta }, api.DeleteRunnerPool, id, k.PushPool),
 	}
 }
 
