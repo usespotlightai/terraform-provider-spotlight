@@ -1,8 +1,9 @@
 // Package fakeapi is an in-memory Spotlight control plane for tests. It
 // follows the resource conventions the provider relies on: bearer tokens and
 // their scopes, idempotent creates, If-Match versions, problem answers that
-// name fields, reads that fill in defaults, imports by address, write-only
-// values that are never answered, and the expression check.
+// name fields, reads that fill in defaults, imports by address, lists in
+// address order, write-only values that are never answered, and the
+// expression check.
 package fakeapi
 
 import (
@@ -12,6 +13,7 @@ import (
 	"maps"
 	"net/http"
 	"net/http/httptest"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -66,12 +68,14 @@ func New(t interface{ Cleanup(func()) }) *Server {
 	s.Grant("configure", "secrets", "runners")
 
 	mux := http.NewServeMux()
+	mux.HandleFunc("GET /api/resources/workspaces", s.listWorkspaces)
 	mux.HandleFunc("POST /api/resources/workspaces", s.create("workspace"))
 	mux.HandleFunc("GET /api/resources/workspaces/import", s.importWorkspace)
 	mux.HandleFunc("GET /api/resources/workspaces/{id}", s.read("workspace"))
 	mux.HandleFunc("PUT /api/resources/workspaces/{id}", s.update("workspace"))
 	mux.HandleFunc("DELETE /api/resources/workspaces/{id}", s.remove("workspace"))
 	mux.HandleFunc("POST /api/resources/workspaces/{owner}/{kinds}", s.createHeld("workspace"))
+	mux.HandleFunc("GET /api/resources/workspaces/{workspace}/{kinds}", s.listHeld)
 	mux.HandleFunc("GET /api/resources/workspaces/{workspace}/{kinds}/import", s.importHeld)
 	mux.HandleFunc("POST /api/resources/teams/{owner}/{kinds}", s.createHeld("team"))
 	mux.HandleFunc("GET /api/resources/{kinds}/{id}", s.readHeld)
@@ -431,7 +435,7 @@ func (s *Server) update(kind string) http.HandlerFunc {
 			s.kept[held.id] = value
 		}
 
-		if kind == "secret" && fields["source"].(map[string]any)["kind"] != "built-in" {
+		if kind == "secret" && objectOf(fields["source"])["kind"] != "built-in" {
 			delete(s.kept, held.id)
 		}
 
@@ -500,6 +504,50 @@ func (s *Server) importHeld(w http.ResponseWriter, r *http.Request) {
 	problem(w, http.StatusNotFound, "not-found", "No such "+kind, "There is no "+kind+" here that you may see", nil)
 }
 
+func (s *Server) listWorkspaces(w http.ResponseWriter, _ *http.Request) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.list(w, func(held *resource) bool { return held.kind == "workspace" })
+}
+
+func (s *Server) listHeld(w http.ResponseWriter, r *http.Request) {
+	kind, ok := kinds[r.PathValue("kinds")]
+	if !ok {
+		noRoute(w, r)
+		return
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	workspace := r.PathValue("workspace")
+	if !s.holds(workspace, "workspace") {
+		problem(w, http.StatusNotFound, "not-found", "No such workspace", "There is no workspace here that you may see", nil)
+		return
+	}
+
+	s.list(w, func(held *resource) bool { return held.kind == kind && s.workspaceOf(held) == workspace })
+}
+
+func (s *Server) list(w http.ResponseWriter, listed func(*resource) bool) {
+	var found []*resource
+	for _, each := range s.held {
+		if listed(each) {
+			found = append(found, each)
+		}
+	}
+
+	slices.SortFunc(found, func(a, b *resource) int { return strings.Compare(s.addressOf(a), s.addressOf(b)) })
+
+	items := make([]any, 0, len(found))
+	for _, each := range found {
+		items = append(items, s.bodyOf(each))
+	}
+
+	writeJSON(w, http.StatusOK, "application/json", roundTripped(map[string]any{"items": items}))
+}
+
 func (s *Server) found(w http.ResponseWriter, kind, id string) (*resource, bool) {
 	held, ok := s.held[id]
 	if !ok || held.kind != kind {
@@ -559,23 +607,23 @@ var fixedFields = map[string][]string{
 func (s *Server) addressOf(held *resource) string {
 	switch held.kind {
 	case "workspace":
-		return held.fields["slug"].(string)
+		return textOf(held.fields["slug"])
 	case "team", "runner-trust":
-		return held.fields["key"].(string)
+		return textOf(held.fields["key"])
 	case "secret", "runner":
-		return held.fields["name"].(string)
+		return textOf(held.fields["name"])
 	case "workspace-runners":
 		return s.slugOf(held.owner)
 	case "integration":
-		return s.teamKeyOf(held) + "/" + held.fields["source"].(string)
+		return s.teamKeyOf(held) + "/" + textOf(held.fields["source"])
 	default:
-		return s.teamKeyOf(held) + "/" + held.fields["key"].(string)
+		return s.teamKeyOf(held) + "/" + textOf(held.fields["key"])
 	}
 }
 
 func (s *Server) slugOf(workspaceID string) string {
 	if workspace, ok := s.held[workspaceID]; ok {
-		return workspace.fields["slug"].(string)
+		return textOf(workspace.fields["slug"])
 	}
 
 	return ""
@@ -583,7 +631,7 @@ func (s *Server) slugOf(workspaceID string) string {
 
 func (s *Server) teamKeyOf(held *resource) string {
 	if team, ok := s.held[held.owner]; ok {
-		return team.fields["key"].(string)
+		return textOf(team.fields["key"])
 	}
 
 	return ""
@@ -604,6 +652,11 @@ func (s *Server) workspaceOf(held *resource) string {
 }
 
 func (s *Server) answer(w http.ResponseWriter, status int, held *resource) {
+	w.Header().Set("ETag", fmt.Sprintf(`"%d"`, held.version))
+	writeJSON(w, status, "application/json", roundTripped(s.bodyOf(held)))
+}
+
+func (s *Server) bodyOf(held *resource) map[string]any {
 	body := maps.Clone(held.fields)
 	body["id"] = held.id
 	body["version"] = held.version
@@ -623,8 +676,7 @@ func (s *Server) answer(w http.ResponseWriter, status int, held *resource) {
 		body["drift"], body["warnings"] = s.driftOf(held)
 	}
 
-	w.Header().Set("ETag", fmt.Sprintf(`"%d"`, held.version))
-	writeJSON(w, status, "application/json", roundTripped(body))
+	return body
 }
 
 func roundTripped(body map[string]any) map[string]any {

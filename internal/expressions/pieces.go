@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/usespotlightai/terraform-provider-spotlight/internal/spotlight"
+	"github.com/usespotlightai/terraform-provider-spotlight/internal/client"
 )
 
 var (
@@ -29,7 +29,7 @@ func Pieces(text string) []string {
 	return pieces
 }
 
-func explained(expression string, found spotlight.ExpressionError) string {
+func explained(expression string, found client.ExpressionError) string {
 	var out strings.Builder
 
 	out.WriteString(found.Message)

@@ -1,8 +1,15 @@
 package provider_test
 
 import (
+	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"net/http"
+	"os"
 	"path/filepath"
+	"regexp"
+	"slices"
 	"strings"
 	"testing"
 
@@ -10,17 +17,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 
+	"github.com/usespotlightai/terraform-provider-spotlight/internal/acctest"
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/client"
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/fakeapi"
-	"github.com/usespotlightai/terraform-provider-spotlight/internal/providertest"
-	"github.com/usespotlightai/terraform-provider-spotlight/internal/spotlight"
+	"github.com/usespotlightai/terraform-provider-spotlight/internal/provider"
 )
 
 const (
 	exportedWorkspaceID = "00000000-0000-4000-8000-00000000a0a0"
-	secretValue         = "lin_exported_never_kept"
+	exportedSecretValue = "lin_exported_never_kept"
 )
 
 const requiredProviders = `
@@ -38,12 +44,9 @@ func TestAnExportAppliesFromScratchAndAdoptsWithNoDiff(t *testing.T) {
 
 	fake := fakeapi.New(t)
 
-	api, err := client.New(client.Config{Endpoint: fake.URL, Token: fakeapi.Token})
-	if err != nil {
-		t.Fatal(err)
-	}
+	api := acctest.FakeClient(t, fake)
 
-	workspace, err := api.Workspaces.Create(t.Context(), "", spotlight.WorkspaceInput{Name: "Acme", Slug: "acme"})
+	workspace, err := api.CreateWorkspace(t.Context(), client.WorkspaceInput{Name: "Acme", Slug: "acme"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -53,36 +56,36 @@ func TestAnExportAppliesFromScratchAndAdoptsWithNoDiff(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	module, err := providertest.ModuleIn(dir)
+	module, err := acctest.ModuleIn(dir)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	exported := strings.ReplaceAll(module.Config(dir), exportedWorkspaceID, workspace.ID)
 	var created []string
-	for _, address := range providertest.Addresses(exported) {
+	for _, address := range acctest.Addresses(exported) {
 		if !strings.HasPrefix(address, "spotlight_workspace.") {
 			created = append(created, address)
 		}
 	}
 
-	fromScratch := providertest.WithoutImports(exported, created...)
-	released := requiredProviders + providertest.Released(providertest.Addresses(exported))
-	variables := config.Variables{"secret_linear_api_key": config.StringVariable(secretValue)}
+	fromScratch := acctest.WithoutImports(exported, created...)
+	released := requiredProviders + acctest.Released(acctest.Addresses(exported))
+	variables := config.Variables{"secret_linear_api_key": config.StringVariable(exportedSecretValue)}
 
 	resource.UnitTest(t, resource.TestCase{
-		TerraformVersionChecks:   []tfversion.TerraformVersionCheck{tfversion.SkipBelow(tfversion.Version1_11_0)},
-		ProtoV6ProviderFactories: providertest.Factories(fake),
+		TerraformVersionChecks:   acctest.WriteOnly,
+		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
 		Steps: []resource.TestStep{
 			{
 				Config:          fromScratch,
 				ConfigVariables: variables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{providertest.Adopts{Creating: created}},
+					PreApply: []plancheck.PlanCheck{acctest.Adopts{Creating: created}},
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
 					holdsOneOfEach(fake),
-					providertest.NothingHolds(providertest.Value(secretValue)),
+					acctest.NothingHolds(acctest.Value(exportedSecretValue)),
 					resource.TestCheckResourceAttr("spotlight_line.core_delivery", "station.1.profile", "careful"),
 					resource.TestCheckResourceAttr("spotlight_workspace_runners.acme", "runners.0", "build-1"),
 				),
@@ -99,7 +102,7 @@ func TestAnExportAppliesFromScratchAndAdoptsWithNoDiff(t *testing.T) {
 				Config:          exported,
 				ConfigVariables: variables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{providertest.Adopts{}},
+					PreApply: []plancheck.PlanCheck{acctest.Adopts{}},
 				},
 				Check: holdsOneOfEach(fake),
 			},
@@ -121,6 +124,292 @@ func holdsOneOfEach(fake *fakeapi.Server) resource.TestCheckFunc {
 			if got := fake.Count(kind); got != want {
 				return fmt.Errorf("Spotlight holds %d of %s, want %d", got, kind, want)
 			}
+		}
+
+		return nil
+	}
+}
+
+var exportedVariable = regexp.MustCompile(`(?m)^variable "([^"]+)" \{\n(?:  [^\n]*\n)*?\}`)
+
+type exportUnavailable struct{ status int }
+
+func (e exportUnavailable) Error() string {
+	return fmt.Sprintf("the control plane answered %d", e.status)
+}
+
+func exportOf(ctx context.Context, cp acctest.ControlPlane) (acctest.Module, error) {
+	endpoint := strings.TrimSuffix(strings.TrimRight(os.Getenv(provider.URLEnv), "/"), "/api")
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint+"/api/resources/workspaces/"+cp.Workspace.ID+"/export", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+os.Getenv(provider.TokenEnv))
+	req.Header.Set("Spotlight-Client", client.ClientName("acc"))
+	req.Header.Set("Spotlight-Api-Version", client.APIVersion)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, exportUnavailable{resp.StatusCode}
+	}
+
+	var held struct {
+		Files []struct {
+			Path    string `json:"path"`
+			Content string `json:"content"`
+		} `json:"files"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&held); err != nil {
+		return nil, err
+	}
+
+	module := acctest.Module{}
+	for _, each := range held.Files {
+		module[each.Path] = each.Content
+	}
+
+	return module, nil
+}
+
+func seedExported(t *testing.T, cp acctest.ControlPlane, k acctest.Keys) (declares bool) {
+	t.Helper()
+
+	ctx := t.Context()
+	must := func(err error) {
+		t.Helper()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	version := int64(1)
+	value := acctest.RandomToken()
+	_, err := cp.Client.CreateSecret(ctx, cp.Workspace.ID, client.SecretInput{
+		Name:         k.Secret,
+		Source:       client.SecretSource{Kind: client.SourceBuiltIn},
+		Bindings:     []client.SecretBinding{{Host: "api.linear.app", Header: "authorization", Prefix: "Bearer "}},
+		Value:        &value,
+		ValueVersion: &version,
+	})
+	must(err)
+
+	_, err = cp.Client.CreateSecret(ctx, cp.Workspace.ID, client.SecretInput{
+		Name:     k.AWSSecret,
+		Source:   client.SecretSource{Kind: client.SourceAWSSecretsManager, SecretID: "tf-acc/" + k.AWSSecret},
+		Bindings: []client.SecretBinding{},
+	})
+	must(err)
+
+	_, err = cp.Client.CreateRunner(ctx, cp.Workspace.ID, client.RunnerInput{Name: k.Runner, Labels: []string{"tf-acc-vpc"}, Token: acctest.RandomToken()})
+	must(err)
+
+	_, err = cp.Client.CreateRunnerTrust(ctx, cp.Workspace.ID, client.RunnerTrustInput{
+		Key: k.Trust, Issuer: "https://oidc.eks.eu-west-1.amazonaws.com/id/TFACC", Subject: "system:serviceaccount:tf-acc:runner", Audience: "spotlight", Labels: []string{"tf-acc-gpu"},
+	})
+	must(err)
+
+	team, err := cp.Client.CreateTeam(ctx, cp.Workspace.ID, client.TeamInput{Key: k.Team, Name: "Terraform acceptance " + k.Team})
+	must(err)
+
+	_, err = cp.Client.CreateHarnessProfile(ctx, team.ID, client.HarnessProfileInput{
+		Key:         k.Profile,
+		Permissions: client.Permissions{Allow: []string{"read"}, Ask: []string{}, Deny: []string{"read(.env)"}},
+		MCPServers:  []client.MCPServer{{Name: "linear", Command: "npx", Args: []string{"-y", "linear-mcp"}, Env: map[string]string{"LINEAR_WORKSPACE": "tf-acc"}}},
+		Native:      map[string]any{"claude-code": map[string]any{"includeCoAuthoredBy": false}},
+	})
+	must(err)
+
+	_, err = cp.Client.CreateSkill(ctx, team.ID, client.SkillInput{Key: k.Skill, Files: map[string]string{
+		"SKILL.md": "---\nname: " + k.Skill + "\ndescription: Look up dashboards\n---\nSearch before you guess.\n",
+	}})
+	must(err)
+
+	_, err = cp.Client.CreateIntegration(ctx, team.ID, client.Definition{
+		"integration": k.Integration,
+		"actions": map[string]any{"comment": map[string]any{"request": map[string]any{
+			"method": "POST", "url": "https://api.linear.app/graphql",
+			"headers": map[string]any{"Content-Type": "application/json"},
+			"body":    map[string]any{"query": "${{ inputs.body }}"},
+			"auth":    map[string]any{"secrets": []any{"secret." + k.Secret}},
+		}}},
+		"tools": map[string]any{"comment": map[string]any{
+			"does": "comment", "description": "Comment on the issue.\n",
+			"inputs": map[string]any{"body": map[string]any{"type": "string", "required": true}},
+		}},
+	})
+	must(err)
+
+	_, err = cp.Client.CreateLine(ctx, team.ID, client.Definition{
+		"key": k.Line, "name": "Review", "role": "review", "runners": []any{k.Runner, "tf-acc-vpc"},
+		"stations": []any{
+			map[string]any{"key": "backlog", "name": "Backlog", "kind": "backlog", "passesTo": []any{"implementation"}},
+			map[string]any{
+				"key": "implementation", "name": "Implementation", "harness": "claude-code", "harnessVersion": "2.1.270",
+				"profile": k.Profile, "prompt": "Implement the task.\n", "skills": []any{k.Skill},
+				"tools": []any{k.Integration + ".comment"}, "runners": []any{"tf-acc-gpu"}, "passesTo": []any{"code-review"},
+			},
+			map[string]any{"key": "code-review", "name": "Code review", "harness": "claude-code", "prompt": "Review the change.\n", "passesTo": []any{"implementation"}, "ends": true},
+			map[string]any{"key": "completed", "name": "Completed", "kind": "completed"},
+		},
+		"reviews": map[string]any{"start": "opened", "skip": map[string]any{"authors": []any{"renovate[bot]", "dependabot[bot]"}}},
+	})
+	must(err)
+
+	if _, err := cp.DeclaredRunners(ctx); !client.IsNotFound(err) {
+		return false
+	}
+
+	_, err = cp.Client.CreateWorkspaceRunners(ctx, cp.Workspace.ID, client.WorkspaceRunnersInput{Runners: []string{k.Runner}, Trusts: []string{k.Trust}})
+	must(err)
+
+	return true
+}
+
+func forgetSeeded(t *testing.T, cp acctest.ControlPlane, k acctest.Keys, declares bool) {
+	t.Helper()
+
+	if declares {
+		if err := cp.Undeclare(t.Context()); err != nil {
+			t.Fatalf("could not delete the declaration of the workspace's runners to declare them again from the export: %v", err)
+		}
+	}
+
+	if err := cp.RemoveCreated(t.Context(), k); err != nil {
+		t.Fatalf("could not delete what the test seeded to create it again from the export: %v", err)
+	}
+}
+
+func createdFromScratch(imports map[string]string, workspace client.Workspace, k acctest.Keys, declares bool) []string {
+	names := []string{k.Secret, k.AWSSecret, k.Runner, k.Trust, k.Team}
+	if declares {
+		names = append(names, workspace.Slug)
+	}
+
+	var out []string
+	for address, id := range imports {
+		within, ok := strings.CutPrefix(id, workspace.ID+"/")
+		if !ok {
+			continue
+		}
+
+		if slices.Contains(names, within) || strings.HasPrefix(within, k.Team+"/") {
+			out = append(out, address)
+		}
+	}
+	slices.Sort(out)
+
+	return out
+}
+
+func adoptedWorkspaceProtected(config string) string {
+	for _, address := range acctest.Addresses(config) {
+		if strings.HasPrefix(address, "spotlight_workspace.") {
+			config = acctest.Protected(config, address)
+		}
+	}
+
+	return config
+}
+
+func TestAccExportAppliesAndReplansWithNoDiff(t *testing.T) {
+	cp := acctest.PreCheck(t)
+
+	if _, err := exportOf(t.Context(), cp); err != nil {
+		var unavailable exportUnavailable
+		if errors.As(err, &unavailable) && unavailable.status == http.StatusNotFound {
+			t.Skipf("this control plane serves no export (%v): it runs a Spotlight from before SPO-80", err)
+		}
+		t.Fatalf("could not export the workspace: %v", err)
+	}
+
+	t.Setenv(resource.EnvTfAccProviderNamespace, "usespotlightai")
+
+	k := acctest.RandomKeys()
+	cp.Sweep(t, k)
+	declares := false
+	t.Cleanup(func() {
+		if declares {
+			if err := cp.Undeclare(context.Background()); err != nil {
+				t.Errorf("the declaration of %s's runners was left behind: %v", cp.Workspace.Slug, err)
+			}
+		}
+	})
+	declares = seedExported(t, cp, k)
+
+	module, err := exportOf(t.Context(), cp)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	forgetSeeded(t, cp, k, declares)
+
+	dir := t.TempDir()
+	if err := module.WriteTo(dir); err != nil {
+		t.Fatal(err)
+	}
+
+	exported := adoptedWorkspaceProtected(module.Config(dir))
+	created := createdFromScratch(acctest.Imports(exported), cp.Workspace, k, declares)
+	t.Logf("the export imports %d resources, %d of them created by this test from scratch: %v", len(acctest.Imports(exported)), len(created), created)
+
+	variables := config.Variables{}
+	var values []func() string
+	for _, found := range exportedVariable.FindAllStringSubmatch(module["variables.tf"], -1) {
+		if !strings.Contains(found[0], "default") {
+			value := acctest.RandomToken()
+			variables[found[1]] = config.StringVariable(value)
+			values = append(values, acctest.Value(value))
+		}
+	}
+
+	released := requiredProviders + acctest.Released(acctest.Addresses(exported))
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks:   acctest.WriteOnly,
+		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories(),
+		CheckDestroy:             cp.NothingLeftButTheWorkspace(k),
+		Steps: []resource.TestStep{
+			{
+				Config:          acctest.WithoutImports(exported, created...),
+				ConfigVariables: variables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{acctest.Adopts{Creating: created}},
+				},
+				Check: acctest.NothingHolds(values...),
+			},
+			{
+				Config:           exported,
+				ConfigVariables:  variables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}},
+			},
+			{
+				Config: released,
+				Check:  removeExported(cp, k, &declares),
+			},
+		},
+	})
+}
+
+func removeExported(cp acctest.ControlPlane, k acctest.Keys, declares *bool) resource.TestCheckFunc {
+	return func(*terraform.State) error {
+		ctx := context.Background()
+
+		if *declares {
+			if err := cp.Undeclare(ctx); err != nil {
+				return fmt.Errorf("could not delete the declaration of the workspace's runners: %w", err)
+			}
+			*declares = false
+		}
+
+		if err := cp.RemoveCreated(ctx, k); err != nil {
+			return fmt.Errorf("could not delete what the test created: %w", err)
 		}
 
 		return nil

@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/client/apigen"
-	"github.com/usespotlightai/terraform-provider-spotlight/internal/spotlight"
 )
 
 // RunnerTokenHeader is where Spotlight answers the token it issues a runner
@@ -13,10 +13,8 @@ import (
 // client drops it unread.
 const RunnerTokenHeader = "Spotlight-Runner-Token"
 
-type runners struct{ api *apigen.ClientWithResponses }
-
-func runnerOf(dto apigen.RunnerResourceResponseDto) spotlight.Runner {
-	runner := spotlight.Runner{
+func runnerOf(dto apigen.RunnerResourceResponseDto) Runner {
+	runner := Runner{
 		Meta:        meta(dto.Id, dto.Version, dto.Address, dto.Warnings),
 		WorkspaceID: dto.WorkspaceId,
 		Name:        dto.Name,
@@ -30,21 +28,22 @@ func runnerOf(dto apigen.RunnerResourceResponseDto) spotlight.Runner {
 	return runner
 }
 
-func (r runners) Create(ctx context.Context, workspaceID string, in spotlight.RunnerInput) (spotlight.Runner, error) {
+// CreateRunner creates a runner in a workspace.
+func (c *Client) CreateRunner(ctx context.Context, workspaceID string, in RunnerInput) (Runner, error) {
 	body, err := jsonBody(in)
 	if err != nil {
-		return spotlight.Runner{}, err
+		return Runner{}, err
 	}
 
-	resp, err := r.api.CreateRunnerWithBodyWithResponse(ctx, workspaceID,
+	resp, err := c.api.CreateRunnerWithBodyWithResponse(ctx, workspaceID,
 		&apigen.CreateRunnerParams{IdempotencyKey: uuid.NewString()}, jsonContent, body)
 	if err != nil {
-		return spotlight.Runner{}, err
+		return Runner{}, err
 	}
 
 	dto, err := answered(resp.HTTPResponse, resp.Body, resp.JSON201)
 	if err != nil {
-		return spotlight.Runner{}, err
+		return Runner{}, err
 	}
 
 	resp.HTTPResponse.Header.Del(RunnerTokenHeader)
@@ -55,10 +54,11 @@ func (r runners) Create(ctx context.Context, workspaceID string, in spotlight.Ru
 	return runner, nil
 }
 
-func (r runners) Read(ctx context.Context, id string) (spotlight.Runner, error) {
-	resp, err := r.api.ReadRunnerWithResponse(ctx, id, &apigen.ReadRunnerParams{})
+// ReadRunner reads the runner with an id.
+func (c *Client) ReadRunner(ctx context.Context, id string) (Runner, error) {
+	resp, err := c.api.ReadRunnerWithResponse(ctx, id, &apigen.ReadRunnerParams{})
 	if err != nil {
-		return spotlight.Runner{}, err
+		return Runner{}, err
 	}
 
 	dto, err := answered(resp.HTTPResponse, resp.Body, resp.JSON200)
@@ -66,16 +66,17 @@ func (r runners) Read(ctx context.Context, id string) (spotlight.Runner, error) 
 	return runnerOf(dto), err
 }
 
-func (r runners) Update(ctx context.Context, id string, version int64, in spotlight.RunnerInput) (spotlight.Runner, error) {
+// UpdateRunner writes the runner over version, the one last read.
+func (c *Client) UpdateRunner(ctx context.Context, id string, version int64, in RunnerInput) (Runner, error) {
 	body, err := jsonBody(in)
 	if err != nil {
-		return spotlight.Runner{}, err
+		return Runner{}, err
 	}
 
-	resp, err := r.api.UpdateRunnerWithBodyWithResponse(ctx, id,
+	resp, err := c.api.UpdateRunnerWithBodyWithResponse(ctx, id,
 		&apigen.UpdateRunnerParams{IfMatch: entityTag(version)}, jsonContent, body)
 	if err != nil {
-		return spotlight.Runner{}, err
+		return Runner{}, err
 	}
 
 	dto, err := answered(resp.HTTPResponse, resp.Body, resp.JSON200)
@@ -83,8 +84,9 @@ func (r runners) Update(ctx context.Context, id string, version int64, in spotli
 	return runnerOf(dto), err
 }
 
-func (r runners) Delete(ctx context.Context, id string, version int64) error {
-	resp, err := r.api.DeleteRunnerWithResponse(ctx, id, &apigen.DeleteRunnerParams{IfMatch: entityTag(version)})
+// DeleteRunner deletes version of the runner, the one last read.
+func (c *Client) DeleteRunner(ctx context.Context, id string, version int64) error {
+	resp, err := c.api.DeleteRunnerWithResponse(ctx, id, &apigen.DeleteRunnerParams{IfMatch: entityTag(version)})
 	if err != nil {
 		return err
 	}
@@ -92,13 +94,34 @@ func (r runners) Delete(ctx context.Context, id string, version int64) error {
 	return done(resp.HTTPResponse, resp.Body)
 }
 
-func (r runners) Import(ctx context.Context, workspaceID, address string) (spotlight.Runner, error) {
-	resp, err := r.api.ImportRunnerWithResponse(ctx, workspaceID, &apigen.ImportRunnerParams{Address: address})
+// ImportRunner finds the runner at an address in a workspace.
+func (c *Client) ImportRunner(ctx context.Context, workspaceID, address string) (Runner, error) {
+	resp, err := c.api.ImportRunnerWithResponse(ctx, workspaceID, &apigen.ImportRunnerParams{Address: address})
 	if err != nil {
-		return spotlight.Runner{}, err
+		return Runner{}, err
 	}
 
 	dto, err := answered(resp.HTTPResponse, resp.Body, resp.JSON200)
 
 	return runnerOf(dto), err
+}
+
+// ListRunners lists every runner in a workspace, in address order.
+func (c *Client) ListRunners(ctx context.Context, workspaceID string) ([]Runner, error) {
+	resp, err := c.api.ListRunnersWithResponse(ctx, workspaceID, &apigen.ListRunnersParams{})
+	if err != nil {
+		return nil, err
+	}
+
+	listed, err := answered(resp.HTTPResponse, resp.Body, resp.JSON200)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]Runner, 0, len(listed.Items))
+	for _, each := range listed.Items {
+		out = append(out, runnerOf(each))
+	}
+
+	return out, nil
 }

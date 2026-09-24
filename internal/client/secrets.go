@@ -4,23 +4,21 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/client/apigen"
-	"github.com/usespotlightai/terraform-provider-spotlight/internal/spotlight"
 )
 
-type secrets struct{ api *apigen.ClientWithResponses }
-
-func secretOf(dto apigen.SecretResourceResponseDto) spotlight.Secret {
-	bindings := make([]spotlight.SecretBinding, 0, len(dto.Bindings))
+func secretOf(dto apigen.SecretResourceResponseDto) Secret {
+	bindings := make([]SecretBinding, 0, len(dto.Bindings))
 	for _, each := range dto.Bindings {
-		bindings = append(bindings, spotlight.SecretBinding{Host: each.Host, Header: each.Header, Prefix: each.Prefix})
+		bindings = append(bindings, SecretBinding{Host: each.Host, Header: each.Header, Prefix: each.Prefix})
 	}
 
-	secret := spotlight.Secret{
+	secret := Secret{
 		Meta:        meta(dto.Id, dto.Version, dto.Address, dto.Warnings),
 		WorkspaceID: dto.WorkspaceId,
 		Name:        dto.Name,
-		Source:      spotlight.SecretSource{Kind: string(dto.Source.Kind)},
+		Source:      SecretSource{Kind: string(dto.Source.Kind)},
 		Bindings:    bindings,
 		RotatedAt:   dto.RotatedAt,
 	}
@@ -41,16 +39,17 @@ func secretOf(dto apigen.SecretResourceResponseDto) spotlight.Secret {
 	return secret
 }
 
-func (s secrets) Create(ctx context.Context, workspaceID string, in spotlight.SecretInput) (spotlight.Secret, error) {
+// CreateSecret creates a secret in a workspace.
+func (c *Client) CreateSecret(ctx context.Context, workspaceID string, in SecretInput) (Secret, error) {
 	body, err := jsonBody(in)
 	if err != nil {
-		return spotlight.Secret{}, err
+		return Secret{}, err
 	}
 
-	resp, err := s.api.CreateSecretWithBodyWithResponse(ctx, workspaceID,
+	resp, err := c.api.CreateSecretWithBodyWithResponse(ctx, workspaceID,
 		&apigen.CreateSecretParams{IdempotencyKey: uuid.NewString()}, jsonContent, body)
 	if err != nil {
-		return spotlight.Secret{}, err
+		return Secret{}, err
 	}
 
 	dto, err := answered(resp.HTTPResponse, resp.Body, resp.JSON201)
@@ -58,10 +57,11 @@ func (s secrets) Create(ctx context.Context, workspaceID string, in spotlight.Se
 	return secretOf(dto), err
 }
 
-func (s secrets) Read(ctx context.Context, id string) (spotlight.Secret, error) {
-	resp, err := s.api.ReadSecretWithResponse(ctx, id, &apigen.ReadSecretParams{})
+// ReadSecret reads the secret with an id.
+func (c *Client) ReadSecret(ctx context.Context, id string) (Secret, error) {
+	resp, err := c.api.ReadSecretWithResponse(ctx, id, &apigen.ReadSecretParams{})
 	if err != nil {
-		return spotlight.Secret{}, err
+		return Secret{}, err
 	}
 
 	dto, err := answered(resp.HTTPResponse, resp.Body, resp.JSON200)
@@ -69,16 +69,17 @@ func (s secrets) Read(ctx context.Context, id string) (spotlight.Secret, error) 
 	return secretOf(dto), err
 }
 
-func (s secrets) Update(ctx context.Context, id string, version int64, in spotlight.SecretInput) (spotlight.Secret, error) {
+// UpdateSecret writes the secret over version, the one last read.
+func (c *Client) UpdateSecret(ctx context.Context, id string, version int64, in SecretInput) (Secret, error) {
 	body, err := jsonBody(in)
 	if err != nil {
-		return spotlight.Secret{}, err
+		return Secret{}, err
 	}
 
-	resp, err := s.api.UpdateSecretWithBodyWithResponse(ctx, id,
+	resp, err := c.api.UpdateSecretWithBodyWithResponse(ctx, id,
 		&apigen.UpdateSecretParams{IfMatch: entityTag(version)}, jsonContent, body)
 	if err != nil {
-		return spotlight.Secret{}, err
+		return Secret{}, err
 	}
 
 	dto, err := answered(resp.HTTPResponse, resp.Body, resp.JSON200)
@@ -86,8 +87,9 @@ func (s secrets) Update(ctx context.Context, id string, version int64, in spotli
 	return secretOf(dto), err
 }
 
-func (s secrets) Delete(ctx context.Context, id string, version int64) error {
-	resp, err := s.api.DeleteSecretWithResponse(ctx, id, &apigen.DeleteSecretParams{IfMatch: entityTag(version)})
+// DeleteSecret deletes version of the secret, the one last read.
+func (c *Client) DeleteSecret(ctx context.Context, id string, version int64) error {
+	resp, err := c.api.DeleteSecretWithResponse(ctx, id, &apigen.DeleteSecretParams{IfMatch: entityTag(version)})
 	if err != nil {
 		return err
 	}
@@ -95,13 +97,34 @@ func (s secrets) Delete(ctx context.Context, id string, version int64) error {
 	return done(resp.HTTPResponse, resp.Body)
 }
 
-func (s secrets) Import(ctx context.Context, workspaceID, address string) (spotlight.Secret, error) {
-	resp, err := s.api.ImportSecretWithResponse(ctx, workspaceID, &apigen.ImportSecretParams{Address: address})
+// ImportSecret finds the secret at an address in a workspace.
+func (c *Client) ImportSecret(ctx context.Context, workspaceID, address string) (Secret, error) {
+	resp, err := c.api.ImportSecretWithResponse(ctx, workspaceID, &apigen.ImportSecretParams{Address: address})
 	if err != nil {
-		return spotlight.Secret{}, err
+		return Secret{}, err
 	}
 
 	dto, err := answered(resp.HTTPResponse, resp.Body, resp.JSON200)
 
 	return secretOf(dto), err
+}
+
+// ListSecrets lists every secret in a workspace, in address order.
+func (c *Client) ListSecrets(ctx context.Context, workspaceID string) ([]Secret, error) {
+	resp, err := c.api.ListSecretsWithResponse(ctx, workspaceID, &apigen.ListSecretsParams{})
+	if err != nil {
+		return nil, err
+	}
+
+	listed, err := answered(resp.HTTPResponse, resp.Body, resp.JSON200)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]Secret, 0, len(listed.Items))
+	for _, each := range listed.Items {
+		out = append(out, secretOf(each))
+	}
+
+	return out, nil
 }

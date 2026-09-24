@@ -4,13 +4,11 @@ import (
 	"context"
 
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/client/apigen"
-	"github.com/usespotlightai/terraform-provider-spotlight/internal/spotlight"
 )
 
-type expressions struct{ api *apigen.ClientWithResponses }
-
-func (e expressions) Positions(ctx context.Context) ([]spotlight.Position, error) {
-	resp, err := e.api.ListExpressionPositionsWithResponse(ctx, &apigen.ListExpressionPositionsParams{})
+// ExpressionPositions lists where expressions are written in a definition.
+func (c *Client) ExpressionPositions(ctx context.Context) ([]Position, error) {
+	resp, err := c.api.ListExpressionPositionsWithResponse(ctx, &apigen.ListExpressionPositionsParams{})
 	if err != nil {
 		return nil, err
 	}
@@ -20,9 +18,9 @@ func (e expressions) Positions(ctx context.Context) ([]spotlight.Position, error
 		return nil, err
 	}
 
-	positions := make([]spotlight.Position, 0, len(held))
+	positions := make([]Position, 0, len(held))
 	for _, each := range held {
-		position := spotlight.Position{Position: each.Position}
+		position := Position{Position: each.Position}
 		if each.Returns != nil {
 			position.Returns = string(*each.Returns)
 		}
@@ -32,30 +30,31 @@ func (e expressions) Positions(ctx context.Context) ([]spotlight.Position, error
 	return positions, nil
 }
 
-func (e expressions) Check(ctx context.Context, position, expression string, definition spotlight.Definition) (spotlight.ExpressionCheck, error) {
-	resp, err := e.api.CheckExpressionWithResponse(ctx, &apigen.CheckExpressionParams{}, apigen.CheckExpressionJSONRequestBody{
+// CheckExpression type-checks an expression where it is written in a definition.
+func (c *Client) CheckExpression(ctx context.Context, position, expression string, definition Definition) (ExpressionCheck, error) {
+	resp, err := c.api.CheckExpressionWithResponse(ctx, &apigen.CheckExpressionParams{}, apigen.CheckExpressionJSONRequestBody{
 		Position:   position,
 		Expression: expression,
 		Definition: definition,
 	})
 	if err != nil {
-		return spotlight.ExpressionCheck{}, err
+		return ExpressionCheck{}, err
 	}
 
 	held, err := answered(resp.HTTPResponse, resp.Body, resp.JSON200)
 	if err != nil {
-		return spotlight.ExpressionCheck{}, err
+		return ExpressionCheck{}, err
 	}
 
-	check := spotlight.ExpressionCheck{}
+	check := ExpressionCheck{}
 	if held.Type != nil {
 		check.Type = *held.Type
 	}
 
 	for _, each := range held.Errors {
-		found := spotlight.ExpressionError{Message: each.Message}
+		found := ExpressionError{Message: each.Message}
 		if each.Span != nil {
-			found.Span = &spotlight.Span{Start: int(each.Span.Start), End: int(each.Span.End)}
+			found.Span = &Span{Start: int(each.Span.Start), End: int(each.Span.End)}
 		}
 		if each.Suggestion != nil {
 			found.Suggestion = *each.Suggestion
@@ -64,7 +63,7 @@ func (e expressions) Check(ctx context.Context, position, expression string, def
 	}
 
 	for _, each := range held.Warnings {
-		check.Warnings = append(check.Warnings, spotlight.ExpressionWarning{Position: each.Position, Message: each.Message})
+		check.Warnings = append(check.Warnings, ExpressionWarning{Position: each.Position, Message: each.Message})
 	}
 
 	return check, nil

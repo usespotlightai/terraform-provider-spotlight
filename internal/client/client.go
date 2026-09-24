@@ -1,5 +1,6 @@
-// Package client adapts the generated Spotlight API client to the
-// provider's port.
+// Package client is the Spotlight control plane's API client: the resources
+// the provider manages, the problems the API answers, and the calls it makes
+// through the client generated from the API's OpenAPI schema.
 package client
 
 import (
@@ -12,7 +13,6 @@ import (
 	"time"
 
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/client/apigen"
-	"github.com/usespotlightai/terraform-provider-spotlight/internal/spotlight"
 )
 
 // APIVersion is the Spotlight API version this client is written against.
@@ -29,7 +29,7 @@ const DefaultBackoff = 500 * time.Millisecond
 
 // Config says where the control plane is and who is calling it.
 type Config struct {
-	Endpoint        string
+	URL             string
 	Token           string
 	ProviderVersion string
 	HTTPClient      *http.Client
@@ -37,15 +37,20 @@ type Config struct {
 	Backoff         time.Duration
 }
 
-// New builds the port onto the control plane at cfg.Endpoint.
-func New(cfg Config) (spotlight.API, error) {
-	base, err := baseURL(cfg.Endpoint)
+// Client calls the control plane.
+type Client struct {
+	api *apigen.ClientWithResponses
+}
+
+// New returns a client for the control plane at cfg.URL.
+func New(cfg Config) (*Client, error) {
+	base, err := baseURL(cfg.URL)
 	if err != nil {
-		return spotlight.API{}, err
+		return nil, err
 	}
 
 	if cfg.Token == "" {
-		return spotlight.API{}, errors.New("a Spotlight API token is needed")
+		return nil, errors.New("a Spotlight API token is needed")
 	}
 
 	httpClient := cfg.HTTPClient
@@ -65,22 +70,10 @@ func New(cfg Config) (spotlight.API, error) {
 		apigen.WithRequestEditorFn(identify(cfg.Token, cfg.ProviderVersion)),
 	)
 	if err != nil {
-		return spotlight.API{}, err
+		return nil, err
 	}
 
-	return spotlight.API{
-		Workspaces:       workspaces{generated},
-		Teams:            teams{generated},
-		Lines:            lines{generated},
-		Skills:           skills{generated},
-		Integrations:     integrations{generated},
-		HarnessProfiles:  harnessProfiles{generated},
-		Secrets:          secrets{generated},
-		Runners:          runners{generated},
-		RunnerTrusts:     runnerTrusts{generated},
-		WorkspaceRunners: workspaceRunners{generated},
-		Expressions:      expressions{generated},
-	}, nil
+	return &Client{api: generated}, nil
 }
 
 // ClientName is what the provider calls itself in Spotlight-Client.
@@ -92,15 +85,15 @@ func ClientName(version string) string {
 	return "terraform-provider/" + version
 }
 
-func baseURL(endpoint string) (string, error) {
-	endpoint = strings.TrimRight(strings.TrimSpace(endpoint), "/")
-	if endpoint == "" {
-		return "", errors.New("no endpoint: set endpoint or SPOTLIGHT_URL to the control plane's URL")
+func baseURL(held string) (string, error) {
+	held = strings.TrimRight(strings.TrimSpace(held), "/")
+	if held == "" {
+		return "", errors.New("no URL: set url or SPOTLIGHT_URL to the control plane's URL")
 	}
 
-	parsed, err := url.Parse(endpoint)
+	parsed, err := url.Parse(held)
 	if err != nil || parsed.Scheme == "" || parsed.Host == "" {
-		return "", fmt.Errorf("the endpoint %q is not a URL, as in https://spotlight.example.com", endpoint)
+		return "", fmt.Errorf("the url %q is not a URL, as in https://spotlight.example.com", held)
 	}
 
 	if !strings.HasSuffix(parsed.Path, "/api") {
