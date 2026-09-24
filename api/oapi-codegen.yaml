@@ -10,50 +10,60 @@ output-options:
     - updateWorkspace
     - deleteWorkspace
     - importWorkspace
+    - listWorkspaces
     - createTeam
     - readTeam
     - updateTeam
     - deleteTeam
     - importTeam
+    - listTeams
     - createLine
     - readLine
     - updateLine
     - deleteLine
     - importLine
+    - listLines
     - createSkill
     - readSkill
     - updateSkill
     - deleteSkill
     - importSkill
+    - listSkills
     - createIntegration
     - readIntegration
     - updateIntegration
     - deleteIntegration
     - importIntegration
+    - listIntegrations
     - createSecret
     - readSecret
     - updateSecret
     - deleteSecret
     - importSecret
+    - listSecrets
     - createRunner
     - readRunner
     - updateRunner
     - deleteRunner
     - importRunner
+    - listRunners
     - createRunnerTrust
     - readRunnerTrust
     - updateRunnerTrust
     - deleteRunnerTrust
     - importRunnerTrust
+    - listRunnerTrusts
     - createWorkspaceRunners
     - readWorkspaceRunners
     - updateWorkspaceRunners
     - deleteWorkspaceRunners
     - importWorkspaceRunners
+    - listWorkspaceRunners
     - createHarnessProfile
     - readHarnessProfile
     - updateHarnessProfile
     - deleteHarnessProfile
     - importHarnessProfile
+    - listHarnessProfiles
     - checkExpression
     - listExpressionPositions

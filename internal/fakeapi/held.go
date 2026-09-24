@@ -58,7 +58,7 @@ func onceEach(held []any, at string, wrong func(string) string, errs *[]fieldErr
 	out := make([]any, 0, len(held))
 
 	for index, each := range held {
-		text := strings.TrimSpace(each.(string))
+		text := strings.TrimSpace(textOf(each))
 		if why := wrong(text); why != "" {
 			*errs = append(*errs, fieldError{fmt.Sprintf("%s[%d]", at, index), why})
 		}
@@ -170,7 +170,7 @@ func written(kind string, held *resource, fields, body map[string]any) (string, 
 
 func secretValue(held *resource, fields, body map[string]any) (string, []fieldError) {
 	value, given := body["valueWo"].(string)
-	builtIn := fields["source"].(map[string]any)["kind"] == "built-in"
+	builtIn := objectOf(fields["source"])["kind"] == "built-in"
 
 	switch {
 	case !builtIn && given:
@@ -181,7 +181,7 @@ func secretValue(held *resource, fields, body map[string]any) (string, []fieldEr
 	}
 
 	needed := held == nil ||
-		held.fields["source"].(map[string]any)["kind"] != "built-in" ||
+		objectOf(held.fields["source"])["kind"] != "built-in" ||
 		held.fields["valueWoVersion"] != fields["valueWoVersion"]
 
 	if needed && !given {
@@ -301,9 +301,9 @@ func (s *Server) driftOf(declared *resource) ([]any, []any) {
 
 		switch each.kind {
 		case "runner-trust":
-			known[each.fields["key"].(string)] = true
+			known[textOf(each.fields["key"])] = true
 		case "runner":
-			name := each.fields["name"].(string)
+			name := textOf(each.fields["name"])
 			enrolled[name] = true
 			trust, _ := each.fields["trust"].(string)
 			if !slices.Contains(runners, name) && (trust == "" || !slices.Contains(trusts, trust)) {
@@ -324,7 +324,7 @@ func (s *Server) driftOf(declared *resource) ([]any, []any) {
 		}
 	}
 
-	slices.SortFunc(drift, func(a, b any) int { return strings.Compare(a.(string), b.(string)) })
+	slices.SortFunc(drift, func(a, b any) int { return strings.Compare(textOf(a), textOf(b)) })
 	for _, name := range drift {
 		warnings = append(warnings, warned("runners", fmt.Sprintf("leaves out %s, which is enrolled all the same; add it here or delete it", name)))
 	}
@@ -339,7 +339,7 @@ func warned(path, message string) map[string]any {
 func stringsOf(held any) []string {
 	out := []string{}
 	for _, each := range texts(held) {
-		out = append(out, each.(string))
+		out = append(out, textOf(each))
 	}
 
 	return out
@@ -360,7 +360,7 @@ func harnessProfile(body map[string]any) (map[string]any, []fieldError) {
 	for _, decision := range []string{"allow", "ask", "deny"} {
 		listed := []any{}
 		for at, each := range texts(given[decision]) {
-			written, ok := permissionRule(each.(string))
+			written, ok := permissionRule(textOf(each))
 			path := fmt.Sprintf("permissions.%s[%d]", decision, at)
 			if !ok {
 				errs = append(errs, fieldError{path, "names what the harness may do as read, edit, execute, alone or with a pattern, as in execute(npm test *) or read(.env)"})
@@ -382,7 +382,7 @@ func harnessProfile(body map[string]any) (map[string]any, []fieldError) {
 	servers := make([]any, 0, len(listed))
 	names := map[string]bool{}
 	for index, each := range listed {
-		server := maps.Clone(each.(map[string]any))
+		server := maps.Clone(objectOf(each))
 		at := fmt.Sprintf("mcpServers[%d]", index)
 		name, _ := server["name"].(string)
 		name = strings.TrimSpace(name)
@@ -398,7 +398,7 @@ func harnessProfile(body map[string]any) (map[string]any, []fieldError) {
 			errs = append(errs, fieldError{at + ".command", "starts an MCP server with a command, as in npx"})
 		}
 		orDefault(server, "env", map[string]any{})
-		for variable := range server["env"].(map[string]any) {
+		for variable := range objectOf(server["env"]) {
 			if !envName.MatchString(variable) {
 				errs = append(errs, fieldError{keyed(at+".env", variable), "names an environment variable in letters, digits and underscores"})
 			}

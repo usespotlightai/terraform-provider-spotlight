@@ -1,0 +1,245 @@
+package client
+
+// Definition is a resource's definition as the API writes and reads it,
+// with camelCase field names.
+type Definition = map[string]any
+
+// FieldError names an attribute of a request and what is wrong with it.
+type FieldError struct {
+	Path     string
+	Message  string
+	Severity string
+}
+
+// Meta is what every resource carries besides its own fields.
+type Meta struct {
+	ID       string
+	Version  int64
+	Address  string
+	Warnings []FieldError
+}
+
+// Workspace is a workspace resource.
+type Workspace struct {
+	Meta
+	Name string
+	Slug string
+}
+
+// WorkspaceInput is what a workspace is written from.
+type WorkspaceInput struct {
+	Name string `json:"name"`
+	Slug string `json:"slug"`
+}
+
+// Team is a team resource.
+type Team struct {
+	Meta
+	WorkspaceID string
+	Key         string
+	Name        string
+}
+
+// TeamInput is what a team is written from.
+type TeamInput struct {
+	Key  string `json:"key"`
+	Name string `json:"name"`
+}
+
+// Line is a line resource.
+type Line struct {
+	Meta
+	TeamID     string
+	Key        string
+	Definition Definition
+}
+
+// Skill is a skill resource.
+type Skill struct {
+	Meta
+	TeamID      string
+	Key         string
+	Files       map[string]string
+	Description string
+	Secrets     []SkillSecret
+	Tools       []string
+}
+
+// SkillSecret is a secret a skill's SKILL.md asks for.
+type SkillSecret struct {
+	Name        string
+	Description string
+}
+
+// SkillInput is what a skill is written from.
+type SkillInput struct {
+	Key   string            `json:"key"`
+	Files map[string]string `json:"files"`
+}
+
+// Integration is an integration resource.
+type Integration struct {
+	Meta
+	TeamID     string
+	Source     string
+	Definition Definition
+}
+
+// Secret is a secret resource. Its value is written, never read back.
+type Secret struct {
+	Meta
+	WorkspaceID  string
+	Name         string
+	Source       SecretSource
+	Bindings     []SecretBinding
+	ValueVersion *int64
+	RotatedAt    string
+}
+
+// SecretSource says where a secret's value lives: kept by Spotlight, or
+// read from AWS Secrets Manager whenever it is used.
+type SecretSource struct {
+	Kind     string `json:"kind"`
+	SecretID string `json:"secretId,omitempty"`
+	Field    string `json:"field,omitempty"`
+}
+
+// The places a secret's value lives.
+const (
+	SourceBuiltIn           = "built-in"
+	SourceAWSSecretsManager = "aws-secrets-manager"
+)
+
+// SecretBinding is a host a secret may be sent to, and how it is worn there.
+type SecretBinding struct {
+	Host   string `json:"host"`
+	Header string `json:"header"`
+	Prefix string `json:"prefix"`
+}
+
+// SecretInput is what a secret is written from. Value is sent only when
+// Spotlight is to keep it, or keep a new one.
+type SecretInput struct {
+	Name         string          `json:"name"`
+	Source       SecretSource    `json:"source"`
+	Bindings     []SecretBinding `json:"bindings"`
+	Value        *string         `json:"valueWo,omitempty"`
+	ValueVersion *int64          `json:"valueWoVersion,omitempty"`
+}
+
+// Runner is a runner resource. IssuedToken reports that Spotlight issued it
+// a token when it was created; the token itself is never held, since
+// Terraform keeps no secret.
+type Runner struct {
+	Meta
+	WorkspaceID string
+	Name        string
+	Labels      []string
+	Trust       string
+	IssuedToken bool
+}
+
+// RunnerInput is what a runner is written from. Token is sent only when the
+// runner is to call with it from now on.
+type RunnerInput struct {
+	Name   string   `json:"name"`
+	Labels []string `json:"labels"`
+	Token  string   `json:"token,omitempty"`
+}
+
+// RunnerTrust is a workload whose platform-issued tokens enrol runners.
+type RunnerTrust struct {
+	Meta
+	WorkspaceID string
+	RunnerTrustInput
+}
+
+// RunnerTrustInput is what a runner trust is written from.
+type RunnerTrustInput struct {
+	Key      string   `json:"key"`
+	Issuer   string   `json:"issuer"`
+	Subject  string   `json:"subject"`
+	Audience string   `json:"audience"`
+	Labels   []string `json:"labels"`
+}
+
+// WorkspaceRunners is a workspace's one declaration of the runners it means
+// to have. Drift names the runners enrolled all the same.
+type WorkspaceRunners struct {
+	Meta
+	WorkspaceID string
+	WorkspaceRunnersInput
+	Drift []string
+}
+
+// WorkspaceRunnersInput is what the declaration is written from.
+type WorkspaceRunnersInput struct {
+	Runners []string `json:"runners"`
+	Trusts  []string `json:"trusts"`
+}
+
+// HarnessProfile is a team's settings, told to every harness in its own
+// terms.
+type HarnessProfile struct {
+	Meta
+	TeamID string
+	HarnessProfileInput
+}
+
+// HarnessProfileInput is what a harness profile is written from.
+type HarnessProfileInput struct {
+	Key         string         `json:"key"`
+	Permissions Permissions    `json:"permissions"`
+	MCPServers  []MCPServer    `json:"mcpServers"`
+	Native      map[string]any `json:"native"`
+}
+
+// Permissions are what a harness may do, what it asks a person about
+// first, and what it may never do.
+type Permissions struct {
+	Allow []string `json:"allow"`
+	Ask   []string `json:"ask"`
+	Deny  []string `json:"deny"`
+}
+
+// MCPServer is a stdio MCP server handed to each harness.
+type MCPServer struct {
+	Name    string            `json:"name"`
+	Command string            `json:"command"`
+	Args    []string          `json:"args"`
+	Env     map[string]string `json:"env"`
+}
+
+// Position is a pattern naming where an expression is written, with [*]
+// for any index or key.
+type Position struct {
+	Position string
+	Returns  string
+}
+
+// ExpressionError is something wrong with an expression.
+type ExpressionError struct {
+	Message    string
+	Span       *Span
+	Suggestion string
+}
+
+// Span is a part of an expression, in characters, end exclusive.
+type Span struct {
+	Start int
+	End   int
+}
+
+// ExpressionWarning is something the definition does that an expression may
+// not expect.
+type ExpressionWarning struct {
+	Position string
+	Message  string
+}
+
+// ExpressionCheck is the verdict on one expression.
+type ExpressionCheck struct {
+	Type     string
+	Errors   []ExpressionError
+	Warnings []ExpressionWarning
+}

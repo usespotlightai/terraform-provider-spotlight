@@ -18,10 +18,10 @@ func placed(held map[string]any, field, at string, errs *[]fieldError) {
 
 	seen := map[string]bool{}
 	for _, each := range selectors {
-		if seen[each.(string)] {
+		if seen[textOf(each)] {
 			*errs = append(*errs, fieldError{at, fmt.Sprintf("name %s only once", each)})
 		}
-		seen[each.(string)] = true
+		seen[textOf(each)] = true
 	}
 
 	held[field] = selectors
@@ -128,9 +128,9 @@ func line(body map[string]any) (map[string]any, []fieldError) {
 
 	stations := make([]any, 0, len(listed))
 	for at, each := range listed {
-		station := maps.Clone(each.(map[string]any))
+		station := maps.Clone(objectOf(each))
 		orDefault(station, "kind", "work")
-		orDefault(station, "color", colors[station["kind"].(string)])
+		orDefault(station, "color", colors[textOf(station["kind"])])
 		orDefault(station, "diffs", false)
 		orDefault(station, "decisions", false)
 		orDefault(station, "tools", []any{})
@@ -140,9 +140,9 @@ func line(body map[string]any) (map[string]any, []fieldError) {
 
 		for _, next := range texts(station["passesTo"]) {
 			switch {
-			case !keys[next.(string)]:
+			case !keys[textOf(next)]:
 				errs = append(errs, fieldError{fmt.Sprintf("stations[%d].passesTo", at), fmt.Sprintf("names %s, which is not a station on this line", next)})
-			case !worked[next.(string)]:
+			case !worked[textOf(next)]:
 				errs = append(errs, fieldError{fmt.Sprintf("stations[%d].passesTo", at), fmt.Sprintf("must hand on to a station work is done at, but %s is not one", next)})
 			}
 		}
@@ -157,7 +157,7 @@ func line(body map[string]any) (map[string]any, []fieldError) {
 	}
 	definition["stations"] = stations
 
-	for at, each := range definition["reactions"].([]any) {
+	for at, each := range listOf(definition["reactions"]) {
 		reaction, _ := each.(map[string]any)
 		if to, _ := reaction["to"].(string); !keys[to] {
 			errs = append(errs, fieldError{fmt.Sprintf("reactions[%d].to", at), fmt.Sprintf("names %s, which is not a station on this line", to)})
@@ -174,13 +174,13 @@ func line(body map[string]any) (map[string]any, []fieldError) {
 		orDefault(reviews, "mention", "@spotlight")
 		orDefault(reviews, "skip", map[string]any{})
 
-		skip := maps.Clone(reviews["skip"].(map[string]any))
+		skip := maps.Clone(objectOf(reviews["skip"]))
 		orDefault(skip, "spotlight", true)
 		orDefault(skip, "drafts", true)
 
 		authors := []string{}
 		for _, each := range texts(skip["authors"]) {
-			authors = append(authors, strings.ToLower(each.(string)))
+			authors = append(authors, strings.ToLower(textOf(each)))
 		}
 		slices.Sort(authors)
 		skip["authors"] = slices.Compact(authors)
@@ -233,7 +233,7 @@ func integration(body map[string]any) (map[string]any, []fieldError) {
 	if actions, ok := definition["actions"].(map[string]any); ok {
 		filled := map[string]any{}
 		for name, each := range actions {
-			action := maps.Clone(each.(map[string]any))
+			action := maps.Clone(objectOf(each))
 			if request, ok := action["request"].(map[string]any); ok {
 				request = maps.Clone(request)
 				orDefault(request, "method", "POST")
@@ -246,4 +246,22 @@ func integration(body map[string]any) (map[string]any, []fieldError) {
 	}
 
 	return map[string]any{"source": source, "definition": definition}, nil
+}
+
+func textOf(held any) string {
+	text, _ := held.(string)
+
+	return text
+}
+
+func objectOf(held any) map[string]any {
+	object, _ := held.(map[string]any)
+
+	return object
+}
+
+func listOf(held any) []any {
+	listed, _ := held.([]any)
+
+	return listed
 }

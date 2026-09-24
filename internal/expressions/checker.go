@@ -15,9 +15,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
+	"github.com/usespotlightai/terraform-provider-spotlight/internal/client"
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/dynamic"
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/fieldpath"
-	"github.com/usespotlightai/terraform-provider-spotlight/internal/spotlight"
 )
 
 const resource = "integration"
@@ -25,16 +25,22 @@ const resource = "integration"
 // Attribute is the Terraform attribute an integration's definition is held in.
 const Attribute = "definition"
 
+// API is the part of the control plane that checks expressions.
+type API interface {
+	ExpressionPositions(ctx context.Context) ([]client.Position, error)
+	CheckExpression(ctx context.Context, position, expression string, definition client.Definition) (client.ExpressionCheck, error)
+}
+
 // Checker checks the expressions in integration definitions, remembering
 // the positions expressions are written at once it has read them.
 type Checker struct {
-	api       spotlight.Expressions
+	api       API
 	mu        sync.Mutex
 	positions []fieldpath.Path
 }
 
 // NewChecker returns a Checker that asks api.
-func NewChecker(api spotlight.Expressions) *Checker {
+func NewChecker(api API) *Checker {
 	return &Checker{api: api}
 }
 
@@ -69,7 +75,7 @@ func (c *Checker) Check(ctx context.Context, definition types.Dynamic) diag.Diag
 
 	for _, written := range writtenIn(definition.UnderlyingValue(), positions) {
 		for _, expression := range written.expressions {
-			check, err := c.api.Check(ctx, resource+"."+written.at.String(), expression, document)
+			check, err := c.api.CheckExpression(ctx, resource+"."+written.at.String(), expression, document)
 			if err != nil {
 				stop := c.refused(ctx, err, complete, written, &diags)
 				if stop {
@@ -101,20 +107,20 @@ func (c *Checker) Check(ctx context.Context, definition types.Dynamic) diag.Diag
 }
 
 func (c *Checker) refused(ctx context.Context, err error, complete bool, written written, diags *diag.Diagnostics) bool {
-	if spotlight.IsForbidden(err) {
+	if client.IsForbidden(err) {
 		diags.AddWarning("Expressions were not checked", "The API token's scope does not allow checking expressions. Checking is planning, which needs the plan scope or above; the apply checks them instead.")
 
 		return true
 	}
 
-	problem, ok := spotlight.ProblemOf(err)
-	if !ok || problem.Type != spotlight.ProblemInvalid {
+	problem, ok := client.ProblemOf(err)
+	if !ok || problem.Type != client.ProblemInvalid {
 		diags.AddWarning("Expressions were not checked", fmt.Sprintf("Spotlight could not check the expressions in this definition: %s", err))
 
 		return true
 	}
 
-	var aboutDefinition []spotlight.FieldError
+	var aboutDefinition []client.FieldError
 	for _, each := range problem.Errors {
 		if parsed, err := fieldpath.Parse(each.Path); err == nil && len(parsed) > 0 && parsed[0].Key == Attribute {
 			aboutDefinition = append(aboutDefinition, each)
@@ -157,7 +163,7 @@ func (c *Checker) known(ctx context.Context) ([]fieldpath.Path, error) {
 		return c.positions, nil
 	}
 
-	listed, err := c.api.Positions(ctx)
+	listed, err := c.api.ExpressionPositions(ctx)
 	if err != nil {
 		return nil, err
 	}
