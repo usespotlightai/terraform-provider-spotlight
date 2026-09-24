@@ -5,8 +5,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/resourcekit"
@@ -43,19 +41,11 @@ func New() resource.Resource {
 var schemaOf = schema.Schema{
 	MarkdownDescription: "A team in a Spotlight workspace, holding its lines, skills and integrations. Import it as `<workspace id>/<key>`.",
 	Attributes: map[string]schema.Attribute{
-		"id":      resourcekit.IDAttribute(kind),
-		"version": resourcekit.VersionAttribute(kind),
-		"address": resourcekit.AddressAttribute("core"),
-		"workspace_id": schema.StringAttribute{
-			Required:            true,
-			MarkdownDescription: "The workspace the team belongs to. Changing it replaces the team.",
-			PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
-		},
-		"key": schema.StringAttribute{
-			Required:            true,
-			MarkdownDescription: "Names the team in the addresses of everything it holds. It is fixed for the team's life, so changing it replaces the team.",
-			PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
-		},
+		"id":           resourcekit.IDAttribute(kind),
+		"version":      resourcekit.VersionAttribute(kind),
+		"address":      resourcekit.AddressAttribute("core"),
+		"workspace_id": resourcekit.OwnerAttribute("workspace", kind),
+		"key":          resourcekit.FixedAttribute("Names the team in the addresses of everything it holds.", kind),
 		"name": schema.StringAttribute{
 			Required:            true,
 			MarkdownDescription: "What the team is called.",

@@ -1,37 +1,15 @@
 package line
 
 import (
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/resourcekit"
 )
 
-var (
-	noStrings    = types.ListValueMust(types.StringType, []attr.Value{})
-	noStringSet  = types.SetValueMust(types.StringType, []attr.Value{})
-	fixedForLife = []planmodifier.String{stringplanmodifier.RequiresReplace()}
-)
-
 func optional(description string) schema.StringAttribute {
 	return schema.StringAttribute{Optional: true, MarkdownDescription: description}
-}
-
-func stringList(description string) schema.ListAttribute {
-	return schema.ListAttribute{
-		Optional:            true,
-		Computed:            true,
-		ElementType:         types.StringType,
-		Default:             listdefault.StaticValue(noStrings),
-		MarkdownDescription: description,
-	}
 }
 
 func flag(description string, fallback bool) schema.BoolAttribute {
@@ -53,28 +31,15 @@ var schemaOf = schema.Schema{
 		"id":      resourcekit.IDAttribute(kind),
 		"version": resourcekit.VersionAttribute(kind),
 		"address": resourcekit.AddressAttribute("core/delivery"),
-		"team_id": schema.StringAttribute{
-			Required:            true,
-			MarkdownDescription: "The team the line belongs to. Changing it replaces the line.",
-			PlanModifiers:       fixedForLife,
-		},
-		"key": schema.StringAttribute{
-			Required:            true,
-			MarkdownDescription: "Names the line within its team. It is fixed for the line's life, so changing it replaces the line.",
-			PlanModifiers:       fixedForLife,
-		},
+		"team_id": resourcekit.OwnerAttribute("team", kind),
+		"key":     resourcekit.FixedAttribute("Names the line within its team.", kind),
 		"name": schema.StringAttribute{
 			Required:            true,
 			MarkdownDescription: "What the line is called.",
 		},
-		"role": optional("The role the line plays for its team, as in `delivery` or `review`. A role names one line."),
-		"repositories": schema.SetAttribute{
-			Optional:            true,
-			Computed:            true,
-			ElementType:         types.StringType,
-			Default:             setdefault.StaticValue(noStringSet),
-			MarkdownDescription: "The repositories the line works on, each named `owner/name`.",
-		},
+		"role":         optional("The role the line plays for its team, as in `delivery` or `review`. A role names one line."),
+		"repositories": resourcekit.StringSetAttribute("The repositories the line works on, each named `owner/name`."),
+		"runners":      resourcekit.StringSetAttribute("Where the line's work runs: runner names or labels, any of which a runner must answer to. A station's own `runners` narrow it further. Anywhere when left out."),
 	},
 	Blocks: map[string]schema.Block{
 		"station": schema.ListNestedBlock{
@@ -100,25 +65,22 @@ var schemaOf = schema.Schema{
 						Computed:            true,
 						MarkdownDescription: "A six digit hex colour, as in `#6d78d5`. Spotlight picks one when it is left out.",
 					},
-					"description": optional("What the station is for."),
-					"harness":     optional("The agent harness that works tasks here, as in `claude-code`."),
-					"model":       optional("The model the harness uses."),
-					"effort":      optional("How hard the agent thinks: `low`, `medium`, `high`, `xhigh` or `max`."),
-					"prompt":      optional("What the agent is asked to do, usually read with `file()`."),
-					"check":       optional("A command that must pass before a task moves on, as in `npm test`."),
-					"setup":       optional("A command that prepares the workspace before the agent starts."),
-					"diffs":       derived("Whether the station's runs draft a change stack from their diff."),
-					"decisions":   derived("Whether the station records the agent's decisions for review."),
-					"tools":       stringList("The tools the station gives its agent, as in `linear.comment`."),
-					"skills":      stringList("The skills the station gives its agent, by key."),
-					"passes_to": schema.SetAttribute{
-						Optional:            true,
-						Computed:            true,
-						ElementType:         types.StringType,
-						Default:             setdefault.StaticValue(noStringSet),
-						MarkdownDescription: "The stations a task here may move on to, by key.",
-					},
-					"ends": flag("Whether a task that reaches the station is finished.", false),
+					"description":     optional("What the station is for."),
+					"harness":         optional("The agent harness that works tasks here, as in `claude-code`."),
+					"model":           optional("The model the harness uses."),
+					"effort":          optional("How hard the agent thinks: `low`, `medium`, `high`, `xhigh` or `max`."),
+					"profile":         optional("The harness profile the station's agent runs with, by key, as in `careful`."),
+					"harness_version": optional("The release of the harness CLI the station's work pins, as in `2.1.270`; only a runner reporting it claims the work."),
+					"prompt":          optional("What the agent is asked to do, usually read with `file()`."),
+					"check":           optional("A command that must pass before a task moves on, as in `npm test`."),
+					"setup":           optional("A command that prepares the workspace before the agent starts."),
+					"diffs":           derived("Whether the station's runs draft a change stack from their diff."),
+					"decisions":       derived("Whether the station records the agent's decisions for review."),
+					"tools":           resourcekit.StringListAttribute("The tools the station gives its agent, as in `linear.comment`."),
+					"skills":          resourcekit.StringListAttribute("The skills the station gives its agent, by key."),
+					"runners":         resourcekit.StringSetAttribute("Where the station's work runs, beside the line's `runners`: runner names or labels, any of which a runner must answer to."),
+					"passes_to":       resourcekit.StringSetAttribute("The stations a task here may move on to, by key."),
+					"ends":            flag("Whether a task that reaches the station is finished.", false),
 				},
 			},
 		},
@@ -160,7 +122,7 @@ var schemaOf = schema.Schema{
 					Attributes: map[string]schema.Attribute{
 						"spotlight": flag("Skip pull requests Spotlight opened.", true),
 						"drafts":    flag("Skip draft pull requests.", true),
-						"authors":   stringList("Skip pull requests by these GitHub logins, as in `dependabot[bot]`."),
+						"authors":   resourcekit.StringSetAttribute("Skip pull requests by these GitHub logins, in lower case, as in `dependabot[bot]`. Spotlight keeps them sorted and each once, so they are a set."),
 					},
 				},
 			},

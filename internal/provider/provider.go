@@ -16,11 +16,16 @@ import (
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/client"
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/expressions"
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/resourcekit"
+	"github.com/usespotlightai/terraform-provider-spotlight/internal/resources/harnessprofile"
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/resources/integration"
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/resources/line"
+	"github.com/usespotlightai/terraform-provider-spotlight/internal/resources/runner"
+	"github.com/usespotlightai/terraform-provider-spotlight/internal/resources/runnertrust"
+	"github.com/usespotlightai/terraform-provider-spotlight/internal/resources/secret"
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/resources/skill"
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/resources/team"
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/resources/workspace"
+	"github.com/usespotlightai/terraform-provider-spotlight/internal/resources/workspacerunners"
 )
 
 // Environment variables the provider reads its configuration from.
@@ -61,7 +66,8 @@ func (p *Provider) Metadata(_ context.Context, _ provider.MetadataRequest, resp 
 // Schema answers the provider block's schema.
 func (p *Provider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Configure a Spotlight workspace as code: its teams, lines, skills and integrations.",
+		MarkdownDescription: "Configure a Spotlight workspace as code: its teams, lines, skills, integrations and harness profiles, its secrets, and its runners. " +
+			"One API token granted the `configure`, `secrets` and `runners` scopes manages all of it.",
 		Attributes: map[string]schema.Attribute{
 			"endpoint": schema.StringAttribute{
 				Optional:            true,
@@ -70,7 +76,7 @@ func (p *Provider) Schema(_ context.Context, _ provider.SchemaRequest, resp *pro
 			"token": schema.StringAttribute{
 				Optional:            true,
 				Sensitive:           true,
-				MarkdownDescription: "A Spotlight API token, starting `spt_`. Defaults to `" + TokenEnv + "`.",
+				MarkdownDescription: "A Spotlight API token. Defaults to `" + TokenEnv + "`.",
 			},
 		},
 	}
@@ -134,6 +140,11 @@ func (p *Provider) Resources(_ context.Context) []func() resource.Resource {
 		line.New,
 		skill.New,
 		integration.New,
+		harnessprofile.New,
+		secret.New,
+		runner.New,
+		runnertrust.New,
+		workspacerunners.New,
 	}
 }
 

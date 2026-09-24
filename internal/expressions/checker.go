@@ -101,6 +101,12 @@ func (c *Checker) Check(ctx context.Context, definition types.Dynamic) diag.Diag
 }
 
 func (c *Checker) refused(ctx context.Context, err error, complete bool, written written, diags *diag.Diagnostics) bool {
+	if spotlight.IsForbidden(err) {
+		diags.AddWarning("Expressions were not checked", "The API token's scope does not allow checking expressions. Checking is planning, which needs the plan scope or above; the apply checks them instead.")
+
+		return true
+	}
+
 	problem, ok := spotlight.ProblemOf(err)
 	if !ok || problem.Type != spotlight.ProblemInvalid {
 		diags.AddWarning("Expressions were not checked", fmt.Sprintf("Spotlight could not check the expressions in this definition: %s", err))

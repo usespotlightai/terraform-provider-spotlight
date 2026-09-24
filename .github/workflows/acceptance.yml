@@ -1,9 +1,12 @@
 name: Acceptance
 
-# Runs the TF_ACC tests against a dev control plane. Each run creates a
-# disposable workspace (tf-acc-<random>) and destroys it at the end.
-#   SPOTLIGHT_ACC_URL    the dev control plane, as in https://dev.spotlight.example.com
-#   SPOTLIGHT_ACC_TOKEN  an spt_ API token for a user there who may create workspaces
+# Runs the TF_ACC tests against a dev control plane, inside the token's own
+# workspace. Each run imports the workspace, creates every kind of resource
+# under random keys, round-trips an export, destroys what it created, and
+# leaves the workspace as it found it.
+#   SPOTLIGHT_ACC_URL        the dev control plane, as in https://dev.spotlight.example.com
+#   SPOTLIGHT_ACC_TOKEN      a workspace API token there with configure, secrets and runners
+#   SPOTLIGHT_ACC_WORKSPACE  the slug of that token's workspace
 
 on:
   workflow_dispatch:
@@ -27,20 +30,21 @@ jobs:
       TF_ACC: "1"
       SPOTLIGHT_URL: ${{ secrets.SPOTLIGHT_ACC_URL }}
       SPOTLIGHT_API_TOKEN: ${{ secrets.SPOTLIGHT_ACC_TOKEN }}
+      SPOTLIGHT_ACC_WORKSPACE: ${{ secrets.SPOTLIGHT_ACC_WORKSPACE }}
     steps:
       - name: Skip without a dev control plane
-        if: env.SPOTLIGHT_URL == '' || env.SPOTLIGHT_API_TOKEN == ''
-        run: echo "::notice::SPOTLIGHT_ACC_URL and SPOTLIGHT_ACC_TOKEN are not set; acceptance tests skipped."
+        if: env.SPOTLIGHT_URL == '' || env.SPOTLIGHT_API_TOKEN == '' || env.SPOTLIGHT_ACC_WORKSPACE == ''
+        run: echo "::notice::SPOTLIGHT_ACC_URL, SPOTLIGHT_ACC_TOKEN and SPOTLIGHT_ACC_WORKSPACE are not all set; acceptance tests skipped."
       - uses: actions/checkout@v4
-        if: env.SPOTLIGHT_URL != '' && env.SPOTLIGHT_API_TOKEN != ''
+        if: env.SPOTLIGHT_URL != '' && env.SPOTLIGHT_API_TOKEN != '' && env.SPOTLIGHT_ACC_WORKSPACE != ''
       - uses: actions/setup-go@v5
-        if: env.SPOTLIGHT_URL != '' && env.SPOTLIGHT_API_TOKEN != ''
+        if: env.SPOTLIGHT_URL != '' && env.SPOTLIGHT_API_TOKEN != '' && env.SPOTLIGHT_ACC_WORKSPACE != ''
         with:
           go-version-file: go.mod
       - uses: hashicorp/setup-terraform@v3
-        if: env.SPOTLIGHT_URL != '' && env.SPOTLIGHT_API_TOKEN != ''
+        if: env.SPOTLIGHT_URL != '' && env.SPOTLIGHT_API_TOKEN != '' && env.SPOTLIGHT_ACC_WORKSPACE != ''
         with:
           terraform_wrapper: false
       - name: Acceptance tests
-        if: env.SPOTLIGHT_URL != '' && env.SPOTLIGHT_API_TOKEN != ''
+        if: env.SPOTLIGHT_URL != '' && env.SPOTLIGHT_API_TOKEN != '' && env.SPOTLIGHT_ACC_WORKSPACE != ''
         run: make testacc

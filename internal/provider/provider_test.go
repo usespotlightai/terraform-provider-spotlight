@@ -72,17 +72,17 @@ provider "spotlight" {
 	})
 }
 
-func TestTheProviderRefusesATokenThatIsNotSpotlights(t *testing.T) {
+func TestTheProviderReportsATokenTheControlPlaneRefuses(t *testing.T) {
 	fake := fakeapi.New(t)
 	t.Setenv(provider.EndpointEnv, fake.URL)
-	t.Setenv(provider.TokenEnv, "ghp_not_ours")
+	t.Setenv(provider.TokenEnv, "not-a-token-it-knows")
 
 	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: factories(),
 		Steps: []resource.TestStep{
 			{
 				Config:      workspace,
-				ExpectError: regexp.MustCompile(`not a Spotlight API token`),
+				ExpectError: regexp.MustCompile(`Send a Spotlight API token as a bearer token`),
 			},
 		},
 	})

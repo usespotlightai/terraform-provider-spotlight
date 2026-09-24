@@ -30,5 +30,30 @@ output-options:
     - updateIntegration
     - deleteIntegration
     - importIntegration
+    - createSecret
+    - readSecret
+    - updateSecret
+    - deleteSecret
+    - importSecret
+    - createRunner
+    - readRunner
+    - updateRunner
+    - deleteRunner
+    - importRunner
+    - createRunnerTrust
+    - readRunnerTrust
+    - updateRunnerTrust
+    - deleteRunnerTrust
+    - importRunnerTrust
+    - createWorkspaceRunners
+    - readWorkspaceRunners
+    - updateWorkspaceRunners
+    - deleteWorkspaceRunners
+    - importWorkspaceRunners
+    - createHarnessProfile
+    - readHarnessProfile
+    - updateHarnessProfile
+    - deleteHarnessProfile
+    - importHarnessProfile
     - checkExpression
     - listExpressionPositions

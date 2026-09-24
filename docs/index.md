@@ -1,33 +1,61 @@
 ---
 page_title: "Spotlight Provider"
 description: |-
-  Configure a Spotlight workspace as code: its teams, lines, skills and integrations.
+  Configure a Spotlight workspace as code: its teams, lines, skills, integrations and harness profiles, its secrets, and its runners.
 ---
 
 # Spotlight Provider
 
-Configure a [Spotlight](https://github.com/usespotlightai) workspace as code: its teams, the lines their tasks move along, the skills their agents are given, and the integrations that connect them to other tools.
+Configure a [Spotlight](https://github.com/usespotlightai) workspace as code: its teams, the lines their tasks move along, the skills and harness profiles their agents are given, the integrations that connect them to other tools, the secrets those integrations wear, and the runners the work runs on.
 
 `spotlight export` writes a workspace you already have as configuration for this provider, with an `import` block for each resource, so a first `terraform apply` adopts what is there and plans no change.
 
 ## Authentication
 
-The provider calls the Spotlight control plane with an API token, sent as `Authorization: Bearer spt_...`. Create one in the web app and give it to the provider through the environment:
+The provider calls the Spotlight control plane with an API token, sent as `Authorization: Bearer <token>`. Create one in the web app and give it to the provider through the environment:
 
 ```shell
 export SPOTLIGHT_URL=https://spotlight.example.com
-export SPOTLIGHT_API_TOKEN=spt_...
+export SPOTLIGHT_API_TOKEN=<token>
 ```
 
 or through the provider block, as below. Keep the token out of version control.
+
+A token acts only inside the workspace it was created in, and only as its scopes allow. `read`, `plan` and `configure` are a ladder, each allowing what the one before it does: `read` refreshes and imports, `plan` also checks expressions, and `configure` also creates, updates and deletes configuration. Two grants go beside them:
+
+| Scope | Lets the token write |
+| --- | --- |
+| `configure` | the workspace, teams, lines, skills, integrations and harness profiles |
+| `secrets` | `spotlight_secret` |
+| `runners` | `spotlight_runner`, `spotlight_runner_trust` and `spotlight_workspace_runners` |
+
+**One token granted `configure`, `secrets` and `runners` manages everything this provider can.** A write the token's scopes do not allow is refused with `403`, and the provider's diagnostic names the scope the token lacks.
+
+## Workspaces are adopted, not created
+
+A workspace is created by a person signing up in the web app. Terraform adopts it with an `import` block that names its slug, then manages everything inside it:
+
+```terraform
+import {
+  to = spotlight_workspace.acme
+  id = "acme"
+}
+
+resource "spotlight_workspace" "acme" {
+  name = "Acme"
+  slug = "acme"
+}
+```
+
+A token may not open a workspace, so creating a `spotlight_workspace` with one fails and says to import it instead.
 
 ## Plans check expressions
 
 Integrations hold CEL expressions, written `$${{ ... }}` in HCL so Terraform leaves them alone. `terraform plan` sends each one to the control plane to be type-checked where it is written, so a misspelt field fails the plan with the attribute that holds it named, rather than failing the apply.
 
-## Secrets
+## Values Terraform never keeps
 
-Secret values will be written with write-only attributes (`value_wo`), which need Terraform 1.11 or later and never enter the plan or the state.
+A secret's value (`value_wo`) and a runner's token (`token`) are write-only attributes: they are sent to Spotlight and never stored in the plan or the state, so they need Terraform 1.11 or later. Terraform cannot see a change to a value it never keeps, so each has a version beside it (`value_wo_version`, `token_version`): change it to send the value again. A runner created without a token is issued one by Spotlight, answered only once; the provider does not keep it, and warns that no runner can call with it until it is given a token you hold.
 
 ## Example Usage
 
@@ -58,4 +86,4 @@ variable "spotlight_token" {
 ### Optional
 
 - `endpoint` (String) The control plane's URL, as in `https://spotlight.example.com`. Defaults to `SPOTLIGHT_URL`.
-- `token` (String, Sensitive) A Spotlight API token, starting `spt_`. Defaults to `SPOTLIGHT_API_TOKEN`.
+- `token` (String, Sensitive) A Spotlight API token. Defaults to `SPOTLIGHT_API_TOKEN`.

@@ -55,6 +55,15 @@ func (s *Server) check(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	s.mu.Lock()
+	mayPlan := s.scopes["plan"] || s.scopes["configure"]
+	s.mu.Unlock()
+
+	if !mayPlan {
+		problem(w, http.StatusForbidden, "forbidden", "Not allowed to plan", "Checking an expression is planning, which this token’s scopes do not allow", nil)
+		return
+	}
+
 	if source, _ := body.Definition["integration"].(string); source == "" {
 		problem(w, http.StatusUnprocessableEntity, "invalid", "The request is not valid", "", []fieldError{{"definition.integration", "names the host this integration defines, as in linear"}})
 		return
