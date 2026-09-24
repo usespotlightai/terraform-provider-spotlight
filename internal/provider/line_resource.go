@@ -211,7 +211,7 @@ func (r *LineResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 
 	line, err := r.client.ReadLine(ctx, state.ID.ValueString())
 	if client.IsNotFound(err) {
-		resp.State.RemoveResource(ctx)
+		removed(ctx, resp, state.ID.ValueString())
 		return
 	}
 	if err != nil {

@@ -35,6 +35,14 @@ func setIdentity(ctx context.Context, identity *tfsdk.ResourceIdentity, id strin
 	return identity.Set(ctx, resourceIdentityModel{ID: types.StringValue(id)})
 }
 
+// removed drops a resource deleted outside Terraform from the state. Its
+// identity is still answered: Terraform before 1.12 keeps none, and the
+// framework refuses a read that answers no identity.
+func removed(ctx context.Context, resp *resource.ReadResponse, id string) {
+	resp.Diagnostics.Append(setIdentity(ctx, resp.Identity, id)...)
+	resp.State.RemoveResource(ctx)
+}
+
 // importTarget is what an import names: an id, when it is imported by its
 // identity, or else the workspace it is in and its address there. The
 // workspace is empty for a workspace, which is imported by its slug.

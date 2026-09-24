@@ -176,7 +176,7 @@ func (r *IntegrationResource) Read(ctx context.Context, req resource.ReadRequest
 
 	integration, err := r.client.ReadIntegration(ctx, state.ID.ValueString())
 	if client.IsNotFound(err) {
-		resp.State.RemoveResource(ctx)
+		removed(ctx, resp, state.ID.ValueString())
 		return
 	}
 	if err != nil {
