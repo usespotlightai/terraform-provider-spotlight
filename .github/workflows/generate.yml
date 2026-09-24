@@ -27,7 +27,7 @@ jobs:
   generate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Generate a control plane repository token
         id: app-token
         uses: actions/create-github-app-token@v3
@@ -36,7 +36,7 @@ jobs:
           private-key: ${{ secrets.APP_REPO_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
           repositories: spotlight
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: usespotlightai/spotlight
           ref: ${{ inputs.ref || 'develop' }}
@@ -44,7 +44,7 @@ jobs:
           path: spotlight
           sparse-checkout: control-plane/openapi.json
           sparse-checkout-cone-mode: false
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
       - name: Vendor openapi.json

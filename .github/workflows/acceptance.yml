@@ -35,13 +35,13 @@ jobs:
       - name: Skip without a dev control plane
         if: env.SPOTLIGHT_URL == '' || env.SPOTLIGHT_API_TOKEN == '' || env.SPOTLIGHT_ACC_WORKSPACE == ''
         run: echo "::notice::SPOTLIGHT_ACC_URL, SPOTLIGHT_ACC_TOKEN and SPOTLIGHT_ACC_WORKSPACE are not all set; acceptance tests skipped."
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         if: env.SPOTLIGHT_URL != '' && env.SPOTLIGHT_API_TOKEN != '' && env.SPOTLIGHT_ACC_WORKSPACE != ''
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         if: env.SPOTLIGHT_URL != '' && env.SPOTLIGHT_API_TOKEN != '' && env.SPOTLIGHT_ACC_WORKSPACE != ''
         with:
           go-version-file: go.mod
-      - uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@v4
         if: env.SPOTLIGHT_URL != '' && env.SPOTLIGHT_API_TOKEN != '' && env.SPOTLIGHT_ACC_WORKSPACE != ''
         with:
           terraform_wrapper: false
