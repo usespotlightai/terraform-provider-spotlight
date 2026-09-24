@@ -109,7 +109,8 @@ Push a `v*` tag. GoReleaser builds the archives, a GPG-signed `SHA256SUMS` and t
 
 | CI secret | Used by | Holds |
 | --- | --- | --- |
-| `SPOTLIGHT_REPO_TOKEN` | `generate.yml` | Read access to `usespotlightai/spotlight` |
+| `APP_REPO_APP_ID` | `generate.yml` | The CI GitHub App that reads `usespotlightai/spotlight` (the one the infrastructure repo uses) |
+| `APP_REPO_PRIVATE_KEY` | `generate.yml` | That app's private key |
 | `SPOTLIGHT_ACC_URL` | `acceptance.yml` | The dev control plane |
 | `SPOTLIGHT_ACC_TOKEN` | `acceptance.yml` | A token with `configure`, `secrets` and `runners` |
 | `SPOTLIGHT_ACC_WORKSPACE` | `acceptance.yml` | That token's workspace slug |

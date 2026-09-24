@@ -2,9 +2,11 @@ name: Generated client
 
 # Regenerates the API client from the control plane's openapi.json on develop
 # and fails when it differs from what is committed, so a schema change shows
-# up as a client diff to review. The control plane repository is private:
-# SPOTLIGHT_REPO_TOKEN is a fine-grained token with read access to its
-# contents.
+# up as a client diff to review. The control plane repository is private: the
+# checkout uses a token minted by the same GitHub App the infrastructure repo
+# checks it out with.
+#   APP_REPO_APP_ID       that app's id
+#   APP_REPO_PRIVATE_KEY  its private key
 
 on:
   push:
@@ -26,11 +28,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Generate a control plane repository token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.APP_REPO_APP_ID }}
+          private-key: ${{ secrets.APP_REPO_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: spotlight
       - uses: actions/checkout@v4
         with:
           repository: usespotlightai/spotlight
           ref: ${{ inputs.ref || 'develop' }}
-          token: ${{ secrets.SPOTLIGHT_REPO_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
           path: spotlight
           sparse-checkout: control-plane/openapi.json
           sparse-checkout-cone-mode: false
