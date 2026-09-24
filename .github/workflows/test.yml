@@ -23,10 +23,13 @@ jobs:
       - run: go vet ./...
       - name: Formatted
         run: make fmtcheck
-      - name: Docs are generated
+      - uses: golangci/golangci-lint-action@v8
+        with:
+          version: v2.11
+      - name: Client and docs are generated
         run: |
-          make docs
-          git diff --exit-code docs
+          make generate
+          git diff --exit-code internal/client/apigen docs
 
   test:
     needs: build
@@ -37,6 +40,7 @@ jobs:
         terraform:
           - "1.11.*"
           - "1.12.*"
+          - "1.14.*"
           - "latest"
     steps:
       - uses: actions/checkout@v4

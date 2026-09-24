@@ -49,6 +49,12 @@ resource "spotlight_workspace" "acme" {
 
 A token may not open a workspace, so creating a `spotlight_workspace` with one fails and says to import it instead.
 
+## Reading and listing
+
+The `spotlight_workspace` and `spotlight_team` data sources read a workspace by its slug and a team by its key, for configuration that works inside them without managing them.
+
+Every resource is also a list resource. In Terraform 1.14 and later, a `list` block in a `.tfquery.hcl` file lists what a workspace holds, and `terraform query -generate-config-out=generated.tf` writes a resource and an `import` block for each, which is the same adoption `spotlight export` offers. Every resource has a resource identity, its `id`, so each can also be imported with an `import` block that names its `identity` (Terraform 1.12 and later).
+
 ## Plans check expressions
 
 Integrations hold CEL expressions, written `$${{ ... }}` in HCL so Terraform leaves them alone. `terraform plan` sends each one to the control plane to be type-checked where it is written, so a misspelt field fails the plan with the attribute that holds it named, rather than failing the apply.
@@ -68,10 +74,10 @@ terraform {
   }
 }
 
-# The endpoint and token default to SPOTLIGHT_URL and SPOTLIGHT_API_TOKEN.
+# The url and token default to SPOTLIGHT_URL and SPOTLIGHT_API_TOKEN.
 provider "spotlight" {
-  endpoint = "https://spotlight.example.com"
-  token    = var.spotlight_token
+  url   = "https://spotlight.example.com"
+  token = var.spotlight_token
 }
 
 variable "spotlight_token" {
@@ -85,5 +91,5 @@ variable "spotlight_token" {
 
 ### Optional
 
-- `endpoint` (String) The control plane's URL, as in `https://spotlight.example.com`. Defaults to `SPOTLIGHT_URL`.
 - `token` (String, Sensitive) A Spotlight API token. Defaults to `SPOTLIGHT_API_TOKEN`.
+- `url` (String) The control plane's URL, as in `https://spotlight.example.com`. Defaults to `SPOTLIGHT_URL`, which the `spotlight` CLI reads too.

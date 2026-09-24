@@ -12,9 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
+	"github.com/usespotlightai/terraform-provider-spotlight/internal/client"
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/dynamic"
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/expressions"
-	"github.com/usespotlightai/terraform-provider-spotlight/internal/spotlight"
 )
 
 type asked struct {
@@ -25,27 +25,27 @@ type asked struct {
 type stub struct {
 	listed   int
 	asked    []asked
-	answer   func(position, expression string) (spotlight.ExpressionCheck, error)
+	answer   func(position, expression string) (client.ExpressionCheck, error)
 	listFail error
 }
 
-func (s *stub) Positions(context.Context) ([]spotlight.Position, error) {
+func (s *stub) ExpressionPositions(context.Context) ([]client.Position, error) {
 	s.listed++
 	if s.listFail != nil {
 		return nil, s.listFail
 	}
 
-	return []spotlight.Position{
+	return []client.Position{
 		{Position: "integration.webhook.events[*].when", Returns: "bool"},
 		{Position: "integration.actions[*].request.body"},
 		{Position: "integration.on[*].to[*]"},
 	}, nil
 }
 
-func (s *stub) Check(_ context.Context, position, expression string, _ spotlight.Definition) (spotlight.ExpressionCheck, error) {
+func (s *stub) CheckExpression(_ context.Context, position, expression string, _ client.Definition) (client.ExpressionCheck, error) {
 	s.asked = append(s.asked, asked{position, expression})
 	if s.answer == nil {
-		return spotlight.ExpressionCheck{Type: "bool"}, nil
+		return client.ExpressionCheck{Type: "bool"}, nil
 	}
 
 	return s.answer(position, expression)
@@ -102,14 +102,14 @@ func TestItReadsThePositionsOnce(t *testing.T) {
 }
 
 func TestItAttachesErrorsToTheAttribute(t *testing.T) {
-	api := &stub{answer: func(position, _ string) (spotlight.ExpressionCheck, error) {
+	api := &stub{answer: func(position, _ string) (client.ExpressionCheck, error) {
 		if !strings.HasSuffix(position, ".thread") {
-			return spotlight.ExpressionCheck{Type: "bool"}, nil
+			return client.ExpressionCheck{Type: "bool"}, nil
 		}
 
-		return spotlight.ExpressionCheck{
-			Errors: []spotlight.ExpressionError{{Message: "No such key: bdoy", Span: &spotlight.Span{Start: 4, End: 8}, Suggestion: "ask.body"}},
-			Warnings: []spotlight.ExpressionWarning{
+		return client.ExpressionCheck{
+			Errors: []client.ExpressionError{{Message: "No such key: bdoy", Span: &client.Span{Start: 4, End: 8}, Suggestion: "ask.body"}},
+			Warnings: []client.ExpressionWarning{
 				{Position: "integration.webhook.events[0].lookup.capture.body", Message: "shadows the built-in body"},
 			},
 		}, nil
@@ -179,10 +179,10 @@ func TestItSkipsWhatIsNotKnown(t *testing.T) {
 }
 
 func TestAnInvalidDefinitionIsReportedOnceAtItsAttribute(t *testing.T) {
-	api := &stub{answer: func(string, string) (spotlight.ExpressionCheck, error) {
-		return spotlight.ExpressionCheck{}, &spotlight.Problem{
-			Status: 422, Type: spotlight.ProblemInvalid, Title: "The request is not valid",
-			Errors: []spotlight.FieldError{{Path: "definition.types.Issue.id", Message: "is a type, as in string or list<Issue>"}},
+	api := &stub{answer: func(string, string) (client.ExpressionCheck, error) {
+		return client.ExpressionCheck{}, &client.Problem{
+			Status: 422, Type: client.ProblemInvalid, Title: "The request is not valid",
+			Errors: []client.FieldError{{Path: "definition.types.Issue.id", Message: "is a type, as in string or list<Issue>"}},
 		}
 	}}
 
