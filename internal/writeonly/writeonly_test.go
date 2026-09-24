@@ -61,6 +61,8 @@ func (p secretProvider) DataSources(context.Context) []func() datasource.DataSou
 
 type secret struct{ sent *sent }
 
+var required = writeonly.Field{Name: writeonly.Value.Name, Version: writeonly.Value.Version, Required: true}
+
 type secretModel struct {
 	ID           types.String `tfsdk:"id"`
 	Name         types.String `tfsdk:"name"`
@@ -73,7 +75,7 @@ func (s secret) Metadata(_ context.Context, req resource.MetadataRequest, resp *
 }
 
 func (s secret) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	attributes := writeonly.Attributes("secret's value")
+	attributes := required.Attributes("The secret's value.")
 	attributes["id"] = schema.StringAttribute{
 		Computed:      true,
 		PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
@@ -86,9 +88,9 @@ func (s secret) Create(ctx context.Context, req resource.CreateRequest, resp *re
 	var plan secretModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
-	value, diags := writeonly.Value(ctx, req.Config)
+	value, diags := required.Read(ctx, req.Config)
 	resp.Diagnostics.Append(diags...)
-	s.sent.add(value)
+	s.sent.add(value.ValueString())
 
 	plan.ID = types.StringValue(plan.Name.ValueString())
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
@@ -104,13 +106,13 @@ func (s secret) Update(ctx context.Context, req resource.UpdateRequest, resp *re
 	var plan secretModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
-	rewritten, diags := writeonly.Rewritten(ctx, req.Plan, req.State)
+	rewritten, diags := required.Rewritten(ctx, req.Plan, req.State)
 	resp.Diagnostics.Append(diags...)
 
 	if rewritten {
-		value, diags := writeonly.Value(ctx, req.Config)
+		value, diags := required.Read(ctx, req.Config)
 		resp.Diagnostics.Append(diags...)
-		s.sent.add(value)
+		s.sent.add(value.ValueString())
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
@@ -148,8 +150,8 @@ func TestWriteOnlyValueIsSentButNeverStored(t *testing.T) {
 			{
 				Config: secretConfig("first", 1),
 				Check: tfresource.ComposeTestCheckFunc(
-					tfresource.TestCheckNoResourceAttr("spotlight_test_secret.token", writeonly.ValueAttribute),
-					tfresource.TestCheckResourceAttr("spotlight_test_secret.token", writeonly.VersionAttribute, "1"),
+					tfresource.TestCheckNoResourceAttr("spotlight_test_secret.token", writeonly.Value.Name),
+					tfresource.TestCheckResourceAttr("spotlight_test_secret.token", writeonly.Value.Version, "1"),
 					func(*terraform.State) error { return expectSent(sent, "first") },
 				),
 			},
@@ -160,7 +162,7 @@ func TestWriteOnlyValueIsSentButNeverStored(t *testing.T) {
 			{
 				Config: secretConfig("second", 2),
 				Check: tfresource.ComposeTestCheckFunc(
-					tfresource.TestCheckNoResourceAttr("spotlight_test_secret.token", writeonly.ValueAttribute),
+					tfresource.TestCheckNoResourceAttr("spotlight_test_secret.token", writeonly.Value.Name),
 					func(*terraform.State) error { return expectSent(sent, "first", "second") },
 				),
 			},

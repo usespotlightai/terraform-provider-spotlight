@@ -8,8 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/resourcekit"
@@ -57,16 +55,8 @@ var schemaOf = schema.Schema{
 		"id":      resourcekit.IDAttribute(kind),
 		"version": resourcekit.VersionAttribute(kind),
 		"address": resourcekit.AddressAttribute("core/grafana"),
-		"team_id": schema.StringAttribute{
-			Required:            true,
-			MarkdownDescription: "The team the skill belongs to. Changing it replaces the skill.",
-			PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
-		},
-		"key": schema.StringAttribute{
-			Required:            true,
-			MarkdownDescription: "What stations give the skill by. It is fixed for the skill's life, so changing it replaces the skill.",
-			PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
-		},
+		"team_id": resourcekit.OwnerAttribute("team", kind),
+		"key":     resourcekit.FixedAttribute("What stations give the skill by.", kind),
 		"files": schema.MapAttribute{
 			Required:            true,
 			ElementType:         types.StringType,

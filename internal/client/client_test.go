@@ -3,6 +3,7 @@ package client_test
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -50,7 +51,7 @@ func serve(t *testing.T, answer func(w http.ResponseWriter, r *http.Request, att
 	}))
 	t.Cleanup(server.Close)
 
-	api, err := client.New(client.Config{Endpoint: server.URL, Token: "spt_secret", ProviderVersion: "1.2.3", Retries: 2})
+	api, err := client.New(client.Config{Endpoint: server.URL, Token: "secret-token", ProviderVersion: "1.2.3", Retries: 2})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -83,7 +84,7 @@ func TestEveryRequestSaysWhoIsCalling(t *testing.T) {
 	}
 
 	for header, want := range map[string]string{
-		"Authorization":         "Bearer spt_secret",
+		"Authorization":         "Bearer secret-token",
 		"Spotlight-Client":      "terraform-provider/1.2.3",
 		"Spotlight-Api-Version": client.APIVersion,
 	} {
@@ -308,9 +309,9 @@ func TestExpressionsAreCheckedWhereTheyAreWritten(t *testing.T) {
 
 func TestConfigIsChecked(t *testing.T) {
 	cases := map[string]client.Config{
-		"no endpoint":           {Token: "spt_x"},
-		"not a URL":             {Endpoint: "spotlight", Token: "spt_x"},
-		"not a Spotlight token": {Endpoint: "https://spotlight.example.com", Token: "ghp_x"},
+		"no endpoint": {Token: "token"},
+		"not a URL":   {Endpoint: "spotlight", Token: "token"},
+		"no token":    {Endpoint: "https://spotlight.example.com"},
 	}
 
 	for name, cfg := range cases {
@@ -329,7 +330,7 @@ func TestEndpointMayNameTheAPIPath(t *testing.T) {
 	defer server.Close()
 
 	for _, endpoint := range []string{server.URL, server.URL + "/", server.URL + "/api", server.URL + "/api/"} {
-		api, err := client.New(client.Config{Endpoint: endpoint, Token: "spt_x"})
+		api, err := client.New(client.Config{Endpoint: endpoint, Token: "token"})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -343,5 +344,67 @@ func TestEndpointMayNameTheAPIPath(t *testing.T) {
 		if each != "/api/resources/workspaces/ws-1" {
 			t.Errorf("asked %s", each)
 		}
+	}
+}
+
+func TestARefusalSaysWhatPermissionTheCallerLacked(t *testing.T) {
+	api, _ := serve(t, func(w http.ResponseWriter, _ *http.Request, _ int) {
+		reply(w, http.StatusForbidden, "application/problem+json", map[string]any{
+			"type": spotlight.ProblemForbidden, "title": "Not allowed to change the secret", "status": 403,
+			"detail": "You may read this secret", "permission": "manage-secrets",
+		})
+	})
+
+	_, err := api.Secrets.Read(context.Background(), "secret-1")
+
+	problem, ok := spotlight.ProblemOf(err)
+	if !ok || !spotlight.IsForbidden(err) || problem.Permission != spotlight.PermissionManageSecrets {
+		t.Errorf("problem %+v", problem)
+	}
+}
+
+var runner = map[string]any{
+	"id": "runner-1", "version": 1, "address": "build-1", "warnings": []any{}, "workspaceId": "ws-1",
+	"name": "build-1", "labels": []any{}, "trust": nil,
+}
+
+func TestATokenSpotlightIssuesIsDroppedUnread(t *testing.T) {
+	const issued = "issued-token-that-must-never-be-kept-anywhere"
+
+	api, _ := serve(t, func(w http.ResponseWriter, _ *http.Request, _ int) {
+		w.Header().Set(client.RunnerTokenHeader, issued)
+		reply(w, http.StatusCreated, "application/json", runner)
+	})
+
+	created, err := api.Runners.Create(context.Background(), "ws-1", spotlight.RunnerInput{Name: "build-1", Labels: []string{}})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !created.IssuedToken || strings.Contains(fmt.Sprintf("%#v", created), issued) {
+		t.Errorf("runner %#v", created)
+	}
+}
+
+func TestWriteOnlyValuesAreSentOnlyWhenGiven(t *testing.T) {
+	api, recorded := serve(t, func(w http.ResponseWriter, _ *http.Request, _ int) {
+		reply(w, http.StatusCreated, "application/json", runner)
+	})
+
+	token := strings.Repeat("t", 40)
+	for _, in := range []spotlight.RunnerInput{{Name: "build-1"}, {Name: "build-1", Token: token}} {
+		created, err := api.Runners.Create(context.Background(), "ws-1", in)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if created.IssuedToken != (in.Token == "") {
+			t.Errorf("issued %v for %+v", created.IssuedToken, in.Token != "")
+		}
+	}
+
+	seen := recorded.all()
+	if strings.Contains(seen[0].Body, `"token"`) || !strings.Contains(seen[1].Body, `"token":"`+token+`"`) {
+		t.Errorf("bodies %q and %q", seen[0].Body, seen[1].Body)
 	}
 }

@@ -19,6 +19,7 @@ resource "spotlight_line" "core_delivery" {
   name         = "Delivery"
   role         = "delivery"
   repositories = ["acme/api"]
+  runners      = ["vpc-internal"]
 
   station {
     key       = "backlog"
@@ -28,21 +29,32 @@ resource "spotlight_line" "core_delivery" {
   }
 
   station {
-    key       = "implementation"
-    name      = "Implementation"
+    key             = "implementation"
+    name            = "Implementation"
+    harness         = "claude-code"
+    harness_version = "2.1.270"
+    profile         = "careful"
+    prompt          = file("${path.module}/prompts/core/delivery/implementation.md")
+    check           = "npm test"
+    tools           = ["linear.comment"]
+    skills          = ["grafana"]
+    runners         = ["gpu"]
+    passes_to       = ["code-review"]
+  }
+
+  station {
+    key       = "code-review"
+    name      = "Code review"
     harness   = "claude-code"
-    prompt    = file("${path.module}/prompts/core/delivery/implementation.md")
-    check     = "npm test"
-    tools     = ["linear.comment"]
-    skills    = ["grafana"]
-    passes_to = ["completed"]
+    prompt    = "Review the change."
+    passes_to = ["implementation"]
+    ends      = true
   }
 
   station {
     key  = "completed"
     name = "Completed"
     kind = "completed"
-    ends = true
   }
 
   reaction {
@@ -68,6 +80,7 @@ resource "spotlight_line" "core_delivery" {
 - `repositories` (Set of String) The repositories the line works on, each named `owner/name`.
 - `reviews` (Block, Optional) Which pull requests the line reviews, for a line whose role is `review`. (see [below for nested schema](#nestedblock--reviews))
 - `role` (String) The role the line plays for its team, as in `delivery` or `review`. A role names one line.
+- `runners` (Set of String) Where the line's work runs: runner names or labels, any of which a runner must answer to. A station's own `runners` narrow it further. Anywhere when left out.
 - `station` (Block List) A station along the line, in order. A line has at least one. (see [below for nested schema](#nestedblock--station))
 
 ### Read-Only
@@ -103,7 +116,7 @@ Optional:
 
 Optional:
 
-- `authors` (List of String) Skip pull requests by these GitHub logins, as in `dependabot[bot]`.
+- `authors` (Set of String) Skip pull requests by these GitHub logins, in lower case, as in `dependabot[bot]`. Spotlight keeps them sorted and each once, so they are a set.
 - `drafts` (Boolean) Skip draft pull requests.
 - `spotlight` (Boolean) Skip pull requests Spotlight opened.
 
@@ -127,10 +140,13 @@ Optional:
 - `effort` (String) How hard the agent thinks: `low`, `medium`, `high`, `xhigh` or `max`.
 - `ends` (Boolean) Whether a task that reaches the station is finished.
 - `harness` (String) The agent harness that works tasks here, as in `claude-code`.
+- `harness_version` (String) The release of the harness CLI the station's work pins, as in `2.1.270`; only a runner reporting it claims the work.
 - `kind` (String) `backlog`, `work` or `completed`.
 - `model` (String) The model the harness uses.
 - `passes_to` (Set of String) The stations a task here may move on to, by key.
+- `profile` (String) The harness profile the station's agent runs with, by key, as in `careful`.
 - `prompt` (String) What the agent is asked to do, usually read with `file()`.
+- `runners` (Set of String) Where the station's work runs, beside the line's `runners`: runner names or labels, any of which a runner must answer to.
 - `setup` (String) A command that prepares the workspace before the agent starts.
 - `skills` (List of String) The skills the station gives its agent, by key.
 - `tools` (List of String) The tools the station gives its agent, as in `linear.comment`.

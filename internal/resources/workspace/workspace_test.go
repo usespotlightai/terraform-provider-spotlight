@@ -149,3 +149,18 @@ func TestWorkspaceRefusalNamesTheAttribute(t *testing.T) {
 		},
 	})
 }
+
+func TestAWorkspaceATokenMayNotCreateIsToBeImported(t *testing.T) {
+	fake := fakeapi.New(t)
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: providertest.Factories(fake),
+		Steps: []resource.TestStep{
+			{
+				PreConfig:   func() { fake.FailNext(http.StatusForbidden) },
+				Config:      config("Acme", "acme"),
+				ExpectError: regexp.MustCompile(`may not open a new\s+one(?s:.*)import it\s+rather than creating it(?s:.*)to = spotlight_workspace\.<name>`),
+			},
+		},
+	})
+}

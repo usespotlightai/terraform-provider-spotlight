@@ -14,9 +14,11 @@ const (
 	ProblemAlreadyExists = "urn:spotlight:problem:already-exists"
 	ProblemInUse         = "urn:spotlight:problem:in-use"
 	ProblemNotFound      = "urn:spotlight:problem:not-found"
+	ProblemForbidden     = "urn:spotlight:problem:forbidden"
 )
 
-// Problem is an RFC 9457 problem the API answered.
+// Problem is an RFC 9457 problem the API answered. Permission is what a
+// 403 says the caller lacked, empty when it does not say.
 type Problem struct {
 	Status         int
 	Type           string
@@ -24,6 +26,7 @@ type Problem struct {
 	Detail         string
 	Errors         []FieldError
 	CurrentVersion *int64
+	Permission     Permission
 }
 
 // Error writes the problem with each field error it names.
@@ -57,4 +60,11 @@ func IsNotFound(err error) bool {
 	problem, ok := ProblemOf(err)
 
 	return ok && (problem.Status == http.StatusNotFound || problem.Type == ProblemNotFound)
+}
+
+// IsForbidden reports whether err says the caller may not do this.
+func IsForbidden(err error) bool {
+	problem, ok := ProblemOf(err)
+
+	return ok && (problem.Status == http.StatusForbidden || problem.Type == ProblemForbidden)
 }

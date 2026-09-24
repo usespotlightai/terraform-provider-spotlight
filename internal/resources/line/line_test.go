@@ -22,8 +22,9 @@ resource "spotlight_line" "core_delivery" {
   team_id      = spotlight_team.core.id
   key          = "delivery"
   name         = "Delivery"
-  role         = "delivery"
+  role         = "review"
   repositories = ["acme/api"]
+  runners      = ["build-1", "vpc-internal"]
 
   station {
     key       = "backlog"
@@ -39,19 +40,35 @@ resource "spotlight_line" "core_delivery" {
   }
 
   station {
-    key       = "implementation"
-    name      = "Implementation"
+    key             = "implementation"
+    name            = "Implementation"
+    kind            = "work"
+    color           = "#6d78d5"
+    harness         = "claude-code"
+    profile         = "careful"
+    harness_version = "2.1.270"
+    prompt          = "Implement the task.\n"
+    check           = "npm test"
+    diffs           = true
+    decisions       = true
+    tools           = ["linear.comment"]
+    skills          = ["grafana"]
+    runners         = ["gpu"]
+    passes_to       = ["code-review"]
+    ends            = false
+  }
+
+  station {
+    key       = "code-review"
+    name      = "Code review"
     kind      = "work"
-    color     = "#6d78d5"
-    harness   = "claude-code"
-    prompt    = "Implement the task.\n"
-    check     = "npm test"
-    diffs     = true
-    decisions = true
-    tools     = ["linear.comment"]
-    skills    = ["grafana"]
-    passes_to = ["completed"]
-    ends      = false
+    color     = "#56b98d"
+    diffs     = false
+    decisions = false
+    tools     = []
+    skills    = []
+    passes_to = ["implementation"]
+    ends      = true
   }
 
   station {
@@ -64,7 +81,7 @@ resource "spotlight_line" "core_delivery" {
     tools     = []
     skills    = []
     passes_to = []
-    ends      = true
+    ends      = false
   }
 
   reaction {
@@ -80,7 +97,7 @@ resource "spotlight_line" "core_delivery" {
     skip {
       spotlight = true
       drafts    = true
-      authors   = ["dependabot[bot]"]
+      authors   = ["dependabot[bot]", "renovate[bot]"]
     }
   }
 }
@@ -91,6 +108,7 @@ resource "spotlight_line" "core_delivery" {
   team_id = spotlight_team.core.id
   key     = "delivery"
   name    = "Delivery"
+  role    = "review"
 
   station {
     key       = "backlog"
@@ -100,21 +118,23 @@ resource "spotlight_line" "core_delivery" {
   }
 
   station {
-    key       = "implementation"
-    name      = "Implementation"
-    harness   = "claude-code"
-    passes_to = ["completed"]
+    key     = "implementation"
+    name    = "Implementation"
+    harness = "claude-code"
   }
 
   station {
     key  = "completed"
     name = "Completed"
     kind = "completed"
-    ends = true
   }
 
   reviews {
     start = "opened"
+
+    skip {
+      authors = ["renovate[bot]", "dependabot[bot]", "renovate[bot]"]
+    }
   }
 }
 `
@@ -124,6 +144,8 @@ resource "spotlight_line" "core_delivery" {
   team_id = spotlight_team.core.id
   key     = "delivery"
   name    = "Delivery"
+  role    = "review"
+  runners = ["vpc-internal"]
 
   station {
     key       = "backlog"
@@ -133,27 +155,33 @@ resource "spotlight_line" "core_delivery" {
   }
 
   station {
-    key       = "implementation"
-    name      = "Implementation"
-    harness   = "claude-code"
-    passes_to = ["review"]
+    key             = "implementation"
+    name            = "Implementation"
+    harness         = "claude-code"
+    harness_version = "v2.1.270"
+    passes_to       = ["code-review"]
   }
 
   station {
-    key       = "review"
-    name      = "Review"
-    passes_to = ["completed", "implementation"]
+    key       = "code-review"
+    name      = "Code review"
+    runners   = ["gpu"]
+    passes_to = ["implementation"]
+    ends      = true
   }
 
   station {
     key  = "completed"
     name = "Completed"
     kind = "completed"
-    ends = true
   }
 
   reviews {
     start = "opened"
+
+    skip {
+      authors = ["renovate[bot]", "dependabot[bot]", "renovate[bot]"]
+    }
   }
 }
 `
@@ -179,7 +207,11 @@ func TestLineExportedShapeRoundTrips(t *testing.T) {
 				Config: providertest.Workspace + exported,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(address, tfjsonpath.New("address"), knownvalue.StringExact("core/delivery")),
-					statecheck.ExpectKnownValue(address, station(1, "passes_to"), knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact("completed")})),
+					statecheck.ExpectKnownValue(address, station(1, "passes_to"), knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact("code-review")})),
+					statecheck.ExpectKnownValue(address, station(1, "profile"), knownvalue.StringExact("careful")),
+					statecheck.ExpectKnownValue(address, station(1, "harness_version"), knownvalue.StringExact("2.1.270")),
+					statecheck.ExpectKnownValue(address, station(1, "runners"), knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact("gpu")})),
+					statecheck.ExpectKnownValue(address, tfjsonpath.New("runners"), knownvalue.SetSizeExact(2)),
 					statecheck.ExpectKnownValue(address, tfjsonpath.New("reaction"), knownvalue.SetSizeExact(1)),
 				},
 			},
@@ -208,9 +240,11 @@ func TestLineFillsWhatItLeavesOutWithoutDrift(t *testing.T) {
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(address, station(0, "color"), knownvalue.StringExact("#a3a8b0")),
 					statecheck.ExpectKnownValue(address, station(1, "kind"), knownvalue.StringExact("work")),
-					statecheck.ExpectKnownValue(address, station(1, "diffs"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(address, station(1, "diffs"), knownvalue.Bool(false)),
 					statecheck.ExpectKnownValue(address, station(2, "tools"), knownvalue.ListSizeExact(0)),
-					statecheck.ExpectKnownValue(address, tfjsonpath.New("reviews").AtMapKey("skip"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(address, station(2, "runners"), knownvalue.SetSizeExact(0)),
+					statecheck.ExpectKnownValue(address, tfjsonpath.New("runners"), knownvalue.SetSizeExact(0)),
+					statecheck.ExpectKnownValue(address, tfjsonpath.New("reviews").AtMapKey("skip").AtMapKey("authors"), knownvalue.SetSizeExact(2)),
 				},
 			},
 			{
@@ -225,8 +259,14 @@ func TestLineFillsWhatItLeavesOutWithoutDrift(t *testing.T) {
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(address, station(2, "color"), knownvalue.StringExact("#6d78d5")),
 					statecheck.ExpectKnownValue(address, station(3, "color"), knownvalue.StringExact("#3fa46a")),
+					statecheck.ExpectKnownValue(address, station(1, "harness_version"), knownvalue.StringExact("v2.1.270")),
+					statecheck.ExpectKnownValue(address, station(2, "runners"), knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact("gpu")})),
 					statecheck.ExpectKnownValue(address, tfjsonpath.New("version"), knownvalue.Int64Exact(2)),
 				},
+			},
+			{
+				Config:   providertest.Workspace + grown,
+				PlanOnly: true,
 			},
 		},
 	})
@@ -279,6 +319,7 @@ resource "spotlight_line" "core_delivery" {
   team_id = spotlight_team.core.id
   key     = "delivery"
   name    = "Delivery"
+  role    = "review"
 
   station {
     key  = "backlog"
@@ -296,4 +337,82 @@ resource "spotlight_line" "core_delivery" {
 			},
 		},
 	})
+}
+
+func refused(t *testing.T, stations string, want *regexp.Regexp) {
+	t.Helper()
+
+	fake := fakeapi.New(t)
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: providertest.Factories(fake),
+		Steps: []resource.TestStep{
+			{
+				Config: providertest.Workspace + `
+resource "spotlight_line" "core_delivery" {
+  team_id = spotlight_team.core.id
+  key     = "delivery"
+  name    = "Delivery"
+` + stations + `
+}
+`,
+				ExpectError: want,
+			},
+		},
+	})
+}
+
+func TestLineRefusesAStationKeyRunsSayToHandOver(t *testing.T) {
+	refused(t, `
+  station {
+    key       = "backlog"
+    name      = "Backlog"
+    kind      = "backlog"
+    passes_to = ["review"]
+  }
+
+  station {
+    key  = "review"
+    name = "Review"
+  }
+`, regexp.MustCompile(`(?s)station\[1\]\.key: cannot be review, which is reserved`))
+}
+
+func TestLineHandsOnOnlyToStationsWorkIsDoneAt(t *testing.T) {
+	refused(t, `
+  station {
+    key       = "backlog"
+    name      = "Backlog"
+    kind      = "backlog"
+    passes_to = ["implementation"]
+  }
+
+  station {
+    key       = "implementation"
+    name      = "Implementation"
+    passes_to = ["completed"]
+  }
+
+  station {
+    key  = "completed"
+    name = "Completed"
+    kind = "completed"
+  }
+`, regexp.MustCompile(`(?s)station\[1\]\.passes_to: must hand on to a station work is done at`))
+}
+
+func TestLineReviewsOnlyInTheReviewRole(t *testing.T) {
+	refused(t, `
+  role = "delivery"
+
+  station {
+    key  = "backlog"
+    name = "Backlog"
+    kind = "backlog"
+  }
+
+  reviews {
+    start = "opened"
+  }
+`, regexp.MustCompile(`(?s)reviews: The delivery line reviews pull requests, which only a line whose\s+role is review does`))
 }
