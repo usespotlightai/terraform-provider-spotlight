@@ -90,10 +90,136 @@ type Integration struct {
 	Definition Definition
 }
 
+// Secret is a secret resource. Its value is written, never read back.
+type Secret struct {
+	Meta
+	WorkspaceID  string
+	Name         string
+	Source       SecretSource
+	Bindings     []SecretBinding
+	ValueVersion *int64
+	RotatedAt    string
+}
+
+// SecretSource says where a secret's value lives: kept by Spotlight, or
+// read from AWS Secrets Manager whenever it is used.
+type SecretSource struct {
+	Kind     string `json:"kind"`
+	SecretID string `json:"secretId,omitempty"`
+	Field    string `json:"field,omitempty"`
+}
+
+// The places a secret's value lives.
+const (
+	SourceBuiltIn           = "built-in"
+	SourceAWSSecretsManager = "aws-secrets-manager"
+)
+
+// SecretBinding is a host a secret may be sent to, and how it is worn there.
+type SecretBinding struct {
+	Host   string `json:"host"`
+	Header string `json:"header"`
+	Prefix string `json:"prefix"`
+}
+
+// SecretInput is what a secret is written from. Value is sent only when
+// Spotlight is to keep it, or keep a new one.
+type SecretInput struct {
+	Name         string          `json:"name"`
+	Source       SecretSource    `json:"source"`
+	Bindings     []SecretBinding `json:"bindings"`
+	Value        *string         `json:"valueWo,omitempty"`
+	ValueVersion *int64          `json:"valueWoVersion,omitempty"`
+}
+
+// Runner is a runner resource. IssuedToken reports that Spotlight issued it
+// a token when it was created; the token itself is never held, since
+// Terraform keeps no secret.
+type Runner struct {
+	Meta
+	WorkspaceID string
+	Name        string
+	Labels      []string
+	Trust       string
+	IssuedToken bool
+}
+
+// RunnerInput is what a runner is written from. Token is sent only when the
+// runner is to call with it from now on.
+type RunnerInput struct {
+	Name   string   `json:"name"`
+	Labels []string `json:"labels"`
+	Token  string   `json:"token,omitempty"`
+}
+
+// RunnerTrust is a workload whose platform-issued tokens enrol runners.
+type RunnerTrust struct {
+	Meta
+	WorkspaceID string
+	RunnerTrustInput
+}
+
+// RunnerTrustInput is what a runner trust is written from.
+type RunnerTrustInput struct {
+	Key      string   `json:"key"`
+	Issuer   string   `json:"issuer"`
+	Subject  string   `json:"subject"`
+	Audience string   `json:"audience"`
+	Labels   []string `json:"labels"`
+}
+
+// WorkspaceRunners is a workspace's one declaration of the runners it means
+// to have. Drift names the runners enrolled all the same.
+type WorkspaceRunners struct {
+	Meta
+	WorkspaceID string
+	WorkspaceRunnersInput
+	Drift []string
+}
+
+// WorkspaceRunnersInput is what the declaration is written from.
+type WorkspaceRunnersInput struct {
+	Runners []string `json:"runners"`
+	Trusts  []string `json:"trusts"`
+}
+
+// HarnessProfile is a team's settings, told to every harness in its own
+// terms.
+type HarnessProfile struct {
+	Meta
+	TeamID string
+	HarnessProfileInput
+}
+
+// HarnessProfileInput is what a harness profile is written from.
+type HarnessProfileInput struct {
+	Key         string         `json:"key"`
+	Permissions Permissions    `json:"permissions"`
+	MCPServers  []MCPServer    `json:"mcpServers"`
+	Native      map[string]any `json:"native"`
+}
+
+// Permissions are what a harness may do, what it asks a person about
+// first, and what it may never do.
+type Permissions struct {
+	Allow []string `json:"allow"`
+	Ask   []string `json:"ask"`
+	Deny  []string `json:"deny"`
+}
+
+// MCPServer is a stdio MCP server handed to each harness.
+type MCPServer struct {
+	Name    string            `json:"name"`
+	Command string            `json:"command"`
+	Args    []string          `json:"args"`
+	Env     map[string]string `json:"env"`
+}
+
 // Resources manages one kind of resource. Owner is the id of the resource
-// that holds a new one (a team for lines, the workspace for teams) and is
-// empty for workspaces; Import takes the workspace id and the address, and
-// the workspace id is empty when importing a workspace by its slug.
+// that holds a new one (a team for lines, the workspace for teams and
+// secrets) and is empty for workspaces; Import takes the workspace id and
+// the address, and the workspace id is empty when importing a workspace by
+// its slug.
 type Resources[In, Out any] interface {
 	Create(ctx context.Context, owner string, in In) (Out, error)
 	Read(ctx context.Context, id string) (Out, error)
@@ -144,10 +270,15 @@ type Expressions interface {
 
 // API is every part of the control plane the provider uses.
 type API struct {
-	Workspaces   Resources[WorkspaceInput, Workspace]
-	Teams        Resources[TeamInput, Team]
-	Lines        Resources[Definition, Line]
-	Skills       Resources[SkillInput, Skill]
-	Integrations Resources[Definition, Integration]
-	Expressions  Expressions
+	Workspaces       Resources[WorkspaceInput, Workspace]
+	Teams            Resources[TeamInput, Team]
+	Lines            Resources[Definition, Line]
+	Skills           Resources[SkillInput, Skill]
+	Integrations     Resources[Definition, Integration]
+	HarnessProfiles  Resources[HarnessProfileInput, HarnessProfile]
+	Secrets          Resources[SecretInput, Secret]
+	Runners          Resources[RunnerInput, Runner]
+	RunnerTrusts     Resources[RunnerTrustInput, RunnerTrust]
+	WorkspaceRunners Resources[WorkspaceRunnersInput, WorkspaceRunners]
+	Expressions      Expressions
 }

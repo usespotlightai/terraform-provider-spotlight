@@ -2,10 +2,12 @@ package resourcekit
 
 import (
 	"context"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/fieldpath"
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/spotlight"
@@ -20,6 +22,15 @@ import (
 // anything unknown filled in from the answer. Kept is nil on import and
 // after a read that found a change, and then everything comes from the
 // answer.
+//
+// ForbiddenToCreate, when set, is what to do instead when the caller may not
+// create one.
+//
+// Needs is the scope a token takes to change one, configure when empty.
+// Sent adds to a write what the configuration holds but Terraform never
+// keeps. Created says what a create's answer means beyond what is stored.
+// WarnOnRead repeats the answer's warnings whenever it is read, for a
+// resource whose warnings change with the world rather than its writes.
 type Spec[In, Out, M any] struct {
 	Kind                   string
 	Schema                 schema.Schema
@@ -34,6 +45,19 @@ type Spec[In, Out, M any] struct {
 	Settable               func(Out) any
 	Identity               func(M) (id string, version int64)
 	ImportedByAddressAlone bool
+	ForbiddenToCreate      string
+	Needs                  spotlight.Scope
+	Sent                   func(ctx context.Context, written Written, in *In) diag.Diagnostics
+	Created                func(Out) diag.Diagnostics
+	WarnOnRead             bool
+}
+
+// Written is what a write has beside the plan: the configuration, and the
+// state it changes, which is nil on create.
+type Written struct {
+	Config tfsdk.Config
+	Plan   tfsdk.Plan
+	State  *tfsdk.State
 }
 
 // Managed is a resource the provider manages through a Spec.
@@ -74,6 +98,29 @@ func (m *Managed[In, Out, M]) Configure(_ context.Context, req resource.Configur
 	m.clients = Configured(req, resp)
 }
 
+func (m *Managed[In, Out, M]) called() string {
+	return strings.ReplaceAll(m.spec.Kind, "_", " ")
+}
+
+func (m *Managed[In, Out, M]) needs() spotlight.Scope {
+	if m.spec.Needs == "" {
+		return spotlight.ScopeConfigure
+	}
+
+	return m.spec.Needs
+}
+
+func (m *Managed[In, Out, M]) input(ctx context.Context, plan M, written Written) (In, diag.Diagnostics) {
+	in, diags := m.spec.Input(plan)
+	if diags.HasError() || m.spec.Sent == nil {
+		return in, diags
+	}
+
+	diags.Append(m.spec.Sent(ctx, written, &in)...)
+
+	return in, diags
+}
+
 func (m *Managed[In, Out, M]) api() spotlight.Resources[In, Out] {
 	return m.spec.Resources(m.clients.API)
 }
@@ -91,7 +138,7 @@ func (m *Managed[In, Out, M]) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	in, diags := m.spec.Input(plan)
+	in, diags := m.input(ctx, plan, Written{Config: req.Config, Plan: req.Plan})
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -103,12 +150,19 @@ func (m *Managed[In, Out, M]) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	created, err := m.api().Create(ctx, owner, in)
+	if err != nil && m.spec.ForbiddenToCreate != "" && spotlight.IsForbidden(err) {
+		resp.Diagnostics.AddError("Could not create the "+m.called(), m.spec.ForbiddenToCreate)
+		return
+	}
 	if err != nil {
-		Failed(&resp.Diagnostics, "Could not create the "+m.spec.Kind, err, m.at)
+		Failed(&resp.Diagnostics, "Could not create the "+m.called(), err, m.at, m.needs())
 		return
 	}
 
-	Warned(&resp.Diagnostics, m.spec.Kind, m.spec.Meta(created).Warnings, m.at)
+	Warned(&resp.Diagnostics, m.called(), m.spec.Meta(created).Warnings, m.at)
+	if m.spec.Created != nil {
+		resp.Diagnostics.Append(m.spec.Created(created)...)
+	}
 	m.hold(ctx, created, &plan, resp.Private, &resp.State, &resp.Diagnostics)
 }
 
@@ -134,8 +188,12 @@ func (m *Managed[In, Out, M]) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 	if err != nil {
-		Failed(&resp.Diagnostics, "Could not read the "+m.spec.Kind, err, m.at)
+		Failed(&resp.Diagnostics, "Could not read the "+m.called(), err, m.at, spotlight.ScopeRead)
 		return
+	}
+
+	if m.spec.WarnOnRead {
+		Warned(&resp.Diagnostics, m.called(), m.spec.Meta(found).Warnings, m.at)
 	}
 
 	if Unchanged(ctx, req.Private, m.spec.Settable(found)) {
@@ -160,7 +218,7 @@ func (m *Managed[In, Out, M]) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	in, diags := m.spec.Input(plan)
+	in, diags := m.input(ctx, plan, Written{Config: req.Config, Plan: req.Plan, State: &req.State})
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -170,11 +228,11 @@ func (m *Managed[In, Out, M]) Update(ctx context.Context, req resource.UpdateReq
 
 	updated, err := m.api().Update(ctx, id, version, in)
 	if err != nil {
-		Failed(&resp.Diagnostics, "Could not update the "+m.spec.Kind, err, m.at)
+		Failed(&resp.Diagnostics, "Could not update the "+m.called(), err, m.at, m.needs())
 		return
 	}
 
-	Warned(&resp.Diagnostics, m.spec.Kind, m.spec.Meta(updated).Warnings, m.at)
+	Warned(&resp.Diagnostics, m.called(), m.spec.Meta(updated).Warnings, m.at)
 	m.hold(ctx, updated, &plan, resp.Private, &resp.State, &resp.Diagnostics)
 }
 
@@ -194,7 +252,7 @@ func (m *Managed[In, Out, M]) Delete(ctx context.Context, req resource.DeleteReq
 	id, version := m.spec.Identity(prior)
 
 	if err := m.api().Delete(ctx, id, version); err != nil && !spotlight.IsNotFound(err) {
-		Failed(&resp.Diagnostics, "Could not delete the "+m.spec.Kind, err, m.at)
+		Failed(&resp.Diagnostics, "Could not delete the "+m.called(), err, m.at, m.needs())
 	}
 }
 
@@ -217,7 +275,7 @@ func (m *Managed[In, Out, M]) ImportState(ctx context.Context, req resource.Impo
 
 	found, err := m.api().Import(ctx, workspaceID, address)
 	if err != nil {
-		Failed(&resp.Diagnostics, "Could not import the "+m.spec.Kind+" at "+req.ID, err, fieldpath.Locator{})
+		Failed(&resp.Diagnostics, "Could not import the "+m.called()+" at "+req.ID, err, fieldpath.Locator{}, spotlight.ScopeRead)
 		return
 	}
 

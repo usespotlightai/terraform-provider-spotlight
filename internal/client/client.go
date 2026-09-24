@@ -21,7 +21,6 @@ const APIVersion = "2026-09-23"
 const (
 	apiVersionHeader = "Spotlight-Api-Version"
 	clientHeader     = "Spotlight-Client"
-	tokenPrefix      = "spt_"
 )
 
 // DefaultBackoff is how long the first retry waits; each after waits twice
@@ -45,8 +44,8 @@ func New(cfg Config) (spotlight.API, error) {
 		return spotlight.API{}, err
 	}
 
-	if !strings.HasPrefix(cfg.Token, tokenPrefix) {
-		return spotlight.API{}, fmt.Errorf("the token is not a Spotlight API token, which starts with %s", tokenPrefix)
+	if cfg.Token == "" {
+		return spotlight.API{}, errors.New("a Spotlight API token is needed")
 	}
 
 	httpClient := cfg.HTTPClient
@@ -70,12 +69,17 @@ func New(cfg Config) (spotlight.API, error) {
 	}
 
 	return spotlight.API{
-		Workspaces:   workspaces{generated},
-		Teams:        teams{generated},
-		Lines:        lines{generated},
-		Skills:       skills{generated},
-		Integrations: integrations{generated},
-		Expressions:  expressions{generated},
+		Workspaces:       workspaces{generated},
+		Teams:            teams{generated},
+		Lines:            lines{generated},
+		Skills:           skills{generated},
+		Integrations:     integrations{generated},
+		HarnessProfiles:  harnessProfiles{generated},
+		Secrets:          secrets{generated},
+		Runners:          runners{generated},
+		RunnerTrusts:     runnerTrusts{generated},
+		WorkspaceRunners: workspaceRunners{generated},
+		Expressions:      expressions{generated},
 	}, nil
 }
 

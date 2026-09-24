@@ -8,8 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 
@@ -74,11 +72,7 @@ var schemaOf = schema.Schema{
 		"id":      resourcekit.IDAttribute(kind),
 		"version": resourcekit.VersionAttribute(kind),
 		"address": resourcekit.AddressAttribute("core/linear"),
-		"team_id": schema.StringAttribute{
-			Required:            true,
-			MarkdownDescription: "The team the integration belongs to. Changing it replaces the integration.",
-			PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
-		},
+		"team_id": resourcekit.OwnerAttribute("team", kind),
 		"source": schema.StringAttribute{
 			Computed:            true,
 			MarkdownDescription: "The host the integration defines, from `definition.integration`. It is fixed for the integration's life, so changing it replaces the integration.",

@@ -19,29 +19,33 @@ type model struct {
 	Name         types.String `tfsdk:"name"`
 	Role         types.String `tfsdk:"role"`
 	Repositories types.Set    `tfsdk:"repositories"`
+	Runners      types.Set    `tfsdk:"runners"`
 	Stations     []station    `tfsdk:"station"`
 	Reactions    []reaction   `tfsdk:"reaction"`
 	Reviews      *reviews     `tfsdk:"reviews"`
 }
 
 type station struct {
-	Key         types.String `tfsdk:"key"`
-	Name        types.String `tfsdk:"name"`
-	Kind        types.String `tfsdk:"kind"`
-	Color       types.String `tfsdk:"color"`
-	Description types.String `tfsdk:"description"`
-	Harness     types.String `tfsdk:"harness"`
-	Model       types.String `tfsdk:"model"`
-	Effort      types.String `tfsdk:"effort"`
-	Prompt      types.String `tfsdk:"prompt"`
-	Check       types.String `tfsdk:"check"`
-	Setup       types.String `tfsdk:"setup"`
-	Diffs       types.Bool   `tfsdk:"diffs"`
-	Decisions   types.Bool   `tfsdk:"decisions"`
-	Tools       types.List   `tfsdk:"tools"`
-	Skills      types.List   `tfsdk:"skills"`
-	PassesTo    types.Set    `tfsdk:"passes_to"`
-	Ends        types.Bool   `tfsdk:"ends"`
+	Key            types.String `tfsdk:"key"`
+	Name           types.String `tfsdk:"name"`
+	Kind           types.String `tfsdk:"kind"`
+	Color          types.String `tfsdk:"color"`
+	Description    types.String `tfsdk:"description"`
+	Harness        types.String `tfsdk:"harness"`
+	Model          types.String `tfsdk:"model"`
+	Effort         types.String `tfsdk:"effort"`
+	Profile        types.String `tfsdk:"profile"`
+	HarnessVersion types.String `tfsdk:"harness_version"`
+	Prompt         types.String `tfsdk:"prompt"`
+	Check          types.String `tfsdk:"check"`
+	Setup          types.String `tfsdk:"setup"`
+	Diffs          types.Bool   `tfsdk:"diffs"`
+	Decisions      types.Bool   `tfsdk:"decisions"`
+	Tools          types.List   `tfsdk:"tools"`
+	Skills         types.List   `tfsdk:"skills"`
+	Runners        types.Set    `tfsdk:"runners"`
+	PassesTo       types.Set    `tfsdk:"passes_to"`
+	Ends           types.Bool   `tfsdk:"ends"`
 }
 
 type reaction struct {
@@ -59,7 +63,7 @@ type reviews struct {
 type skip struct {
 	Spotlight types.Bool `tfsdk:"spotlight"`
 	Drafts    types.Bool `tfsdk:"drafts"`
-	Authors   types.List `tfsdk:"authors"`
+	Authors   types.Set  `tfsdk:"authors"`
 }
 
 type written map[string]any
@@ -107,6 +111,7 @@ func definitionOf(plan model) (spotlight.Definition, diag.Diagnostics) {
 	line.text("name", plan.Name)
 	line.text("role", plan.Role)
 	line.texts("repositories", plan.Repositories, &diags)
+	line.texts("runners", plan.Runners, &diags)
 
 	stations := make([]any, 0, len(plan.Stations))
 	for _, each := range plan.Stations {
@@ -119,6 +124,8 @@ func definitionOf(plan model) (spotlight.Definition, diag.Diagnostics) {
 		held.text("harness", each.Harness)
 		held.text("model", each.Model)
 		held.text("effort", each.Effort)
+		held.text("profile", each.Profile)
+		held.text("harnessVersion", each.HarnessVersion)
 		held.text("prompt", each.Prompt)
 		held.text("check", each.Check)
 		held.text("setup", each.Setup)
@@ -126,6 +133,7 @@ func definitionOf(plan model) (spotlight.Definition, diag.Diagnostics) {
 		held.flag("decisions", each.Decisions)
 		held.texts("tools", each.Tools, &diags)
 		held.texts("skills", each.Skills, &diags)
+		held.texts("runners", each.Runners, &diags)
 		held.texts("passesTo", each.PassesTo, &diags)
 		held.flag("ends", each.Ends)
 		stations = append(stations, map[string]any(held))
@@ -231,6 +239,7 @@ func modelOf(answer spotlight.Line) model {
 		Name:         line.text("name"),
 		Role:         line.text("role"),
 		Repositories: line.set("repositories"),
+		Runners:      line.set("runners"),
 		Stations:     []station{},
 		Reactions:    []reaction{},
 	}
@@ -254,7 +263,7 @@ func modelOf(answer spotlight.Line) model {
 			held.Reviews.Skip = &skip{
 				Spotlight: skipped.flag("spotlight"),
 				Drafts:    skipped.flag("drafts"),
-				Authors:   skipped.list("authors"),
+				Authors:   skipped.set("authors"),
 			}
 		}
 	}
@@ -264,23 +273,26 @@ func modelOf(answer spotlight.Line) model {
 
 func stationOf(held read) station {
 	return station{
-		Key:         held.text("key"),
-		Name:        held.text("name"),
-		Kind:        held.text("kind"),
-		Color:       held.text("color"),
-		Description: held.text("description"),
-		Harness:     held.text("harness"),
-		Model:       held.text("model"),
-		Effort:      held.text("effort"),
-		Prompt:      held.text("prompt"),
-		Check:       held.text("check"),
-		Setup:       held.text("setup"),
-		Diffs:       held.flag("diffs"),
-		Decisions:   held.flag("decisions"),
-		Tools:       held.list("tools"),
-		Skills:      held.list("skills"),
-		PassesTo:    held.set("passesTo"),
-		Ends:        held.flag("ends"),
+		Key:            held.text("key"),
+		Name:           held.text("name"),
+		Kind:           held.text("kind"),
+		Color:          held.text("color"),
+		Description:    held.text("description"),
+		Harness:        held.text("harness"),
+		Model:          held.text("model"),
+		Effort:         held.text("effort"),
+		Profile:        held.text("profile"),
+		HarnessVersion: held.text("harnessVersion"),
+		Prompt:         held.text("prompt"),
+		Check:          held.text("check"),
+		Setup:          held.text("setup"),
+		Diffs:          held.flag("diffs"),
+		Decisions:      held.flag("decisions"),
+		Tools:          held.list("tools"),
+		Skills:         held.list("skills"),
+		Runners:        held.set("runners"),
+		PassesTo:       held.set("passesTo"),
+		Ends:           held.flag("ends"),
 	}
 }
 

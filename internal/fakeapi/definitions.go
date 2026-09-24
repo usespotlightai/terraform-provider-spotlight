@@ -7,6 +7,26 @@ import (
 	"strings"
 )
 
+var reserved = map[string]bool{"review": true, "done": true}
+
+func placed(held map[string]any, field, at string, errs *[]fieldError) {
+	selectors := texts(held[field])
+	if len(selectors) == 0 {
+		delete(held, field)
+		return
+	}
+
+	seen := map[string]bool{}
+	for _, each := range selectors {
+		if seen[each.(string)] {
+			*errs = append(*errs, fieldError{at, fmt.Sprintf("name %s only once", each)})
+		}
+		seen[each.(string)] = true
+	}
+
+	held[field] = selectors
+}
+
 var colors = map[string]string{
 	"backlog":   "#a3a8b0",
 	"work":      "#6d78d5",
@@ -23,6 +43,16 @@ func normalized(kind string, body map[string]any) (map[string]any, []fieldError)
 		return line(body)
 	case "skill":
 		return skill(body)
+	case "harness-profile":
+		return harnessProfile(body)
+	case "secret":
+		return secret(body)
+	case "runner":
+		return runner(body)
+	case "runner-trust":
+		return runnerTrust(body)
+	case "workspace-runners":
+		return workspaceRunners(body)
 	default:
 		return integration(body)
 	}
@@ -80,20 +110,28 @@ func line(body map[string]any) (map[string]any, []fieldError) {
 		errs = append(errs, fieldError{"stations", "is the stations along this line, in order, and there has to be one"})
 	}
 
-	keys := map[string]bool{}
-	for _, each := range listed {
+	keys, worked := map[string]bool{}, map[string]bool{}
+	for at, each := range listed {
 		if station, ok := each.(map[string]any); ok {
 			key, _ := station["key"].(string)
 			keys[key] = true
+			if kind, _ := station["kind"].(string); kind == "" || kind == "work" {
+				worked[key] = true
+			}
+			if reserved[key] {
+				errs = append(errs, fieldError{fmt.Sprintf("stations[%d].key", at), fmt.Sprintf("cannot be %s, which is reserved because a run says %s; pick another key, as in code-review", key, key)})
+			}
 		}
 	}
+
+	placed(definition, "runners", "runners", &errs)
 
 	stations := make([]any, 0, len(listed))
 	for at, each := range listed {
 		station := maps.Clone(each.(map[string]any))
 		orDefault(station, "kind", "work")
 		orDefault(station, "color", colors[station["kind"].(string)])
-		orDefault(station, "diffs", station["kind"] == "work")
+		orDefault(station, "diffs", false)
 		orDefault(station, "decisions", false)
 		orDefault(station, "tools", []any{})
 		orDefault(station, "skills", []any{})
@@ -101,9 +139,18 @@ func line(body map[string]any) (map[string]any, []fieldError) {
 		orDefault(station, "ends", false)
 
 		for _, next := range texts(station["passesTo"]) {
-			if !keys[next.(string)] {
+			switch {
+			case !keys[next.(string)]:
 				errs = append(errs, fieldError{fmt.Sprintf("stations[%d].passesTo", at), fmt.Sprintf("names %s, which is not a station on this line", next)})
+			case !worked[next.(string)]:
+				errs = append(errs, fieldError{fmt.Sprintf("stations[%d].passesTo", at), fmt.Sprintf("must hand on to a station work is done at, but %s is not one", next)})
 			}
+		}
+
+		placed(station, "runners", fmt.Sprintf("stations[%d].runners", at), &errs)
+
+		if version, ok := station["harnessVersion"].(string); ok {
+			station["harnessVersion"] = strings.TrimPrefix(strings.TrimSpace(version), "v")
 		}
 
 		stations = append(stations, station)
@@ -118,6 +165,10 @@ func line(body map[string]any) (map[string]any, []fieldError) {
 	}
 
 	if reviews, ok := definition["reviews"].(map[string]any); ok {
+		if definition["role"] != "review" {
+			errs = append(errs, fieldError{"reviews", fmt.Sprintf("The %s line reviews pull requests, which only a line whose role is review does", definition["key"])})
+		}
+
 		reviews = maps.Clone(reviews)
 		orDefault(reviews, "start", "mentioned")
 		orDefault(reviews, "mention", "@spotlight")
