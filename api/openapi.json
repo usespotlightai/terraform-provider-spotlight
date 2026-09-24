@@ -25,7 +25,7 @@
     },
     "/teams/{teamId}/lines": {
       "get": {
-        "operationId": "listLines",
+        "operationId": "listTeamLines",
         "parameters": [
           {
             "name": "teamId",
@@ -786,6 +786,100 @@
         "x-spotlight-resource": {
           "kind": "line",
           "operation": "import"
+        }
+      }
+    },
+    "/resources/workspaces/{workspaceId}/lines": {
+      "get": {
+        "operationId": "listLines",
+        "parameters": [
+          {
+            "name": "Spotlight-Api-Version",
+            "in": "header",
+            "description": "The API version the client was written against; every response names the version it was answered in",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2026-09-23"
+              ],
+              "default": "2026-09-23"
+            }
+          },
+          {
+            "name": "Spotlight-Client",
+            "in": "header",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "terraform-provider/0.1.0"
+            }
+          },
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "5b1e9d2c-7a43-4f8e-b6c0-3d9a8e1f2b57",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Every line there, each as a read would answer it, in address order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LineResourceListResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed, or asking for an API version this server does not serve",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid credentials",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workspace that you may see",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List every line in a workspace, across its teams, each as it stands",
+        "tags": [
+          "lines"
+        ],
+        "x-spotlight-resource": {
+          "kind": "line",
+          "operation": "list"
         }
       }
     },
@@ -2921,6 +3015,79 @@
       }
     },
     "/resources/workspaces": {
+      "get": {
+        "operationId": "listWorkspaces",
+        "parameters": [
+          {
+            "name": "Spotlight-Api-Version",
+            "in": "header",
+            "description": "The API version the client was written against; every response names the version it was answered in",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2026-09-23"
+              ],
+              "default": "2026-09-23"
+            }
+          },
+          {
+            "name": "Spotlight-Client",
+            "in": "header",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "terraform-provider/0.1.0"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Every workspace there, each as a read would answer it, in address order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceResourceListResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed, or asking for an API version this server does not serve",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid credentials",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List every workspace you may read; a token reads only its own",
+        "tags": [
+          "workspaces"
+        ],
+        "x-spotlight-resource": {
+          "kind": "workspace",
+          "operation": "list"
+        }
+      },
       "post": {
         "operationId": "createWorkspace",
         "parameters": [
@@ -3664,6 +3831,98 @@
           "kind": "team",
           "operation": "create"
         }
+      },
+      "get": {
+        "operationId": "listTeams",
+        "parameters": [
+          {
+            "name": "Spotlight-Api-Version",
+            "in": "header",
+            "description": "The API version the client was written against; every response names the version it was answered in",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2026-09-23"
+              ],
+              "default": "2026-09-23"
+            }
+          },
+          {
+            "name": "Spotlight-Client",
+            "in": "header",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "terraform-provider/0.1.0"
+            }
+          },
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "5b1e9d2c-7a43-4f8e-b6c0-3d9a8e1f2b57",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Every team there, each as a read would answer it, in address order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamResourceListResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed, or asking for an API version this server does not serve",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid credentials",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workspace that you may see",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List every team in a workspace",
+        "tags": [
+          "teams"
+        ],
+        "x-spotlight-resource": {
+          "kind": "team",
+          "operation": "list"
+        }
       }
     },
     "/resources/teams/{id}": {
@@ -4388,6 +4647,98 @@
           "kind": "workspace-token",
           "operation": "create"
         }
+      },
+      "get": {
+        "operationId": "listWorkspaceTokens",
+        "parameters": [
+          {
+            "name": "Spotlight-Api-Version",
+            "in": "header",
+            "description": "The API version the client was written against; every response names the version it was answered in",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2026-09-23"
+              ],
+              "default": "2026-09-23"
+            }
+          },
+          {
+            "name": "Spotlight-Client",
+            "in": "header",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "terraform-provider/0.1.0"
+            }
+          },
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "5b1e9d2c-7a43-4f8e-b6c0-3d9a8e1f2b57",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Every workspace-token there, each as a read would answer it, in address order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceTokenResourceListResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed, or asking for an API version this server does not serve",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid credentials",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workspace that you may see",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List every token that acts in a workspace, never the tokens themselves",
+        "tags": [
+          "workspace-tokens"
+        ],
+        "x-spotlight-resource": {
+          "kind": "workspace-token",
+          "operation": "list"
+        }
       }
     },
     "/resources/tokens/{id}": {
@@ -4972,7 +5323,7 @@
         ]
       },
       "get": {
-        "operationId": "listWorkspaces",
+        "operationId": "listMemberWorkspaces",
         "parameters": [],
         "responses": {
           "200": {
@@ -5625,6 +5976,98 @@
         "x-spotlight-resource": {
           "kind": "secret",
           "operation": "create"
+        }
+      },
+      "get": {
+        "operationId": "listSecrets",
+        "parameters": [
+          {
+            "name": "Spotlight-Api-Version",
+            "in": "header",
+            "description": "The API version the client was written against; every response names the version it was answered in",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2026-09-23"
+              ],
+              "default": "2026-09-23"
+            }
+          },
+          {
+            "name": "Spotlight-Client",
+            "in": "header",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "terraform-provider/0.1.0"
+            }
+          },
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "5b1e9d2c-7a43-4f8e-b6c0-3d9a8e1f2b57",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Every secret there, each as a read would answer it, in address order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecretResourceListResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed, or asking for an API version this server does not serve",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid credentials",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workspace that you may see",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List every secret in a workspace, never their values",
+        "tags": [
+          "secrets"
+        ],
+        "x-spotlight-resource": {
+          "kind": "secret",
+          "operation": "list"
         }
       }
     },
@@ -6583,7 +7026,7 @@
     },
     "/workspaces/{slug}/runners": {
       "get": {
-        "operationId": "listRunners",
+        "operationId": "listConnectedRunners",
         "parameters": [
           {
             "name": "slug",
@@ -6976,6 +7419,98 @@
         "x-spotlight-resource": {
           "kind": "runner",
           "operation": "create"
+        }
+      },
+      "get": {
+        "operationId": "listRunners",
+        "parameters": [
+          {
+            "name": "Spotlight-Api-Version",
+            "in": "header",
+            "description": "The API version the client was written against; every response names the version it was answered in",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2026-09-23"
+              ],
+              "default": "2026-09-23"
+            }
+          },
+          {
+            "name": "Spotlight-Client",
+            "in": "header",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "terraform-provider/0.1.0"
+            }
+          },
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "5b1e9d2c-7a43-4f8e-b6c0-3d9a8e1f2b57",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Every runner there, each as a read would answer it, in address order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunnerResourceListResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed, or asking for an API version this server does not serve",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid credentials",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workspace that you may see",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List every runner a workspace holds, enrolled by hand; runners a trust enrolled are held through their trust",
+        "tags": [
+          "runners"
+        ],
+        "x-spotlight-resource": {
+          "kind": "runner",
+          "operation": "list"
         }
       }
     },
@@ -7697,6 +8232,98 @@
           "kind": "runner-trust",
           "operation": "create"
         }
+      },
+      "get": {
+        "operationId": "listRunnerTrusts",
+        "parameters": [
+          {
+            "name": "Spotlight-Api-Version",
+            "in": "header",
+            "description": "The API version the client was written against; every response names the version it was answered in",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2026-09-23"
+              ],
+              "default": "2026-09-23"
+            }
+          },
+          {
+            "name": "Spotlight-Client",
+            "in": "header",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "terraform-provider/0.1.0"
+            }
+          },
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "5b1e9d2c-7a43-4f8e-b6c0-3d9a8e1f2b57",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Every runner-trust there, each as a read would answer it, in address order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunnerTrustResourceListResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed, or asking for an API version this server does not serve",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid credentials",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workspace that you may see",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List every runner trust in a workspace",
+        "tags": [
+          "runners"
+        ],
+        "x-spotlight-resource": {
+          "kind": "runner-trust",
+          "operation": "list"
+        }
       }
     },
     "/resources/runner-trusts/{id}": {
@@ -8411,6 +9038,98 @@
         "x-spotlight-resource": {
           "kind": "workspace-runners",
           "operation": "create"
+        }
+      },
+      "get": {
+        "operationId": "listWorkspaceRunners",
+        "parameters": [
+          {
+            "name": "Spotlight-Api-Version",
+            "in": "header",
+            "description": "The API version the client was written against; every response names the version it was answered in",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2026-09-23"
+              ],
+              "default": "2026-09-23"
+            }
+          },
+          {
+            "name": "Spotlight-Client",
+            "in": "header",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "terraform-provider/0.1.0"
+            }
+          },
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "5b1e9d2c-7a43-4f8e-b6c0-3d9a8e1f2b57",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Every workspace-runners there, each as a read would answer it, in address order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceRunnersResourceListResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed, or asking for an API version this server does not serve",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid credentials",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workspace that you may see",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List what a workspace declares of its runners: one declaration, or none",
+        "tags": [
+          "runners"
+        ],
+        "x-spotlight-resource": {
+          "kind": "workspace-runners",
+          "operation": "list"
         }
       }
     },
@@ -9712,6 +10431,100 @@
         }
       }
     },
+    "/resources/workspaces/{workspaceId}/skills": {
+      "get": {
+        "operationId": "listSkills",
+        "parameters": [
+          {
+            "name": "Spotlight-Api-Version",
+            "in": "header",
+            "description": "The API version the client was written against; every response names the version it was answered in",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2026-09-23"
+              ],
+              "default": "2026-09-23"
+            }
+          },
+          {
+            "name": "Spotlight-Client",
+            "in": "header",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "terraform-provider/0.1.0"
+            }
+          },
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "5b1e9d2c-7a43-4f8e-b6c0-3d9a8e1f2b57",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Every skill there, each as a read would answer it, in address order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SkillResourceListResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed, or asking for an API version this server does not serve",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid credentials",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workspace that you may see",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List every skill in a workspace, across its teams, files and all",
+        "tags": [
+          "skills"
+        ],
+        "x-spotlight-resource": {
+          "kind": "skill",
+          "operation": "list"
+        }
+      }
+    },
     "/resources/teams/{teamId}/harness-profiles": {
       "post": {
         "operationId": "createHarnessProfile",
@@ -10546,6 +11359,100 @@
         "x-spotlight-resource": {
           "kind": "harness-profile",
           "operation": "import"
+        }
+      }
+    },
+    "/resources/workspaces/{workspaceId}/harness-profiles": {
+      "get": {
+        "operationId": "listHarnessProfiles",
+        "parameters": [
+          {
+            "name": "Spotlight-Api-Version",
+            "in": "header",
+            "description": "The API version the client was written against; every response names the version it was answered in",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2026-09-23"
+              ],
+              "default": "2026-09-23"
+            }
+          },
+          {
+            "name": "Spotlight-Client",
+            "in": "header",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "terraform-provider/0.1.0"
+            }
+          },
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "5b1e9d2c-7a43-4f8e-b6c0-3d9a8e1f2b57",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Every harness-profile there, each as a read would answer it, in address order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessProfileResourceListResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed, or asking for an API version this server does not serve",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid credentials",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workspace that you may see",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List every harness profile in a workspace, across its teams",
+        "tags": [
+          "harness-profiles"
+        ],
+        "x-spotlight-resource": {
+          "kind": "harness-profile",
+          "operation": "list"
         }
       }
     },
@@ -12093,6 +13000,100 @@
         }
       }
     },
+    "/resources/workspaces/{workspaceId}/integrations": {
+      "get": {
+        "operationId": "listIntegrations",
+        "parameters": [
+          {
+            "name": "Spotlight-Api-Version",
+            "in": "header",
+            "description": "The API version the client was written against; every response names the version it was answered in",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2026-09-23"
+              ],
+              "default": "2026-09-23"
+            }
+          },
+          {
+            "name": "Spotlight-Client",
+            "in": "header",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "terraform-provider/0.1.0"
+            }
+          },
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "5b1e9d2c-7a43-4f8e-b6c0-3d9a8e1f2b57",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Every integration there, each as a read would answer it, in address order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrationResourceListResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed, or asking for an API version this server does not serve",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid credentials",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workspace that you may see",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List every integration in a workspace, across its teams",
+        "tags": [
+          "integrations"
+        ],
+        "x-spotlight-resource": {
+          "kind": "integration",
+          "operation": "list"
+        }
+      }
+    },
     "/expressions/check": {
       "post": {
         "operationId": "checkExpression",
@@ -12659,6 +13660,21 @@
           "teamId",
           "key",
           "definition"
+        ]
+      },
+      "LineResourceListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Every one there is, each as a read would answer it, in address order",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LineResourceResponseDto"
+            }
+          }
+        },
+        "required": [
+          "items"
         ]
       },
       "EnqueueRunRequestDto": {
@@ -15226,6 +16242,21 @@
           "slug"
         ]
       },
+      "WorkspaceResourceListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Every one there is, each as a read would answer it, in address order",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceResourceResponseDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
       "TeamResourceResponseDto": {
         "type": "object",
         "properties": {
@@ -15275,6 +16306,21 @@
           "workspaceId",
           "key",
           "name"
+        ]
+      },
+      "TeamResourceListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Every one there is, each as a read would answer it, in address order",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TeamResourceResponseDto"
+            }
+          }
+        },
+        "required": [
+          "items"
         ]
       },
       "WorkspaceTokenResourceResponseDto": {
@@ -15363,6 +16409,21 @@
           "issuedBy",
           "issuedAt",
           "expiresAt"
+        ]
+      },
+      "WorkspaceTokenResourceListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Every one there is, each as a read would answer it, in address order",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceTokenResourceResponseDto"
+            }
+          }
+        },
+        "required": [
+          "items"
         ]
       },
       "CreateWorkspaceRequestDto": {
@@ -15916,6 +16977,21 @@
           "rotatedAt"
         ]
       },
+      "SecretResourceListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Every one there is, each as a read would answer it, in address order",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SecretResourceResponseDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
       "CatalogToolResponseDto": {
         "type": "object",
         "properties": {
@@ -16283,6 +17359,21 @@
           "trust"
         ]
       },
+      "RunnerResourceListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Every one there is, each as a read would answer it, in address order",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RunnerResourceResponseDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
       "RunnerTrustResourceResponseDto": {
         "type": "object",
         "properties": {
@@ -16357,6 +17448,21 @@
           "labels"
         ]
       },
+      "RunnerTrustResourceListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Every one there is, each as a read would answer it, in address order",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RunnerTrustResourceResponseDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
       "WorkspaceRunnersResourceResponseDto": {
         "type": "object",
         "properties": {
@@ -16425,6 +17531,21 @@
           "runners",
           "trusts",
           "drift"
+        ]
+      },
+      "WorkspaceRunnersResourceListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Every one there is, each as a read would answer it, in address order",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceRunnersResourceResponseDto"
+            }
+          }
+        },
+        "required": [
+          "items"
         ]
       },
       "ConfiguredIntegrationResponseDto": {
@@ -16617,6 +17738,21 @@
           "tools"
         ]
       },
+      "SkillResourceListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Every one there is, each as a read would answer it, in address order",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SkillResourceResponseDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
       "PermissionsResponseDto": {
         "type": "object",
         "properties": {
@@ -16776,6 +17912,21 @@
           "permissions",
           "mcpServers",
           "native"
+        ]
+      },
+      "HarnessProfileResourceListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Every one there is, each as a read would answer it, in address order",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HarnessProfileResourceResponseDto"
+            }
+          }
+        },
+        "required": [
+          "items"
         ]
       },
       "TerraformFileResponseDto": {
@@ -17822,6 +18973,21 @@
           "teamId",
           "source",
           "definition"
+        ]
+      },
+      "IntegrationResourceListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Every one there is, each as a read would answer it, in address order",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IntegrationResourceResponseDto"
+            }
+          }
+        },
+        "required": [
+          "items"
         ]
       },
       "CheckExpressionRequestDto": {

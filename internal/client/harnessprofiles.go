@@ -4,21 +4,19 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/client/apigen"
-	"github.com/usespotlightai/terraform-provider-spotlight/internal/spotlight"
 )
 
-type harnessProfiles struct{ api *apigen.ClientWithResponses }
-
-func harnessProfileOf(dto apigen.HarnessProfileResourceResponseDto) spotlight.HarnessProfile {
-	servers := make([]spotlight.MCPServer, 0, len(dto.McpServers))
+func harnessProfileOf(dto apigen.HarnessProfileResourceResponseDto) HarnessProfile {
+	servers := make([]MCPServer, 0, len(dto.McpServers))
 	for _, each := range dto.McpServers {
 		env := each.Env
 		if env == nil {
 			env = map[string]string{}
 		}
 
-		servers = append(servers, spotlight.MCPServer{Name: each.Name, Command: each.Command, Args: orNone(each.Args), Env: env})
+		servers = append(servers, MCPServer{Name: each.Name, Command: each.Command, Args: orNone(each.Args), Env: env})
 	}
 
 	native := dto.Native
@@ -26,12 +24,12 @@ func harnessProfileOf(dto apigen.HarnessProfileResourceResponseDto) spotlight.Ha
 		native = map[string]any{}
 	}
 
-	return spotlight.HarnessProfile{
+	return HarnessProfile{
 		Meta:   meta(dto.Id, dto.Version, dto.Address, dto.Warnings),
 		TeamID: dto.TeamId,
-		HarnessProfileInput: spotlight.HarnessProfileInput{
+		HarnessProfileInput: HarnessProfileInput{
 			Key: dto.Key,
-			Permissions: spotlight.Permissions{
+			Permissions: Permissions{
 				Allow: orNone(dto.Permissions.Allow),
 				Ask:   orNone(dto.Permissions.Ask),
 				Deny:  orNone(dto.Permissions.Deny),
@@ -42,16 +40,17 @@ func harnessProfileOf(dto apigen.HarnessProfileResourceResponseDto) spotlight.Ha
 	}
 }
 
-func (h harnessProfiles) Create(ctx context.Context, teamID string, in spotlight.HarnessProfileInput) (spotlight.HarnessProfile, error) {
+// CreateHarnessProfile creates a harness profile in a team.
+func (c *Client) CreateHarnessProfile(ctx context.Context, teamID string, in HarnessProfileInput) (HarnessProfile, error) {
 	body, err := jsonBody(in)
 	if err != nil {
-		return spotlight.HarnessProfile{}, err
+		return HarnessProfile{}, err
 	}
 
-	resp, err := h.api.CreateHarnessProfileWithBodyWithResponse(ctx, teamID,
+	resp, err := c.api.CreateHarnessProfileWithBodyWithResponse(ctx, teamID,
 		&apigen.CreateHarnessProfileParams{IdempotencyKey: uuid.NewString()}, jsonContent, body)
 	if err != nil {
-		return spotlight.HarnessProfile{}, err
+		return HarnessProfile{}, err
 	}
 
 	dto, err := answered(resp.HTTPResponse, resp.Body, resp.JSON201)
@@ -59,10 +58,11 @@ func (h harnessProfiles) Create(ctx context.Context, teamID string, in spotlight
 	return harnessProfileOf(dto), err
 }
 
-func (h harnessProfiles) Read(ctx context.Context, id string) (spotlight.HarnessProfile, error) {
-	resp, err := h.api.ReadHarnessProfileWithResponse(ctx, id, &apigen.ReadHarnessProfileParams{})
+// ReadHarnessProfile reads the harness profile with an id.
+func (c *Client) ReadHarnessProfile(ctx context.Context, id string) (HarnessProfile, error) {
+	resp, err := c.api.ReadHarnessProfileWithResponse(ctx, id, &apigen.ReadHarnessProfileParams{})
 	if err != nil {
-		return spotlight.HarnessProfile{}, err
+		return HarnessProfile{}, err
 	}
 
 	dto, err := answered(resp.HTTPResponse, resp.Body, resp.JSON200)
@@ -70,16 +70,17 @@ func (h harnessProfiles) Read(ctx context.Context, id string) (spotlight.Harness
 	return harnessProfileOf(dto), err
 }
 
-func (h harnessProfiles) Update(ctx context.Context, id string, version int64, in spotlight.HarnessProfileInput) (spotlight.HarnessProfile, error) {
+// UpdateHarnessProfile writes the harness profile over version, the one last read.
+func (c *Client) UpdateHarnessProfile(ctx context.Context, id string, version int64, in HarnessProfileInput) (HarnessProfile, error) {
 	body, err := jsonBody(in)
 	if err != nil {
-		return spotlight.HarnessProfile{}, err
+		return HarnessProfile{}, err
 	}
 
-	resp, err := h.api.UpdateHarnessProfileWithBodyWithResponse(ctx, id,
+	resp, err := c.api.UpdateHarnessProfileWithBodyWithResponse(ctx, id,
 		&apigen.UpdateHarnessProfileParams{IfMatch: entityTag(version)}, jsonContent, body)
 	if err != nil {
-		return spotlight.HarnessProfile{}, err
+		return HarnessProfile{}, err
 	}
 
 	dto, err := answered(resp.HTTPResponse, resp.Body, resp.JSON200)
@@ -87,8 +88,9 @@ func (h harnessProfiles) Update(ctx context.Context, id string, version int64, i
 	return harnessProfileOf(dto), err
 }
 
-func (h harnessProfiles) Delete(ctx context.Context, id string, version int64) error {
-	resp, err := h.api.DeleteHarnessProfileWithResponse(ctx, id, &apigen.DeleteHarnessProfileParams{IfMatch: entityTag(version)})
+// DeleteHarnessProfile deletes version of the harness profile, the one last read.
+func (c *Client) DeleteHarnessProfile(ctx context.Context, id string, version int64) error {
+	resp, err := c.api.DeleteHarnessProfileWithResponse(ctx, id, &apigen.DeleteHarnessProfileParams{IfMatch: entityTag(version)})
 	if err != nil {
 		return err
 	}
@@ -96,13 +98,34 @@ func (h harnessProfiles) Delete(ctx context.Context, id string, version int64) e
 	return done(resp.HTTPResponse, resp.Body)
 }
 
-func (h harnessProfiles) Import(ctx context.Context, workspaceID, address string) (spotlight.HarnessProfile, error) {
-	resp, err := h.api.ImportHarnessProfileWithResponse(ctx, workspaceID, &apigen.ImportHarnessProfileParams{Address: address})
+// ImportHarnessProfile finds the harness profile at an address in a workspace.
+func (c *Client) ImportHarnessProfile(ctx context.Context, workspaceID, address string) (HarnessProfile, error) {
+	resp, err := c.api.ImportHarnessProfileWithResponse(ctx, workspaceID, &apigen.ImportHarnessProfileParams{Address: address})
 	if err != nil {
-		return spotlight.HarnessProfile{}, err
+		return HarnessProfile{}, err
 	}
 
 	dto, err := answered(resp.HTTPResponse, resp.Body, resp.JSON200)
 
 	return harnessProfileOf(dto), err
+}
+
+// ListHarnessProfiles lists every harness profile in a workspace, in address order.
+func (c *Client) ListHarnessProfiles(ctx context.Context, workspaceID string) ([]HarnessProfile, error) {
+	resp, err := c.api.ListHarnessProfilesWithResponse(ctx, workspaceID, &apigen.ListHarnessProfilesParams{})
+	if err != nil {
+		return nil, err
+	}
+
+	listed, err := answered(resp.HTTPResponse, resp.Body, resp.JSON200)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]HarnessProfile, 0, len(listed.Items))
+	for _, each := range listed.Items {
+		out = append(out, harnessProfileOf(each))
+	}
+
+	return out, nil
 }

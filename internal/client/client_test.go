@@ -12,7 +12,6 @@ import (
 	"testing"
 
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/client"
-	"github.com/usespotlightai/terraform-provider-spotlight/internal/spotlight"
 )
 
 type seen struct {
@@ -35,7 +34,7 @@ func (r *recorder) all() []seen {
 	return append([]seen(nil), r.seen...)
 }
 
-func serve(t *testing.T, answer func(w http.ResponseWriter, r *http.Request, attempt int)) (spotlight.API, *recorder) {
+func serve(t *testing.T, answer func(w http.ResponseWriter, r *http.Request, attempt int)) (*client.Client, *recorder) {
 	t.Helper()
 
 	recorded := &recorder{}
@@ -51,7 +50,7 @@ func serve(t *testing.T, answer func(w http.ResponseWriter, r *http.Request, att
 	}))
 	t.Cleanup(server.Close)
 
-	api, err := client.New(client.Config{Endpoint: server.URL, Token: "secret-token", ProviderVersion: "1.2.3", Retries: 2})
+	api, err := client.New(client.Config{URL: server.URL, Token: "secret-token", ProviderVersion: "1.2.3", Retries: 2})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -74,7 +73,7 @@ func TestEveryRequestSaysWhoIsCalling(t *testing.T) {
 		reply(w, http.StatusOK, "application/json", workspace)
 	})
 
-	if _, err := api.Workspaces.Read(context.Background(), "ws-1"); err != nil {
+	if _, err := api.ReadWorkspace(context.Background(), "ws-1"); err != nil {
 		t.Fatal(err)
 	}
 
@@ -104,7 +103,7 @@ func TestCreateCarriesOneIdempotencyKeyAcrossRetries(t *testing.T) {
 		reply(w, http.StatusCreated, "application/json", workspace)
 	})
 
-	created, err := api.Workspaces.Create(context.Background(), "", spotlight.WorkspaceInput{Name: "Acme", Slug: "acme"})
+	created, err := api.CreateWorkspace(context.Background(), client.WorkspaceInput{Name: "Acme", Slug: "acme"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -134,7 +133,7 @@ func TestTwoCreatesUseTwoKeys(t *testing.T) {
 	})
 
 	for range 2 {
-		if _, err := api.Workspaces.Create(context.Background(), "", spotlight.WorkspaceInput{Name: "Acme", Slug: "acme"}); err != nil {
+		if _, err := api.CreateWorkspace(context.Background(), client.WorkspaceInput{Name: "Acme", Slug: "acme"}); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -153,7 +152,7 @@ func TestUpdateIsConditionalOnTheVersionHeld(t *testing.T) {
 		})
 	})
 
-	updated, err := api.Teams.Update(context.Background(), "team-1", 4, spotlight.TeamInput{Key: "core", Name: "Core"})
+	updated, err := api.UpdateTeam(context.Background(), "team-1", 4, client.TeamInput{Key: "core", Name: "Core"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -173,7 +172,7 @@ func TestAnUpdateIsNotRetried(t *testing.T) {
 		reply(w, http.StatusServiceUnavailable, "application/problem+json", map[string]any{"type": "urn:spotlight:problem:server-fault", "title": "Down", "status": 503, "detail": "down"})
 	})
 
-	_, err := api.Teams.Update(context.Background(), "team-1", 4, spotlight.TeamInput{Key: "core", Name: "Core"})
+	_, err := api.UpdateTeam(context.Background(), "team-1", 4, client.TeamInput{Key: "core", Name: "Core"})
 	if err == nil {
 		t.Fatal("expected the update to fail")
 	}
@@ -191,7 +190,7 @@ func TestImportAsksByAddress(t *testing.T) {
 		})
 	})
 
-	found, err := api.Lines.Import(context.Background(), "ws-1", "core/delivery")
+	found, err := api.ImportLine(context.Background(), "ws-1", "core/delivery")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -209,20 +208,20 @@ func TestImportAsksByAddress(t *testing.T) {
 func TestProblemsNameTheirFields(t *testing.T) {
 	api, _ := serve(t, func(w http.ResponseWriter, _ *http.Request, _ int) {
 		reply(w, http.StatusUnprocessableEntity, "application/problem+json", map[string]any{
-			"type": spotlight.ProblemInvalid, "title": "The line is not valid", "status": 422,
+			"type": client.ProblemInvalid, "title": "The line is not valid", "status": 422,
 			"detail": "stations[2].passesTo: names nowhere",
 			"errors": []any{map[string]any{"path": "stations[2].passesTo", "message": "names nowhere", "severity": "error"}},
 		})
 	})
 
-	_, err := api.Lines.Create(context.Background(), "team-1", spotlight.Definition{"key": "delivery"})
+	_, err := api.CreateLine(context.Background(), "team-1", client.Definition{"key": "delivery"})
 
-	problem, ok := spotlight.ProblemOf(err)
+	problem, ok := client.ProblemOf(err)
 	if !ok {
 		t.Fatalf("expected a problem, got %v", err)
 	}
 
-	if problem.Status != 422 || problem.Type != spotlight.ProblemInvalid || len(problem.Errors) != 1 || problem.Errors[0].Path != "stations[2].passesTo" {
+	if problem.Status != 422 || problem.Type != client.ProblemInvalid || len(problem.Errors) != 1 || problem.Errors[0].Path != "stations[2].passesTo" {
 		t.Errorf("problem %+v", problem)
 	}
 }
@@ -230,14 +229,14 @@ func TestProblemsNameTheirFields(t *testing.T) {
 func TestAConflictSaysWhereTheResourceIsNow(t *testing.T) {
 	api, _ := serve(t, func(w http.ResponseWriter, _ *http.Request, _ int) {
 		reply(w, http.StatusConflict, "application/problem+json", map[string]any{
-			"type": spotlight.ProblemMovedOn, "title": "The skill changed since it was read", "status": 409,
+			"type": client.ProblemMovedOn, "title": "The skill changed since it was read", "status": 409,
 			"detail": "The skill is at version 7", "currentVersion": 7,
 		})
 	})
 
-	err := api.Skills.Delete(context.Background(), "skill-1", 6)
+	err := api.DeleteSkill(context.Background(), "skill-1", 6)
 
-	problem, ok := spotlight.ProblemOf(err)
+	problem, ok := client.ProblemOf(err)
 	if !ok || problem.CurrentVersion == nil || *problem.CurrentVersion != 7 {
 		t.Errorf("problem %+v", problem)
 	}
@@ -246,12 +245,12 @@ func TestAConflictSaysWhereTheResourceIsNow(t *testing.T) {
 func TestNotFoundIsRecognised(t *testing.T) {
 	api, _ := serve(t, func(w http.ResponseWriter, _ *http.Request, _ int) {
 		reply(w, http.StatusNotFound, "application/problem+json", map[string]any{
-			"type": spotlight.ProblemNotFound, "title": "No such integration", "status": 404, "detail": "gone",
+			"type": client.ProblemNotFound, "title": "No such integration", "status": 404, "detail": "gone",
 		})
 	})
 
-	_, err := api.Integrations.Read(context.Background(), "integration-1")
-	if !spotlight.IsNotFound(err) {
+	_, err := api.ReadIntegration(context.Background(), "integration-1")
+	if !client.IsNotFound(err) {
 		t.Errorf("expected not found, got %v", err)
 	}
 }
@@ -262,9 +261,9 @@ func TestAnAnswerThatIsNotAProblemStillFails(t *testing.T) {
 		_, _ = io.WriteString(w, "upstream down")
 	})
 
-	_, err := api.Workspaces.Read(context.Background(), "ws-1")
+	_, err := api.ReadWorkspace(context.Background(), "ws-1")
 
-	problem, ok := spotlight.ProblemOf(err)
+	problem, ok := client.ProblemOf(err)
 	if !ok || problem.Status != http.StatusBadGateway || problem.Detail != "upstream down" {
 		t.Errorf("problem %+v", problem)
 	}
@@ -286,12 +285,12 @@ func TestExpressionsAreCheckedWhereTheyAreWritten(t *testing.T) {
 		})
 	})
 
-	positions, err := api.Expressions.Positions(context.Background())
+	positions, err := api.ExpressionPositions(context.Background())
 	if err != nil || len(positions) != 1 || positions[0].Returns != "bool" {
 		t.Fatalf("positions %+v, %v", positions, err)
 	}
 
-	check, err := api.Expressions.Check(context.Background(), "integration.webhook.events[0].when", "body.tpye", spotlight.Definition{"integration": "linear"})
+	check, err := api.CheckExpression(context.Background(), "integration.webhook.events[0].when", "body.tpye", client.Definition{"integration": "linear"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -310,8 +309,8 @@ func TestExpressionsAreCheckedWhereTheyAreWritten(t *testing.T) {
 func TestConfigIsChecked(t *testing.T) {
 	cases := map[string]client.Config{
 		"no endpoint": {Token: "token"},
-		"not a URL":   {Endpoint: "spotlight", Token: "token"},
-		"no token":    {Endpoint: "https://spotlight.example.com"},
+		"not a URL":   {URL: "spotlight", Token: "token"},
+		"no token":    {URL: "https://client.example.com"},
 	}
 
 	for name, cfg := range cases {
@@ -321,7 +320,7 @@ func TestConfigIsChecked(t *testing.T) {
 	}
 }
 
-func TestEndpointMayNameTheAPIPath(t *testing.T) {
+func TestURLMayNameTheAPIPath(t *testing.T) {
 	var paths []string
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		paths = append(paths, r.URL.Path)
@@ -330,12 +329,12 @@ func TestEndpointMayNameTheAPIPath(t *testing.T) {
 	defer server.Close()
 
 	for _, endpoint := range []string{server.URL, server.URL + "/", server.URL + "/api", server.URL + "/api/"} {
-		api, err := client.New(client.Config{Endpoint: endpoint, Token: "token"})
+		api, err := client.New(client.Config{URL: endpoint, Token: "token"})
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if _, err := api.Workspaces.Read(context.Background(), "ws-1"); err != nil {
+		if _, err := api.ReadWorkspace(context.Background(), "ws-1"); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -350,15 +349,15 @@ func TestEndpointMayNameTheAPIPath(t *testing.T) {
 func TestARefusalSaysWhatPermissionTheCallerLacked(t *testing.T) {
 	api, _ := serve(t, func(w http.ResponseWriter, _ *http.Request, _ int) {
 		reply(w, http.StatusForbidden, "application/problem+json", map[string]any{
-			"type": spotlight.ProblemForbidden, "title": "Not allowed to change the secret", "status": 403,
+			"type": client.ProblemForbidden, "title": "Not allowed to change the secret", "status": 403,
 			"detail": "You may read this secret", "permission": "manage-secrets",
 		})
 	})
 
-	_, err := api.Secrets.Read(context.Background(), "secret-1")
+	_, err := api.ReadSecret(context.Background(), "secret-1")
 
-	problem, ok := spotlight.ProblemOf(err)
-	if !ok || !spotlight.IsForbidden(err) || problem.Permission != spotlight.PermissionManageSecrets {
+	problem, ok := client.ProblemOf(err)
+	if !ok || !client.IsForbidden(err) || problem.Permission != client.PermissionManageSecrets {
 		t.Errorf("problem %+v", problem)
 	}
 }
@@ -376,7 +375,7 @@ func TestATokenSpotlightIssuesIsDroppedUnread(t *testing.T) {
 		reply(w, http.StatusCreated, "application/json", runner)
 	})
 
-	created, err := api.Runners.Create(context.Background(), "ws-1", spotlight.RunnerInput{Name: "build-1", Labels: []string{}})
+	created, err := api.CreateRunner(context.Background(), "ws-1", client.RunnerInput{Name: "build-1", Labels: []string{}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -392,8 +391,8 @@ func TestWriteOnlyValuesAreSentOnlyWhenGiven(t *testing.T) {
 	})
 
 	token := strings.Repeat("t", 40)
-	for _, in := range []spotlight.RunnerInput{{Name: "build-1"}, {Name: "build-1", Token: token}} {
-		created, err := api.Runners.Create(context.Background(), "ws-1", in)
+	for _, in := range []client.RunnerInput{{Name: "build-1"}, {Name: "build-1", Token: token}} {
+		created, err := api.CreateRunner(context.Background(), "ws-1", in)
 		if err != nil {
 			t.Fatal(err)
 		}

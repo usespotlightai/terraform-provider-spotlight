@@ -14,13 +14,13 @@ import (
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/provider"
 )
 
-func factories() map[string]func() (tfprotov6.ProviderServer, error) {
+func providerFactories() map[string]func() (tfprotov6.ProviderServer, error) {
 	return map[string]func() (tfprotov6.ProviderServer, error){
 		"spotlight": providerserver.NewProtocol6WithError(provider.New("9.9.9")()),
 	}
 }
 
-const workspace = `
+const providerWorkspace = `
 resource "spotlight_workspace" "acme" {
   name = "Acme"
   slug = "acme"
@@ -29,14 +29,14 @@ resource "spotlight_workspace" "acme" {
 
 func TestTheEnvironmentConfiguresTheProvider(t *testing.T) {
 	fake := fakeapi.New(t)
-	t.Setenv(provider.EndpointEnv, fake.URL)
+	t.Setenv(provider.URLEnv, fake.URL)
 	t.Setenv(provider.TokenEnv, fakeapi.Token)
 
 	resource.UnitTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: factories(),
+		ProtoV6ProviderFactories: providerFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: workspace,
+				Config: providerWorkspace,
 				Check: func(*terraform.State) error {
 					for _, each := range fake.Requests() {
 						if got := each.Headers.Get("Spotlight-Client"); got != "terraform-provider/9.9.9" {
@@ -53,19 +53,19 @@ func TestTheEnvironmentConfiguresTheProvider(t *testing.T) {
 
 func TestTheProviderBlockConfiguresTheProvider(t *testing.T) {
 	fake := fakeapi.New(t)
-	t.Setenv(provider.EndpointEnv, "")
+	t.Setenv(provider.URLEnv, "")
 	t.Setenv(provider.TokenEnv, "")
 
 	resource.UnitTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: factories(),
+		ProtoV6ProviderFactories: providerFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
 provider "spotlight" {
-  endpoint = %q
-  token    = %q
+  url   = %q
+  token = %q
 }
-`, fake.URL, fakeapi.Token) + workspace,
+`, fake.URL, fakeapi.Token) + providerWorkspace,
 				Check: resource.TestCheckResourceAttr("spotlight_workspace.acme", "slug", "acme"),
 			},
 		},
@@ -74,14 +74,14 @@ provider "spotlight" {
 
 func TestTheProviderReportsATokenTheControlPlaneRefuses(t *testing.T) {
 	fake := fakeapi.New(t)
-	t.Setenv(provider.EndpointEnv, fake.URL)
+	t.Setenv(provider.URLEnv, fake.URL)
 	t.Setenv(provider.TokenEnv, "not-a-token-it-knows")
 
 	resource.UnitTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: factories(),
+		ProtoV6ProviderFactories: providerFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config:      workspace,
+				Config:      providerWorkspace,
 				ExpectError: regexp.MustCompile(`Send a Spotlight API token as a bearer token`),
 			},
 		},
@@ -90,14 +90,14 @@ func TestTheProviderReportsATokenTheControlPlaneRefuses(t *testing.T) {
 
 func TestTheProviderNeedsAToken(t *testing.T) {
 	fake := fakeapi.New(t)
-	t.Setenv(provider.EndpointEnv, fake.URL)
+	t.Setenv(provider.URLEnv, fake.URL)
 	t.Setenv(provider.TokenEnv, "")
 
 	resource.UnitTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: factories(),
+		ProtoV6ProviderFactories: providerFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config:      workspace,
+				Config:      providerWorkspace,
 				ExpectError: regexp.MustCompile(`No API token`),
 			},
 		},
@@ -105,11 +105,11 @@ func TestTheProviderNeedsAToken(t *testing.T) {
 }
 
 func TestValidateNeedsNoControlPlane(t *testing.T) {
-	t.Setenv(provider.EndpointEnv, "")
+	t.Setenv(provider.URLEnv, "")
 	t.Setenv(provider.TokenEnv, "")
 
 	resource.UnitTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: factories(),
+		ProtoV6ProviderFactories: providerFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: `

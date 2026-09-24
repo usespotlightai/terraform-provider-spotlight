@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/client/apigen"
-	"github.com/usespotlightai/terraform-provider-spotlight/internal/spotlight"
 )
 
 func answered[T any](resp *http.Response, body []byte, value *T) (T, error) {
@@ -42,7 +41,7 @@ func done(resp *http.Response, body []byte) error {
 	return nil
 }
 
-func problemOf(resp *http.Response, body []byte) *spotlight.Problem {
+func problemOf(resp *http.Response, body []byte) *Problem {
 	var held apigen.ProblemResponseDto
 
 	if err := json.Unmarshal(body, &held); err != nil || held.Type == "" {
@@ -51,14 +50,14 @@ func problemOf(resp *http.Response, body []byte) *spotlight.Problem {
 			detail = http.StatusText(resp.StatusCode)
 		}
 
-		return &spotlight.Problem{
+		return &Problem{
 			Status: resp.StatusCode,
 			Title:  http.StatusText(resp.StatusCode),
 			Detail: detail,
 		}
 	}
 
-	problem := &spotlight.Problem{
+	problem := &Problem{
 		Status: resp.StatusCode,
 		Type:   held.Type,
 		Title:  held.Title,
@@ -66,7 +65,7 @@ func problemOf(resp *http.Response, body []byte) *spotlight.Problem {
 	}
 
 	if held.Permission != nil {
-		problem.Permission = spotlight.Permission(*held.Permission)
+		problem.Permission = Permission(*held.Permission)
 	}
 
 	if held.Errors != nil {
@@ -81,11 +80,11 @@ func problemOf(resp *http.Response, body []byte) *spotlight.Problem {
 	return problem
 }
 
-func fieldErrors(held []apigen.FieldErrorResponseDto) []spotlight.FieldError {
-	out := make([]spotlight.FieldError, 0, len(held))
+func fieldErrors(held []apigen.FieldErrorResponseDto) []FieldError {
+	out := make([]FieldError, 0, len(held))
 
 	for _, each := range held {
-		out = append(out, spotlight.FieldError{
+		out = append(out, FieldError{
 			Path:     each.Path,
 			Message:  each.Message,
 			Severity: string(each.Severity),
@@ -95,8 +94,8 @@ func fieldErrors(held []apigen.FieldErrorResponseDto) []spotlight.FieldError {
 	return out
 }
 
-func meta(id string, version float32, address string, warnings []apigen.FieldErrorResponseDto) spotlight.Meta {
-	return spotlight.Meta{
+func meta(id string, version float32, address string, warnings []apigen.FieldErrorResponseDto) Meta {
+	return Meta{
 		ID:       id,
 		Version:  int64(version),
 		Address:  address,
