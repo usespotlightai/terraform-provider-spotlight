@@ -3,12 +3,12 @@
 page_title: "spotlight_workspace_runners Resource - spotlight"
 subcategory: ""
 description: |-
-  The runners a workspace means to have, declared once for the workspace. A runner enrolled all the same is drift: it still runs, and every plan warns about it until it is declared here or deleted. So does a name here that no runner or trust answers to. Writing the declaration needs a token granted the runners scope. Import it as <workspace id>/<workspace slug>.
+  The runners a workspace means to have, declared once for the workspace. A runner enrolled all the same is drift: it still runs, and every plan warns about it until it is declared here or deleted. So does a name here that no runner, trust or pool answers to. Writing the declaration needs a token granted the runners scope. Import it as <workspace id>/<workspace slug>.
 ---
 
 # spotlight_workspace_runners (Resource)
 
-The runners a workspace means to have, declared once for the workspace. A runner enrolled all the same is drift: it still runs, and every plan warns about it until it is declared here or deleted. So does a name here that no runner or trust answers to. Writing the declaration needs a token granted the `runners` scope. Import it as `<workspace id>/<workspace slug>`.
+The runners a workspace means to have, declared once for the workspace. A runner enrolled all the same is drift: it still runs, and every plan warns about it until it is declared here or deleted. So does a name here that no runner, trust or pool answers to. Writing the declaration needs a token granted the `runners` scope. Import it as `<workspace id>/<workspace slug>`.
 
 ## Example Usage
 
@@ -17,6 +17,7 @@ resource "spotlight_workspace_runners" "acme" {
   workspace_id = spotlight_workspace.acme.id
   runners      = [spotlight_runner.build_1.name]
   trusts       = [spotlight_runner_trust.production_cluster.key]
+  pools        = [spotlight_runner_pool.ephemeral.key]
 }
 ```
 
@@ -29,6 +30,7 @@ resource "spotlight_workspace_runners" "acme" {
 
 ### Optional
 
+- `pools` (Set of String) The runner pools, by key, whose runners the workspace means to have.
 - `runners` (Set of String) The runners the workspace means to have, by name.
 - `trusts` (Set of String) The runner trusts, by key, whose runners the workspace means to have.
 

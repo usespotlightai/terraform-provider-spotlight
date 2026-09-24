@@ -163,6 +163,36 @@ type RunnerTrustInput struct {
 	Labels   []string `json:"labels"`
 }
 
+// RunnerPool is a pool of one-run runners: pulled from by runners that
+// claim with its token, or pushed to by Spotlight calling its provision
+// URL. Mode, pull or push, is fixed for its life.
+type RunnerPool struct {
+	Meta
+	WorkspaceID string
+	Mode        string
+	RunnerPoolInput
+}
+
+// RunnerPoolInput is what a runner pool is written from. Token and
+// Provision.Secret are sent only when the pool is to use them from now on,
+// and never answered.
+type RunnerPoolInput struct {
+	Key          string         `json:"key"`
+	Labels       []string       `json:"labels"`
+	MaxRuns      *int64         `json:"maxRuns,omitempty"`
+	Token        string         `json:"token,omitempty"`
+	TokenVersion *int64         `json:"tokenVersion,omitempty"`
+	Provision    *PoolProvision `json:"provision,omitempty"`
+}
+
+// PoolProvision is where Spotlight calls to start a runner for each run a
+// push pool is to serve, and the secret it signs those calls with.
+type PoolProvision struct {
+	URL           string `json:"url"`
+	Secret        string `json:"secret,omitempty"`
+	SecretVersion *int64 `json:"secretVersion,omitempty"`
+}
+
 // WorkspaceRunners is a workspace's one declaration of the runners it means
 // to have. Drift names the runners enrolled all the same.
 type WorkspaceRunners struct {
@@ -176,6 +206,7 @@ type WorkspaceRunners struct {
 type WorkspaceRunnersInput struct {
 	Runners []string `json:"runners"`
 	Trusts  []string `json:"trusts"`
+	Pools   []string `json:"pools"`
 }
 
 // HarnessProfile is a team's settings, told to every harness in its own
