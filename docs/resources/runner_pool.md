@@ -3,12 +3,12 @@
 page_title: "spotlight_runner_pool Resource - spotlight"
 subcategory: ""
 description: |-
-  A pool of one-run runners: each run the pool serves gets a runner of its own that ends with it. Runners pull work from the pool with its token, or, with provision, Spotlight pushes each run to a URL that starts one. Writing runner pools needs a token granted the runners scope. Import it as <workspace id>/<key>.
+  A pool of one-run runners: each run the pool serves gets a fresh runner of its own that ends with it. A spotlight-host on any machine pulls work from the pool with its token and starts a fresh sandbox for each run; install one with curl -fsSL <spotlight>/api/install.sh | SPOTLIGHT_URL=<spotlight> SPOTLIGHT_TOKEN=<pool token> sh. With provision, Spotlight pushes each run to a URL instead, whose call hands a one-run runner its credential. Writing runner pools needs a token granted the runners scope. Import it as <workspace id>/<key>.
 ---
 
 # spotlight_runner_pool (Resource)
 
-A pool of one-run runners: each run the pool serves gets a runner of its own that ends with it. Runners pull work from the pool with its token, or, with `provision`, Spotlight pushes each run to a URL that starts one. Writing runner pools needs a token granted the `runners` scope. Import it as `<workspace id>/<key>`.
+A pool of one-run runners: each run the pool serves gets a fresh runner of its own that ends with it. A `spotlight-host` on any machine pulls work from the pool with its token and starts a fresh sandbox for each run; install one with `curl -fsSL <spotlight>/api/install.sh | SPOTLIGHT_URL=<spotlight> SPOTLIGHT_TOKEN=<pool token> sh`. With `provision`, Spotlight pushes each run to a URL instead, whose call hands a one-run runner its credential. Writing runner pools needs a token granted the `runners` scope. Import it as `<workspace id>/<key>`.
 
 ## Example Usage
 
@@ -59,8 +59,8 @@ resource "spotlight_runner_pool" "k8s_jobs" {
 
 - `labels` (Set of String) What a line or station may name in `runners` to place its work on the pool's runners, beside its key, as in `linux`.
 - `max_runs` (Number) The most runs the pool serves at once, from 1 to 10000. Left out, there is no limit.
-- `provision` (Attributes) Makes the pool one Spotlight pushes to: it calls `url` to start a runner for each run, and the pool has no token. Left out, runners pull work from the pool with its token. Which of the two a pool does is fixed for its life, so adding or removing `provision` replaces the pool. (see [below for nested schema](#nestedatt--provision))
-- `token` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The token the pool's runners claim work with: 32 to 255 URL-safe characters, as a generated password would be. Only for a pool without `provision`. Spotlight keeps only its hash. Left out, Spotlight issues one when it creates the pool, which Terraform does not keep; a change to `token_version` must come with a token. It is sent to Spotlight and never stored in the plan or the state, so it needs Terraform 1.11 or later; change `token_version` to send it again.
+- `provision` (Attributes) Makes the pool one Spotlight pushes to: it calls `url` to start a runner for each run, and the pool has no token. Left out, a `spotlight-host` pulls work from the pool with its token. Which of the two a pool does is fixed for its life, so adding or removing `provision` replaces the pool. (see [below for nested schema](#nestedatt--provision))
+- `token` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The token a `spotlight-host` serving the pool claims work with: 32 to 255 URL-safe characters, as a generated password would be. Only for a pool without `provision`. Spotlight keeps only its hash. Left out, Spotlight issues one when it creates the pool, which Terraform does not keep; a change to `token_version` must come with a token. It is sent to Spotlight and never stored in the plan or the state, so it needs Terraform 1.11 or later; change `token_version` to send it again.
 - `token_version` (Number) Any number; change it whenever `token` changes, so Terraform sends the new value.
 
 ### Read-Only

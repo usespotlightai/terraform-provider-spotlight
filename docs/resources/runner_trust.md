@@ -3,12 +3,12 @@
 page_title: "spotlight_runner_trust Resource - spotlight"
 subcategory: ""
 description: |-
-  A workload whose platform-issued tokens enrol runners, as a Kubernetes service account's do: a runner there enrols without holding a Spotlight token. Writing runner trusts needs a token granted the runners scope. Import it as <workspace id>/<key>.
+  A workload whose platform-issued tokens let a spotlight-host claim work, as a Kubernetes service account's do: a host there holds no Spotlight token and claims through the trust with its workload token, given SPOTLIGHT_TRUST=<trust id> and SPOTLIGHT_OIDC_TOKEN_FILE=<projected token path>. Writing runner trusts needs a token granted the runners scope. Import it as <workspace id>/<key>.
 ---
 
 # spotlight_runner_trust (Resource)
 
-A workload whose platform-issued tokens enrol runners, as a Kubernetes service account's do: a runner there enrols without holding a Spotlight token. Writing runner trusts needs a token granted the `runners` scope. Import it as `<workspace id>/<key>`.
+A workload whose platform-issued tokens let a `spotlight-host` claim work, as a Kubernetes service account's do: a host there holds no Spotlight token and claims through the trust with its workload token, given `SPOTLIGHT_TRUST=<trust id>` and `SPOTLIGHT_OIDC_TOKEN_FILE=<projected token path>`. Writing runner trusts needs a token granted the `runners` scope. Import it as `<workspace id>/<key>`.
 
 ## Example Usage
 
@@ -35,7 +35,7 @@ resource "spotlight_runner_trust" "production_cluster" {
 ### Optional
 
 - `audience` (String) The audience a token must be issued for.
-- `labels` (Set of String) What a line or station may name in `runners` to place its work on the runners that enrol here, as in `gpu`.
+- `labels` (Set of String) What a line or station may name in `runners` to place its work on the runners claimed through here, as in `gpu`.
 
 ### Read-Only
 

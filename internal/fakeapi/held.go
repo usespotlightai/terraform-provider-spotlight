@@ -43,17 +43,6 @@ func wordsLike(example string) func(string) string {
 	}
 }
 
-func runnerName(text string) string {
-	switch {
-	case text == "":
-		return "must not be empty"
-	case len(text) > 60:
-		return "must be at most 60 characters"
-	default:
-		return ""
-	}
-}
-
 func onceEach(held []any, at string, wrong func(string) string, errs *[]fieldError) []any {
 	seen := map[string]bool{}
 	out := make([]any, 0, len(held))
@@ -155,15 +144,6 @@ func written(kind string, held *resource, fields, body map[string]any) (string, 
 	switch kind {
 	case "secret":
 		return secretValue(held, fields, body)
-	case "runner":
-		token, _ := body["token"].(string)
-		if token != "" && !runnerKey.MatchString(token) {
-			return "", []fieldError{{"token", "is 32 to 255 URL-safe characters, as a generated password would be"}}
-		}
-		if held != nil {
-			fields["trust"] = held.fields["trust"]
-		}
-		return token, nil
 	case "runner-pool":
 		return poolAccess(held, fields, body)
 	default:
@@ -207,20 +187,6 @@ func rotatedAt(held *resource) any {
 	}
 
 	return held.fields["rotatedAt"]
-}
-
-func runner(body map[string]any) (map[string]any, []fieldError) {
-	var errs []fieldError
-
-	name, _ := body["name"].(string)
-	name = strings.TrimSpace(name)
-	if why := runnerName(name); why != "" {
-		errs = append(errs, fieldError{"name", why})
-	}
-
-	labels := onceEach(texts(body["labels"]), "labels", wordsLike("vpc-internal"), &errs)
-
-	return map[string]any{"name": name, "labels": labels, "trust": nil}, errs
 }
 
 const pullOnly = "is only for a pool that is pulled from; a pool that provisions is called instead, and has no token"
@@ -386,18 +352,16 @@ func workspaceRunners(body map[string]any) (map[string]any, []fieldError) {
 	var errs []fieldError
 
 	return map[string]any{
-		"runners": onceEach(texts(body["runners"]), "runners", runnerName, &errs),
-		"trusts":  onceEach(texts(body["trusts"]), "trusts", wordsLike("production-cluster"), &errs),
-		"pools":   onceEach(texts(body["pools"]), "pools", wordsLike("ephemeral"), &errs),
+		"trusts": onceEach(texts(body["trusts"]), "trusts", wordsLike("production-cluster"), &errs),
+		"pools":  onceEach(texts(body["pools"]), "pools", wordsLike("ephemeral"), &errs),
 	}, errs
 }
 
-func (s *Server) driftOf(declared *resource) ([]any, []any) {
-	runners := stringsOf(declared.fields["runners"])
+func (s *Server) unansweredOf(declared *resource) []any {
 	trusts := stringsOf(declared.fields["trusts"])
 	pools := stringsOf(declared.fields["pools"])
-	enrolled, known, pooled := map[string]bool{}, map[string]bool{}, map[string]bool{}
-	drift, warnings := []any{}, []any{}
+	known, pooled := map[string]bool{}, map[string]bool{}
+	warnings := []any{}
 
 	for _, each := range s.held {
 		if s.workspaceOf(each) != declared.owner {
@@ -409,19 +373,6 @@ func (s *Server) driftOf(declared *resource) ([]any, []any) {
 			known[textOf(each.fields["key"])] = true
 		case "runner-pool":
 			pooled[textOf(each.fields["key"])] = true
-		case "runner":
-			name := textOf(each.fields["name"])
-			enrolled[name] = true
-			trust, _ := each.fields["trust"].(string)
-			if !slices.Contains(runners, name) && (trust == "" || !slices.Contains(trusts, trust)) {
-				drift = append(drift, name)
-			}
-		}
-	}
-
-	for at, name := range runners {
-		if !enrolled[name] {
-			warnings = append(warnings, warned(fmt.Sprintf("runners[%d]", at), fmt.Sprintf("names %s, but no runner by that name is enrolled", name)))
 		}
 	}
 
@@ -437,12 +388,7 @@ func (s *Server) driftOf(declared *resource) ([]any, []any) {
 		}
 	}
 
-	slices.SortFunc(drift, func(a, b any) int { return strings.Compare(textOf(a), textOf(b)) })
-	for _, name := range drift {
-		warnings = append(warnings, warned("runners", fmt.Sprintf("leaves out %s, which is enrolled all the same; add it here or delete it", name)))
-	}
-
-	return drift, warnings
+	return warnings
 }
 
 func warned(path, message string) map[string]any {

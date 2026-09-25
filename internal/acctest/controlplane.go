@@ -100,8 +100,7 @@ func ControlPlaneAt(ctx context.Context, slug string) (ControlPlane, error) {
 type Keys struct {
 	Team, Line, Skill, Integration, Profile string
 	Secret, AWSSecret                       string
-	Runner, IssuedRunner, Trust             string
-	Pool, PushPool                          string
+	Trust, Pool, PushPool                   string
 }
 
 // RandomKeys answers keys no other test uses.
@@ -110,23 +109,21 @@ func RandomKeys() Keys {
 	upper := strings.ToUpper(suffix)
 
 	return Keys{
-		Team:         KeyPrefix + suffix,
-		Line:         "delivery-" + suffix,
-		Skill:        "grafana-" + suffix,
-		Integration:  "tfacc" + suffix,
-		Profile:      "careful-" + suffix,
-		Secret:       SecretPrefix + upper,
-		AWSSecret:    SecretPrefix + "AWS_" + upper,
-		Runner:       KeyPrefix + "build-" + suffix,
-		IssuedRunner: KeyPrefix + "issued-" + suffix,
-		Trust:        KeyPrefix + "cluster-" + suffix,
-		Pool:         KeyPrefix + "pool-" + suffix,
-		PushPool:     KeyPrefix + "push-" + suffix,
+		Team:        KeyPrefix + suffix,
+		Line:        "delivery-" + suffix,
+		Skill:       "grafana-" + suffix,
+		Integration: "tfacc" + suffix,
+		Profile:     "careful-" + suffix,
+		Secret:      SecretPrefix + upper,
+		AWSSecret:   SecretPrefix + "AWS_" + upper,
+		Trust:       KeyPrefix + "cluster-" + suffix,
+		Pool:        KeyPrefix + "pool-" + suffix,
+		PushPool:    KeyPrefix + "push-" + suffix,
 	}
 }
 
-// RandomToken answers a random value long enough for a secret or a
-// runner's token.
+// RandomToken answers a random value long enough for a secret or a pull
+// pool's token.
 func RandomToken() string {
 	return "tfacc" + acctest.RandStringFromCharSet(40, acctest.CharSetAlphaNum)
 }
@@ -239,8 +236,6 @@ func (cp ControlPlane) created(k Keys) []held {
 		holding("team", api.ImportTeam, func(t client.Team) client.Meta { return t.Meta }, api.DeleteTeam, id, k.Team),
 		holding("secret", api.ImportSecret, func(s client.Secret) client.Meta { return s.Meta }, api.DeleteSecret, id, k.Secret),
 		holding("secret", api.ImportSecret, func(s client.Secret) client.Meta { return s.Meta }, api.DeleteSecret, id, k.AWSSecret),
-		holding("runner", api.ImportRunner, func(r client.Runner) client.Meta { return r.Meta }, api.DeleteRunner, id, k.Runner),
-		holding("runner", api.ImportRunner, func(r client.Runner) client.Meta { return r.Meta }, api.DeleteRunner, id, k.IssuedRunner),
 		holding("runner trust", api.ImportRunnerTrust, func(t client.RunnerTrust) client.Meta { return t.Meta }, api.DeleteRunnerTrust, id, k.Trust),
 		holding("runner pool", api.ImportRunnerPool, func(p client.RunnerPool) client.Meta { return p.Meta }, api.DeleteRunnerPool, id, k.Pool),
 		holding("runner pool", api.ImportRunnerPool, func(p client.RunnerPool) client.Meta { return p.Meta }, api.DeleteRunnerPool, id, k.PushPool),

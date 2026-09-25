@@ -36,7 +36,7 @@ type RunnerPoolResource struct {
 }
 
 const (
-	runnerPoolIssuedToken = "Spotlight issued this pool a token, answered only once. Terraform keeps no secret in its state, so the token was not kept, and no runner can claim with it. " +
+	runnerPoolIssuedToken = "Spotlight issued this pool a token, answered only once. Terraform keeps no secret in its state, so the token was not kept, and no host can claim with it. " +
 		"Give the pool a token you hold instead: set `token` (from a sensitive variable, or a write-only ephemeral value) and change `token_version` to send it."
 	runnerPoolPullOnly = "is only for a pool that is pulled from; a pool that provisions is called instead, and has no token."
 )
@@ -72,7 +72,7 @@ func (r *RunnerPoolResource) Schema(_ context.Context, _ resource.SchemaRequest,
 }
 
 func runnerPoolSchema() schema.Schema {
-	attributes := writeonly.Token.Attributes("The token the pool's runners claim work with: 32 to 255 URL-safe characters, as a generated password would be. " +
+	attributes := writeonly.Token.Attributes("The token a `spotlight-host` serving the pool claims work with: 32 to 255 URL-safe characters, as a generated password would be. " +
 		"Only for a pool without `provision`. Spotlight keeps only its hash. Left out, Spotlight issues one when it creates the pool, which Terraform does not keep; " +
 		"a change to `token_version` must come with a token.")
 	attributes["id"] = idAttribute("runner pool")
@@ -95,14 +95,16 @@ func runnerPoolSchema() schema.Schema {
 	attributes["provision"] = schema.SingleNestedAttribute{
 		Optional: true,
 		MarkdownDescription: "Makes the pool one Spotlight pushes to: it calls `url` to start a runner for each run, and the pool has no token. " +
-			"Left out, runners pull work from the pool with its token. Which of the two a pool does is fixed for its life, so adding or removing `provision` replaces the pool.",
+			"Left out, a `spotlight-host` pulls work from the pool with its token. Which of the two a pool does is fixed for its life, so adding or removing `provision` replaces the pool.",
 		Attributes:    provision,
 		PlanModifiers: []planmodifier.Object{objectplanmodifier.RequiresReplaceIf(provisionAddedOrRemoved, "Adding or removing provision replaces the pool.", "Adding or removing `provision` replaces the pool.")},
 	}
 
 	return schema.Schema{
-		MarkdownDescription: "A pool of one-run runners: each run the pool serves gets a runner of its own that ends with it. " +
-			"Runners pull work from the pool with its token, or, with `provision`, Spotlight pushes each run to a URL that starts one. " +
+		MarkdownDescription: "A pool of one-run runners: each run the pool serves gets a fresh runner of its own that ends with it. " +
+			"A `spotlight-host` on any machine pulls work from the pool with its token and starts a fresh sandbox for each run; " +
+			"install one with `curl -fsSL <spotlight>/api/install.sh | SPOTLIGHT_URL=<spotlight> SPOTLIGHT_TOKEN=<pool token> sh`. " +
+			"With `provision`, Spotlight pushes each run to a URL instead, whose call hands a one-run runner its credential. " +
 			"Writing runner pools needs a token granted the `runners` scope. Import it as `<workspace id>/<key>`.",
 		Attributes: attributes,
 	}

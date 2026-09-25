@@ -17,7 +17,7 @@ func seededWorkspaceRunners(t *testing.T, seeded acctest.Seeded) acctest.Listed 
 	declare := func(workspace client.Workspace) acctest.Listed {
 		t.Helper()
 
-		created, err := seeded.Client.CreateWorkspaceRunners(t.Context(), workspace.ID, client.WorkspaceRunnersInput{Runners: []string{"build-1"}, Trusts: []string{}})
+		created, err := seeded.Client.CreateWorkspaceRunners(t.Context(), workspace.ID, client.WorkspaceRunnersInput{Trusts: []string{}, Pools: []string{"ephemeral"}})
 		acctest.Must(t, err)
 
 		return acctest.ListedAs(created.Meta)

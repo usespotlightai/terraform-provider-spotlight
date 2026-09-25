@@ -127,27 +127,8 @@ type SecretInput struct {
 	ValueVersion *int64          `json:"valueWoVersion,omitempty"`
 }
 
-// Runner is a runner resource. IssuedToken reports that Spotlight issued it
-// a token when it was created; the token itself is never held, since
-// Terraform keeps no secret.
-type Runner struct {
-	Meta
-	WorkspaceID string
-	Name        string
-	Labels      []string
-	Trust       string
-	IssuedToken bool
-}
-
-// RunnerInput is what a runner is written from. Token is sent only when the
-// runner is to call with it from now on.
-type RunnerInput struct {
-	Name   string   `json:"name"`
-	Labels []string `json:"labels"`
-	Token  string   `json:"token,omitempty"`
-}
-
-// RunnerTrust is a workload whose platform-issued tokens enrol runners.
+// RunnerTrust is a workload whose platform-issued tokens let a host claim
+// runs through it.
 type RunnerTrust struct {
 	Meta
 	WorkspaceID string
@@ -163,8 +144,8 @@ type RunnerTrustInput struct {
 	Labels   []string `json:"labels"`
 }
 
-// RunnerPool is a pool of one-run runners: pulled from by runners that
-// claim with its token, or pushed to by Spotlight calling its provision
+// RunnerPool is a pool of one-run runners: pulled from by hosts that claim
+// with its token, or pushed to by Spotlight calling its provision
 // URL. Mode, pull or push, is fixed for its life.
 type RunnerPool struct {
 	Meta
@@ -193,20 +174,18 @@ type PoolProvision struct {
 	SecretVersion *int64 `json:"secretVersion,omitempty"`
 }
 
-// WorkspaceRunners is a workspace's one declaration of the runners it means
-// to have. Drift names the runners enrolled all the same.
+// WorkspaceRunners is a workspace's one declaration of the runner trusts
+// and pools it lets work through.
 type WorkspaceRunners struct {
 	Meta
 	WorkspaceID string
 	WorkspaceRunnersInput
-	Drift []string
 }
 
 // WorkspaceRunnersInput is what the declaration is written from.
 type WorkspaceRunnersInput struct {
-	Runners []string `json:"runners"`
-	Trusts  []string `json:"trusts"`
-	Pools   []string `json:"pools"`
+	Trusts []string `json:"trusts"`
+	Pools  []string `json:"pools"`
 }
 
 // HarnessProfile is a team's settings, told to every harness in its own

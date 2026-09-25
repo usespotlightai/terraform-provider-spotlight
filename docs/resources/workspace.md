@@ -14,7 +14,7 @@ Creating a workspace from Terraform needs a caller allowed to open workspaces, a
 
 ## Adopt a workspace
 
-A workspace is created by a person signing up in the web app. Bring it under Terraform with an `import` block that names its slug, next to a `spotlight_workspace` whose `name` and `slug` match what is there, so the first plan imports it and changes nothing. Terraform then manages everything inside it: its teams, lines, skills, integrations and harness profiles, its secrets, and its runners.
+A workspace is created by a person signing up in the web app. Bring it under Terraform with an `import` block that names its slug, next to a `spotlight_workspace` whose `name` and `slug` match what is there, so the first plan imports it and changes nothing. Terraform then manages everything inside it: its teams, lines, skills, integrations and harness profiles, its secrets, and its runner pools and trusts.
 
 ```terraform
 import {

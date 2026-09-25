@@ -13,7 +13,6 @@ Manages a Spotlight workspace as code. Full reference: [`docs/`](docs/index.md).
 | `spotlight_integration` | `configure` | `<workspace id>/<team key>/<source>` |
 | `spotlight_harness_profile` | `configure` | `<workspace id>/<team key>/<key>` |
 | `spotlight_secret` | `secrets` | `<workspace id>/<name>` |
-| `spotlight_runner` | `runners` | `<workspace id>/<name>` |
 | `spotlight_runner_trust` | `runners` | `<workspace id>/<key>` |
 | `spotlight_runner_pool` | `runners` | `<workspace id>/<key>` |
 | `spotlight_workspace_runners` | `runners` | `<workspace id>/<slug>` |
@@ -50,7 +49,7 @@ resource "spotlight_workspace" "acme" {
 - **Workspaces:** a workspace is created by signing up in the web app, then adopted with an `import` block. A token cannot create one.
 - **Scopes:** one token with `configure`, `secrets` and `runners` manages everything.
 - **Adopting an existing workspace:** **Download as Terraform** in the web app's workspace menu, or `terraform query -generate-config-out=…`, writes the configuration and import blocks for you.
-- **Terraform versions:** Terraform 1.11+ is needed for the write-only `value_wo` (secrets), `token` (runners and runner pools) and `provision.secret` (runner pools).
+- **Terraform versions:** Terraform 1.11+ is needed for the write-only `value_wo` (secrets), `token` (runner pools) and `provision.secret` (runner pools).
 
 ## Behaviour
 

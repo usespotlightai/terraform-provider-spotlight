@@ -13,11 +13,9 @@ func workspaceRunnersOf(dto apigen.WorkspaceRunnersResourceResponseDto) Workspac
 		Meta:        meta(dto.Id, dto.Version, dto.Address, dto.Warnings),
 		WorkspaceID: dto.WorkspaceId,
 		WorkspaceRunnersInput: WorkspaceRunnersInput{
-			Runners: orNone(dto.Runners),
-			Trusts:  orNone(dto.Trusts),
-			Pools:   orNone(dto.Pools),
+			Trusts: orNone(dto.Trusts),
+			Pools:  orNone(dto.Pools),
 		},
-		Drift: orNone(dto.Drift),
 	}
 }
 
