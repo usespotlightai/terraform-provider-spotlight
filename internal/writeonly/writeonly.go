@@ -14,8 +14,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Field is a write-only attribute and the version attribute beside it.
+// Field is a write-only attribute and the version attribute beside it,
+// at the root or Within a nested attribute.
 type Field struct {
+	Within   string
 	Name     string
 	Version  string
 	Required bool
@@ -24,8 +26,24 @@ type Field struct {
 // Value is the value a secret is written with.
 var Value = Field{Name: "value_wo", Version: "value_wo_version"}
 
-// Token is the token a runner calls with.
+// Token is the token a runner, or a pull pool's runners, call with.
 var Token = Field{Name: "token", Version: "token_version"}
+
+// ProvisionSecret is the secret a push pool signs its provision calls with.
+var ProvisionSecret = Field{Within: "provision", Name: "secret", Version: "secret_version", Required: true}
+
+// Path is where the value is written.
+func (f Field) Path() path.Path {
+	return f.at(f.Name)
+}
+
+func (f Field) at(name string) path.Path {
+	if f.Within == "" {
+		return path.Root(name)
+	}
+
+	return path.Root(f.Within).AtName(name)
+}
 
 // Attributes returns the field and its version, to add to the schema of a
 // resource that holds it. described says what the value is.
@@ -50,7 +68,7 @@ func (f Field) Attributes(described string) map[string]schema.Attribute {
 // it; it is null when the configuration leaves it out.
 func (f Field) Read(ctx context.Context, config tfsdk.Config) (types.String, diag.Diagnostics) {
 	var value types.String
-	diags := config.GetAttribute(ctx, path.Root(f.Name), &value)
+	diags := config.GetAttribute(ctx, f.Path(), &value)
 
 	return value, diags
 }
@@ -60,8 +78,8 @@ func (f Field) Read(ctx context.Context, config tfsdk.Config) (types.String, dia
 func (f Field) Rewritten(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) (bool, diag.Diagnostics) {
 	var planned, prior types.Int64
 
-	diags := plan.GetAttribute(ctx, path.Root(f.Version), &planned)
-	diags.Append(state.GetAttribute(ctx, path.Root(f.Version), &prior)...)
+	diags := plan.GetAttribute(ctx, f.at(f.Version), &planned)
+	diags.Append(state.GetAttribute(ctx, f.at(f.Version), &prior)...)
 
 	return !planned.Equal(prior), diags
 }

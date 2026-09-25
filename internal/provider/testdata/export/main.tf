@@ -81,6 +81,36 @@ resource "spotlight_runner_trust" "production-cluster" {
 }
 
 import {
+  to = spotlight_runner_pool.burst
+  id = "00000000-0000-4000-8000-00000000a0a0/burst"
+}
+
+resource "spotlight_runner_pool" "burst" {
+  workspace_id  = spotlight_workspace.acme.id
+  key           = "burst"
+  labels        = ["gpu"]
+  max_runs      = 4
+  token         = var.runner_pool_burst_token
+  token_version = 2
+}
+
+import {
+  to = spotlight_runner_pool.k8s-jobs
+  id = "00000000-0000-4000-8000-00000000a0a0/k8s-jobs"
+}
+
+resource "spotlight_runner_pool" "k8s-jobs" {
+  workspace_id = spotlight_workspace.acme.id
+  key          = "k8s-jobs"
+  labels       = []
+  provision = {
+    url            = "https://provisioner.acme.dev/runs"
+    secret         = var.runner_pool_k8s-jobs_provision_secret
+    secret_version = 1
+  }
+}
+
+import {
   to = spotlight_workspace_runners.acme
   id = "00000000-0000-4000-8000-00000000a0a0/acme"
 }
@@ -89,6 +119,7 @@ resource "spotlight_workspace_runners" "acme" {
   workspace_id = spotlight_workspace.acme.id
   runners      = [spotlight_runner.build-1.name]
   trusts       = [spotlight_runner_trust.production-cluster.key]
+  pools        = [spotlight_runner_pool.burst.key, spotlight_runner_pool.k8s-jobs.key]
 }
 
 import {

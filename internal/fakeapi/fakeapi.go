@@ -27,6 +27,11 @@ const apiVersion = "2026-09-23"
 // RunnerTokenHeader is where the fake answers a token it issued a runner.
 const RunnerTokenHeader = "Spotlight-Runner-Token"
 
+// PoolTokenHeader is where the fake answers a token it issued a pull pool.
+const PoolTokenHeader = "Spotlight-Pool-Token"
+
+var tokenHeaders = map[string]string{"runner": RunnerTokenHeader, "runner-pool": PoolTokenHeader}
+
 // Request is a request the fake received.
 type Request struct {
 	Method  string
@@ -148,7 +153,8 @@ func (s *Server) IDOf(kind, address string) string {
 }
 
 // Kept answers the write-only value the fake keeps for a resource: a
-// secret's value or a runner's token.
+// secret's value, a runner's or a pull pool's token, or a push pool's
+// provision secret.
 func (s *Server) Kept(id string) string {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -245,6 +251,7 @@ var kinds = map[string]string{
 	"secrets":           "secret",
 	"runners":           "runner",
 	"runner-trusts":     "runner-trust",
+	"runner-pools":      "runner-pool",
 	"workspace-runners": "workspace-runners",
 }
 
@@ -261,6 +268,7 @@ var grants = map[string]string{
 	"secret":            "secrets",
 	"runner":            "runners",
 	"runner-trust":      "runners",
+	"runner-pool":       "runners",
 	"workspace-runners": "runners",
 }
 
@@ -373,9 +381,8 @@ func (s *Server) create(kind string) http.HandlerFunc {
 			}
 		}
 
-		if kind == "runner" && value == "" {
-			value = fmt.Sprintf("issued-%s-%s", held.id, strings.Repeat("x", 32))
-			w.Header().Set(RunnerTokenHeader, value)
+		if value == "" && mints(kind, fields) {
+			value = issue(w, held)
 		}
 
 		if value != "" {
@@ -602,13 +609,25 @@ var fixedFields = map[string][]string{
 	"secret":          {"name"},
 	"runner":          {"name"},
 	"runner-trust":    {"key"},
+	"runner-pool":     {"key"},
+}
+
+func mints(kind string, fields map[string]any) bool {
+	return kind == "runner" || (kind == "runner-pool" && fields["mode"] == "pull")
+}
+
+func issue(w http.ResponseWriter, held *resource) string {
+	issued := fmt.Sprintf("issued-%s-%s", held.id, strings.Repeat("x", 32))
+	w.Header().Set(tokenHeaders[held.kind], issued)
+
+	return issued
 }
 
 func (s *Server) addressOf(held *resource) string {
 	switch held.kind {
 	case "workspace":
 		return textOf(held.fields["slug"])
-	case "team", "runner-trust":
+	case "team", "runner-trust", "runner-pool":
 		return textOf(held.fields["key"])
 	case "secret", "runner":
 		return textOf(held.fields["name"])
