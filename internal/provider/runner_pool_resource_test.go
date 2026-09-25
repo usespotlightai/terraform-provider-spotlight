@@ -25,6 +25,7 @@ const runnerPoolAddress = "spotlight_runner_pool.ephemeral"
 var (
 	tokenFirst      = strings.Repeat("a", 40)
 	tokenSecond     = strings.Repeat("b", 40)
+	tokenThird      = strings.Repeat("c", 40)
 	provisionFirst  = "whsec_" + base64.StdEncoding.EncodeToString([]byte(strings.Repeat("f", 32)))
 	provisionSecond = "whsec_" + base64.StdEncoding.EncodeToString([]byte(strings.Repeat("s", 32)))
 )
@@ -173,7 +174,7 @@ func TestRunnerPoolTokenIsWrittenButNeverKept(t *testing.T) {
 				Check: sentTimes(fake, poolToken, 2, "putting back what changed sends no token"),
 			},
 			{
-				Config: pullPool("burst", `"gpu"`, tokenSecond, 2),
+				Config: pullPool("burst", `"gpu"`, tokenThird, 3),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(runnerPoolAddress, plancheck.ResourceActionDestroyBeforeCreate)},
 				},
@@ -332,11 +333,74 @@ func TestAddingOrRemovingProvisionReplacesThePool(t *testing.T) {
 				Check: runnerPoolKeeps(fake, provisionFirst),
 			},
 			{
-				Config: pullPool("ephemeral", "", tokenFirst, 1),
+				Config: pullPool("ephemeral", "", tokenSecond, 2),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(runnerPoolAddress, plancheck.ResourceActionDestroyBeforeCreate)},
 				},
-				Check: runnerPoolKeeps(fake, tokenFirst),
+				Check: runnerPoolKeeps(fake, tokenSecond),
+			},
+		},
+	})
+}
+
+const runnerPoolNeighbour = `
+resource "spotlight_runner_pool" "burst" {
+  workspace_id  = spotlight_workspace.acme.id
+  key           = "burst"
+  token         = %q
+  token_version = %d
+}
+`
+
+func pullPoolBeside(token string, version int, neighbour string, neighbourVersion int) string {
+	return pullPool("ephemeral", "", token, version) + fmt.Sprintf(runnerPoolNeighbour, neighbour, neighbourVersion)
+}
+
+func TestAPoolTokenIsGivenOnceEver(t *testing.T) {
+	fake := fakeapi.New(t)
+	spent := regexp.MustCompile(`(?s)token: was given to a pool before, and a pool token is given once, ever`)
+	taken := regexp.MustCompile(`(?s)token: is already another pool’s token`)
+
+	resource.UnitTest(t, resource.TestCase{
+		TerraformVersionChecks:   acctest.WriteOnly,
+		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
+		Steps: []resource.TestStep{
+			{
+				Config: pullPool("ephemeral", "", tokenFirst, 1),
+			},
+			{
+				Config: pullPool("ephemeral", "", tokenSecond, 2),
+				Check:  runnerPoolKeeps(fake, tokenSecond),
+			},
+			{
+				Config:      pullPool("ephemeral", "", tokenFirst, 3),
+				ExpectError: spent,
+			},
+			{
+				Config:      pullPoolBeside(tokenSecond, 2, tokenFirst, 1),
+				ExpectError: spent,
+			},
+			{
+				Config:      pullPoolBeside(tokenSecond, 2, tokenSecond, 1),
+				ExpectError: taken,
+			},
+			{
+				Config: pullPoolBeside(tokenSecond, 2, tokenThird, 1),
+				Check:  runnerPoolKeeps(fake, tokenSecond),
+			},
+			{
+				Config: pullPool("ephemeral", "", tokenSecond, 2),
+			},
+			{
+				Config:      pullPool("ephemeral", "", tokenThird, 3),
+				ExpectError: spent,
+			},
+			{
+				Config: pullPool("sandboxes", "", tokenSecond, 2),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(runnerPoolAddress, plancheck.ResourceActionDestroyBeforeCreate)},
+				},
+				ExpectError: spent,
 			},
 		},
 	})
