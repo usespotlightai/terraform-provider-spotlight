@@ -59,10 +59,14 @@ resource "spotlight_integration" "linear" {
 }
 
 resource "spotlight_line" "delivery" {
-  team_id      = spotlight_team.acc.id
-  key          = %[4]q
-  name         = "Delivery"
-  repositories = ["acme/api"]
+  team_id = spotlight_team.acc.id
+  key     = %[4]q
+  name    = "Delivery"
+
+  repository {
+    name  = "acme/api"
+    setup = "npm ci"
+  }
 
   station {
     key       = "backlog"

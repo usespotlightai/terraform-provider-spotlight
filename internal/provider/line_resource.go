@@ -31,8 +31,9 @@ type LineResource struct {
 
 // lineBlocks are the API's lists of objects Terraform writes as repeated blocks.
 var lineBlocks = map[string]string{
-	"stations":  "station",
-	"reactions": "reaction",
+	"repositories": "repository",
+	"stations":     "station",
+	"reactions":    "reaction",
 }
 
 var lineFields = fieldpath.Locator{Schema: lineSchema().Type(), Renames: lineBlocks}
@@ -75,11 +76,23 @@ func lineSchema() schema.Schema {
 				Required:            true,
 				MarkdownDescription: "What the line is called.",
 			},
-			"role":         lineOptional("The role the line plays for its team, as in `delivery` or `review`. A role names one line."),
-			"repositories": stringSetAttribute("The repositories the line works on, each named `owner/name`."),
-			"runners":      stringSetAttribute("Where the line's work runs: the labels of a runner pool or trust, or a `<harness>@<version>` release, any of which a runner must answer to. A station's own `runners` narrow it further. Anywhere when left out."),
+			"role":    lineOptional("The role the line plays for its team, as in `delivery` or `review`. A role names one line."),
+			"runners": stringSetAttribute("Where the line's work runs: the labels of a runner pool or trust, any of which a runner must answer to. A station's own `runners` narrow it further. Anywhere when left out."),
 		},
 		Blocks: map[string]schema.Block{
+			"repository": schema.SetNestedBlock{
+				MarkdownDescription: "A repository the line works on. Spotlight keeps them sorted by name, so they are a set. The repositories of a line name at most one `image`.",
+				NestedObject: schema.NestedBlockObject{
+					Attributes: map[string]schema.Attribute{
+						"name": schema.StringAttribute{
+							Required:            true,
+							MarkdownDescription: "The repository, named `owner/name`.",
+						},
+						"image": lineOptional("The runner image every station of this line runs in, built FROM `ghcr.io/usespotlightai/spotlight-runner`; unset runs on the host's default image."),
+						"setup": lineOptional("Runs in the checkout as the agent before each run's agent starts, and before a change stack check wherever a layer changes a lockfile. Every repository says it when a station has a `check` and `diffs`."),
+					},
+				},
+			},
 			"station": schema.ListNestedBlock{
 				MarkdownDescription: "A station along the line, in order. A line has at least one.",
 				NestedObject: schema.NestedBlockObject{
@@ -103,22 +116,20 @@ func lineSchema() schema.Schema {
 							Computed:            true,
 							MarkdownDescription: "A six digit hex colour, as in `#6d78d5`. Spotlight picks one when it is left out.",
 						},
-						"description":     lineOptional("What the station is for."),
-						"harness":         lineOptional("The agent harness that works tasks here, as in `claude-code`."),
-						"model":           lineOptional("The model the harness uses."),
-						"effort":          lineOptional("How hard the agent thinks: `low`, `medium`, `high`, `xhigh` or `max`."),
-						"profile":         lineOptional("The harness profile the station's agent runs with, by key, as in `careful`."),
-						"harness_version": lineOptional("The release of the harness CLI the station's work pins, as in `2.1.270`; only a runner reporting it claims the work."),
-						"prompt":          lineOptional("What the agent is asked to do, usually read with `file()`."),
-						"check":           lineOptional("A command that must pass before a task moves on, as in `npm test`."),
-						"setup":           lineOptional("A command that prepares the workspace before the agent starts."),
-						"diffs":           lineDerived("Whether the station's runs draft a change stack from their diff."),
-						"decisions":       lineDerived("Whether the station records the agent's decisions for review."),
-						"tools":           stringListAttribute("The tools the station gives its agent, as in `linear.comment`."),
-						"skills":          stringListAttribute("The skills the station gives its agent, by key."),
-						"runners":         stringSetAttribute("Where the station's work runs, beside the line's `runners`: the labels of a runner pool or trust, or a `<harness>@<version>` release, any of which a runner must answer to."),
-						"passes_to":       stringSetAttribute("The stations a task here may move on to, by key."),
-						"ends":            lineFlag("Whether a task that reaches the station is finished.", false),
+						"description": lineOptional("What the station is for."),
+						"harness":     lineOptional("The agent harness that works tasks here, as in `claude-code`."),
+						"model":       lineOptional("The model the harness uses."),
+						"effort":      lineOptional("How hard the agent thinks: `low`, `medium`, `high`, `xhigh` or `max`."),
+						"profile":     lineOptional("The harness profile the station's agent runs with, by key, as in `careful`."),
+						"prompt":      lineOptional("What the agent is asked to do, usually read with `file()`."),
+						"check":       lineOptional("A command that must pass before a task moves on, as in `npm test`."),
+						"diffs":       lineDerived("Whether the station's runs draft a change stack from their diff."),
+						"decisions":   lineDerived("Whether the station records the agent's decisions for review."),
+						"tools":       stringListAttribute("The tools the station gives its agent, as in `linear.comment`."),
+						"skills":      stringListAttribute("The skills the station gives its agent, by key."),
+						"runners":     stringSetAttribute("Where the station's work runs, beside the line's `runners`: the labels of a runner pool or trust, any of which a runner must answer to."),
+						"passes_to":   stringSetAttribute("The stations a task here may move on to, by key."),
+						"ends":        lineFlag("Whether a task that reaches the station is finished.", false),
 					},
 				},
 			},

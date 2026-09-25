@@ -198,7 +198,7 @@ func TestHarnessProfileRefusalsInsideMapsAndNativeNameTheirKeys(t *testing.T) {
 	}
 }
 
-func harnessProfileAccConfig(k acctest.Keys, allow string, version string) string {
+func harnessProfileAccConfig(k acctest.Keys, allow string, prompt string) string {
 	return fmt.Sprintf(`
 resource "spotlight_team" "acc" {
   workspace_id = local.workspace_id
@@ -243,14 +243,13 @@ resource "spotlight_line" "delivery" {
   }
 
   station {
-    key             = "implementation"
-    name            = "Implementation"
-    harness         = "claude-code"
-    harness_version = %[5]q
-    profile         = spotlight_harness_profile.careful.key
-    prompt          = "Implement the task."
-    runners         = ["tf-acc-gpu"]
-    passes_to       = ["code-review"]
+    key       = "implementation"
+    name      = "Implementation"
+    harness   = "claude-code"
+    profile   = spotlight_harness_profile.careful.key
+    prompt    = %[5]q
+    runners   = ["tf-acc-gpu"]
+    passes_to = ["code-review"]
   }
 
   station {
@@ -276,7 +275,7 @@ resource "spotlight_line" "delivery" {
     }
   }
 }
-`, k.Team, k.Profile, k.Line, allow, version)
+`, k.Team, k.Profile, k.Line, allow, prompt)
 }
 
 func TestAccHarnessProfileAndPlacedLine(t *testing.T) {
@@ -291,7 +290,7 @@ func TestAccHarnessProfileAndPlacedLine(t *testing.T) {
 		CheckDestroy:             cp.NothingLeftButTheWorkspace(k),
 		Steps: []resource.TestStep{
 			{
-				Config: acctest.AdoptedWorkspace(cp.Workspace) + harnessProfileAccConfig(k, `"read"`, "2.1.270"),
+				Config: acctest.AdoptedWorkspace(cp.Workspace) + harnessProfileAccConfig(k, `"read"`, "Implement the task."),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("spotlight_harness_profile.careful", "address", k.Team+"/"+k.Profile),
 					resource.TestCheckResourceAttr("spotlight_harness_profile.careful", "permissions.ask.#", "0"),
@@ -302,18 +301,18 @@ func TestAccHarnessProfileAndPlacedLine(t *testing.T) {
 				),
 			},
 			{
-				Config:           acctest.AdoptedWorkspace(cp.Workspace) + harnessProfileAccConfig(k, `"read"`, "2.1.270"),
+				Config:           acctest.AdoptedWorkspace(cp.Workspace) + harnessProfileAccConfig(k, `"read"`, "Implement the task."),
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}},
 			},
 			{
-				Config: acctest.AdoptedWorkspace(cp.Workspace) + harnessProfileAccConfig(k, `"read", "execute(npm test *)"`, "v2.1.271"),
+				Config: acctest.AdoptedWorkspace(cp.Workspace) + harnessProfileAccConfig(k, `"read", "execute(npm test *)"`, "Implement the task carefully."),
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 					plancheck.ExpectResourceAction("spotlight_harness_profile.careful", plancheck.ResourceActionUpdate),
 					plancheck.ExpectResourceAction("spotlight_line.delivery", plancheck.ResourceActionUpdate),
 				}},
 			},
 			{
-				Config:           acctest.AdoptedWorkspace(cp.Workspace) + harnessProfileAccConfig(k, `"read", "execute(npm test *)"`, "v2.1.271"),
+				Config:           acctest.AdoptedWorkspace(cp.Workspace) + harnessProfileAccConfig(k, `"read", "execute(npm test *)"`, "Implement the task carefully."),
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}},
 			},
 			{
@@ -323,14 +322,13 @@ func TestAccHarnessProfileAndPlacedLine(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
-				ResourceName:            "spotlight_line.delivery",
-				ImportState:             true,
-				ImportStateId:           acctest.ImportID(id, k.Team+"/"+k.Line),
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"station.1.harness_version"},
+				ResourceName:      "spotlight_line.delivery",
+				ImportState:       true,
+				ImportStateId:     acctest.ImportID(id, k.Team+"/"+k.Line),
+				ImportStateVerify: true,
 			},
 			{
-				Config: acctest.ReleasedWorkspace(cp.Workspace) + harnessProfileAccConfig(k, `"read", "execute(npm test *)"`, "v2.1.271"),
+				Config: acctest.ReleasedWorkspace(cp.Workspace) + harnessProfileAccConfig(k, `"read", "execute(npm test *)"`, "Implement the task carefully."),
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 					acctest.ExpectForgotten("spotlight_workspace.acc"),
 					plancheck.ExpectResourceAction("spotlight_harness_profile.careful", plancheck.ResourceActionNoop),

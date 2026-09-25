@@ -1,10 +1,15 @@
 resource "spotlight_line" "core_delivery" {
-  team_id      = spotlight_team.core.id
-  key          = "delivery"
-  name         = "Delivery"
-  role         = "delivery"
-  repositories = ["acme/api"]
-  runners      = ["vpc-internal"]
+  team_id = spotlight_team.core.id
+  key     = "delivery"
+  name    = "Delivery"
+  role    = "delivery"
+  runners = ["vpc-internal"]
+
+  repository {
+    name  = "acme/api"
+    image = "ghcr.io/acme/api-runner:main"
+    setup = "npm ci"
+  }
 
   station {
     key       = "backlog"
@@ -14,17 +19,16 @@ resource "spotlight_line" "core_delivery" {
   }
 
   station {
-    key             = "implementation"
-    name            = "Implementation"
-    harness         = "claude-code"
-    harness_version = "2.1.270"
-    profile         = "careful"
-    prompt          = file("${path.module}/prompts/core/delivery/implementation.md")
-    check           = "npm test"
-    tools           = ["linear.comment"]
-    skills          = ["grafana"]
-    runners         = ["gpu"]
-    passes_to       = ["code-review"]
+    key       = "implementation"
+    name      = "Implementation"
+    harness   = "claude-code"
+    profile   = "careful"
+    prompt    = file("${path.module}/prompts/core/delivery/implementation.md")
+    check     = "npm test"
+    tools     = ["linear.comment"]
+    skills    = ["grafana"]
+    runners   = ["gpu"]
+    passes_to = ["code-review"]
   }
 
   station {
