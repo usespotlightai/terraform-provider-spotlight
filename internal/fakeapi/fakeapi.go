@@ -24,13 +24,8 @@ const Token = "test-token"
 
 const apiVersion = "2026-09-23"
 
-// RunnerTokenHeader is where the fake answers a token it issued a runner.
-const RunnerTokenHeader = "Spotlight-Runner-Token"
-
 // PoolTokenHeader is where the fake answers a token it issued a pull pool.
 const PoolTokenHeader = "Spotlight-Pool-Token"
-
-var tokenHeaders = map[string]string{"runner": RunnerTokenHeader, "runner-pool": PoolTokenHeader}
 
 // Request is a request the fake received.
 type Request struct {
@@ -153,7 +148,7 @@ func (s *Server) IDOf(kind, address string) string {
 }
 
 // Kept answers the write-only value the fake keeps for a resource: a
-// secret's value, a runner's or a pull pool's token, or a push pool's
+// secret's value, a pull pool's token, or a push pool's
 // provision secret.
 func (s *Server) Kept(id string) string {
 	s.mu.Lock()
@@ -179,24 +174,6 @@ func (s *Server) Forget(id string) {
 	defer s.mu.Unlock()
 
 	delete(s.held, id)
-}
-
-// Enrol adds a runner in a workspace behind Terraform's back, as a runner
-// enrolling through a trust would.
-func (s *Server) Enrol(workspaceID, name, trust string) string {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	s.next++
-	held := &resource{kind: "runner", id: fmt.Sprintf("runner-%04d", s.next), version: 1, owner: workspaceID, fields: map[string]any{
-		"name": name, "labels": []any{}, "trust": trust,
-	}}
-	if trust == "" {
-		held.fields["trust"] = nil
-	}
-	s.held[held.id] = held
-
-	return held.id
 }
 
 func (s *Server) guard(next http.Handler) http.Handler {
@@ -249,7 +226,6 @@ var kinds = map[string]string{
 	"integrations":      "integration",
 	"harness-profiles":  "harness-profile",
 	"secrets":           "secret",
-	"runners":           "runner",
 	"runner-trusts":     "runner-trust",
 	"runner-pools":      "runner-pool",
 	"workspace-runners": "workspace-runners",
@@ -266,7 +242,6 @@ func ownerKind(kind string) string {
 
 var grants = map[string]string{
 	"secret":            "secrets",
-	"runner":            "runners",
 	"runner-trust":      "runners",
 	"runner-pool":       "runners",
 	"workspace-runners": "runners",
@@ -607,18 +582,17 @@ var fixedFields = map[string][]string{
 	"integration":     {"source"},
 	"harness-profile": {"key"},
 	"secret":          {"name"},
-	"runner":          {"name"},
 	"runner-trust":    {"key"},
 	"runner-pool":     {"key"},
 }
 
 func mints(kind string, fields map[string]any) bool {
-	return kind == "runner" || (kind == "runner-pool" && fields["mode"] == "pull")
+	return kind == "runner-pool" && fields["mode"] == "pull"
 }
 
 func issue(w http.ResponseWriter, held *resource) string {
 	issued := fmt.Sprintf("issued-%s-%s", held.id, strings.Repeat("x", 32))
-	w.Header().Set(tokenHeaders[held.kind], issued)
+	w.Header().Set(PoolTokenHeader, issued)
 
 	return issued
 }
@@ -629,7 +603,7 @@ func (s *Server) addressOf(held *resource) string {
 		return textOf(held.fields["slug"])
 	case "team", "runner-trust", "runner-pool":
 		return textOf(held.fields["key"])
-	case "secret", "runner":
+	case "secret":
 		return textOf(held.fields["name"])
 	case "workspace-runners":
 		return s.slugOf(held.owner)
@@ -692,7 +666,7 @@ func (s *Server) bodyOf(held *resource) map[string]any {
 	}
 
 	if held.kind == "workspace-runners" {
-		body["drift"], body["warnings"] = s.driftOf(held)
+		body["warnings"] = s.unansweredOf(held)
 	}
 
 	return body

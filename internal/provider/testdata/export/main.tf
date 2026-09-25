@@ -55,18 +55,6 @@ resource "spotlight_secret" "linear_signing" {
 }
 
 import {
-  to = spotlight_runner.build-1
-  id = "00000000-0000-4000-8000-00000000a0a0/build-1"
-}
-
-resource "spotlight_runner" "build-1" {
-  workspace_id = spotlight_workspace.acme.id
-  name         = "build-1"
-  labels       = ["vpc-internal"]
-  token        = var.runner_build-1_token
-}
-
-import {
   to = spotlight_runner_trust.production-cluster
   id = "00000000-0000-4000-8000-00000000a0a0/production-cluster"
 }
@@ -88,7 +76,7 @@ import {
 resource "spotlight_runner_pool" "burst" {
   workspace_id  = spotlight_workspace.acme.id
   key           = "burst"
-  labels        = ["gpu"]
+  labels        = ["vpc-internal"]
   max_runs      = 4
   token         = var.runner_pool_burst_token
   token_version = 2
@@ -117,7 +105,6 @@ import {
 
 resource "spotlight_workspace_runners" "acme" {
   workspace_id = spotlight_workspace.acme.id
-  runners      = [spotlight_runner.build-1.name]
   trusts       = [spotlight_runner_trust.production-cluster.key]
   pools        = [spotlight_runner_pool.burst.key, spotlight_runner_pool.k8s-jobs.key]
 }
@@ -144,7 +131,7 @@ resource "spotlight_line" "core_delivery" {
   name         = "Delivery"
   role         = "review"
   repositories = ["acme/api"]
-  runners      = [spotlight_runner.build-1.name, "vpc-internal"]
+  runners      = ["vpc-internal"]
 
   station {
     key       = "backlog"

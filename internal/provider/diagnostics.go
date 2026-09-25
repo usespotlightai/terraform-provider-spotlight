@@ -21,7 +21,7 @@ var lacking = map[client.Scope]string{
 	client.ScopePlan:      "The API token lacks the plan scope, which checking expressions needs; grant it plan or configure.",
 	client.ScopeConfigure: "The API token lacks the configure scope, which changing the workspace's configuration needs.",
 	client.ScopeSecrets:   "The API token lacks the secrets scope, which setting, rebinding, rotating and deleting secrets needs; grant it secrets beside configure.",
-	client.ScopeRunners:   "The API token lacks the runners scope, which enrolling, rekeying and deleting runners and runner trusts, and declaring the workspace's runners, needs; grant it runners beside configure.",
+	client.ScopeRunners:   "The API token lacks the runners scope, which creating, rekeying and deleting runner pools and runner trusts, and declaring the workspace's runners, needs; grant it runners beside configure.",
 }
 
 var beyondTokens = map[client.Permission]string{

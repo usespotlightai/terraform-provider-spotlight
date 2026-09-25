@@ -1,12 +1,12 @@
 ---
 page_title: "Spotlight Provider"
 description: |-
-  Configure a Spotlight workspace as code: its teams, lines, skills, integrations and harness profiles, its secrets, and its runners.
+  Configure a Spotlight workspace as code: its teams, lines, skills, integrations and harness profiles, its secrets, and its runner pools and trusts.
 ---
 
 # Spotlight Provider
 
-Configure a [Spotlight](https://github.com/usespotlightai) workspace as code: its teams, the lines their tasks move along, the skills and harness profiles their agents are given, the integrations that connect them to other tools, the secrets those integrations wear, and the runners the work runs on.
+Configure a [Spotlight](https://github.com/usespotlightai) workspace as code: its teams, the lines their tasks move along, the skills and harness profiles their agents are given, the integrations that connect them to other tools, the secrets those integrations wear, and the runner pools and trusts the work runs through.
 
 **Download as Terraform**, in the web app's workspace menu, gives you a workspace you already have as configuration for this provider: a zipped module with an `import` block for each resource, and each prompt and skill as its own file. A first `terraform apply` adopts what is there and plans no change.
 
@@ -27,7 +27,7 @@ A token acts only inside the workspace it was created in, and only as its scopes
 | --- | --- |
 | `configure` | the workspace, teams, lines, skills, integrations and harness profiles |
 | `secrets` | `spotlight_secret` |
-| `runners` | `spotlight_runner`, `spotlight_runner_trust` and `spotlight_workspace_runners` |
+| `runners` | `spotlight_runner_pool`, `spotlight_runner_trust` and `spotlight_workspace_runners` |
 
 **One token granted `configure`, `secrets` and `runners` manages everything this provider can.** A write the token's scopes do not allow is refused with `403`, and the provider's diagnostic names the scope the token lacks.
 
@@ -55,13 +55,23 @@ The `spotlight_workspace` and `spotlight_team` data sources read a workspace by 
 
 Every resource is also a list resource. In Terraform 1.14 and later, a `list` block in a `.tfquery.hcl` file lists what a workspace holds, and `terraform query -generate-config-out=generated.tf` writes a resource and an `import` block for each, which is the same adoption the web app's download offers, with prompts and skills written inline rather than as files. Every resource has a resource identity, its `id`, so each can also be imported with an `import` block that names its `identity` (Terraform 1.12 and later).
 
+## Where work runs
+
+Every run gets a fresh runner of its own that ends with it, and only a runner pool or a runner trust lets a machine take work. A `spotlight_runner_pool` without `provision` is pulled from by `spotlight-host`, installed on any machine with the pool's token:
+
+```shell
+curl -fsSL https://spotlight.example.com/api/install.sh | SPOTLIGHT_URL=https://spotlight.example.com SPOTLIGHT_TOKEN=<pool token> sh
+```
+
+The host claims each run with that token and starts a fresh sandbox for it. A host on a platform that issues its workloads tokens, as Kubernetes does, claims through a `spotlight_runner_trust` instead, holding no Spotlight token: set `SPOTLIGHT_TRUST` to the trust's `id` and `SPOTLIGHT_OIDC_TOKEN_FILE` to the path of the projected token. A pool with `provision` is pushed to instead: Spotlight calls its URL for each run, handing a one-run runner its credential. A host is live state, shown on the web app's Runners page, and never a Terraform resource. A line or station names in `runners` the labels of a pool or trust, or a `<harness>@<version>` release, to place its work.
+
 ## Plans check expressions
 
 Integrations hold CEL expressions, written `$${{ ... }}` in HCL so Terraform leaves them alone. `terraform plan` sends each one to the control plane to be type-checked where it is written, so a misspelt field fails the plan with the attribute that holds it named, rather than failing the apply.
 
 ## Values Terraform never keeps
 
-A secret's value (`value_wo`) and a runner's token (`token`) are write-only attributes: they are sent to Spotlight and never stored in the plan or the state, so they need Terraform 1.11 or later. Terraform cannot see a change to a value it never keeps, so each has a version beside it (`value_wo_version`, `token_version`): change it to send the value again. A runner created without a token is issued one by Spotlight, answered only once; the provider does not keep it, and warns that no runner can call with it until it is given a token you hold.
+A secret's value (`value_wo`), a pull pool's token (`token`) and a push pool's signing secret (`provision.secret`) are write-only attributes: they are sent to Spotlight and never stored in the plan or the state, so they need Terraform 1.11 or later. Terraform cannot see a change to a value it never keeps, so each has a version beside it (`value_wo_version`, `token_version`, `provision.secret_version`): change it to send the value again. A pull pool created without a token is issued one by Spotlight, answered only once; the provider does not keep it, and warns that no host can claim with it until it is given a token you hold.
 
 ## Example Usage
 

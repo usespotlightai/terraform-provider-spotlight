@@ -23,6 +23,8 @@ import (
 const runnerPoolAddress = "spotlight_runner_pool.ephemeral"
 
 var (
+	tokenFirst      = strings.Repeat("a", 40)
+	tokenSecond     = strings.Repeat("b", 40)
 	provisionFirst  = "whsec_" + base64.StdEncoding.EncodeToString([]byte(strings.Repeat("f", 32)))
 	provisionSecond = "whsec_" + base64.StdEncoding.EncodeToString([]byte(strings.Repeat("s", 32)))
 )
@@ -118,7 +120,7 @@ func TestRunnerPoolTokenIsWrittenButNeverKept(t *testing.T) {
 		CheckDestroy:             acctest.NoneLeft(fake, "runner-pool", "team", "workspace"),
 		Steps: []resource.TestStep{
 			{
-				Config: pullPool("ephemeral", `"linux"`, runnerFirst, 1),
+				Config: pullPool("ephemeral", `"linux"`, tokenFirst, 1),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(runnerPoolAddress, tfjsonpath.New("address"), knownvalue.StringExact("ephemeral")),
 					statecheck.ExpectKnownValue(runnerPoolAddress, tfjsonpath.New("token"), knownvalue.Null()),
@@ -127,28 +129,28 @@ func TestRunnerPoolTokenIsWrittenButNeverKept(t *testing.T) {
 					statecheck.ExpectKnownValue(runnerPoolAddress, tfjsonpath.New("provision"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(runnerPoolAddress, tfjsonpath.New("labels"), knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact("linux")})),
 				},
-				Check: resource.ComposeAggregateTestCheckFunc(runnerPoolKeeps(fake, runnerFirst), acctest.NothingHolds(acctest.Value(runnerFirst))),
+				Check: resource.ComposeAggregateTestCheckFunc(runnerPoolKeeps(fake, tokenFirst), acctest.NothingHolds(acctest.Value(tokenFirst))),
 			},
 			{
-				Config:   pullPool("ephemeral", `"linux"`, runnerFirst, 1),
+				Config:   pullPool("ephemeral", `"linux"`, tokenFirst, 1),
 				PlanOnly: true,
 			},
 			{
-				Config: pullPool("ephemeral", `"linux", "gpu"`, runnerFirst, 1),
+				Config: pullPool("ephemeral", `"linux", "gpu"`, tokenFirst, 1),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(runnerPoolAddress, plancheck.ResourceActionUpdate)},
 				},
 				Check: sentTimes(fake, poolToken, 1, "relabelling sends no token"),
 			},
 			{
-				Config: pullPool("ephemeral", `"gpu", "linux"`, runnerSecond, 2),
+				Config: pullPool("ephemeral", `"gpu", "linux"`, tokenSecond, 2),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(runnerPoolAddress, plancheck.ResourceActionUpdate)},
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
-					runnerPoolKeeps(fake, runnerSecond),
+					runnerPoolKeeps(fake, tokenSecond),
 					sentTimes(fake, poolToken, 2, "a new token_version sends the token again"),
-					acctest.NothingHolds(acctest.Value(runnerFirst), acctest.Value(runnerSecond)),
+					acctest.NothingHolds(acctest.Value(tokenFirst), acctest.Value(tokenSecond)),
 				),
 			},
 			{
@@ -161,7 +163,7 @@ func TestRunnerPoolTokenIsWrittenButNeverKept(t *testing.T) {
 				PreConfig: func() {
 					fake.Change(fake.IDOf("runner-pool", "ephemeral"), func(fields map[string]any) { fields["maxRuns"] = nil })
 				},
-				Config: pullPool("ephemeral", `"gpu", "linux"`, runnerSecond, 2),
+				Config: pullPool("ephemeral", `"gpu", "linux"`, tokenSecond, 2),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(runnerPoolAddress, plancheck.ResourceActionUpdate)},
 				},
@@ -171,7 +173,7 @@ func TestRunnerPoolTokenIsWrittenButNeverKept(t *testing.T) {
 				Check: sentTimes(fake, poolToken, 2, "putting back what changed sends no token"),
 			},
 			{
-				Config: pullPool("burst", `"gpu"`, runnerSecond, 2),
+				Config: pullPool("burst", `"gpu"`, tokenSecond, 2),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(runnerPoolAddress, plancheck.ResourceActionDestroyBeforeCreate)},
 				},
@@ -245,11 +247,11 @@ func TestAPoolTokenSpotlightIssuesIsNeverKept(t *testing.T) {
 				Check: runnerPoolKeepsIssued(fake, &first),
 			},
 			{
-				Config: pullPool("ephemeral", "", runnerFirst, 2),
+				Config: pullPool("ephemeral", "", tokenFirst, 2),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(runnerPoolAddress, plancheck.ResourceActionUpdate)},
 				},
-				Check: runnerPoolKeeps(fake, runnerFirst),
+				Check: runnerPoolKeeps(fake, tokenFirst),
 			},
 		},
 	})
@@ -320,7 +322,7 @@ func TestAddingOrRemovingProvisionReplacesThePool(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
 		Steps: []resource.TestStep{
 			{
-				Config: pullPool("ephemeral", "", runnerFirst, 1),
+				Config: pullPool("ephemeral", "", tokenFirst, 1),
 			},
 			{
 				Config: pushPool("https://provision.example.com/runs", provisionFirst, 1),
@@ -330,11 +332,11 @@ func TestAddingOrRemovingProvisionReplacesThePool(t *testing.T) {
 				Check: runnerPoolKeeps(fake, provisionFirst),
 			},
 			{
-				Config: pullPool("ephemeral", "", runnerFirst, 1),
+				Config: pullPool("ephemeral", "", tokenFirst, 1),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(runnerPoolAddress, plancheck.ResourceActionDestroyBeforeCreate)},
 				},
-				Check: runnerPoolKeeps(fake, runnerFirst),
+				Check: runnerPoolKeeps(fake, tokenFirst),
 			},
 		},
 	})
@@ -347,7 +349,7 @@ func TestAPoolIsRefusedWhatItCannotTake(t *testing.T) {
 resource "spotlight_runner_pool" "ephemeral" {
   workspace_id  = spotlight_workspace.acme.id
   key           = "ephemeral"
-  token         = "` + runnerFirst + `"
+  token         = "` + tokenFirst + `"
   token_version = 1
 
   provision = {
@@ -366,7 +368,7 @@ resource "spotlight_runner_pool" "ephemeral" {
   }
 }
 `
-	unlimited := strings.Replace(pullPool("ephemeral", "", runnerFirst, 1), "max_runs      = 4", "max_runs      = 0", 1)
+	unlimited := strings.Replace(pullPool("ephemeral", "", tokenFirst, 1), "max_runs      = 4", "max_runs      = 0", 1)
 
 	resource.UnitTest(t, resource.TestCase{
 		TerraformVersionChecks:   acctest.WriteOnly,
@@ -405,7 +407,7 @@ func TestRunnerPoolWritesNeedTheRunnersScope(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig:   func() { fake.Grant("configure", "secrets") },
-				Config:      pullPool("ephemeral", "", runnerFirst, 1),
+				Config:      pullPool("ephemeral", "", tokenFirst, 1),
 				ExpectError: regexp.MustCompile(`(?s)Not allowed to change the runner-pool.*lacks the runners scope`),
 			},
 		},

@@ -47,8 +47,6 @@ func normalized(kind string, body map[string]any) (map[string]any, []fieldError)
 		return harnessProfile(body)
 	case "secret":
 		return secret(body)
-	case "runner":
-		return runner(body)
 	case "runner-trust":
 		return runnerTrust(body)
 	case "runner-pool":

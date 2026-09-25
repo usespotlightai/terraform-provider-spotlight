@@ -3,19 +3,18 @@
 page_title: "spotlight_workspace_runners Resource - spotlight"
 subcategory: ""
 description: |-
-  The runners a workspace means to have, declared once for the workspace. A runner enrolled all the same is drift: it still runs, and every plan warns about it until it is declared here or deleted. So does a name here that no runner, trust or pool answers to. Writing the declaration needs a token granted the runners scope. Import it as <workspace id>/<workspace slug>.
+  The runner trusts and pools a workspace lets work through, declared once for the workspace. Every plan warns of a key here that no trust or pool answers to. Writing the declaration needs a token granted the runners scope. Import it as <workspace id>/<workspace slug>.
 ---
 
 # spotlight_workspace_runners (Resource)
 
-The runners a workspace means to have, declared once for the workspace. A runner enrolled all the same is drift: it still runs, and every plan warns about it until it is declared here or deleted. So does a name here that no runner, trust or pool answers to. Writing the declaration needs a token granted the `runners` scope. Import it as `<workspace id>/<workspace slug>`.
+The runner trusts and pools a workspace lets work through, declared once for the workspace. Every plan warns of a key here that no trust or pool answers to. Writing the declaration needs a token granted the `runners` scope. Import it as `<workspace id>/<workspace slug>`.
 
 ## Example Usage
 
 ```terraform
 resource "spotlight_workspace_runners" "acme" {
   workspace_id = spotlight_workspace.acme.id
-  runners      = [spotlight_runner.build_1.name]
   trusts       = [spotlight_runner_trust.production_cluster.key]
   pools        = [spotlight_runner_pool.ephemeral.key]
 }
@@ -30,14 +29,12 @@ resource "spotlight_workspace_runners" "acme" {
 
 ### Optional
 
-- `pools` (Set of String) The runner pools, by key, whose runners the workspace means to have.
-- `runners` (Set of String) The runners the workspace means to have, by name.
-- `trusts` (Set of String) The runner trusts, by key, whose runners the workspace means to have.
+- `pools` (Set of String) The runner pools, by key, the workspace lets work through.
+- `trusts` (Set of String) The runner trusts, by key, the workspace lets work through.
 
 ### Read-Only
 
 - `address` (String) Names the resource within its workspace, as in `acme`.
-- `drift` (Set of String) The runners enrolled all the same, outside what is declared.
 - `id` (String) Issued by Spotlight when the declaration is created, and never changed.
 - `version` (Number) Rises with every change to the declaration; each write sends it back so a change made since is not overwritten.
 

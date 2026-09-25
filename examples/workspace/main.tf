@@ -26,8 +26,8 @@ variable "secret_linear_api_key" {
   sensitive   = true
 }
 
-variable "runner_build_1_token" {
-  description = "The token the runner build-1 calls with; left null, Spotlight issues one Terraform does not keep"
+variable "runner_pool_ephemeral_token" {
+  description = "The token the runner pool ephemeral claims with, which a spotlight-host serving it holds; left null, Spotlight issues one Terraform does not keep"
   type        = string
   sensitive   = true
   default     = null
@@ -43,11 +43,12 @@ resource "spotlight_secret" "linear_api_key" {
   value_wo_version = 1
 }
 
-resource "spotlight_runner" "build_1" {
-  workspace_id = spotlight_workspace.acme.id
-  name         = "build-1"
-  labels       = ["vpc-internal"]
-  token        = var.runner_build_1_token
+resource "spotlight_runner_pool" "ephemeral" {
+  workspace_id  = spotlight_workspace.acme.id
+  key           = "ephemeral"
+  labels        = ["vpc-internal"]
+  token         = var.runner_pool_ephemeral_token
+  token_version = 1
 }
 
 resource "spotlight_runner_trust" "production_cluster" {
@@ -60,8 +61,8 @@ resource "spotlight_runner_trust" "production_cluster" {
 
 resource "spotlight_workspace_runners" "acme" {
   workspace_id = spotlight_workspace.acme.id
-  runners      = [spotlight_runner.build_1.name]
   trusts       = [spotlight_runner_trust.production_cluster.key]
+  pools        = [spotlight_runner_pool.ephemeral.key]
 }
 
 resource "spotlight_team" "core" {
@@ -119,7 +120,7 @@ resource "spotlight_line" "core_delivery" {
   name         = "Delivery"
   role         = "delivery"
   repositories = ["acme/api"]
-  runners      = [spotlight_runner.build_1.name, "vpc-internal"]
+  runners      = ["vpc-internal"]
 
   station {
     key       = "backlog"

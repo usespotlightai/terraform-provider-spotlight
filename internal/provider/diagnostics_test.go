@@ -171,7 +171,7 @@ func TestWithoutAPermissionTheTitleThenTheKindSays(t *testing.T) {
 	for title, says := range map[string]string{
 		"Not allowed to administer the workspace": "a token never administers",
 		"Not allowed to open a workspace":         "cannot open one",
-		"Not allowed to change the runner":        "lacks the runners scope",
+		"Not allowed to change the runner-pool":   "lacks the runners scope",
 	} {
 		if detail := refusedDetail(&client.Problem{Status: 403, Type: client.ProblemForbidden, Title: title}, client.ScopeRunners); !strings.Contains(detail, says) {
 			t.Errorf("%s: detail %q", title, detail)

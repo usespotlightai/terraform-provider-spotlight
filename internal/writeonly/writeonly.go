@@ -26,7 +26,7 @@ type Field struct {
 // Value is the value a secret is written with.
 var Value = Field{Name: "value_wo", Version: "value_wo_version"}
 
-// Token is the token a runner, or a pull pool's runners, call with.
+// Token is the token the hosts serving a pull pool claim work with.
 var Token = Field{Name: "token", Version: "token_version"}
 
 // ProvisionSecret is the secret a push pool signs its provision calls with.

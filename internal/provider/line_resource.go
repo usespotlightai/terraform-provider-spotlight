@@ -77,7 +77,7 @@ func lineSchema() schema.Schema {
 			},
 			"role":         lineOptional("The role the line plays for its team, as in `delivery` or `review`. A role names one line."),
 			"repositories": stringSetAttribute("The repositories the line works on, each named `owner/name`."),
-			"runners":      stringSetAttribute("Where the line's work runs: runner names or labels, any of which a runner must answer to. A station's own `runners` narrow it further. Anywhere when left out."),
+			"runners":      stringSetAttribute("Where the line's work runs: the labels of a runner pool or trust, or a `<harness>@<version>` release, any of which a runner must answer to. A station's own `runners` narrow it further. Anywhere when left out."),
 		},
 		Blocks: map[string]schema.Block{
 			"station": schema.ListNestedBlock{
@@ -116,7 +116,7 @@ func lineSchema() schema.Schema {
 						"decisions":       lineDerived("Whether the station records the agent's decisions for review."),
 						"tools":           stringListAttribute("The tools the station gives its agent, as in `linear.comment`."),
 						"skills":          stringListAttribute("The skills the station gives its agent, by key."),
-						"runners":         stringSetAttribute("Where the station's work runs, beside the line's `runners`: runner names or labels, any of which a runner must answer to."),
+						"runners":         stringSetAttribute("Where the station's work runs, beside the line's `runners`: the labels of a runner pool or trust, or a `<harness>@<version>` release, any of which a runner must answer to."),
 						"passes_to":       stringSetAttribute("The stations a task here may move on to, by key."),
 						"ends":            lineFlag("Whether a task that reaches the station is finished.", false),
 					},

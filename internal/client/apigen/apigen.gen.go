@@ -470,51 +470,6 @@ func (e UpdateRunnerTrustParamsSpotlightApiVersion) Valid() bool {
 	}
 }
 
-// Defines values for DeleteRunnerParamsSpotlightApiVersion.
-const (
-	DeleteRunnerParamsSpotlightApiVersionN20260923 DeleteRunnerParamsSpotlightApiVersion = "2026-09-23"
-)
-
-// Valid indicates whether the value is a known member of the DeleteRunnerParamsSpotlightApiVersion enum.
-func (e DeleteRunnerParamsSpotlightApiVersion) Valid() bool {
-	switch e {
-	case DeleteRunnerParamsSpotlightApiVersionN20260923:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for ReadRunnerParamsSpotlightApiVersion.
-const (
-	ReadRunnerParamsSpotlightApiVersionN20260923 ReadRunnerParamsSpotlightApiVersion = "2026-09-23"
-)
-
-// Valid indicates whether the value is a known member of the ReadRunnerParamsSpotlightApiVersion enum.
-func (e ReadRunnerParamsSpotlightApiVersion) Valid() bool {
-	switch e {
-	case ReadRunnerParamsSpotlightApiVersionN20260923:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for UpdateRunnerParamsSpotlightApiVersion.
-const (
-	UpdateRunnerParamsSpotlightApiVersionN20260923 UpdateRunnerParamsSpotlightApiVersion = "2026-09-23"
-)
-
-// Valid indicates whether the value is a known member of the UpdateRunnerParamsSpotlightApiVersion enum.
-func (e UpdateRunnerParamsSpotlightApiVersion) Valid() bool {
-	switch e {
-	case UpdateRunnerParamsSpotlightApiVersionN20260923:
-		return true
-	default:
-		return false
-	}
-}
-
 // Defines values for DeleteSecretParamsSpotlightApiVersion.
 const (
 	DeleteSecretParamsSpotlightApiVersionN20260923 DeleteSecretParamsSpotlightApiVersion = "2026-09-23"
@@ -1043,51 +998,6 @@ func (e ImportRunnerTrustParamsSpotlightApiVersion) Valid() bool {
 	}
 }
 
-// Defines values for ListRunnersParamsSpotlightApiVersion.
-const (
-	ListRunnersParamsSpotlightApiVersionN20260923 ListRunnersParamsSpotlightApiVersion = "2026-09-23"
-)
-
-// Valid indicates whether the value is a known member of the ListRunnersParamsSpotlightApiVersion enum.
-func (e ListRunnersParamsSpotlightApiVersion) Valid() bool {
-	switch e {
-	case ListRunnersParamsSpotlightApiVersionN20260923:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for CreateRunnerParamsSpotlightApiVersion.
-const (
-	CreateRunnerParamsSpotlightApiVersionN20260923 CreateRunnerParamsSpotlightApiVersion = "2026-09-23"
-)
-
-// Valid indicates whether the value is a known member of the CreateRunnerParamsSpotlightApiVersion enum.
-func (e CreateRunnerParamsSpotlightApiVersion) Valid() bool {
-	switch e {
-	case CreateRunnerParamsSpotlightApiVersionN20260923:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for ImportRunnerParamsSpotlightApiVersion.
-const (
-	ImportRunnerParamsSpotlightApiVersionN20260923 ImportRunnerParamsSpotlightApiVersion = "2026-09-23"
-)
-
-// Valid indicates whether the value is a known member of the ImportRunnerParamsSpotlightApiVersion enum.
-func (e ImportRunnerParamsSpotlightApiVersion) Valid() bool {
-	switch e {
-	case ImportRunnerParamsSpotlightApiVersionN20260923:
-		return true
-	default:
-		return false
-	}
-}
-
 // Defines values for ListSecretsParamsSpotlightApiVersion.
 const (
 	ListSecretsParamsSpotlightApiVersionN20260923 ListSecretsParamsSpotlightApiVersion = "2026-09-23"
@@ -1571,13 +1481,13 @@ type RunnerPoolResourceResponseDto struct {
 	// Key Names the pool, and is its address; fixed for its life
 	Key string `json:"key"`
 
-	// Labels What a line or station may name in runners to place its work here, beside the runner name
+	// Labels What a line or station may name in runners to place its work here
 	Labels []string `json:"labels"`
 
 	// MaxRuns The most runs the pool serves at once, or null for no limit
 	MaxRuns *int `json:"maxRuns"`
 
-	// Mode pull when runners claim with the pool token, push when Spotlight calls provision; fixed for its life, and not settable
+	// Mode pull when hosts claim with the pool token, push when Spotlight calls provision; fixed for its life, and not settable
 	Mode RunnerPoolResourceResponseDtoMode `json:"mode"`
 
 	// Provision How Spotlight starts a runner for each run, for a push pool
@@ -1596,41 +1506,8 @@ type RunnerPoolResourceResponseDto struct {
 	WorkspaceId string `json:"workspaceId"`
 }
 
-// RunnerPoolResourceResponseDtoMode pull when runners claim with the pool token, push when Spotlight calls provision; fixed for its life, and not settable
+// RunnerPoolResourceResponseDtoMode pull when hosts claim with the pool token, push when Spotlight calls provision; fixed for its life, and not settable
 type RunnerPoolResourceResponseDtoMode string
-
-// RunnerResourceListResponseDto defines model for RunnerResourceListResponseDto.
-type RunnerResourceListResponseDto struct {
-	// Items Every one there is, each as a read would answer it, in address order
-	Items []RunnerResourceResponseDto `json:"items"`
-}
-
-// RunnerResourceResponseDto defines model for RunnerResourceResponseDto.
-type RunnerResourceResponseDto struct {
-	// Address Names the resource within its workspace; terraform import takes it
-	Address string `json:"address"`
-
-	// Id Issued by Spotlight when the resource is created, and never changed
-	Id string `json:"id"`
-
-	// Labels What a line or station may name in runners to place its work here, beside the runner name
-	Labels []string `json:"labels"`
-
-	// Name What the runner is called, and its address; fixed for its life, so changing it means replacing the runner
-	Name string `json:"name"`
-
-	// Trust The key of the runner trust it enrolled through, or null when it holds a token; not settable
-	Trust *string `json:"trust"`
-
-	// Version Rises with every change; the ETag carries it, and a write sends it back as If-Match
-	Version float32 `json:"version"`
-
-	// Warnings What would work better, though nothing stops it working; not settable
-	Warnings []FieldErrorResponseDto `json:"warnings"`
-
-	// WorkspaceId The workspace it belongs to
-	WorkspaceId string `json:"workspaceId"`
-}
 
 // RunnerTrustResourceListResponseDto defines model for RunnerTrustResourceListResponseDto.
 type RunnerTrustResourceListResponseDto struct {
@@ -1655,7 +1532,7 @@ type RunnerTrustResourceResponseDto struct {
 	// Key Names the trust; fixed for its life
 	Key string `json:"key"`
 
-	// Labels What a line or station may name in runners to place its work here, beside the runner name
+	// Labels What a line or station may name in runners to place its work here
 	Labels []string `json:"labels"`
 
 	// Subject The workload a token must be issued to, exactly
@@ -1895,19 +1772,13 @@ type WorkspaceRunnersResourceResponseDto struct {
 	// Address Names the resource within its workspace; terraform import takes it
 	Address string `json:"address"`
 
-	// Drift Runners enrolled all the same, outside what is declared; not settable
-	Drift []string `json:"drift"`
-
 	// Id Issued by Spotlight when the resource is created, and never changed
 	Id string `json:"id"`
 
-	// Pools The runner pools, by key, whose runners it means to have
+	// Pools The runner pools, by key, the workspace lets work through
 	Pools []string `json:"pools"`
 
-	// Runners The runners, by name, the workspace means to have
-	Runners []string `json:"runners"`
-
-	// Trusts The runner trusts, by key, whose runners it means to have
+	// Trusts The runner trusts, by key, the workspace lets work through
 	Trusts []string `json:"trusts"`
 
 	// Version Rises with every change; the ETag carries it, and a write sends it back as If-Match
@@ -2143,7 +2014,7 @@ type UpdateRunnerPoolJSONBody struct {
 		Url           string `json:"url"`
 	} `json:"provision,omitempty"`
 
-	// Token Write-only, and only for a pool without provision: the token its runners claim with, kept only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Pool-Token
+	// Token Write-only, and only for a pool without provision: the token its hosts claim with, kept only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Pool-Token
 	Token *string `json:"token,omitempty"`
 
 	// TokenVersion Changed, with a new token, to rotate the pool token in place: the old token is refused at once, while runs already claimed keep their own one-run credentials
@@ -2215,57 +2086,6 @@ type UpdateRunnerTrustParams struct {
 
 // UpdateRunnerTrustParamsSpotlightApiVersion defines parameters for UpdateRunnerTrust.
 type UpdateRunnerTrustParamsSpotlightApiVersion string
-
-// DeleteRunnerParams defines parameters for DeleteRunner.
-type DeleteRunnerParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
-	SpotlightApiVersion *DeleteRunnerParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
-
-	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown
-	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
-
-	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
-	IfMatch string `json:"If-Match"`
-}
-
-// DeleteRunnerParamsSpotlightApiVersion defines parameters for DeleteRunner.
-type DeleteRunnerParamsSpotlightApiVersion string
-
-// ReadRunnerParams defines parameters for ReadRunner.
-type ReadRunnerParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
-	SpotlightApiVersion *ReadRunnerParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
-
-	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown
-	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
-}
-
-// ReadRunnerParamsSpotlightApiVersion defines parameters for ReadRunner.
-type ReadRunnerParamsSpotlightApiVersion string
-
-// UpdateRunnerJSONBody defines parameters for UpdateRunner.
-type UpdateRunnerJSONBody struct {
-	Labels *[]string `json:"labels,omitempty"`
-	Name   string    `json:"name"`
-
-	// Token Write-only: the token the runner will call with, kept only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Runner-Token; given on update, it replaces the runner token
-	Token *string `json:"token,omitempty"`
-}
-
-// UpdateRunnerParams defines parameters for UpdateRunner.
-type UpdateRunnerParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
-	SpotlightApiVersion *UpdateRunnerParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
-
-	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown
-	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
-
-	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
-	IfMatch string `json:"If-Match"`
-}
-
-// UpdateRunnerParamsSpotlightApiVersion defines parameters for UpdateRunner.
-type UpdateRunnerParamsSpotlightApiVersion string
 
 // DeleteSecretParams defines parameters for DeleteSecret.
 type DeleteSecretParams struct {
@@ -2776,7 +2596,7 @@ type CreateRunnerPoolJSONBody struct {
 		Url           string `json:"url"`
 	} `json:"provision,omitempty"`
 
-	// Token Write-only, and only for a pool without provision: the token its runners claim with, kept only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Pool-Token
+	// Token Write-only, and only for a pool without provision: the token its hosts claim with, kept only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Pool-Token
 	Token *string `json:"token,omitempty"`
 
 	// TokenVersion Changed, with a new token, to rotate the pool token in place: the old token is refused at once, while runs already claimed keep their own one-run credentials
@@ -2863,57 +2683,6 @@ type ImportRunnerTrustParams struct {
 
 // ImportRunnerTrustParamsSpotlightApiVersion defines parameters for ImportRunnerTrust.
 type ImportRunnerTrustParamsSpotlightApiVersion string
-
-// ListRunnersParams defines parameters for ListRunners.
-type ListRunnersParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
-	SpotlightApiVersion *ListRunnersParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
-
-	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown
-	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
-}
-
-// ListRunnersParamsSpotlightApiVersion defines parameters for ListRunners.
-type ListRunnersParamsSpotlightApiVersion string
-
-// CreateRunnerJSONBody defines parameters for CreateRunner.
-type CreateRunnerJSONBody struct {
-	Labels *[]string `json:"labels,omitempty"`
-	Name   string    `json:"name"`
-
-	// Token Write-only: the token the runner will call with, kept only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Runner-Token; given on update, it replaces the runner token
-	Token *string `json:"token,omitempty"`
-}
-
-// CreateRunnerParams defines parameters for CreateRunner.
-type CreateRunnerParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
-	SpotlightApiVersion *CreateRunnerParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
-
-	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown
-	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
-
-	// IdempotencyKey Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more
-	IdempotencyKey string `json:"Idempotency-Key"`
-}
-
-// CreateRunnerParamsSpotlightApiVersion defines parameters for CreateRunner.
-type CreateRunnerParamsSpotlightApiVersion string
-
-// ImportRunnerParams defines parameters for ImportRunner.
-type ImportRunnerParams struct {
-	// Address The runner's address within the workspace
-	Address interface{} `form:"address" json:"address"`
-
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
-	SpotlightApiVersion *ImportRunnerParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
-
-	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown
-	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
-}
-
-// ImportRunnerParamsSpotlightApiVersion defines parameters for ImportRunner.
-type ImportRunnerParamsSpotlightApiVersion string
 
 // ListSecretsParams defines parameters for ListSecrets.
 type ListSecretsParams struct {
@@ -3123,9 +2892,6 @@ type UpdateRunnerPoolJSONRequestBody UpdateRunnerPoolJSONBody
 // UpdateRunnerTrustJSONRequestBody defines body for UpdateRunnerTrust for application/json ContentType.
 type UpdateRunnerTrustJSONRequestBody UpdateRunnerTrustJSONBody
 
-// UpdateRunnerJSONRequestBody defines body for UpdateRunner for application/json ContentType.
-type UpdateRunnerJSONRequestBody UpdateRunnerJSONBody
-
 // UpdateSecretJSONRequestBody defines body for UpdateSecret for application/json ContentType.
 type UpdateSecretJSONRequestBody UpdateSecretJSONBody
 
@@ -3161,9 +2927,6 @@ type CreateRunnerPoolJSONRequestBody CreateRunnerPoolJSONBody
 
 // CreateRunnerTrustJSONRequestBody defines body for CreateRunnerTrust for application/json ContentType.
 type CreateRunnerTrustJSONRequestBody CreateRunnerTrustJSONBody
-
-// CreateRunnerJSONRequestBody defines body for CreateRunner for application/json ContentType.
-type CreateRunnerJSONRequestBody CreateRunnerJSONBody
 
 // CreateSecretJSONRequestBody defines body for CreateSecret for application/json ContentType.
 type CreateSecretJSONRequestBody CreateSecretJSONBody
@@ -3310,17 +3073,6 @@ type ClientInterface interface {
 
 	UpdateRunnerTrust(ctx context.Context, id string, params *UpdateRunnerTrustParams, body UpdateRunnerTrustJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// DeleteRunner request
-	DeleteRunner(ctx context.Context, id string, params *DeleteRunnerParams, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// ReadRunner request
-	ReadRunner(ctx context.Context, id string, params *ReadRunnerParams, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// UpdateRunnerWithBody request with any body
-	UpdateRunnerWithBody(ctx context.Context, id string, params *UpdateRunnerParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	UpdateRunner(ctx context.Context, id string, params *UpdateRunnerParams, body UpdateRunnerJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// DeleteSecret request
 	DeleteSecret(ctx context.Context, id string, params *DeleteSecretParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -3446,17 +3198,6 @@ type ClientInterface interface {
 
 	// ImportRunnerTrust request
 	ImportRunnerTrust(ctx context.Context, workspaceId string, params *ImportRunnerTrustParams, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// ListRunners request
-	ListRunners(ctx context.Context, workspaceId string, params *ListRunnersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// CreateRunnerWithBody request with any body
-	CreateRunnerWithBody(ctx context.Context, workspaceId string, params *CreateRunnerParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	CreateRunner(ctx context.Context, workspaceId string, params *CreateRunnerParams, body CreateRunnerJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// ImportRunner request
-	ImportRunner(ctx context.Context, workspaceId string, params *ImportRunnerParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListSecrets request
 	ListSecrets(ctx context.Context, workspaceId string, params *ListSecretsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -3764,54 +3505,6 @@ func (c *Client) UpdateRunnerTrustWithBody(ctx context.Context, id string, param
 
 func (c *Client) UpdateRunnerTrust(ctx context.Context, id string, params *UpdateRunnerTrustParams, body UpdateRunnerTrustJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateRunnerTrustRequest(c.Server, id, params, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) DeleteRunner(ctx context.Context, id string, params *DeleteRunnerParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeleteRunnerRequest(c.Server, id, params)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) ReadRunner(ctx context.Context, id string, params *ReadRunnerParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewReadRunnerRequest(c.Server, id, params)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) UpdateRunnerWithBody(ctx context.Context, id string, params *UpdateRunnerParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateRunnerRequestWithBody(c.Server, id, params, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) UpdateRunner(ctx context.Context, id string, params *UpdateRunnerParams, body UpdateRunnerJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateRunnerRequest(c.Server, id, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -4364,54 +4057,6 @@ func (c *Client) CreateRunnerTrust(ctx context.Context, workspaceId string, para
 
 func (c *Client) ImportRunnerTrust(ctx context.Context, workspaceId string, params *ImportRunnerTrustParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewImportRunnerTrustRequest(c.Server, workspaceId, params)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) ListRunners(ctx context.Context, workspaceId string, params *ListRunnersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListRunnersRequest(c.Server, workspaceId, params)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) CreateRunnerWithBody(ctx context.Context, workspaceId string, params *CreateRunnerParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateRunnerRequestWithBody(c.Server, workspaceId, params, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) CreateRunner(ctx context.Context, workspaceId string, params *CreateRunnerParams, body CreateRunnerJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateRunnerRequest(c.Server, workspaceId, params, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) ImportRunner(ctx context.Context, workspaceId string, params *ImportRunnerParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewImportRunnerRequest(c.Server, workspaceId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -5710,217 +5355,6 @@ func NewUpdateRunnerTrustRequestWithBody(server string, id string, params *Updat
 	}
 
 	operationPath := fmt.Sprintf("/resources/runner-trusts/%s", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	if params != nil {
-
-		if params.SpotlightApiVersion != nil {
-			var headerParam0 string
-
-			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
-			if err != nil {
-				return nil, err
-			}
-
-			req.Header.Set("Spotlight-Api-Version", headerParam0)
-		}
-
-		if params.SpotlightClient != nil {
-			var headerParam1 string
-
-			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
-			if err != nil {
-				return nil, err
-			}
-
-			req.Header.Set("Spotlight-Client", headerParam1)
-		}
-
-		var headerParam2 string
-
-		headerParam2, err = runtime.StyleParamWithOptions("simple", false, "If-Match", params.IfMatch, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
-		if err != nil {
-			return nil, err
-		}
-
-		req.Header.Set("If-Match", headerParam2)
-
-	}
-
-	return req, nil
-}
-
-// NewDeleteRunnerRequest generates requests for DeleteRunner
-func NewDeleteRunnerRequest(server string, id string, params *DeleteRunnerParams) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/resources/runners/%s", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	if params != nil {
-
-		if params.SpotlightApiVersion != nil {
-			var headerParam0 string
-
-			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
-			if err != nil {
-				return nil, err
-			}
-
-			req.Header.Set("Spotlight-Api-Version", headerParam0)
-		}
-
-		if params.SpotlightClient != nil {
-			var headerParam1 string
-
-			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
-			if err != nil {
-				return nil, err
-			}
-
-			req.Header.Set("Spotlight-Client", headerParam1)
-		}
-
-		var headerParam2 string
-
-		headerParam2, err = runtime.StyleParamWithOptions("simple", false, "If-Match", params.IfMatch, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
-		if err != nil {
-			return nil, err
-		}
-
-		req.Header.Set("If-Match", headerParam2)
-
-	}
-
-	return req, nil
-}
-
-// NewReadRunnerRequest generates requests for ReadRunner
-func NewReadRunnerRequest(server string, id string, params *ReadRunnerParams) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/resources/runners/%s", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	if params != nil {
-
-		if params.SpotlightApiVersion != nil {
-			var headerParam0 string
-
-			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
-			if err != nil {
-				return nil, err
-			}
-
-			req.Header.Set("Spotlight-Api-Version", headerParam0)
-		}
-
-		if params.SpotlightClient != nil {
-			var headerParam1 string
-
-			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
-			if err != nil {
-				return nil, err
-			}
-
-			req.Header.Set("Spotlight-Client", headerParam1)
-		}
-
-	}
-
-	return req, nil
-}
-
-// NewUpdateRunnerRequest calls the generic UpdateRunner builder with application/json body
-func NewUpdateRunnerRequest(server string, id string, params *UpdateRunnerParams, body UpdateRunnerJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewUpdateRunnerRequestWithBody(server, id, params, "application/json", bodyReader)
-}
-
-// NewUpdateRunnerRequestWithBody generates requests for UpdateRunner with any type of body
-func NewUpdateRunnerRequestWithBody(server string, id string, params *UpdateRunnerParams, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/resources/runners/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -8441,231 +7875,6 @@ func NewImportRunnerTrustRequest(server string, workspaceId string, params *Impo
 	return req, nil
 }
 
-// NewListRunnersRequest generates requests for ListRunners
-func NewListRunnersRequest(server string, workspaceId string, params *ListRunnersParams) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/runners", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	if params != nil {
-
-		if params.SpotlightApiVersion != nil {
-			var headerParam0 string
-
-			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
-			if err != nil {
-				return nil, err
-			}
-
-			req.Header.Set("Spotlight-Api-Version", headerParam0)
-		}
-
-		if params.SpotlightClient != nil {
-			var headerParam1 string
-
-			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
-			if err != nil {
-				return nil, err
-			}
-
-			req.Header.Set("Spotlight-Client", headerParam1)
-		}
-
-	}
-
-	return req, nil
-}
-
-// NewCreateRunnerRequest calls the generic CreateRunner builder with application/json body
-func NewCreateRunnerRequest(server string, workspaceId string, params *CreateRunnerParams, body CreateRunnerJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewCreateRunnerRequestWithBody(server, workspaceId, params, "application/json", bodyReader)
-}
-
-// NewCreateRunnerRequestWithBody generates requests for CreateRunner with any type of body
-func NewCreateRunnerRequestWithBody(server string, workspaceId string, params *CreateRunnerParams, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/runners", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	if params != nil {
-
-		if params.SpotlightApiVersion != nil {
-			var headerParam0 string
-
-			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
-			if err != nil {
-				return nil, err
-			}
-
-			req.Header.Set("Spotlight-Api-Version", headerParam0)
-		}
-
-		if params.SpotlightClient != nil {
-			var headerParam1 string
-
-			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
-			if err != nil {
-				return nil, err
-			}
-
-			req.Header.Set("Spotlight-Client", headerParam1)
-		}
-
-		var headerParam2 string
-
-		headerParam2, err = runtime.StyleParamWithOptions("simple", false, "Idempotency-Key", params.IdempotencyKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
-		if err != nil {
-			return nil, err
-		}
-
-		req.Header.Set("Idempotency-Key", headerParam2)
-
-	}
-
-	return req, nil
-}
-
-// NewImportRunnerRequest generates requests for ImportRunner
-func NewImportRunnerRequest(server string, workspaceId string, params *ImportRunnerParams) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/runners/import", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	if params != nil {
-		// queryValues collects non-styled parameters (passthrough, JSON)
-		// that are safe to round-trip through url.Values.Encode().
-		queryValues := queryURL.Query()
-		// rawQueryFragments collects pre-encoded query fragments from
-		// styled parameters, preserving literal commas as delimiters
-		// per the OpenAPI spec (e.g. "color=blue,black,brown").
-		var rawQueryFragments []string
-
-		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "address", params.Address, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "", Format: ""}); err != nil {
-			return nil, err
-		} else {
-			for _, qp := range strings.Split(queryFrag, "&") {
-				rawQueryFragments = append(rawQueryFragments, qp)
-			}
-		}
-
-		if encoded := queryValues.Encode(); encoded != "" {
-			rawQueryFragments = append(rawQueryFragments, encoded)
-		}
-		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
-	}
-
-	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	if params != nil {
-
-		if params.SpotlightApiVersion != nil {
-			var headerParam0 string
-
-			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
-			if err != nil {
-				return nil, err
-			}
-
-			req.Header.Set("Spotlight-Api-Version", headerParam0)
-		}
-
-		if params.SpotlightClient != nil {
-			var headerParam1 string
-
-			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
-			if err != nil {
-				return nil, err
-			}
-
-			req.Header.Set("Spotlight-Client", headerParam1)
-		}
-
-	}
-
-	return req, nil
-}
-
 // NewListSecretsRequest generates requests for ListSecrets
 func NewListSecretsRequest(server string, workspaceId string, params *ListSecretsParams) (*http.Request, error) {
 	var err error
@@ -9590,17 +8799,6 @@ type ClientWithResponsesInterface interface {
 
 	UpdateRunnerTrustWithResponse(ctx context.Context, id string, params *UpdateRunnerTrustParams, body UpdateRunnerTrustJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateRunnerTrustResponse, error)
 
-	// DeleteRunnerWithResponse request
-	DeleteRunnerWithResponse(ctx context.Context, id string, params *DeleteRunnerParams, reqEditors ...RequestEditorFn) (*DeleteRunnerResponse, error)
-
-	// ReadRunnerWithResponse request
-	ReadRunnerWithResponse(ctx context.Context, id string, params *ReadRunnerParams, reqEditors ...RequestEditorFn) (*ReadRunnerResponse, error)
-
-	// UpdateRunnerWithBodyWithResponse request with any body
-	UpdateRunnerWithBodyWithResponse(ctx context.Context, id string, params *UpdateRunnerParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateRunnerResponse, error)
-
-	UpdateRunnerWithResponse(ctx context.Context, id string, params *UpdateRunnerParams, body UpdateRunnerJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateRunnerResponse, error)
-
 	// DeleteSecretWithResponse request
 	DeleteSecretWithResponse(ctx context.Context, id string, params *DeleteSecretParams, reqEditors ...RequestEditorFn) (*DeleteSecretResponse, error)
 
@@ -9726,17 +8924,6 @@ type ClientWithResponsesInterface interface {
 
 	// ImportRunnerTrustWithResponse request
 	ImportRunnerTrustWithResponse(ctx context.Context, workspaceId string, params *ImportRunnerTrustParams, reqEditors ...RequestEditorFn) (*ImportRunnerTrustResponse, error)
-
-	// ListRunnersWithResponse request
-	ListRunnersWithResponse(ctx context.Context, workspaceId string, params *ListRunnersParams, reqEditors ...RequestEditorFn) (*ListRunnersResponse, error)
-
-	// CreateRunnerWithBodyWithResponse request with any body
-	CreateRunnerWithBodyWithResponse(ctx context.Context, workspaceId string, params *CreateRunnerParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateRunnerResponse, error)
-
-	CreateRunnerWithResponse(ctx context.Context, workspaceId string, params *CreateRunnerParams, body CreateRunnerJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateRunnerResponse, error)
-
-	// ImportRunnerWithResponse request
-	ImportRunnerWithResponse(ctx context.Context, workspaceId string, params *ImportRunnerParams, reqEditors ...RequestEditorFn) (*ImportRunnerResponse, error)
 
 	// ListSecretsWithResponse request
 	ListSecretsWithResponse(ctx context.Context, workspaceId string, params *ListSecretsParams, reqEditors ...RequestEditorFn) (*ListSecretsResponse, error)
@@ -10363,111 +9550,6 @@ func (r UpdateRunnerTrustResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r UpdateRunnerTrustResponse) ContentType() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Header.Get("Content-Type")
-	}
-	return ""
-}
-
-type DeleteRunnerResponse struct {
-	Body                      []byte
-	HTTPResponse              *http.Response
-	ApplicationproblemJSON400 *ProblemResponseDto
-	ApplicationproblemJSON401 *ProblemResponseDto
-	ApplicationproblemJSON403 *ProblemResponseDto
-	ApplicationproblemJSON404 *ProblemResponseDto
-	ApplicationproblemJSON409 *ProblemResponseDto
-	ApplicationproblemJSON428 *ProblemResponseDto
-}
-
-// Status returns HTTPResponse.Status
-func (r DeleteRunnerResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r DeleteRunnerResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
-func (r DeleteRunnerResponse) ContentType() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Header.Get("Content-Type")
-	}
-	return ""
-}
-
-type ReadRunnerResponse struct {
-	Body                      []byte
-	HTTPResponse              *http.Response
-	JSON200                   *RunnerResourceResponseDto
-	ApplicationproblemJSON400 *ProblemResponseDto
-	ApplicationproblemJSON401 *ProblemResponseDto
-	ApplicationproblemJSON404 *ProblemResponseDto
-}
-
-// Status returns HTTPResponse.Status
-func (r ReadRunnerResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r ReadRunnerResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
-func (r ReadRunnerResponse) ContentType() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Header.Get("Content-Type")
-	}
-	return ""
-}
-
-type UpdateRunnerResponse struct {
-	Body                      []byte
-	HTTPResponse              *http.Response
-	JSON200                   *RunnerResourceResponseDto
-	ApplicationproblemJSON400 *ProblemResponseDto
-	ApplicationproblemJSON401 *ProblemResponseDto
-	ApplicationproblemJSON403 *ProblemResponseDto
-	ApplicationproblemJSON404 *ProblemResponseDto
-	ApplicationproblemJSON409 *ProblemResponseDto
-	ApplicationproblemJSON422 *ProblemResponseDto
-	ApplicationproblemJSON428 *ProblemResponseDto
-}
-
-// Status returns HTTPResponse.Status
-func (r UpdateRunnerResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r UpdateRunnerResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
-func (r UpdateRunnerResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -11646,108 +10728,6 @@ func (r ImportRunnerTrustResponse) ContentType() string {
 	return ""
 }
 
-type ListRunnersResponse struct {
-	Body                      []byte
-	HTTPResponse              *http.Response
-	JSON200                   *RunnerResourceListResponseDto
-	ApplicationproblemJSON400 *ProblemResponseDto
-	ApplicationproblemJSON401 *ProblemResponseDto
-	ApplicationproblemJSON404 *ProblemResponseDto
-}
-
-// Status returns HTTPResponse.Status
-func (r ListRunnersResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r ListRunnersResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
-func (r ListRunnersResponse) ContentType() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Header.Get("Content-Type")
-	}
-	return ""
-}
-
-type CreateRunnerResponse struct {
-	Body                      []byte
-	HTTPResponse              *http.Response
-	JSON201                   *RunnerResourceResponseDto
-	ApplicationproblemJSON400 *ProblemResponseDto
-	ApplicationproblemJSON401 *ProblemResponseDto
-	ApplicationproblemJSON403 *ProblemResponseDto
-	ApplicationproblemJSON404 *ProblemResponseDto
-	ApplicationproblemJSON409 *ProblemResponseDto
-	ApplicationproblemJSON422 *ProblemResponseDto
-}
-
-// Status returns HTTPResponse.Status
-func (r CreateRunnerResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r CreateRunnerResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
-func (r CreateRunnerResponse) ContentType() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Header.Get("Content-Type")
-	}
-	return ""
-}
-
-type ImportRunnerResponse struct {
-	Body                      []byte
-	HTTPResponse              *http.Response
-	JSON200                   *RunnerResourceResponseDto
-	ApplicationproblemJSON400 *ProblemResponseDto
-	ApplicationproblemJSON401 *ProblemResponseDto
-	ApplicationproblemJSON404 *ProblemResponseDto
-}
-
-// Status returns HTTPResponse.Status
-func (r ImportRunnerResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r ImportRunnerResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
-func (r ImportRunnerResponse) ContentType() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Header.Get("Content-Type")
-	}
-	return ""
-}
-
 type ListSecretsResponse struct {
 	Body                      []byte
 	HTTPResponse              *http.Response
@@ -12321,41 +11301,6 @@ func (c *ClientWithResponses) UpdateRunnerTrustWithResponse(ctx context.Context,
 	return ParseUpdateRunnerTrustResponse(rsp)
 }
 
-// DeleteRunnerWithResponse request returning *DeleteRunnerResponse
-func (c *ClientWithResponses) DeleteRunnerWithResponse(ctx context.Context, id string, params *DeleteRunnerParams, reqEditors ...RequestEditorFn) (*DeleteRunnerResponse, error) {
-	rsp, err := c.DeleteRunner(ctx, id, params, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseDeleteRunnerResponse(rsp)
-}
-
-// ReadRunnerWithResponse request returning *ReadRunnerResponse
-func (c *ClientWithResponses) ReadRunnerWithResponse(ctx context.Context, id string, params *ReadRunnerParams, reqEditors ...RequestEditorFn) (*ReadRunnerResponse, error) {
-	rsp, err := c.ReadRunner(ctx, id, params, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseReadRunnerResponse(rsp)
-}
-
-// UpdateRunnerWithBodyWithResponse request with arbitrary body returning *UpdateRunnerResponse
-func (c *ClientWithResponses) UpdateRunnerWithBodyWithResponse(ctx context.Context, id string, params *UpdateRunnerParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateRunnerResponse, error) {
-	rsp, err := c.UpdateRunnerWithBody(ctx, id, params, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseUpdateRunnerResponse(rsp)
-}
-
-func (c *ClientWithResponses) UpdateRunnerWithResponse(ctx context.Context, id string, params *UpdateRunnerParams, body UpdateRunnerJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateRunnerResponse, error) {
-	rsp, err := c.UpdateRunner(ctx, id, params, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseUpdateRunnerResponse(rsp)
-}
-
 // DeleteSecretWithResponse request returning *DeleteSecretResponse
 func (c *ClientWithResponses) DeleteSecretWithResponse(ctx context.Context, id string, params *DeleteSecretParams, reqEditors ...RequestEditorFn) (*DeleteSecretResponse, error) {
 	rsp, err := c.DeleteSecret(ctx, id, params, reqEditors...)
@@ -12756,41 +11701,6 @@ func (c *ClientWithResponses) ImportRunnerTrustWithResponse(ctx context.Context,
 		return nil, err
 	}
 	return ParseImportRunnerTrustResponse(rsp)
-}
-
-// ListRunnersWithResponse request returning *ListRunnersResponse
-func (c *ClientWithResponses) ListRunnersWithResponse(ctx context.Context, workspaceId string, params *ListRunnersParams, reqEditors ...RequestEditorFn) (*ListRunnersResponse, error) {
-	rsp, err := c.ListRunners(ctx, workspaceId, params, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseListRunnersResponse(rsp)
-}
-
-// CreateRunnerWithBodyWithResponse request with arbitrary body returning *CreateRunnerResponse
-func (c *ClientWithResponses) CreateRunnerWithBodyWithResponse(ctx context.Context, workspaceId string, params *CreateRunnerParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateRunnerResponse, error) {
-	rsp, err := c.CreateRunnerWithBody(ctx, workspaceId, params, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseCreateRunnerResponse(rsp)
-}
-
-func (c *ClientWithResponses) CreateRunnerWithResponse(ctx context.Context, workspaceId string, params *CreateRunnerParams, body CreateRunnerJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateRunnerResponse, error) {
-	rsp, err := c.CreateRunner(ctx, workspaceId, params, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseCreateRunnerResponse(rsp)
-}
-
-// ImportRunnerWithResponse request returning *ImportRunnerResponse
-func (c *ClientWithResponses) ImportRunnerWithResponse(ctx context.Context, workspaceId string, params *ImportRunnerParams, reqEditors ...RequestEditorFn) (*ImportRunnerResponse, error) {
-	rsp, err := c.ImportRunner(ctx, workspaceId, params, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseImportRunnerResponse(rsp)
 }
 
 // ListSecretsWithResponse request returning *ListSecretsResponse
@@ -13866,189 +12776,6 @@ func ParseUpdateRunnerTrustResponse(rsp *http.Response) (*UpdateRunnerTrustRespo
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest RunnerTrustResourceResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest ProblemResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.ApplicationproblemJSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest ProblemResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.ApplicationproblemJSON401 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest ProblemResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.ApplicationproblemJSON403 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest ProblemResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.ApplicationproblemJSON404 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
-		var dest ProblemResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.ApplicationproblemJSON409 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
-		var dest ProblemResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.ApplicationproblemJSON422 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 428:
-		var dest ProblemResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.ApplicationproblemJSON428 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseDeleteRunnerResponse parses an HTTP response from a DeleteRunnerWithResponse call
-func ParseDeleteRunnerResponse(rsp *http.Response) (*DeleteRunnerResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &DeleteRunnerResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest ProblemResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.ApplicationproblemJSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest ProblemResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.ApplicationproblemJSON401 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest ProblemResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.ApplicationproblemJSON403 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest ProblemResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.ApplicationproblemJSON404 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
-		var dest ProblemResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.ApplicationproblemJSON409 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 428:
-		var dest ProblemResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.ApplicationproblemJSON428 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseReadRunnerResponse parses an HTTP response from a ReadRunnerWithResponse call
-func ParseReadRunnerResponse(rsp *http.Response) (*ReadRunnerResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &ReadRunnerResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest RunnerResourceResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest ProblemResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.ApplicationproblemJSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest ProblemResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.ApplicationproblemJSON401 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest ProblemResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.ApplicationproblemJSON404 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseUpdateRunnerResponse parses an HTTP response from a UpdateRunnerWithResponse call
-func ParseUpdateRunnerResponse(rsp *http.Response) (*UpdateRunnerResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &UpdateRunnerResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest RunnerResourceResponseDto
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -16025,168 +14752,6 @@ func ParseImportRunnerTrustResponse(rsp *http.Response) (*ImportRunnerTrustRespo
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest RunnerTrustResourceResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest ProblemResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.ApplicationproblemJSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest ProblemResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.ApplicationproblemJSON401 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest ProblemResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.ApplicationproblemJSON404 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseListRunnersResponse parses an HTTP response from a ListRunnersWithResponse call
-func ParseListRunnersResponse(rsp *http.Response) (*ListRunnersResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &ListRunnersResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest RunnerResourceListResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest ProblemResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.ApplicationproblemJSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest ProblemResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.ApplicationproblemJSON401 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest ProblemResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.ApplicationproblemJSON404 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseCreateRunnerResponse parses an HTTP response from a CreateRunnerWithResponse call
-func ParseCreateRunnerResponse(rsp *http.Response) (*CreateRunnerResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &CreateRunnerResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		var dest RunnerResourceResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON201 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest ProblemResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.ApplicationproblemJSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest ProblemResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.ApplicationproblemJSON401 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest ProblemResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.ApplicationproblemJSON403 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest ProblemResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.ApplicationproblemJSON404 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
-		var dest ProblemResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.ApplicationproblemJSON409 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
-		var dest ProblemResponseDto
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.ApplicationproblemJSON422 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseImportRunnerResponse parses an HTTP response from a ImportRunnerWithResponse call
-func ParseImportRunnerResponse(rsp *http.Response) (*ImportRunnerResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &ImportRunnerResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest RunnerResourceResponseDto
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

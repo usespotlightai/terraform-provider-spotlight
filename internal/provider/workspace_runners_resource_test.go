@@ -24,12 +24,6 @@ import (
 const workspaceRunnersAddress = "spotlight_workspace_runners.acme"
 
 const workspaceRunnersNeighbours = `
-resource "spotlight_runner" "build" {
-  workspace_id = spotlight_workspace.acme.id
-  name         = "build-1"
-  token        = "` + "tok_build_one_0123456789abcdefghijklmn" + `"
-}
-
 resource "spotlight_runner_trust" "cluster" {
   workspace_id = spotlight_workspace.acme.id
   key          = "production-cluster"
@@ -44,15 +38,14 @@ resource "spotlight_runner_pool" "ephemeral" {
 }
 `
 
-func workspaceRunnersDeclared(runners, trusts, pools string) string {
+func workspaceRunnersDeclared(trusts, pools string) string {
 	return acctest.Workspace + workspaceRunnersNeighbours + fmt.Sprintf(`
 resource "spotlight_workspace_runners" "acme" {
   workspace_id = spotlight_workspace.acme.id
-  runners      = [%s]
   trusts       = [%s]
   pools        = [%s]
 }
-`, runners, trusts, pools)
+`, trusts, pools)
 }
 
 func workspaceRunnersImportID(state *terraform.State) (string, error) {
@@ -68,26 +61,24 @@ func workspaceRunnersNames(values ...string) []knownvalue.Check {
 	return out
 }
 
-func TestWorkspaceRunnersDeclaredAndDrift(t *testing.T) {
+func TestWorkspaceRunnersDeclaredAndChangesPlannedBack(t *testing.T) {
 	fake := fakeapi.New(t)
 
 	resource.UnitTest(t, resource.TestCase{
 		TerraformVersionChecks:   acctest.WriteOnly,
 		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
-		CheckDestroy:             acctest.NoneLeft(fake, "workspace-runners", "runner", "runner-trust", "runner-pool", "workspace"),
+		CheckDestroy:             acctest.NoneLeft(fake, "workspace-runners", "runner-trust", "runner-pool", "workspace"),
 		Steps: []resource.TestStep{
 			{
-				Config: workspaceRunnersDeclared("spotlight_runner.build.name", "spotlight_runner_trust.cluster.key", "spotlight_runner_pool.ephemeral.key"),
+				Config: workspaceRunnersDeclared("spotlight_runner_trust.cluster.key", "spotlight_runner_pool.ephemeral.key"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(workspaceRunnersAddress, tfjsonpath.New("address"), knownvalue.StringExact("acme")),
-					statecheck.ExpectKnownValue(workspaceRunnersAddress, tfjsonpath.New("runners"), knownvalue.SetExact(workspaceRunnersNames("build-1"))),
 					statecheck.ExpectKnownValue(workspaceRunnersAddress, tfjsonpath.New("trusts"), knownvalue.SetExact(workspaceRunnersNames("production-cluster"))),
 					statecheck.ExpectKnownValue(workspaceRunnersAddress, tfjsonpath.New("pools"), knownvalue.SetExact(workspaceRunnersNames("ephemeral"))),
-					statecheck.ExpectKnownValue(workspaceRunnersAddress, tfjsonpath.New("drift"), knownvalue.SetSizeExact(0)),
 				},
 			},
 			{
-				Config:   workspaceRunnersDeclared("spotlight_runner.build.name", "spotlight_runner_trust.cluster.key", "spotlight_runner_pool.ephemeral.key"),
+				Config:   workspaceRunnersDeclared("spotlight_runner_trust.cluster.key", "spotlight_runner_pool.ephemeral.key"),
 				PlanOnly: true,
 			},
 			{
@@ -98,38 +89,18 @@ func TestWorkspaceRunnersDeclaredAndDrift(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					fake.Enrol(fake.IDOf("workspace", "acme"), "stray-1", "")
-					fake.Enrol(fake.IDOf("workspace", "acme"), "pod-7", "production-cluster")
-				},
-				Config: workspaceRunnersDeclared("spotlight_runner.build.name", "spotlight_runner_trust.cluster.key", "spotlight_runner_pool.ephemeral.key"),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
-				},
-				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(workspaceRunnersAddress, tfjsonpath.New("drift"), knownvalue.SetExact(workspaceRunnersNames("stray-1"))),
-				},
-			},
-			{
-				Config: workspaceRunnersDeclared(`spotlight_runner.build.name, "stray-1"`, "spotlight_runner_trust.cluster.key", "spotlight_runner_pool.ephemeral.key"),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(workspaceRunnersAddress, plancheck.ResourceActionUpdate)},
-				},
-				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(workspaceRunnersAddress, tfjsonpath.New("drift"), knownvalue.SetSizeExact(0)),
-				},
-			},
-			{
-				PreConfig: func() {
-					fake.Forget(fake.IDOf("runner", "stray-1"))
-					fake.Forget(fake.IDOf("runner", "pod-7"))
 					fake.Change(fake.IDOf("workspace-runners", "acme"), func(fields map[string]any) {
 						fields["trusts"] = []any{}
 						fields["pools"] = []any{}
 					})
 				},
-				Config: workspaceRunnersDeclared(`spotlight_runner.build.name, "stray-1"`, "spotlight_runner_trust.cluster.key", "spotlight_runner_pool.ephemeral.key"),
+				Config: workspaceRunnersDeclared("spotlight_runner_trust.cluster.key", "spotlight_runner_pool.ephemeral.key"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(workspaceRunnersAddress, plancheck.ResourceActionUpdate)},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(workspaceRunnersAddress, tfjsonpath.New("trusts"), knownvalue.SetExact(workspaceRunnersNames("production-cluster"))),
+					statecheck.ExpectKnownValue(workspaceRunnersAddress, tfjsonpath.New("pools"), knownvalue.SetExact(workspaceRunnersNames("ephemeral"))),
 				},
 			},
 		},
@@ -138,7 +109,7 @@ func TestWorkspaceRunnersDeclaredAndDrift(t *testing.T) {
 
 func TestAWorkspaceDeclaresItsRunnersOnce(t *testing.T) {
 	fake := fakeapi.New(t)
-	twice := strings.Replace(workspaceRunnersDeclared("", "", ""), `resource "spotlight_workspace_runners" "acme"`, `resource "spotlight_workspace_runners" "again" {
+	twice := strings.Replace(workspaceRunnersDeclared("", ""), `resource "spotlight_workspace_runners" "acme"`, `resource "spotlight_workspace_runners" "again" {
   workspace_id = spotlight_workspace.acme.id
 }
 
@@ -167,7 +138,7 @@ func TestDeclaringRunnersNeedsTheRunnersScope(t *testing.T) {
 				Config: acctest.Workspace + `
 resource "spotlight_workspace_runners" "acme" {
   workspace_id = spotlight_workspace.acme.id
-  runners      = ["build-1"]
+  pools        = ["ephemeral"]
 }
 `,
 				ExpectError: regexp.MustCompile(`(?s)lacks the runners scope`),
@@ -176,7 +147,7 @@ resource "spotlight_workspace_runners" "acme" {
 	})
 }
 
-func TestEveryReadWarnsOfDrift(t *testing.T) {
+func TestEveryReadWarnsOfWhatNoTrustOrPoolAnswers(t *testing.T) {
 	fake := fakeapi.New(t)
 	ctx := t.Context()
 
@@ -187,12 +158,10 @@ func TestEveryReadWarnsOfDrift(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	declaration, err := api.CreateWorkspaceRunners(ctx, workspace.ID, client.WorkspaceRunnersInput{Runners: []string{"build-1"}, Pools: []string{"burst"}})
+	declaration, err := api.CreateWorkspaceRunners(ctx, workspace.ID, client.WorkspaceRunnersInput{Trusts: []string{"cluster"}, Pools: []string{"burst"}})
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	fake.Enrol(workspace.ID, "stray-1", "")
 
 	server, schemas := acctest.ConfiguredServer(t, fake)
 
@@ -203,10 +172,8 @@ func TestEveryReadWarnsOfDrift(t *testing.T) {
 		"version":      tftypes.NewValue(tftypes.Number, declaration.Version),
 		"address":      tftypes.NewValue(tftypes.String, "acme"),
 		"workspace_id": tftypes.NewValue(tftypes.String, workspace.ID),
-		"runners":      tftypes.NewValue(names, []tftypes.Value{tftypes.NewValue(tftypes.String, "build-1")}),
-		"trusts":       tftypes.NewValue(names, []tftypes.Value{}),
+		"trusts":       tftypes.NewValue(names, []tftypes.Value{tftypes.NewValue(tftypes.String, "cluster")}),
 		"pools":        tftypes.NewValue(names, []tftypes.Value{tftypes.NewValue(tftypes.String, "burst")}),
-		"drift":        tftypes.NewValue(names, []tftypes.Value{}),
 	}))
 	if err != nil {
 		t.Fatal(err)
@@ -226,7 +193,7 @@ func TestEveryReadWarnsOfDrift(t *testing.T) {
 	}
 
 	joined := strings.Join(said, "\n")
-	for _, want := range []string{"names build-1, but no runner by that name is enrolled", "leaves out stray-1, which is enrolled all the same", "names burst, but the workspace has no runner pool by that key"} {
+	for _, want := range []string{"names cluster, but the workspace trusts no workload by that key", "names burst, but the workspace has no runner pool by that key"} {
 		if !strings.Contains(joined, want) {
 			t.Errorf("the read did not warn %q; it said:\n%s", want, joined)
 		}
@@ -239,11 +206,11 @@ func workspaceRunnersAccConfig(k acctest.Keys, withTrust bool) string {
 		trusts = "spotlight_runner_trust.cluster.key"
 	}
 
-	return runnerAccConfig(k, `"tf-acc-gpu"`, 1) + fmt.Sprintf(`
+	return runnerTrustAccConfig(k, `"tf-acc-gpu"`) + runnerPoolAccConfig(k, `"tf-acc-linux"`, 1) + fmt.Sprintf(`
 resource "spotlight_workspace_runners" "acc" {
   workspace_id = local.workspace_id
-  runners      = [spotlight_runner.build.name]
   trusts       = [%s]
+  pools        = [spotlight_runner_pool.pull.key]
 }
 `, trusts)
 }
@@ -255,7 +222,7 @@ func TestAccWorkspaceRunners(t *testing.T) {
 	}
 
 	k := acctest.RandomKeys()
-	token := acctest.RandomToken()
+	variables := runnerPoolAccVariables(acctest.RandomToken(), acctest.RandomSigningSecret())
 	cp.Sweep(t, k)
 	t.Cleanup(func() {
 		ctx := context.Background()
@@ -281,21 +248,22 @@ func TestAccWorkspaceRunners(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:          acctest.AdoptedWorkspace(cp.Workspace) + workspaceRunnersAccConfig(k, false),
-				ConfigVariables: runnerAccVariables(token),
+				ConfigVariables: variables,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("spotlight_workspace_runners.acc", "address", cp.Workspace.Slug),
-					resource.TestCheckResourceAttr("spotlight_workspace_runners.acc", "runners.#", "1"),
-					resource.TestCheckResourceAttr("spotlight_workspace_runners.acc", "runners.0", k.Runner),
+					resource.TestCheckResourceAttr("spotlight_workspace_runners.acc", "pools.#", "1"),
+					resource.TestCheckResourceAttr("spotlight_workspace_runners.acc", "pools.0", k.Pool),
+					resource.TestCheckResourceAttr("spotlight_workspace_runners.acc", "trusts.#", "0"),
 				),
 			},
 			{
 				Config:           acctest.AdoptedWorkspace(cp.Workspace) + workspaceRunnersAccConfig(k, false),
-				ConfigVariables:  runnerAccVariables(token),
+				ConfigVariables:  variables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}},
 			},
 			{
 				Config:          acctest.AdoptedWorkspace(cp.Workspace) + workspaceRunnersAccConfig(k, true),
-				ConfigVariables: runnerAccVariables(token),
+				ConfigVariables: variables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 					plancheck.ExpectResourceAction("spotlight_workspace_runners.acc", plancheck.ResourceActionUpdate),
 				}},
@@ -306,11 +274,11 @@ func TestAccWorkspaceRunners(t *testing.T) {
 				ImportState:       true,
 				ImportStateId:     acctest.ImportID(cp.Workspace.ID, cp.Workspace.Slug),
 				ImportStateVerify: true,
-				ConfigVariables:   runnerAccVariables(token),
+				ConfigVariables:   variables,
 			},
 			{
 				Config:          acctest.ReleasedWorkspace(cp.Workspace) + workspaceRunnersAccConfig(k, true),
-				ConfigVariables: runnerAccVariables(token),
+				ConfigVariables: variables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 					acctest.ExpectForgotten("spotlight_workspace.acc"),
 					plancheck.ExpectResourceAction("spotlight_workspace_runners.acc", plancheck.ResourceActionNoop),
@@ -328,7 +296,7 @@ func TestWorkspaceRunnersImportsByIdentity(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
 		Steps: []resource.TestStep{
 			{
-				Config:            workspaceRunnersDeclared("spotlight_runner.build.name", "spotlight_runner_trust.cluster.key", "spotlight_runner_pool.ephemeral.key"),
+				Config:            workspaceRunnersDeclared("spotlight_runner_trust.cluster.key", "spotlight_runner_pool.ephemeral.key"),
 				ConfigStateChecks: acctest.ExpectIdentity(workspaceRunnersAddress),
 			},
 			acctest.ImportedByIdentity(workspaceRunnersAddress),
