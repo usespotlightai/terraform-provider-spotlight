@@ -1,6 +1,7 @@
 package fakeapi
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"maps"
@@ -163,6 +164,8 @@ func written(kind string, held *resource, fields, body map[string]any) (string, 
 			fields["trust"] = held.fields["trust"]
 		}
 		return token, nil
+	case "runner-pool":
+		return poolAccess(held, fields, body)
 	default:
 		return "", nil
 	}
@@ -218,6 +221,106 @@ func runner(body map[string]any) (map[string]any, []fieldError) {
 	labels := onceEach(texts(body["labels"]), "labels", wordsLike("vpc-internal"), &errs)
 
 	return map[string]any{"name": name, "labels": labels, "trust": nil}, errs
+}
+
+const pullOnly = "is only for a pool that is pulled from; a pool that provisions is called instead, and has no token"
+
+func runnerPool(body map[string]any) (map[string]any, []fieldError) {
+	var errs []fieldError
+
+	key, _ := body["key"].(string)
+	key = strings.TrimSpace(key)
+	if why := wordsLike("ephemeral")(key); why != "" {
+		errs = append(errs, fieldError{"key", why})
+	}
+
+	fields := map[string]any{
+		"key":          key,
+		"labels":       onceEach(texts(body["labels"]), "labels", wordsLike("vpc-internal"), &errs),
+		"maxRuns":      nil,
+		"mode":         "pull",
+		"tokenVersion": nil,
+		"provision":    nil,
+	}
+
+	if held, ok := body["maxRuns"].(float64); ok {
+		if held != float64(int64(held)) || held < 1 || held > 10000 {
+			errs = append(errs, fieldError{"maxRuns", "is a whole number from 1 to 10000"})
+		}
+		fields["maxRuns"] = held
+	}
+
+	given, ok := body["provision"].(map[string]any)
+	if !ok {
+		fields["tokenVersion"] = versionOf(body["tokenVersion"])
+		return fields, errs
+	}
+
+	for _, field := range []string{"token", "tokenVersion"} {
+		if body[field] != nil {
+			errs = append(errs, fieldError{field, pullOnly})
+		}
+	}
+
+	written, _ := given["url"].(string)
+	called, err := url.Parse(written)
+	if err != nil || !called.IsAbs() || called.Scheme != "https" || called.User != nil || called.Fragment != "" {
+		errs = append(errs, fieldError{"provision.url", "is an absolute https URL, as in https://provision.example.com/runs"})
+	}
+
+	fields["mode"] = "push"
+	fields["provision"] = map[string]any{"url": written, "secretVersion": versionOf(given["secretVersion"])}
+
+	return fields, errs
+}
+
+func versionOf(held any) any {
+	if version, ok := held.(float64); ok {
+		return version
+	}
+
+	return nil
+}
+
+func poolAccess(held *resource, fields, body map[string]any) (string, []fieldError) {
+	if held != nil && held.fields["mode"] != fields["mode"] {
+		return "", []fieldError{{"provision", fmt.Sprintf("The %s runner pool is %s for its whole life; replace it to be %s instead", textOf(fields["key"]), held.fields["mode"], fields["mode"])}}
+	}
+
+	if fields["mode"] == "pull" {
+		token, _ := body["token"].(string)
+		switch {
+		case token != "" && !runnerKey.MatchString(token):
+			return "", []fieldError{{"token", "is 32 to 255 URL-safe characters, as a generated password would be"}}
+		case token == "" && held != nil && held.fields["tokenVersion"] != fields["tokenVersion"]:
+			return "", []fieldError{{"token", "is given whenever tokenVersion changes, since that is how it is rotated; Spotlight issues one only when a pool is created without it"}}
+		default:
+			return token, nil
+		}
+	}
+
+	secret, given := objectOf(body["provision"])["secret"].(string)
+	if given && !signingSecret(secret) {
+		return "", []fieldError{{"provision.secret", "is whsec_ followed by 24 to 64 base64-encoded random bytes, as Standard Webhooks signing secrets are"}}
+	}
+
+	switch {
+	case given:
+		return secret, nil
+	case held == nil:
+		return "", []fieldError{{"provision.secret", "is given when a pool that provisions is defined, to sign its calls with"}}
+	case objectOf(held.fields["provision"])["secretVersion"] != objectOf(fields["provision"])["secretVersion"]:
+		return "", []fieldError{{"provision.secret", "is given again whenever provision.secretVersion changes, since that is how it is rotated"}}
+	default:
+		return "", nil
+	}
+}
+
+func signingSecret(secret string) bool {
+	encoded, ok := strings.CutPrefix(secret, "whsec_")
+	decoded, err := base64.StdEncoding.DecodeString(encoded)
+
+	return ok && err == nil && len(decoded) >= 24 && len(decoded) <= 64
 }
 
 func issuer(raw string) string {
@@ -285,13 +388,15 @@ func workspaceRunners(body map[string]any) (map[string]any, []fieldError) {
 	return map[string]any{
 		"runners": onceEach(texts(body["runners"]), "runners", runnerName, &errs),
 		"trusts":  onceEach(texts(body["trusts"]), "trusts", wordsLike("production-cluster"), &errs),
+		"pools":   onceEach(texts(body["pools"]), "pools", wordsLike("ephemeral"), &errs),
 	}, errs
 }
 
 func (s *Server) driftOf(declared *resource) ([]any, []any) {
 	runners := stringsOf(declared.fields["runners"])
 	trusts := stringsOf(declared.fields["trusts"])
-	enrolled, known := map[string]bool{}, map[string]bool{}
+	pools := stringsOf(declared.fields["pools"])
+	enrolled, known, pooled := map[string]bool{}, map[string]bool{}, map[string]bool{}
 	drift, warnings := []any{}, []any{}
 
 	for _, each := range s.held {
@@ -302,6 +407,8 @@ func (s *Server) driftOf(declared *resource) ([]any, []any) {
 		switch each.kind {
 		case "runner-trust":
 			known[textOf(each.fields["key"])] = true
+		case "runner-pool":
+			pooled[textOf(each.fields["key"])] = true
 		case "runner":
 			name := textOf(each.fields["name"])
 			enrolled[name] = true
@@ -321,6 +428,12 @@ func (s *Server) driftOf(declared *resource) ([]any, []any) {
 	for at, key := range trusts {
 		if !known[key] {
 			warnings = append(warnings, warned(fmt.Sprintf("trusts[%d]", at), fmt.Sprintf("names %s, but the workspace trusts no workload by that key", key)))
+		}
+	}
+
+	for at, key := range pools {
+		if !pooled[key] {
+			warnings = append(warnings, warned(fmt.Sprintf("pools[%d]", at), fmt.Sprintf("names %s, but the workspace has no runner pool by that key", key)))
 		}
 	}
 

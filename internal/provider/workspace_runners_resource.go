@@ -37,6 +37,7 @@ type WorkspaceRunnersResourceModel struct {
 	WorkspaceID types.String `tfsdk:"workspace_id"`
 	Runners     types.Set    `tfsdk:"runners"`
 	Trusts      types.Set    `tfsdk:"trusts"`
+	Pools       types.Set    `tfsdk:"pools"`
 	Drift       types.Set    `tfsdk:"drift"`
 }
 
@@ -53,7 +54,7 @@ func (r *WorkspaceRunnersResource) Schema(_ context.Context, _ resource.SchemaRe
 func workspaceRunnersSchema() schema.Schema {
 	return schema.Schema{
 		MarkdownDescription: "The runners a workspace means to have, declared once for the workspace. A runner enrolled all the same is drift: " +
-			"it still runs, and every plan warns about it until it is declared here or deleted. So does a name here that no runner or trust answers to. " +
+			"it still runs, and every plan warns about it until it is declared here or deleted. So does a name here that no runner, trust or pool answers to. " +
 			"Writing the declaration needs a token granted the `runners` scope. Import it as `<workspace id>/<workspace slug>`.",
 		Attributes: map[string]schema.Attribute{
 			"id":           idAttribute("declaration"),
@@ -62,6 +63,7 @@ func workspaceRunnersSchema() schema.Schema {
 			"workspace_id": ownerAttribute("workspace", "declaration"),
 			"runners":      stringSetAttribute("The runners the workspace means to have, by name."),
 			"trusts":       stringSetAttribute("The runner trusts, by key, whose runners the workspace means to have."),
+			"pools":        stringSetAttribute("The runner pools, by key, whose runners the workspace means to have."),
 			"drift": schema.SetAttribute{
 				Computed:            true,
 				ElementType:         types.StringType,
@@ -205,6 +207,7 @@ func workspaceRunnersInput(plan WorkspaceRunnersResourceModel) (client.Workspace
 	return client.WorkspaceRunnersInput{
 		Runners: stringsIn(plan.Runners, &diags),
 		Trusts:  stringsIn(plan.Trusts, &diags),
+		Pools:   stringsIn(plan.Pools, &diags),
 	}, diags
 }
 
@@ -216,12 +219,14 @@ func workspaceRunnersModel(declared client.WorkspaceRunners, kept *WorkspaceRunn
 		WorkspaceID: types.StringValue(declared.WorkspaceID),
 		Runners:     stringSet(declared.Runners),
 		Trusts:      stringSet(declared.Trusts),
+		Pools:       stringSet(declared.Pools),
 		Drift:       stringSet(declared.Drift),
 	}
 
 	if kept != nil {
 		model.Runners = kept.Runners
 		model.Trusts = kept.Trusts
+		model.Pools = kept.Pools
 	}
 
 	return model

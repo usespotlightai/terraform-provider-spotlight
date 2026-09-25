@@ -15,6 +15,7 @@ func workspaceRunnersOf(dto apigen.WorkspaceRunnersResourceResponseDto) Workspac
 		WorkspaceRunnersInput: WorkspaceRunnersInput{
 			Runners: orNone(dto.Runners),
 			Trusts:  orNone(dto.Trusts),
+			Pools:   orNone(dto.Pools),
 		},
 		Drift: orNone(dto.Drift),
 	}

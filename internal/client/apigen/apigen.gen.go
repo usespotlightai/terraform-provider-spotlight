@@ -134,6 +134,24 @@ func (e ProblemResponseDtoPermission) Valid() bool {
 	}
 }
 
+// Defines values for RunnerPoolResourceResponseDtoMode.
+const (
+	Pull RunnerPoolResourceResponseDtoMode = "pull"
+	Push RunnerPoolResourceResponseDtoMode = "push"
+)
+
+// Valid indicates whether the value is a known member of the RunnerPoolResourceResponseDtoMode enum.
+func (e RunnerPoolResourceResponseDtoMode) Valid() bool {
+	switch e {
+	case Pull:
+		return true
+	case Push:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for SecretSourceResponseDtoKind.
 const (
 	SecretSourceResponseDtoKindAwsSecretsManager SecretSourceResponseDtoKind = "aws-secrets-manager"
@@ -356,6 +374,51 @@ const (
 func (e UpdateLineParamsSpotlightApiVersion) Valid() bool {
 	switch e {
 	case UpdateLineParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DeleteRunnerPoolParamsSpotlightApiVersion.
+const (
+	DeleteRunnerPoolParamsSpotlightApiVersionN20260923 DeleteRunnerPoolParamsSpotlightApiVersion = "2026-09-23"
+)
+
+// Valid indicates whether the value is a known member of the DeleteRunnerPoolParamsSpotlightApiVersion enum.
+func (e DeleteRunnerPoolParamsSpotlightApiVersion) Valid() bool {
+	switch e {
+	case DeleteRunnerPoolParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReadRunnerPoolParamsSpotlightApiVersion.
+const (
+	ReadRunnerPoolParamsSpotlightApiVersionN20260923 ReadRunnerPoolParamsSpotlightApiVersion = "2026-09-23"
+)
+
+// Valid indicates whether the value is a known member of the ReadRunnerPoolParamsSpotlightApiVersion enum.
+func (e ReadRunnerPoolParamsSpotlightApiVersion) Valid() bool {
+	switch e {
+	case ReadRunnerPoolParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateRunnerPoolParamsSpotlightApiVersion.
+const (
+	UpdateRunnerPoolParamsSpotlightApiVersionN20260923 UpdateRunnerPoolParamsSpotlightApiVersion = "2026-09-23"
+)
+
+// Valid indicates whether the value is a known member of the UpdateRunnerPoolParamsSpotlightApiVersion enum.
+func (e UpdateRunnerPoolParamsSpotlightApiVersion) Valid() bool {
+	switch e {
+	case UpdateRunnerPoolParamsSpotlightApiVersionN20260923:
 		return true
 	default:
 		return false
@@ -890,6 +953,51 @@ func (e ImportLineParamsSpotlightApiVersion) Valid() bool {
 	}
 }
 
+// Defines values for ListRunnerPoolsParamsSpotlightApiVersion.
+const (
+	ListRunnerPoolsParamsSpotlightApiVersionN20260923 ListRunnerPoolsParamsSpotlightApiVersion = "2026-09-23"
+)
+
+// Valid indicates whether the value is a known member of the ListRunnerPoolsParamsSpotlightApiVersion enum.
+func (e ListRunnerPoolsParamsSpotlightApiVersion) Valid() bool {
+	switch e {
+	case ListRunnerPoolsParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CreateRunnerPoolParamsSpotlightApiVersion.
+const (
+	CreateRunnerPoolParamsSpotlightApiVersionN20260923 CreateRunnerPoolParamsSpotlightApiVersion = "2026-09-23"
+)
+
+// Valid indicates whether the value is a known member of the CreateRunnerPoolParamsSpotlightApiVersion enum.
+func (e CreateRunnerPoolParamsSpotlightApiVersion) Valid() bool {
+	switch e {
+	case CreateRunnerPoolParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ImportRunnerPoolParamsSpotlightApiVersion.
+const (
+	ImportRunnerPoolParamsSpotlightApiVersionN20260923 ImportRunnerPoolParamsSpotlightApiVersion = "2026-09-23"
+)
+
+// Valid indicates whether the value is a known member of the ImportRunnerPoolParamsSpotlightApiVersion enum.
+func (e ImportRunnerPoolParamsSpotlightApiVersion) Valid() bool {
+	switch e {
+	case ImportRunnerPoolParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ListRunnerTrustsParamsSpotlightApiVersion.
 const (
 	ListRunnerTrustsParamsSpotlightApiVersionN20260923 ListRunnerTrustsParamsSpotlightApiVersion = "2026-09-23"
@@ -1405,6 +1513,15 @@ type PermissionsResponseDto struct {
 	Deny []string `json:"deny"`
 }
 
+// PoolProvisionResponseDto defines model for PoolProvisionResponseDto.
+type PoolProvisionResponseDto struct {
+	// SecretVersion Changed to rotate provision.secret, which is write-only and never answered
+	SecretVersion *int `json:"secretVersion"`
+
+	// Url Called with every run the pool is to serve, signed as Standard Webhooks sign
+	Url string `json:"url"`
+}
+
 // ProblemResponseDto defines model for ProblemResponseDto.
 type ProblemResponseDto struct {
 	// CurrentVersion The version the resource is at now, when a write conflicted
@@ -1436,6 +1553,51 @@ type RunSpanResponseDto struct {
 	ParentId   *string                    `json:"parentId"`
 	StartedAt  string                     `json:"startedAt"`
 }
+
+// RunnerPoolResourceListResponseDto defines model for RunnerPoolResourceListResponseDto.
+type RunnerPoolResourceListResponseDto struct {
+	// Items Every one there is, each as a read would answer it, in address order
+	Items []RunnerPoolResourceResponseDto `json:"items"`
+}
+
+// RunnerPoolResourceResponseDto defines model for RunnerPoolResourceResponseDto.
+type RunnerPoolResourceResponseDto struct {
+	// Address Names the resource within its workspace; terraform import takes it
+	Address string `json:"address"`
+
+	// Id Issued by Spotlight when the resource is created, and never changed
+	Id string `json:"id"`
+
+	// Key Names the pool, and is its address; fixed for its life
+	Key string `json:"key"`
+
+	// Labels What a line or station may name in runners to place its work here, beside the runner name
+	Labels []string `json:"labels"`
+
+	// MaxRuns The most runs the pool serves at once, or null for no limit
+	MaxRuns *int `json:"maxRuns"`
+
+	// Mode pull when runners claim with the pool token, push when Spotlight calls provision; fixed for its life, and not settable
+	Mode RunnerPoolResourceResponseDtoMode `json:"mode"`
+
+	// Provision How Spotlight starts a runner for each run, for a push pool
+	Provision *PoolProvisionResponseDto `json:"provision"`
+
+	// TokenVersion Changed, with a new token, to rotate the pool token of a pull pool, which is write-only and never answered
+	TokenVersion *int `json:"tokenVersion"`
+
+	// Version Rises with every change; the ETag carries it, and a write sends it back as If-Match
+	Version float32 `json:"version"`
+
+	// Warnings What would work better, though nothing stops it working; not settable
+	Warnings []FieldErrorResponseDto `json:"warnings"`
+
+	// WorkspaceId The workspace it belongs to
+	WorkspaceId string `json:"workspaceId"`
+}
+
+// RunnerPoolResourceResponseDtoMode pull when runners claim with the pool token, push when Spotlight calls provision; fixed for its life, and not settable
+type RunnerPoolResourceResponseDtoMode string
 
 // RunnerResourceListResponseDto defines model for RunnerResourceListResponseDto.
 type RunnerResourceListResponseDto struct {
@@ -1739,6 +1901,9 @@ type WorkspaceRunnersResourceResponseDto struct {
 	// Id Issued by Spotlight when the resource is created, and never changed
 	Id string `json:"id"`
 
+	// Pools The runner pools, by key, whose runners it means to have
+	Pools []string `json:"pools"`
+
 	// Runners The runners, by name, the workspace means to have
 	Runners []string `json:"runners"`
 
@@ -1932,6 +2097,73 @@ type UpdateLineParams struct {
 
 // UpdateLineParamsSpotlightApiVersion defines parameters for UpdateLine.
 type UpdateLineParamsSpotlightApiVersion string
+
+// DeleteRunnerPoolParams defines parameters for DeleteRunnerPool.
+type DeleteRunnerPoolParams struct {
+	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	SpotlightApiVersion *DeleteRunnerPoolParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
+
+	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
+	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
+
+	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	IfMatch string `json:"If-Match"`
+}
+
+// DeleteRunnerPoolParamsSpotlightApiVersion defines parameters for DeleteRunnerPool.
+type DeleteRunnerPoolParamsSpotlightApiVersion string
+
+// ReadRunnerPoolParams defines parameters for ReadRunnerPool.
+type ReadRunnerPoolParams struct {
+	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	SpotlightApiVersion *ReadRunnerPoolParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
+
+	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
+	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
+}
+
+// ReadRunnerPoolParamsSpotlightApiVersion defines parameters for ReadRunnerPool.
+type ReadRunnerPoolParamsSpotlightApiVersion string
+
+// UpdateRunnerPoolJSONBody defines parameters for UpdateRunnerPool.
+type UpdateRunnerPoolJSONBody struct {
+	Key    string    `json:"key"`
+	Labels *[]string `json:"labels,omitempty"`
+
+	// MaxRuns The most runs the pool serves at once; left out, no limit
+	MaxRuns *int `json:"maxRuns,omitempty"`
+
+	// Provision Makes the pool push: Spotlight calls url with each run it is to serve, and the pool has no token. Fixed for the pool’s life
+	Provision *struct {
+		// Secret Write-only: signs each call as Standard Webhooks sign, given as whsec_ and 24 to 64 base64 bytes. Required on create, and whenever secretVersion changes
+		Secret *string `json:"secret,omitempty"`
+
+		// SecretVersion Changed to rotate the secret
+		SecretVersion *int   `json:"secretVersion,omitempty"`
+		Url           string `json:"url"`
+	} `json:"provision,omitempty"`
+
+	// Token Write-only, and only for a pool without provision: the token its runners claim with, kept only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Pool-Token
+	Token *string `json:"token,omitempty"`
+
+	// TokenVersion Changed, with a new token, to rotate the pool token in place: the old token is refused at once, while runs already claimed keep their own one-run credentials
+	TokenVersion *int `json:"tokenVersion,omitempty"`
+}
+
+// UpdateRunnerPoolParams defines parameters for UpdateRunnerPool.
+type UpdateRunnerPoolParams struct {
+	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	SpotlightApiVersion *UpdateRunnerPoolParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
+
+	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
+	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
+
+	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	IfMatch string `json:"If-Match"`
+}
+
+// UpdateRunnerPoolParamsSpotlightApiVersion defines parameters for UpdateRunnerPool.
+type UpdateRunnerPoolParamsSpotlightApiVersion string
 
 // DeleteRunnerTrustParams defines parameters for DeleteRunnerTrust.
 type DeleteRunnerTrustParams struct {
@@ -2317,6 +2549,7 @@ type ReadWorkspaceRunnersParamsSpotlightApiVersion string
 
 // UpdateWorkspaceRunnersJSONBody defines parameters for UpdateWorkspaceRunners.
 type UpdateWorkspaceRunnersJSONBody struct {
+	Pools   *[]string `json:"pools,omitempty"`
 	Runners *[]string `json:"runners,omitempty"`
 	Trusts  *[]string `json:"trusts,omitempty"`
 }
@@ -2512,6 +2745,73 @@ type ImportLineParams struct {
 
 // ImportLineParamsSpotlightApiVersion defines parameters for ImportLine.
 type ImportLineParamsSpotlightApiVersion string
+
+// ListRunnerPoolsParams defines parameters for ListRunnerPools.
+type ListRunnerPoolsParams struct {
+	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	SpotlightApiVersion *ListRunnerPoolsParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
+
+	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
+	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
+}
+
+// ListRunnerPoolsParamsSpotlightApiVersion defines parameters for ListRunnerPools.
+type ListRunnerPoolsParamsSpotlightApiVersion string
+
+// CreateRunnerPoolJSONBody defines parameters for CreateRunnerPool.
+type CreateRunnerPoolJSONBody struct {
+	Key    string    `json:"key"`
+	Labels *[]string `json:"labels,omitempty"`
+
+	// MaxRuns The most runs the pool serves at once; left out, no limit
+	MaxRuns *int `json:"maxRuns,omitempty"`
+
+	// Provision Makes the pool push: Spotlight calls url with each run it is to serve, and the pool has no token. Fixed for the pool’s life
+	Provision *struct {
+		// Secret Write-only: signs each call as Standard Webhooks sign, given as whsec_ and 24 to 64 base64 bytes. Required on create, and whenever secretVersion changes
+		Secret *string `json:"secret,omitempty"`
+
+		// SecretVersion Changed to rotate the secret
+		SecretVersion *int   `json:"secretVersion,omitempty"`
+		Url           string `json:"url"`
+	} `json:"provision,omitempty"`
+
+	// Token Write-only, and only for a pool without provision: the token its runners claim with, kept only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Pool-Token
+	Token *string `json:"token,omitempty"`
+
+	// TokenVersion Changed, with a new token, to rotate the pool token in place: the old token is refused at once, while runs already claimed keep their own one-run credentials
+	TokenVersion *int `json:"tokenVersion,omitempty"`
+}
+
+// CreateRunnerPoolParams defines parameters for CreateRunnerPool.
+type CreateRunnerPoolParams struct {
+	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	SpotlightApiVersion *CreateRunnerPoolParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
+
+	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
+	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
+
+	// IdempotencyKey Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more
+	IdempotencyKey string `json:"Idempotency-Key"`
+}
+
+// CreateRunnerPoolParamsSpotlightApiVersion defines parameters for CreateRunnerPool.
+type CreateRunnerPoolParamsSpotlightApiVersion string
+
+// ImportRunnerPoolParams defines parameters for ImportRunnerPool.
+type ImportRunnerPoolParams struct {
+	// Address The runner-pool's address within the workspace
+	Address interface{} `form:"address" json:"address"`
+
+	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	SpotlightApiVersion *ImportRunnerPoolParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
+
+	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
+	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
+}
+
+// ImportRunnerPoolParamsSpotlightApiVersion defines parameters for ImportRunnerPool.
+type ImportRunnerPoolParamsSpotlightApiVersion string
 
 // ListRunnerTrustsParams defines parameters for ListRunnerTrusts.
 type ListRunnerTrustsParams struct {
@@ -2770,6 +3070,7 @@ type ListWorkspaceRunnersParamsSpotlightApiVersion string
 
 // CreateWorkspaceRunnersJSONBody defines parameters for CreateWorkspaceRunners.
 type CreateWorkspaceRunnersJSONBody struct {
+	Pools   *[]string `json:"pools,omitempty"`
 	Runners *[]string `json:"runners,omitempty"`
 	Trusts  *[]string `json:"trusts,omitempty"`
 }
@@ -2816,6 +3117,9 @@ type UpdateIntegrationJSONRequestBody UpdateIntegrationJSONBody
 // UpdateLineJSONRequestBody defines body for UpdateLine for application/json ContentType.
 type UpdateLineJSONRequestBody UpdateLineJSONBody
 
+// UpdateRunnerPoolJSONRequestBody defines body for UpdateRunnerPool for application/json ContentType.
+type UpdateRunnerPoolJSONRequestBody UpdateRunnerPoolJSONBody
+
 // UpdateRunnerTrustJSONRequestBody defines body for UpdateRunnerTrust for application/json ContentType.
 type UpdateRunnerTrustJSONRequestBody UpdateRunnerTrustJSONBody
 
@@ -2851,6 +3155,9 @@ type CreateWorkspaceJSONRequestBody CreateWorkspaceJSONBody
 
 // UpdateWorkspaceJSONRequestBody defines body for UpdateWorkspace for application/json ContentType.
 type UpdateWorkspaceJSONRequestBody UpdateWorkspaceJSONBody
+
+// CreateRunnerPoolJSONRequestBody defines body for CreateRunnerPool for application/json ContentType.
+type CreateRunnerPoolJSONRequestBody CreateRunnerPoolJSONBody
 
 // CreateRunnerTrustJSONRequestBody defines body for CreateRunnerTrust for application/json ContentType.
 type CreateRunnerTrustJSONRequestBody CreateRunnerTrustJSONBody
@@ -2981,6 +3288,17 @@ type ClientInterface interface {
 
 	UpdateLine(ctx context.Context, id string, params *UpdateLineParams, body UpdateLineJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// DeleteRunnerPool request
+	DeleteRunnerPool(ctx context.Context, id string, params *DeleteRunnerPoolParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ReadRunnerPool request
+	ReadRunnerPool(ctx context.Context, id string, params *ReadRunnerPoolParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateRunnerPoolWithBody request with any body
+	UpdateRunnerPoolWithBody(ctx context.Context, id string, params *UpdateRunnerPoolParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateRunnerPool(ctx context.Context, id string, params *UpdateRunnerPoolParams, body UpdateRunnerPoolJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// DeleteRunnerTrust request
 	DeleteRunnerTrust(ctx context.Context, id string, params *DeleteRunnerTrustParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -3106,6 +3424,17 @@ type ClientInterface interface {
 
 	// ImportLine request
 	ImportLine(ctx context.Context, workspaceId string, params *ImportLineParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListRunnerPools request
+	ListRunnerPools(ctx context.Context, workspaceId string, params *ListRunnerPoolsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateRunnerPoolWithBody request with any body
+	CreateRunnerPoolWithBody(ctx context.Context, workspaceId string, params *CreateRunnerPoolParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateRunnerPool(ctx context.Context, workspaceId string, params *CreateRunnerPoolParams, body CreateRunnerPoolJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ImportRunnerPool request
+	ImportRunnerPool(ctx context.Context, workspaceId string, params *ImportRunnerPoolParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListRunnerTrusts request
 	ListRunnerTrusts(ctx context.Context, workspaceId string, params *ListRunnerTrustsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -3339,6 +3668,54 @@ func (c *Client) UpdateLineWithBody(ctx context.Context, id string, params *Upda
 
 func (c *Client) UpdateLine(ctx context.Context, id string, params *UpdateLineParams, body UpdateLineJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateLineRequest(c.Server, id, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteRunnerPool(ctx context.Context, id string, params *DeleteRunnerPoolParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteRunnerPoolRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ReadRunnerPool(ctx context.Context, id string, params *ReadRunnerPoolParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewReadRunnerPoolRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateRunnerPoolWithBody(ctx context.Context, id string, params *UpdateRunnerPoolParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateRunnerPoolRequestWithBody(c.Server, id, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateRunnerPool(ctx context.Context, id string, params *UpdateRunnerPoolParams, body UpdateRunnerPoolJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateRunnerPoolRequest(c.Server, id, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -3891,6 +4268,54 @@ func (c *Client) ListLines(ctx context.Context, workspaceId string, params *List
 
 func (c *Client) ImportLine(ctx context.Context, workspaceId string, params *ImportLineParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewImportLineRequest(c.Server, workspaceId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListRunnerPools(ctx context.Context, workspaceId string, params *ListRunnerPoolsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListRunnerPoolsRequest(c.Server, workspaceId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateRunnerPoolWithBody(ctx context.Context, workspaceId string, params *CreateRunnerPoolParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateRunnerPoolRequestWithBody(c.Server, workspaceId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateRunnerPool(ctx context.Context, workspaceId string, params *CreateRunnerPoolParams, body CreateRunnerPoolJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateRunnerPoolRequest(c.Server, workspaceId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ImportRunnerPool(ctx context.Context, workspaceId string, params *ImportRunnerPoolParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewImportRunnerPoolRequest(c.Server, workspaceId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -4863,6 +5288,217 @@ func NewUpdateLineRequestWithBody(server string, id string, params *UpdateLinePa
 	}
 
 	operationPath := fmt.Sprintf("/resources/lines/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		if params.SpotlightApiVersion != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Api-Version", headerParam0)
+		}
+
+		if params.SpotlightClient != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Client", headerParam1)
+		}
+
+		var headerParam2 string
+
+		headerParam2, err = runtime.StyleParamWithOptions("simple", false, "If-Match", params.IfMatch, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("If-Match", headerParam2)
+
+	}
+
+	return req, nil
+}
+
+// NewDeleteRunnerPoolRequest generates requests for DeleteRunnerPool
+func NewDeleteRunnerPoolRequest(server string, id string, params *DeleteRunnerPoolParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/resources/runner-pools/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+
+		if params.SpotlightApiVersion != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Api-Version", headerParam0)
+		}
+
+		if params.SpotlightClient != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Client", headerParam1)
+		}
+
+		var headerParam2 string
+
+		headerParam2, err = runtime.StyleParamWithOptions("simple", false, "If-Match", params.IfMatch, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("If-Match", headerParam2)
+
+	}
+
+	return req, nil
+}
+
+// NewReadRunnerPoolRequest generates requests for ReadRunnerPool
+func NewReadRunnerPoolRequest(server string, id string, params *ReadRunnerPoolParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/resources/runner-pools/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+
+		if params.SpotlightApiVersion != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Api-Version", headerParam0)
+		}
+
+		if params.SpotlightClient != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Client", headerParam1)
+		}
+
+	}
+
+	return req, nil
+}
+
+// NewUpdateRunnerPoolRequest calls the generic UpdateRunnerPool builder with application/json body
+func NewUpdateRunnerPoolRequest(server string, id string, params *UpdateRunnerPoolParams, body UpdateRunnerPoolJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateRunnerPoolRequestWithBody(server, id, params, "application/json", bodyReader)
+}
+
+// NewUpdateRunnerPoolRequestWithBody generates requests for UpdateRunnerPool with any type of body
+func NewUpdateRunnerPoolRequestWithBody(server string, id string, params *UpdateRunnerPoolParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/resources/runner-pools/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -7355,6 +7991,231 @@ func NewImportLineRequest(server string, workspaceId string, params *ImportLineP
 	return req, nil
 }
 
+// NewListRunnerPoolsRequest generates requests for ListRunnerPools
+func NewListRunnerPoolsRequest(server string, workspaceId string, params *ListRunnerPoolsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/resources/workspaces/%s/runner-pools", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+
+		if params.SpotlightApiVersion != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Api-Version", headerParam0)
+		}
+
+		if params.SpotlightClient != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Client", headerParam1)
+		}
+
+	}
+
+	return req, nil
+}
+
+// NewCreateRunnerPoolRequest calls the generic CreateRunnerPool builder with application/json body
+func NewCreateRunnerPoolRequest(server string, workspaceId string, params *CreateRunnerPoolParams, body CreateRunnerPoolJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateRunnerPoolRequestWithBody(server, workspaceId, params, "application/json", bodyReader)
+}
+
+// NewCreateRunnerPoolRequestWithBody generates requests for CreateRunnerPool with any type of body
+func NewCreateRunnerPoolRequestWithBody(server string, workspaceId string, params *CreateRunnerPoolParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/resources/workspaces/%s/runner-pools", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		if params.SpotlightApiVersion != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Api-Version", headerParam0)
+		}
+
+		if params.SpotlightClient != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Client", headerParam1)
+		}
+
+		var headerParam2 string
+
+		headerParam2, err = runtime.StyleParamWithOptions("simple", false, "Idempotency-Key", params.IdempotencyKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("Idempotency-Key", headerParam2)
+
+	}
+
+	return req, nil
+}
+
+// NewImportRunnerPoolRequest generates requests for ImportRunnerPool
+func NewImportRunnerPoolRequest(server string, workspaceId string, params *ImportRunnerPoolParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/resources/workspaces/%s/runner-pools/import", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "address", params.Address, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+
+		if params.SpotlightApiVersion != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Api-Version", headerParam0)
+		}
+
+		if params.SpotlightClient != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Client", headerParam1)
+		}
+
+	}
+
+	return req, nil
+}
+
 // NewListRunnerTrustsRequest generates requests for ListRunnerTrusts
 func NewListRunnerTrustsRequest(server string, workspaceId string, params *ListRunnerTrustsParams) (*http.Request, error) {
 	var err error
@@ -8707,6 +9568,17 @@ type ClientWithResponsesInterface interface {
 
 	UpdateLineWithResponse(ctx context.Context, id string, params *UpdateLineParams, body UpdateLineJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateLineResponse, error)
 
+	// DeleteRunnerPoolWithResponse request
+	DeleteRunnerPoolWithResponse(ctx context.Context, id string, params *DeleteRunnerPoolParams, reqEditors ...RequestEditorFn) (*DeleteRunnerPoolResponse, error)
+
+	// ReadRunnerPoolWithResponse request
+	ReadRunnerPoolWithResponse(ctx context.Context, id string, params *ReadRunnerPoolParams, reqEditors ...RequestEditorFn) (*ReadRunnerPoolResponse, error)
+
+	// UpdateRunnerPoolWithBodyWithResponse request with any body
+	UpdateRunnerPoolWithBodyWithResponse(ctx context.Context, id string, params *UpdateRunnerPoolParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateRunnerPoolResponse, error)
+
+	UpdateRunnerPoolWithResponse(ctx context.Context, id string, params *UpdateRunnerPoolParams, body UpdateRunnerPoolJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateRunnerPoolResponse, error)
+
 	// DeleteRunnerTrustWithResponse request
 	DeleteRunnerTrustWithResponse(ctx context.Context, id string, params *DeleteRunnerTrustParams, reqEditors ...RequestEditorFn) (*DeleteRunnerTrustResponse, error)
 
@@ -8832,6 +9704,17 @@ type ClientWithResponsesInterface interface {
 
 	// ImportLineWithResponse request
 	ImportLineWithResponse(ctx context.Context, workspaceId string, params *ImportLineParams, reqEditors ...RequestEditorFn) (*ImportLineResponse, error)
+
+	// ListRunnerPoolsWithResponse request
+	ListRunnerPoolsWithResponse(ctx context.Context, workspaceId string, params *ListRunnerPoolsParams, reqEditors ...RequestEditorFn) (*ListRunnerPoolsResponse, error)
+
+	// CreateRunnerPoolWithBodyWithResponse request with any body
+	CreateRunnerPoolWithBodyWithResponse(ctx context.Context, workspaceId string, params *CreateRunnerPoolParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateRunnerPoolResponse, error)
+
+	CreateRunnerPoolWithResponse(ctx context.Context, workspaceId string, params *CreateRunnerPoolParams, body CreateRunnerPoolJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateRunnerPoolResponse, error)
+
+	// ImportRunnerPoolWithResponse request
+	ImportRunnerPoolWithResponse(ctx context.Context, workspaceId string, params *ImportRunnerPoolParams, reqEditors ...RequestEditorFn) (*ImportRunnerPoolResponse, error)
 
 	// ListRunnerTrustsWithResponse request
 	ListRunnerTrustsWithResponse(ctx context.Context, workspaceId string, params *ListRunnerTrustsParams, reqEditors ...RequestEditorFn) (*ListRunnerTrustsResponse, error)
@@ -9270,6 +10153,111 @@ func (r UpdateLineResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r UpdateLineResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DeleteRunnerPoolResponse struct {
+	Body                      []byte
+	HTTPResponse              *http.Response
+	ApplicationproblemJSON400 *ProblemResponseDto
+	ApplicationproblemJSON401 *ProblemResponseDto
+	ApplicationproblemJSON403 *ProblemResponseDto
+	ApplicationproblemJSON404 *ProblemResponseDto
+	ApplicationproblemJSON409 *ProblemResponseDto
+	ApplicationproblemJSON428 *ProblemResponseDto
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteRunnerPoolResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteRunnerPoolResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteRunnerPoolResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ReadRunnerPoolResponse struct {
+	Body                      []byte
+	HTTPResponse              *http.Response
+	JSON200                   *RunnerPoolResourceResponseDto
+	ApplicationproblemJSON400 *ProblemResponseDto
+	ApplicationproblemJSON401 *ProblemResponseDto
+	ApplicationproblemJSON404 *ProblemResponseDto
+}
+
+// Status returns HTTPResponse.Status
+func (r ReadRunnerPoolResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ReadRunnerPoolResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ReadRunnerPoolResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type UpdateRunnerPoolResponse struct {
+	Body                      []byte
+	HTTPResponse              *http.Response
+	JSON200                   *RunnerPoolResourceResponseDto
+	ApplicationproblemJSON400 *ProblemResponseDto
+	ApplicationproblemJSON401 *ProblemResponseDto
+	ApplicationproblemJSON403 *ProblemResponseDto
+	ApplicationproblemJSON404 *ProblemResponseDto
+	ApplicationproblemJSON409 *ProblemResponseDto
+	ApplicationproblemJSON422 *ProblemResponseDto
+	ApplicationproblemJSON428 *ProblemResponseDto
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateRunnerPoolResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateRunnerPoolResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r UpdateRunnerPoolResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -10454,6 +11442,108 @@ func (r ImportLineResponse) ContentType() string {
 	return ""
 }
 
+type ListRunnerPoolsResponse struct {
+	Body                      []byte
+	HTTPResponse              *http.Response
+	JSON200                   *RunnerPoolResourceListResponseDto
+	ApplicationproblemJSON400 *ProblemResponseDto
+	ApplicationproblemJSON401 *ProblemResponseDto
+	ApplicationproblemJSON404 *ProblemResponseDto
+}
+
+// Status returns HTTPResponse.Status
+func (r ListRunnerPoolsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListRunnerPoolsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListRunnerPoolsResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type CreateRunnerPoolResponse struct {
+	Body                      []byte
+	HTTPResponse              *http.Response
+	JSON201                   *RunnerPoolResourceResponseDto
+	ApplicationproblemJSON400 *ProblemResponseDto
+	ApplicationproblemJSON401 *ProblemResponseDto
+	ApplicationproblemJSON403 *ProblemResponseDto
+	ApplicationproblemJSON404 *ProblemResponseDto
+	ApplicationproblemJSON409 *ProblemResponseDto
+	ApplicationproblemJSON422 *ProblemResponseDto
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateRunnerPoolResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateRunnerPoolResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateRunnerPoolResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ImportRunnerPoolResponse struct {
+	Body                      []byte
+	HTTPResponse              *http.Response
+	JSON200                   *RunnerPoolResourceResponseDto
+	ApplicationproblemJSON400 *ProblemResponseDto
+	ApplicationproblemJSON401 *ProblemResponseDto
+	ApplicationproblemJSON404 *ProblemResponseDto
+}
+
+// Status returns HTTPResponse.Status
+func (r ImportRunnerPoolResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ImportRunnerPoolResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ImportRunnerPoolResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type ListRunnerTrustsResponse struct {
 	Body                      []byte
 	HTTPResponse              *http.Response
@@ -11161,6 +12251,41 @@ func (c *ClientWithResponses) UpdateLineWithResponse(ctx context.Context, id str
 	return ParseUpdateLineResponse(rsp)
 }
 
+// DeleteRunnerPoolWithResponse request returning *DeleteRunnerPoolResponse
+func (c *ClientWithResponses) DeleteRunnerPoolWithResponse(ctx context.Context, id string, params *DeleteRunnerPoolParams, reqEditors ...RequestEditorFn) (*DeleteRunnerPoolResponse, error) {
+	rsp, err := c.DeleteRunnerPool(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteRunnerPoolResponse(rsp)
+}
+
+// ReadRunnerPoolWithResponse request returning *ReadRunnerPoolResponse
+func (c *ClientWithResponses) ReadRunnerPoolWithResponse(ctx context.Context, id string, params *ReadRunnerPoolParams, reqEditors ...RequestEditorFn) (*ReadRunnerPoolResponse, error) {
+	rsp, err := c.ReadRunnerPool(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseReadRunnerPoolResponse(rsp)
+}
+
+// UpdateRunnerPoolWithBodyWithResponse request with arbitrary body returning *UpdateRunnerPoolResponse
+func (c *ClientWithResponses) UpdateRunnerPoolWithBodyWithResponse(ctx context.Context, id string, params *UpdateRunnerPoolParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateRunnerPoolResponse, error) {
+	rsp, err := c.UpdateRunnerPoolWithBody(ctx, id, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateRunnerPoolResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateRunnerPoolWithResponse(ctx context.Context, id string, params *UpdateRunnerPoolParams, body UpdateRunnerPoolJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateRunnerPoolResponse, error) {
+	rsp, err := c.UpdateRunnerPool(ctx, id, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateRunnerPoolResponse(rsp)
+}
+
 // DeleteRunnerTrustWithResponse request returning *DeleteRunnerTrustResponse
 func (c *ClientWithResponses) DeleteRunnerTrustWithResponse(ctx context.Context, id string, params *DeleteRunnerTrustParams, reqEditors ...RequestEditorFn) (*DeleteRunnerTrustResponse, error) {
 	rsp, err := c.DeleteRunnerTrust(ctx, id, params, reqEditors...)
@@ -11561,6 +12686,41 @@ func (c *ClientWithResponses) ImportLineWithResponse(ctx context.Context, worksp
 		return nil, err
 	}
 	return ParseImportLineResponse(rsp)
+}
+
+// ListRunnerPoolsWithResponse request returning *ListRunnerPoolsResponse
+func (c *ClientWithResponses) ListRunnerPoolsWithResponse(ctx context.Context, workspaceId string, params *ListRunnerPoolsParams, reqEditors ...RequestEditorFn) (*ListRunnerPoolsResponse, error) {
+	rsp, err := c.ListRunnerPools(ctx, workspaceId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListRunnerPoolsResponse(rsp)
+}
+
+// CreateRunnerPoolWithBodyWithResponse request with arbitrary body returning *CreateRunnerPoolResponse
+func (c *ClientWithResponses) CreateRunnerPoolWithBodyWithResponse(ctx context.Context, workspaceId string, params *CreateRunnerPoolParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateRunnerPoolResponse, error) {
+	rsp, err := c.CreateRunnerPoolWithBody(ctx, workspaceId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateRunnerPoolResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateRunnerPoolWithResponse(ctx context.Context, workspaceId string, params *CreateRunnerPoolParams, body CreateRunnerPoolJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateRunnerPoolResponse, error) {
+	rsp, err := c.CreateRunnerPool(ctx, workspaceId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateRunnerPoolResponse(rsp)
+}
+
+// ImportRunnerPoolWithResponse request returning *ImportRunnerPoolResponse
+func (c *ClientWithResponses) ImportRunnerPoolWithResponse(ctx context.Context, workspaceId string, params *ImportRunnerPoolParams, reqEditors ...RequestEditorFn) (*ImportRunnerPoolResponse, error) {
+	rsp, err := c.ImportRunnerPool(ctx, workspaceId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseImportRunnerPoolResponse(rsp)
 }
 
 // ListRunnerTrustsWithResponse request returning *ListRunnerTrustsResponse
@@ -12340,6 +13500,189 @@ func ParseUpdateLineResponse(rsp *http.Response) (*UpdateLineResponse, error) {
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest LineResourceResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 428:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON428 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteRunnerPoolResponse parses an HTTP response from a DeleteRunnerPoolWithResponse call
+func ParseDeleteRunnerPoolResponse(rsp *http.Response) (*DeleteRunnerPoolResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteRunnerPoolResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 428:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON428 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseReadRunnerPoolResponse parses an HTTP response from a ReadRunnerPoolWithResponse call
+func ParseReadRunnerPoolResponse(rsp *http.Response) (*ReadRunnerPoolResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ReadRunnerPoolResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RunnerPoolResourceResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateRunnerPoolResponse parses an HTTP response from a UpdateRunnerPoolWithResponse call
+func ParseUpdateRunnerPoolResponse(rsp *http.Response) (*UpdateRunnerPoolResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateRunnerPoolResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RunnerPoolResourceResponseDto
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -14358,6 +15701,168 @@ func ParseImportLineResponse(rsp *http.Response) (*ImportLineResponse, error) {
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest LineResourceResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListRunnerPoolsResponse parses an HTTP response from a ListRunnerPoolsWithResponse call
+func ParseListRunnerPoolsResponse(rsp *http.Response) (*ListRunnerPoolsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListRunnerPoolsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RunnerPoolResourceListResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateRunnerPoolResponse parses an HTTP response from a CreateRunnerPoolWithResponse call
+func ParseCreateRunnerPoolResponse(rsp *http.Response) (*CreateRunnerPoolResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateRunnerPoolResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest RunnerPoolResourceResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseImportRunnerPoolResponse parses an HTTP response from a ImportRunnerPoolWithResponse call
+func ParseImportRunnerPoolResponse(rsp *http.Response) (*ImportRunnerPoolResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ImportRunnerPoolResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RunnerPoolResourceResponseDto
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
