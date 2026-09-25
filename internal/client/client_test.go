@@ -407,3 +407,47 @@ func TestWriteOnlyValuesAreSentOnlyWhenGiven(t *testing.T) {
 		t.Errorf("bodies %q and %q", seen[0].Body, seen[1].Body)
 	}
 }
+
+var pool = map[string]any{
+	"id": "pool-1", "version": 1, "address": "ephemeral", "warnings": []any{}, "workspaceId": "ws-1",
+	"key": "ephemeral", "labels": []any{}, "maxRuns": 4, "mode": "pull", "tokenVersion": 2, "provision": nil,
+}
+
+func TestAPoolTokenSpotlightIssuesIsDroppedUnread(t *testing.T) {
+	const issued = "issued-pool-token-that-must-never-be-kept-anywhere"
+
+	api, _ := serve(t, func(w http.ResponseWriter, _ *http.Request, _ int) {
+		w.Header().Set(client.PoolTokenHeader, issued)
+		reply(w, http.StatusCreated, "application/json", pool)
+	})
+
+	created, err := api.CreateRunnerPool(context.Background(), "ws-1", client.RunnerPoolInput{Key: "ephemeral", Labels: []string{}})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if strings.Contains(fmt.Sprintf("%#v", created), issued) || *created.MaxRuns != 4 || *created.TokenVersion != 2 || created.Mode != "pull" {
+		t.Errorf("pool %#v", created)
+	}
+}
+
+func TestAPushPoolSendsItsSecretAndNoToken(t *testing.T) {
+	api, recorded := serve(t, func(w http.ResponseWriter, _ *http.Request, _ int) {
+		reply(w, http.StatusCreated, "application/json", pool)
+	})
+
+	version := int64(1)
+	_, err := api.CreateRunnerPool(context.Background(), "ws-1", client.RunnerPoolInput{
+		Key: "ephemeral", Labels: []string{},
+		Provision: &client.PoolProvision{URL: "https://provision.example.com/runs", Secret: "whsec_c2VjcmV0", SecretVersion: &version},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	body := recorded.all()[0].Body
+	if strings.Contains(body, `"token`) || strings.Contains(body, `"maxRuns"`) ||
+		!strings.Contains(body, `"provision":{"url":"https://provision.example.com/runs","secret":"whsec_c2VjcmV0","secretVersion":1}`) {
+		t.Errorf("body %s", body)
+	}
+}

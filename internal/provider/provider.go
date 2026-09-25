@@ -139,6 +139,7 @@ func (p *SpotlightProvider) Resources(_ context.Context) []func() resource.Resou
 		NewSecretResource,
 		NewRunnerResource,
 		NewRunnerTrustResource,
+		NewRunnerPoolResource,
 		NewWorkspaceRunnersResource,
 	}
 }
@@ -164,6 +165,7 @@ func (p *SpotlightProvider) ListResources(_ context.Context) []func() list.ListR
 		NewSecretListResource,
 		NewRunnerListResource,
 		NewRunnerTrustListResource,
+		NewRunnerPoolListResource,
 		NewWorkspaceRunnersListResource,
 	}
 }

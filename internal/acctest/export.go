@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 )
 
-// Module is a Terraform module `spotlight export` wrote: each file's
+// Module is a Terraform module a workspace export answered: each file's
 // content by its path within the module.
 type Module map[string]string
 

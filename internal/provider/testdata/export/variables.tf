@@ -10,3 +10,16 @@ variable "runner_build-1_token" {
   sensitive   = true
   default     = null
 }
+
+variable "runner_pool_burst_token" {
+  description = "The token the runner pool burst claims with; left null, Spotlight issues one when it creates the pool"
+  type        = string
+  sensitive   = true
+  default     = null
+}
+
+variable "runner_pool_k8s-jobs_provision_secret" {
+  description = "The secret the runner pool k8s-jobs signs its provision calls with, as whsec_ and base64 bytes"
+  type        = string
+  sensitive   = true
+}
