@@ -17705,7 +17705,7 @@
           "release": {
             "type": "string",
             "example": "v1.4.0",
-            "description": "The spotlight-host release it runs"
+            "description": "The spotlight release it runs"
           },
           "executor": {
             "type": "string",
@@ -17862,7 +17862,7 @@
           "release": {
             "type": "string",
             "example": "v1.4.0",
-            "description": "The spotlight-host release"
+            "description": "The spotlight release"
           },
           "executor": {
             "type": "string",
