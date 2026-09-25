@@ -126,12 +126,17 @@ import {
 }
 
 resource "spotlight_line" "core_delivery" {
-  team_id      = spotlight_team.core.id
-  key          = "delivery"
-  name         = "Delivery"
-  role         = "review"
-  repositories = ["acme/api"]
-  runners      = ["vpc-internal"]
+  team_id = spotlight_team.core.id
+  key     = "delivery"
+  name    = "Delivery"
+  role    = "review"
+  runners = ["vpc-internal"]
+
+  repository {
+    name  = "acme/api"
+    image = "ghcr.io/acme/api-runner:main"
+    setup = "npm ci"
+  }
 
   station {
     key       = "backlog"
@@ -147,23 +152,21 @@ resource "spotlight_line" "core_delivery" {
   }
 
   station {
-    key             = "implementation"
-    name            = "Implementation"
-    kind            = "work"
-    color           = "#6d78d5"
-    harness         = "claude-code"
-    profile         = spotlight_harness_profile.core_careful.key
-    harness_version = "2.1.270"
-    prompt          = file("${path.module}/prompts/core/delivery/implementation.md")
-    check           = "npm test"
-    setup           = "npm ci"
-    diffs           = true
-    decisions       = true
-    tools           = ["${spotlight_integration.core_linear.source}.comment", "pull-request"]
-    skills          = [spotlight_skill.core_grafana.key]
-    runners         = ["gpu"]
-    passes_to       = ["code-review"]
-    ends            = false
+    key       = "implementation"
+    name      = "Implementation"
+    kind      = "work"
+    color     = "#6d78d5"
+    harness   = "claude-code"
+    profile   = spotlight_harness_profile.core_careful.key
+    prompt    = file("${path.module}/prompts/core/delivery/implementation.md")
+    check     = "npm test"
+    diffs     = true
+    decisions = true
+    tools     = ["${spotlight_integration.core_linear.source}.comment", "pull-request"]
+    skills    = [spotlight_skill.core_grafana.key]
+    runners   = ["gpu"]
+    passes_to = ["code-review"]
+    ends      = false
   }
 
   station {

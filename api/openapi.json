@@ -121,6 +121,13 @@
                 "example": {
                   "key": "delivery",
                   "name": "Delivery",
+                  "repositories": [
+                    {
+                      "name": "acme/api",
+                      "image": "ghcr.io/acme/api-runner:main",
+                      "setup": "go mod download"
+                    }
+                  ],
                   "stations": [
                     {
                       "key": "backlog",
@@ -134,7 +141,6 @@
                       "key": "implementation",
                       "name": "Implementation",
                       "harness": "claude-code",
-                      "harnessVersion": "0.23.1",
                       "profile": "careful",
                       "prompt": "Implement the task.",
                       "passesTo": [
@@ -415,6 +421,13 @@
                 "example": {
                   "key": "delivery",
                   "name": "Delivery",
+                  "repositories": [
+                    {
+                      "name": "acme/api",
+                      "image": "ghcr.io/acme/api-runner:main",
+                      "setup": "go mod download"
+                    }
+                  ],
                   "stations": [
                     {
                       "key": "backlog",
@@ -428,7 +441,6 @@
                       "key": "implementation",
                       "name": "Implementation",
                       "harness": "claude-code",
-                      "harnessVersion": "0.23.1",
                       "profile": "careful",
                       "prompt": "Implement the task.",
                       "passesTo": [
@@ -1232,6 +1244,47 @@
         ]
       }
     },
+    "/runs/{runId}/image": {
+      "post": {
+        "description": "The host pulls the image named for the run just after it claims it, and records the digest it pulled here, so the run shows the environment it had.",
+        "operationId": "recordRunImage",
+        "parameters": [
+          {
+            "name": "runId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordRunImageRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "401": {
+            "description": "Missing, spent or wrong runner token"
+          },
+          "409": {
+            "description": "The run is not held by this runner"
+          }
+        },
+        "summary": "Say which image, by digest, the run’s sandbox started from",
+        "tags": [
+          "runners"
+        ]
+      }
+    },
     "/runs/{runId}/events": {
       "post": {
         "operationId": "appendRunEvents",
@@ -1638,9 +1691,9 @@
         ]
       }
     },
-    "/hosts/harnesses": {
+    "/hosts/requirements": {
       "get": {
-        "operationId": "hostHarnesses",
+        "operationId": "hostRequirements",
         "parameters": [
           {
             "name": "Spotlight-Trust",
@@ -1658,10 +1711,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/InstallableHarnessResponseDto"
-                  }
+                  "$ref": "#/components/schemas/HostRequirementsResponseDto"
                 }
               }
             }
@@ -1675,7 +1725,7 @@
             "bearer": []
           }
         ],
-        "summary": "What a host looks for in its runner images, so its claims can say what they hold",
+        "summary": "Which runner images a host should serve, what to look for in them, and how new their runner must be",
         "tags": [
           "runners"
         ]
@@ -1724,7 +1774,7 @@
             "description": "Missing, rotated or unknown pool token, or a workload the trust does not admit"
           },
           "409": {
-            "description": "The host has not reported through this pool or trust"
+            "description": "The host has not reported through this pool or trust (`host-unreported`), or has not reported serving the image it claims for (`image-unreported`)"
           }
         },
         "security": [
@@ -14081,13 +14131,19 @@
             "type": "string",
             "example": "9c2e6d5a-1f47-4c8b-9a3d-2b7e5f0c1d84"
           },
+          "harness": {
+            "type": "string",
+            "example": "claude-code",
+            "description": "The harness the run needs, so a host can tell whether the image it pulled still holds it"
+          },
           "spec": {
             "type": "object",
-            "description": "Opaque to the control plane, meaningful to the hook"
+            "description": "What the runner lays out and starts, as the runner reads it"
           }
         },
         "required": [
           "id",
+          "harness",
           "spec"
         ]
       },
@@ -14580,6 +14636,19 @@
           "stop"
         ]
       },
+      "RecordRunImageRequestDto": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "example": "ghcr.io/acme/api-runner@sha256:9b2f5c1e0d7a4b3c8e6f1a2d5c7b9e0f3a4d6c8b1e2f5a7c9d0b3e6f8a1c4d7e",
+            "description": "The image the sandbox started from, named by its digest"
+          }
+        },
+        "required": [
+          "image"
+        ]
+      },
       "RunEventRequestDto": {
         "type": "object",
         "properties": {
@@ -14887,6 +14956,49 @@
           "labels"
         ]
       },
+      "RunnerReleaseResponseDto": {
+        "type": "object",
+        "properties": {
+          "atLeast": {
+            "type": "string",
+            "example": "20260925-01",
+            "description": "The oldest runner release this control plane works with; a host refuses an image whose runner is older"
+          }
+        },
+        "required": [
+          "atLeast"
+        ]
+      },
+      "HostRequirementsResponseDto": {
+        "type": "object",
+        "properties": {
+          "runner": {
+            "$ref": "#/components/schemas/RunnerReleaseResponseDto"
+          },
+          "harnesses": {
+            "description": "What a host looks for in each runner image",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InstallableHarnessResponseDto"
+            }
+          },
+          "images": {
+            "example": [
+              "ghcr.io/acme/api-runner:main"
+            ],
+            "description": "The images this workspace’s lines name; a host serves those its allow-list admits, beside its default",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "runner",
+          "harnesses",
+          "images"
+        ]
+      },
       "ClaimHostWorkRequestDto": {
         "type": "object",
         "properties": {
@@ -14895,19 +15007,15 @@
             "example": "K7Q2M4ZC3VYH6N5RB8WX1TDJ9P",
             "description": "The host claiming, as it names itself in its presence"
           },
-          "harnesses": {
-            "description": "The harnesses in the runner image this claim will run in, as the host found them",
-            "items": {
-              "type": "array",
-              "items": {
-                "type": "hostHarnessRequestDto"
-              }
-            },
-            "type": "array"
+          "image": {
+            "type": "string",
+            "example": "ghcr.io/acme/api-runner:main",
+            "description": "The runner image this claim will run in, one the host reported serving; what it holds and whether it is the default come from that report"
           }
         },
         "required": [
-          "host"
+          "host",
+          "image"
         ]
       },
       "HostClaimResponseDto": {
@@ -15838,6 +15946,12 @@
             "type": "string",
             "example": "claude-code"
           },
+          "image": {
+            "type": "string",
+            "nullable": true,
+            "example": "ghcr.io/acme/api-runner@sha256:9b2f5c1e0d7a4b3c8e6f1a2d5c7b9e0f3a4d6c8b1e2f5a7c9d0b3e6f8a1c4d7e",
+            "description": "The image, by digest, its sandbox started from; null before it started or where a push pool provisioned it"
+          },
           "station": {
             "nullable": true,
             "description": "Where it ran, which the task may since have left",
@@ -15881,6 +15995,7 @@
           "startedAt",
           "updatedAt",
           "harness",
+          "image",
           "station",
           "review",
           "taskId",
@@ -16145,6 +16260,12 @@
             "type": "string",
             "example": "claude-code"
           },
+          "image": {
+            "type": "string",
+            "nullable": true,
+            "example": "ghcr.io/acme/api-runner@sha256:9b2f5c1e0d7a4b3c8e6f1a2d5c7b9e0f3a4d6c8b1e2f5a7c9d0b3e6f8a1c4d7e",
+            "description": "The image, by digest, its sandbox started from; null before it started or where a push pool provisioned it"
+          },
           "station": {
             "nullable": true,
             "description": "Where it ran, which the task may since have left",
@@ -16174,6 +16295,7 @@
           "startedAt",
           "updatedAt",
           "harness",
+          "image",
           "station",
           "review"
         ]
@@ -17583,7 +17705,7 @@
           "release": {
             "type": "string",
             "example": "v1.4.0",
-            "description": "The spotlight-host release it runs"
+            "description": "The spotlight release it runs"
           },
           "executor": {
             "type": "string",
@@ -17605,12 +17727,12 @@
               "type": "string"
             }
           },
-          "harnesses": {
-            "description": "The harnesses its runner images hold, each with the models it discovered",
+          "images": {
+            "description": "The runner images it serves or refused, each with what it found inside",
             "items": {
               "type": "array",
               "items": {
-                "type": "registeredHarnessRequestDto"
+                "type": "hostImageRequestDto"
               }
             },
             "type": "array"
@@ -17659,6 +17781,70 @@
           "key"
         ]
       },
+      "HostHarnessResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "claude-code"
+          },
+          "version": {
+            "type": "string",
+            "nullable": true,
+            "example": "2.1.270"
+          }
+        },
+        "required": [
+          "id",
+          "version"
+        ]
+      },
+      "HostImageResponseDto": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "example": "ghcr.io/acme/api-runner:main"
+          },
+          "digest": {
+            "type": "string",
+            "nullable": true,
+            "example": "ghcr.io/acme/api-runner@sha256:9b2f5c1e0d7a4b3c8e6f1a2d5c7b9e0f3a4d6c8b1e2f5a7c9d0b3e6f8a1c4d7e",
+            "description": "The digest its sandboxes start from now"
+          },
+          "usual": {
+            "type": "boolean",
+            "example": true,
+            "description": "Runs every line that names no image"
+          },
+          "release": {
+            "type": "string",
+            "nullable": true,
+            "example": "20260925-01",
+            "description": "The release of the runner inside"
+          },
+          "harnesses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HostHarnessResponseDto"
+            }
+          },
+          "refused": {
+            "type": "string",
+            "nullable": true,
+            "example": null,
+            "description": "Why the host will not run it, when it will not"
+          }
+        },
+        "required": [
+          "image",
+          "digest",
+          "usual",
+          "release",
+          "harnesses",
+          "refused"
+        ]
+      },
       "HostResponseDto": {
         "type": "object",
         "properties": {
@@ -17676,7 +17862,7 @@
           "release": {
             "type": "string",
             "example": "v1.4.0",
-            "description": "The spotlight-host release"
+            "description": "The spotlight release"
           },
           "executor": {
             "type": "string",
@@ -17694,15 +17880,11 @@
               "type": "string"
             }
           },
-          "harnesses": {
-            "example": [
-              "claude-code",
-              "codex"
-            ],
-            "description": "The harnesses its runner images hold",
+          "images": {
+            "description": "The runner images it serves or refused, and what each holds",
             "type": "array",
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/HostImageResponseDto"
             }
           },
           "firstSeenAt": {
@@ -17727,7 +17909,7 @@
           "executor",
           "capacity",
           "running",
-          "harnesses",
+          "images",
           "firstSeenAt",
           "lastSeenAt",
           "answering"
@@ -17747,6 +17929,12 @@
             "type": "string",
             "nullable": true,
             "description": "The host whose sandbox it runs in; null where a push pool provisioned it"
+          },
+          "image": {
+            "type": "string",
+            "nullable": true,
+            "example": "ghcr.io/acme/api-runner:main",
+            "description": "The image its sandbox runs; null where a push pool provisioned it"
           },
           "harnesses": {
             "example": [
@@ -17771,6 +17959,7 @@
           "id",
           "through",
           "hostId",
+          "image",
           "harnesses",
           "startedAt",
           "lastSeenAt"
@@ -19145,7 +19334,8 @@
               "checkout-failed",
               "setup-failed",
               "no-room",
-              "out-of-time"
+              "out-of-time",
+              "no-image"
             ],
             "description": "Why the runner could not check the stack at all"
           },

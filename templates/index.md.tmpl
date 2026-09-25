@@ -63,7 +63,7 @@ Every run gets a fresh runner of its own that ends with it, and only a runner po
 curl -fsSL https://spotlight.example.com/api/install.sh | SPOTLIGHT_URL=https://spotlight.example.com SPOTLIGHT_TOKEN=<pool token> sh
 ```
 
-The host claims each run with that token and starts a fresh sandbox for it. A host on a platform that issues its workloads tokens, as Kubernetes does, claims through a `spotlight_runner_trust` instead, holding no Spotlight token: set `SPOTLIGHT_TRUST` to the trust's `id` and `SPOTLIGHT_OIDC_TOKEN_FILE` to the path of the projected token. A pool with `provision` is pushed to instead: Spotlight calls its URL for each run, handing a one-run runner its credential. A host is live state, shown on the web app's Runners page, and never a Terraform resource. A line or station names in `runners` the labels of a pool or trust, or a `<harness>@<version>` release, to place its work.
+The host claims each run with that token and starts a fresh sandbox for it. A host on a platform that issues its workloads tokens, as Kubernetes does, claims through a `spotlight_runner_trust` instead, holding no Spotlight token: set `SPOTLIGHT_TRUST` to the trust's `id` and `SPOTLIGHT_OIDC_TOKEN_FILE` to the path of the projected token. A pool with `provision` is pushed to instead: Spotlight calls its URL for each run, handing a one-run runner its credential. A host is live state, shown on the web app's Runners page, and never a Terraform resource. A line or station names in `runners` the labels of a pool or trust to place its work. A line's `repository` may name the runner `image` its work runs in, built `FROM ghcr.io/usespotlightai/spotlight-runner`; a host serves it when its `SPOTLIGHT_RUNNER_IMAGE` admits it.
 
 ## Plans check expressions
 

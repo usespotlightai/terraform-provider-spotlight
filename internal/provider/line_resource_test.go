@@ -19,12 +19,17 @@ const lineAddress = "spotlight_line.core_delivery"
 
 const lineExported = `
 resource "spotlight_line" "core_delivery" {
-  team_id      = spotlight_team.core.id
-  key          = "delivery"
-  name         = "Delivery"
-  role         = "review"
-  repositories = ["acme/api"]
-  runners      = ["vpc-internal", "claude-code@2.1.270"]
+  team_id = spotlight_team.core.id
+  key     = "delivery"
+  name    = "Delivery"
+  role    = "review"
+  runners = ["vpc-internal", "claude-code@2.1.270"]
+
+  repository {
+    name  = "acme/api"
+    image = "ghcr.io/acme/api-runner:main"
+    setup = "npm ci"
+  }
 
   station {
     key       = "backlog"
@@ -40,22 +45,21 @@ resource "spotlight_line" "core_delivery" {
   }
 
   station {
-    key             = "implementation"
-    name            = "Implementation"
-    kind            = "work"
-    color           = "#6d78d5"
-    harness         = "claude-code"
-    profile         = "careful"
-    harness_version = "2.1.270"
-    prompt          = "Implement the task.\n"
-    check           = "npm test"
-    diffs           = true
-    decisions       = true
-    tools           = ["linear.comment"]
-    skills          = ["grafana"]
-    runners         = ["gpu"]
-    passes_to       = ["code-review"]
-    ends            = false
+    key       = "implementation"
+    name      = "Implementation"
+    kind      = "work"
+    color     = "#6d78d5"
+    harness   = "claude-code"
+    profile   = "careful"
+    prompt    = "Implement the task.\n"
+    check     = "npm test"
+    diffs     = true
+    decisions = true
+    tools     = ["linear.comment"]
+    skills    = ["grafana"]
+    runners   = ["gpu"]
+    passes_to = ["code-review"]
+    ends      = false
   }
 
   station {
@@ -155,11 +159,10 @@ resource "spotlight_line" "core_delivery" {
   }
 
   station {
-    key             = "implementation"
-    name            = "Implementation"
-    harness         = "claude-code"
-    harness_version = "v2.1.270"
-    passes_to       = ["code-review"]
+    key       = "implementation"
+    name      = "Implementation"
+    harness   = "claude-code"
+    passes_to = ["code-review"]
   }
 
   station {
@@ -196,6 +199,14 @@ func lineStation(at int, name string) tfjsonpath.Path {
 	return tfjsonpath.New("station").AtSliceIndex(at).AtMapKey(name)
 }
 
+func lineRepository(name string, image, setup knownvalue.Check) knownvalue.Check {
+	return knownvalue.ObjectExact(map[string]knownvalue.Check{
+		"name":  knownvalue.StringExact(name),
+		"image": image,
+		"setup": setup,
+	})
+}
+
 func TestLineExportedShapeRoundTrips(t *testing.T) {
 	fake := fakeapi.New(t)
 
@@ -209,7 +220,9 @@ func TestLineExportedShapeRoundTrips(t *testing.T) {
 					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("address"), knownvalue.StringExact("core/delivery")),
 					statecheck.ExpectKnownValue(lineAddress, lineStation(1, "passes_to"), knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact("code-review")})),
 					statecheck.ExpectKnownValue(lineAddress, lineStation(1, "profile"), knownvalue.StringExact("careful")),
-					statecheck.ExpectKnownValue(lineAddress, lineStation(1, "harness_version"), knownvalue.StringExact("2.1.270")),
+					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("repository"), knownvalue.SetExact([]knownvalue.Check{
+						lineRepository("acme/api", knownvalue.StringExact("ghcr.io/acme/api-runner:main"), knownvalue.StringExact("npm ci")),
+					})),
 					statecheck.ExpectKnownValue(lineAddress, lineStation(1, "runners"), knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact("gpu")})),
 					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("runners"), knownvalue.SetSizeExact(2)),
 					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("reaction"), knownvalue.SetSizeExact(1)),
@@ -259,7 +272,6 @@ func TestLineFillsWhatItLeavesOutWithoutDrift(t *testing.T) {
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(lineAddress, lineStation(2, "color"), knownvalue.StringExact("#6d78d5")),
 					statecheck.ExpectKnownValue(lineAddress, lineStation(3, "color"), knownvalue.StringExact("#3fa46a")),
-					statecheck.ExpectKnownValue(lineAddress, lineStation(1, "harness_version"), knownvalue.StringExact("v2.1.270")),
 					statecheck.ExpectKnownValue(lineAddress, lineStation(2, "runners"), knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact("gpu")})),
 					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("version"), knownvalue.Int64Exact(2)),
 				},
@@ -418,6 +430,159 @@ func TestLineReviewsOnlyInTheReviewRole(t *testing.T) {
     start = "opened"
   }
 `, regexp.MustCompile(`(?s)reviews: The delivery line reviews pull requests, which only a line whose\s+role is review does`))
+}
+
+func lineWorking(api string) string {
+	return acctest.Workspace + `
+resource "spotlight_line" "core_delivery" {
+  team_id = spotlight_team.core.id
+  key     = "delivery"
+  name    = "Delivery"
+
+  repository {
+    name  = "acme/web"
+    setup = "npm ci"
+  }
+` + api + `
+  station {
+    key   = "implementation"
+    name  = "Implementation"
+    check = "npm test"
+    diffs = true
+  }
+}
+`
+}
+
+func TestLineRepositoriesCarryTheImageAndSetup(t *testing.T) {
+	fake := fakeapi.New(t)
+
+	pinned := lineWorking(`
+  repository {
+    name  = "acme/api"
+    image = "ghcr.io/acme/api-runner:main"
+    setup = "go mod download"
+  }
+`)
+	moved := lineWorking(`
+  repository {
+    name  = "acme/api"
+    image = "ghcr.io/acme/api-runner:next"
+    setup = "go mod download"
+  }
+`)
+	plain := lineWorking(`
+  repository {
+    name  = "acme/api"
+    setup = "go mod download"
+  }
+`)
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
+		CheckDestroy:             acctest.NoneLeft(fake, "line", "team", "workspace"),
+		Steps: []resource.TestStep{
+			{
+				Config: pinned,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("repository"), knownvalue.SetExact([]knownvalue.Check{
+						lineRepository("acme/api", knownvalue.StringExact("ghcr.io/acme/api-runner:main"), knownvalue.StringExact("go mod download")),
+						lineRepository("acme/web", knownvalue.Null(), knownvalue.StringExact("npm ci")),
+					})),
+				},
+			},
+			{
+				Config:   pinned,
+				PlanOnly: true,
+			},
+			{
+				ResourceName:      lineAddress,
+				ImportState:       true,
+				ImportStateIdFunc: lineImportID,
+				ImportStateVerify: true,
+			},
+			{
+				Config: moved,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(lineAddress, plancheck.ResourceActionUpdate)},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("repository"), knownvalue.SetPartial([]knownvalue.Check{
+						lineRepository("acme/api", knownvalue.StringExact("ghcr.io/acme/api-runner:next"), knownvalue.StringExact("go mod download")),
+					})),
+				},
+			},
+			{
+				Config: plain,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(lineAddress, plancheck.ResourceActionUpdate)},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("repository"), knownvalue.SetPartial([]knownvalue.Check{
+						lineRepository("acme/api", knownvalue.Null(), knownvalue.StringExact("go mod download")),
+					})),
+				},
+			},
+			{
+				Config:   plain,
+				PlanOnly: true,
+			},
+			{
+				ResourceName:      lineAddress,
+				ImportState:       true,
+				ImportStateIdFunc: lineImportID,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestLineRunsInOneImage(t *testing.T) {
+	lineRefused(t, `
+  repository {
+    name  = "acme/api"
+    image = "ghcr.io/acme/api-runner:main"
+  }
+
+  repository {
+    name  = "acme/web"
+    image = "ghcr.io/acme/web-runner:main"
+  }
+
+  station {
+    key  = "implementation"
+    name = "Implementation"
+  }
+`, regexp.MustCompile(`(?s)repository: The delivery line works in repositories that A line runs every\s+station in one image`))
+}
+
+func TestLineRefusesAnImageThatIsNoReference(t *testing.T) {
+	lineRefused(t, `
+  repository {
+    name  = "acme/api"
+    image = "GHCR.io/Acme/API"
+  }
+
+  station {
+    key  = "implementation"
+    name = "Implementation"
+  }
+`, regexp.MustCompile(`(?s)repository: A runner image is named by a reference`))
+}
+
+func TestLineThatChecksLayersSetsUpEveryRepository(t *testing.T) {
+	lineRefused(t, `
+  repository {
+    name = "acme/api"
+  }
+
+  station {
+    key   = "implementation"
+    name  = "Implementation"
+    check = "npm test"
+    diffs = true
+  }
+`, regexp.MustCompile(`(?s)repository: The delivery line has implementation, which checks its layers,\s+so\s+acme/api has to say how its checkout is made ready`))
 }
 
 func TestLineImportsByIdentity(t *testing.T) {

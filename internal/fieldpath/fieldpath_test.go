@@ -71,8 +71,8 @@ func TestSnakeCase(t *testing.T) {
 }
 
 var lineSchema = types.ObjectType{AttrTypes: map[string]attr.Type{
-	"name":         types.StringType,
-	"repositories": types.SetType{ElemType: types.StringType},
+	"name":       types.StringType,
+	"repository": types.SetType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{"setup": types.StringType}}},
 	"station": types.ListType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
 		"key":       types.StringType,
 		"passes_to": types.SetType{ElemType: types.StringType},
@@ -87,7 +87,7 @@ var lineSchema = types.ObjectType{AttrTypes: map[string]attr.Type{
 }}
 
 func TestLocateFindsTheTerraformAttribute(t *testing.T) {
-	at := fieldpath.Locator{Schema: lineSchema, Renames: map[string]string{"stations": "station", "reactions": "reaction"}}
+	at := fieldpath.Locator{Schema: lineSchema, Renames: map[string]string{"repositories": "repository", "stations": "station", "reactions": "reaction"}}
 
 	cases := []struct {
 		api     string
@@ -98,7 +98,7 @@ func TestLocateFindsTheTerraformAttribute(t *testing.T) {
 		{"stations[2].passesTo[1]", path.Root("station").AtListIndex(2).AtName("passes_to"), "station[2].passes_to"},
 		{"stations[0].tools[1]", path.Root("station").AtListIndex(0).AtName("tools").AtListIndex(1), "station[0].tools[1]"},
 		{"reactions[3].to", path.Root("reaction"), "reaction"},
-		{"repositories[0]", path.Root("repositories"), "repositories"},
+		{"repositories[0].setup", path.Root("repository"), "repository"},
 		{"reviews.skip.authors[0]", path.Root("reviews").AtName("skip").AtName("authors").AtListIndex(0), "reviews.skip.authors[0]"},
 		{`files["SKILL.md"]`, path.Root("files").AtMapKey("SKILL.md"), `files["SKILL.md"]`},
 		{`definition.on["task.opened"].to.thread`, path.Root("definition").AtName("on").AtName("task.opened").AtName("to").AtName("thread"), `definition.on["task.opened"].to.thread`},

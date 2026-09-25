@@ -12,41 +12,45 @@ import (
 
 // LineResourceModel is a spotlight_line as Terraform holds it.
 type LineResourceModel struct {
-	ID           types.String   `tfsdk:"id"`
-	Version      types.Int64    `tfsdk:"version"`
-	Address      types.String   `tfsdk:"address"`
-	TeamID       types.String   `tfsdk:"team_id"`
-	Key          types.String   `tfsdk:"key"`
-	Name         types.String   `tfsdk:"name"`
-	Role         types.String   `tfsdk:"role"`
-	Repositories types.Set      `tfsdk:"repositories"`
-	Runners      types.Set      `tfsdk:"runners"`
-	Stations     []lineStation  `tfsdk:"station"`
-	Reactions    []lineReaction `tfsdk:"reaction"`
-	Reviews      *lineReviews   `tfsdk:"reviews"`
+	ID           types.String     `tfsdk:"id"`
+	Version      types.Int64      `tfsdk:"version"`
+	Address      types.String     `tfsdk:"address"`
+	TeamID       types.String     `tfsdk:"team_id"`
+	Key          types.String     `tfsdk:"key"`
+	Name         types.String     `tfsdk:"name"`
+	Role         types.String     `tfsdk:"role"`
+	Runners      types.Set        `tfsdk:"runners"`
+	Repositories []lineRepository `tfsdk:"repository"`
+	Stations     []lineStation    `tfsdk:"station"`
+	Reactions    []lineReaction   `tfsdk:"reaction"`
+	Reviews      *lineReviews     `tfsdk:"reviews"`
+}
+
+type lineRepository struct {
+	Name  types.String `tfsdk:"name"`
+	Image types.String `tfsdk:"image"`
+	Setup types.String `tfsdk:"setup"`
 }
 
 type lineStation struct {
-	Key            types.String `tfsdk:"key"`
-	Name           types.String `tfsdk:"name"`
-	Kind           types.String `tfsdk:"kind"`
-	Color          types.String `tfsdk:"color"`
-	Description    types.String `tfsdk:"description"`
-	Harness        types.String `tfsdk:"harness"`
-	Model          types.String `tfsdk:"model"`
-	Effort         types.String `tfsdk:"effort"`
-	Profile        types.String `tfsdk:"profile"`
-	HarnessVersion types.String `tfsdk:"harness_version"`
-	Prompt         types.String `tfsdk:"prompt"`
-	Check          types.String `tfsdk:"check"`
-	Setup          types.String `tfsdk:"setup"`
-	Diffs          types.Bool   `tfsdk:"diffs"`
-	Decisions      types.Bool   `tfsdk:"decisions"`
-	Tools          types.List   `tfsdk:"tools"`
-	Skills         types.List   `tfsdk:"skills"`
-	Runners        types.Set    `tfsdk:"runners"`
-	PassesTo       types.Set    `tfsdk:"passes_to"`
-	Ends           types.Bool   `tfsdk:"ends"`
+	Key         types.String `tfsdk:"key"`
+	Name        types.String `tfsdk:"name"`
+	Kind        types.String `tfsdk:"kind"`
+	Color       types.String `tfsdk:"color"`
+	Description types.String `tfsdk:"description"`
+	Harness     types.String `tfsdk:"harness"`
+	Model       types.String `tfsdk:"model"`
+	Effort      types.String `tfsdk:"effort"`
+	Profile     types.String `tfsdk:"profile"`
+	Prompt      types.String `tfsdk:"prompt"`
+	Check       types.String `tfsdk:"check"`
+	Diffs       types.Bool   `tfsdk:"diffs"`
+	Decisions   types.Bool   `tfsdk:"decisions"`
+	Tools       types.List   `tfsdk:"tools"`
+	Skills      types.List   `tfsdk:"skills"`
+	Runners     types.Set    `tfsdk:"runners"`
+	PassesTo    types.Set    `tfsdk:"passes_to"`
+	Ends        types.Bool   `tfsdk:"ends"`
 }
 
 type lineReaction struct {
@@ -111,8 +115,17 @@ func lineInput(plan LineResourceModel) (client.Definition, diag.Diagnostics) {
 	line.text("key", plan.Key)
 	line.text("name", plan.Name)
 	line.text("role", plan.Role)
-	line.texts("repositories", plan.Repositories, &diags)
 	line.texts("runners", plan.Runners, &diags)
+
+	repositories := make([]any, 0, len(plan.Repositories))
+	for _, each := range plan.Repositories {
+		held := lineWritten{}
+		held.text("name", each.Name)
+		held.text("image", each.Image)
+		held.text("setup", each.Setup)
+		repositories = append(repositories, map[string]any(held))
+	}
+	line["repositories"] = repositories
 
 	stations := make([]any, 0, len(plan.Stations))
 	for _, each := range plan.Stations {
@@ -126,10 +139,8 @@ func lineInput(plan LineResourceModel) (client.Definition, diag.Diagnostics) {
 		held.text("model", each.Model)
 		held.text("effort", each.Effort)
 		held.text("profile", each.Profile)
-		held.text("harnessVersion", each.HarnessVersion)
 		held.text("prompt", each.Prompt)
 		held.text("check", each.Check)
-		held.text("setup", each.Setup)
 		held.flag("diffs", each.Diffs)
 		held.flag("decisions", each.Decisions)
 		held.texts("tools", each.Tools, &diags)
@@ -239,10 +250,18 @@ func lineAnswered(answer client.Line) LineResourceModel {
 		Key:          types.StringValue(answer.Key),
 		Name:         line.text("name"),
 		Role:         line.text("role"),
-		Repositories: line.set("repositories"),
 		Runners:      line.set("runners"),
+		Repositories: []lineRepository{},
 		Stations:     []lineStation{},
 		Reactions:    []lineReaction{},
+	}
+
+	for _, each := range line.each("repositories") {
+		held.Repositories = append(held.Repositories, lineRepository{
+			Name:  each.text("name"),
+			Image: each.text("image"),
+			Setup: each.text("setup"),
+		})
 	}
 
 	for _, each := range line.each("stations") {
@@ -274,26 +293,24 @@ func lineAnswered(answer client.Line) LineResourceModel {
 
 func lineStationOf(held lineRead) lineStation {
 	return lineStation{
-		Key:            held.text("key"),
-		Name:           held.text("name"),
-		Kind:           held.text("kind"),
-		Color:          held.text("color"),
-		Description:    held.text("description"),
-		Harness:        held.text("harness"),
-		Model:          held.text("model"),
-		Effort:         held.text("effort"),
-		Profile:        held.text("profile"),
-		HarnessVersion: held.text("harnessVersion"),
-		Prompt:         held.text("prompt"),
-		Check:          held.text("check"),
-		Setup:          held.text("setup"),
-		Diffs:          held.flag("diffs"),
-		Decisions:      held.flag("decisions"),
-		Tools:          held.list("tools"),
-		Skills:         held.list("skills"),
-		Runners:        held.set("runners"),
-		PassesTo:       held.set("passesTo"),
-		Ends:           held.flag("ends"),
+		Key:         held.text("key"),
+		Name:        held.text("name"),
+		Kind:        held.text("kind"),
+		Color:       held.text("color"),
+		Description: held.text("description"),
+		Harness:     held.text("harness"),
+		Model:       held.text("model"),
+		Effort:      held.text("effort"),
+		Profile:     held.text("profile"),
+		Prompt:      held.text("prompt"),
+		Check:       held.text("check"),
+		Diffs:       held.flag("diffs"),
+		Decisions:   held.flag("decisions"),
+		Tools:       held.list("tools"),
+		Skills:      held.list("skills"),
+		Runners:     held.set("runners"),
+		PassesTo:    held.set("passesTo"),
+		Ends:        held.flag("ends"),
 	}
 }
 
