@@ -27,14 +27,18 @@ const (
 // as long.
 const DefaultBackoff = 500 * time.Millisecond
 
-// Config says where the control plane is and who is calling it.
+// Config says where the control plane is and who is calling it: a stored
+// Token, or OIDC to exchange a CI workload's tokens for short-lived ones.
+// Now tells the time, time.Now when nil.
 type Config struct {
 	URL             string
 	Token           string
+	OIDC            *OIDC
 	ProviderVersion string
 	HTTPClient      *http.Client
 	Retries         int
 	Backoff         time.Duration
+	Now             func() time.Time
 }
 
 // Client calls the control plane.
@@ -49,10 +53,6 @@ func New(cfg Config) (*Client, error) {
 		return nil, err
 	}
 
-	if cfg.Token == "" {
-		return nil, errors.New("a Spotlight API token is needed")
-	}
-
 	httpClient := cfg.HTTPClient
 	if httpClient == nil {
 		httpClient = &http.Client{Timeout: 60 * time.Second}
@@ -64,10 +64,15 @@ func New(cfg Config) (*Client, error) {
 		backoff: cfg.Backoff,
 	}
 
+	tokens, err := tokenSourceOf(cfg, base, doer)
+	if err != nil {
+		return nil, err
+	}
+
 	generated, err := apigen.NewClientWithResponses(
 		base,
-		apigen.WithHTTPClient(doer),
-		apigen.WithRequestEditorFn(identify(cfg.Token, cfg.ProviderVersion)),
+		apigen.WithHTTPClient(&authenticating{next: doer, tokens: tokens}),
+		apigen.WithRequestEditorFn(identify(cfg.ProviderVersion)),
 	)
 	if err != nil {
 		return nil, err
@@ -103,9 +108,38 @@ func baseURL(held string) (string, error) {
 	return parsed.String() + "/", nil
 }
 
-func identify(token, version string) apigen.RequestEditorFn {
+func tokenSourceOf(cfg Config, base string, doer apigen.HttpRequestDoer) (TokenSource, error) {
+	switch {
+	case cfg.Token != "" && cfg.OIDC != nil:
+		return nil, errors.New("a Spotlight API token and an OIDC trust were both given; authenticate with one")
+	case cfg.Token != "":
+		return StaticToken(cfg.Token), nil
+	case cfg.OIDC == nil:
+		return nil, errors.New("a Spotlight API token, or an OIDC trust to exchange a workload token through, is needed")
+	case cfg.OIDC.Trust == "" || cfg.OIDC.Workload == nil:
+		return nil, errors.New("an OIDC trust needs its id and a source of workload tokens")
+	}
+
+	anonymous, err := apigen.NewClientWithResponses(base, apigen.WithHTTPClient(doer), apigen.WithRequestEditorFn(identify(cfg.ProviderVersion)))
+	if err != nil {
+		return nil, err
+	}
+
+	oidc := *cfg.OIDC
+	if oidc.Audience == "" {
+		oidc.Audience = DefaultAudience
+	}
+
+	now := cfg.Now
+	if now == nil {
+		now = time.Now
+	}
+
+	return &exchanging{oidc: oidc, api: anonymous, now: now}, nil
+}
+
+func identify(version string) apigen.RequestEditorFn {
 	return func(_ context.Context, req *http.Request) error {
-		req.Header.Set("Authorization", "Bearer "+token)
 		req.Header.Set(clientHeader, ClientName(version))
 		req.Header.Set("User-Agent", ClientName(version))
 		req.Header.Set(apiVersionHeader, APIVersion)

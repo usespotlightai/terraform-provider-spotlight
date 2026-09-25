@@ -104,30 +104,63 @@ func (e JournalStepResponseDtoKind) Valid() bool {
 	}
 }
 
+// Defines values for MintedTokenResponseDtoScopes.
+const (
+	MintedTokenResponseDtoScopesConfigure MintedTokenResponseDtoScopes = "configure"
+	MintedTokenResponseDtoScopesPlan      MintedTokenResponseDtoScopes = "plan"
+	MintedTokenResponseDtoScopesRead      MintedTokenResponseDtoScopes = "read"
+	MintedTokenResponseDtoScopesRunners   MintedTokenResponseDtoScopes = "runners"
+	MintedTokenResponseDtoScopesSecrets   MintedTokenResponseDtoScopes = "secrets"
+	MintedTokenResponseDtoScopesTrusts    MintedTokenResponseDtoScopes = "trusts"
+)
+
+// Valid indicates whether the value is a known member of the MintedTokenResponseDtoScopes enum.
+func (e MintedTokenResponseDtoScopes) Valid() bool {
+	switch e {
+	case MintedTokenResponseDtoScopesConfigure:
+		return true
+	case MintedTokenResponseDtoScopesPlan:
+		return true
+	case MintedTokenResponseDtoScopesRead:
+		return true
+	case MintedTokenResponseDtoScopesRunners:
+		return true
+	case MintedTokenResponseDtoScopesSecrets:
+		return true
+	case MintedTokenResponseDtoScopesTrusts:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ProblemResponseDtoPermission.
 const (
-	Administer     ProblemResponseDtoPermission = "administer"
-	Configure      ProblemResponseDtoPermission = "configure"
-	ManageRunners  ProblemResponseDtoPermission = "manage-runners"
-	ManageSecrets  ProblemResponseDtoPermission = "manage-secrets"
-	OpenWorkspaces ProblemResponseDtoPermission = "open-workspaces"
-	Plan           ProblemResponseDtoPermission = "plan"
+	ProblemResponseDtoPermissionAdminister        ProblemResponseDtoPermission = "administer"
+	ProblemResponseDtoPermissionConfigure         ProblemResponseDtoPermission = "configure"
+	ProblemResponseDtoPermissionManageRunners     ProblemResponseDtoPermission = "manage-runners"
+	ProblemResponseDtoPermissionManageSecrets     ProblemResponseDtoPermission = "manage-secrets"
+	ProblemResponseDtoPermissionManageTokenTrusts ProblemResponseDtoPermission = "manage-token-trusts"
+	ProblemResponseDtoPermissionOpenWorkspaces    ProblemResponseDtoPermission = "open-workspaces"
+	ProblemResponseDtoPermissionPlan              ProblemResponseDtoPermission = "plan"
 )
 
 // Valid indicates whether the value is a known member of the ProblemResponseDtoPermission enum.
 func (e ProblemResponseDtoPermission) Valid() bool {
 	switch e {
-	case Administer:
+	case ProblemResponseDtoPermissionAdminister:
 		return true
-	case Configure:
+	case ProblemResponseDtoPermissionConfigure:
 		return true
-	case ManageRunners:
+	case ProblemResponseDtoPermissionManageRunners:
 		return true
-	case ManageSecrets:
+	case ProblemResponseDtoPermissionManageSecrets:
 		return true
-	case OpenWorkspaces:
+	case ProblemResponseDtoPermissionManageTokenTrusts:
 		return true
-	case Plan:
+	case ProblemResponseDtoPermissionOpenWorkspaces:
+		return true
+	case ProblemResponseDtoPermissionPlan:
 		return true
 	default:
 		return false
@@ -209,6 +242,36 @@ func (e TraceNodeResponseDtoTone) Valid() bool {
 	case Failed:
 		return true
 	case Overhead:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for WorkspaceTokenTrustResourceResponseDtoScopes.
+const (
+	WorkspaceTokenTrustResourceResponseDtoScopesConfigure WorkspaceTokenTrustResourceResponseDtoScopes = "configure"
+	WorkspaceTokenTrustResourceResponseDtoScopesPlan      WorkspaceTokenTrustResourceResponseDtoScopes = "plan"
+	WorkspaceTokenTrustResourceResponseDtoScopesRead      WorkspaceTokenTrustResourceResponseDtoScopes = "read"
+	WorkspaceTokenTrustResourceResponseDtoScopesRunners   WorkspaceTokenTrustResourceResponseDtoScopes = "runners"
+	WorkspaceTokenTrustResourceResponseDtoScopesSecrets   WorkspaceTokenTrustResourceResponseDtoScopes = "secrets"
+	WorkspaceTokenTrustResourceResponseDtoScopesTrusts    WorkspaceTokenTrustResourceResponseDtoScopes = "trusts"
+)
+
+// Valid indicates whether the value is a known member of the WorkspaceTokenTrustResourceResponseDtoScopes enum.
+func (e WorkspaceTokenTrustResourceResponseDtoScopes) Valid() bool {
+	switch e {
+	case WorkspaceTokenTrustResourceResponseDtoScopesConfigure:
+		return true
+	case WorkspaceTokenTrustResourceResponseDtoScopesPlan:
+		return true
+	case WorkspaceTokenTrustResourceResponseDtoScopesRead:
+		return true
+	case WorkspaceTokenTrustResourceResponseDtoScopesRunners:
+		return true
+	case WorkspaceTokenTrustResourceResponseDtoScopesSecrets:
+		return true
+	case WorkspaceTokenTrustResourceResponseDtoScopesTrusts:
 		return true
 	default:
 		return false
@@ -683,6 +746,81 @@ func (e CreateSkillParamsSpotlightApiVersion) Valid() bool {
 	}
 }
 
+// Defines values for DeleteWorkspaceTokenTrustParamsSpotlightApiVersion.
+const (
+	DeleteWorkspaceTokenTrustParamsSpotlightApiVersionN20260923 DeleteWorkspaceTokenTrustParamsSpotlightApiVersion = "2026-09-23"
+)
+
+// Valid indicates whether the value is a known member of the DeleteWorkspaceTokenTrustParamsSpotlightApiVersion enum.
+func (e DeleteWorkspaceTokenTrustParamsSpotlightApiVersion) Valid() bool {
+	switch e {
+	case DeleteWorkspaceTokenTrustParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReadWorkspaceTokenTrustParamsSpotlightApiVersion.
+const (
+	ReadWorkspaceTokenTrustParamsSpotlightApiVersionN20260923 ReadWorkspaceTokenTrustParamsSpotlightApiVersion = "2026-09-23"
+)
+
+// Valid indicates whether the value is a known member of the ReadWorkspaceTokenTrustParamsSpotlightApiVersion enum.
+func (e ReadWorkspaceTokenTrustParamsSpotlightApiVersion) Valid() bool {
+	switch e {
+	case ReadWorkspaceTokenTrustParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateWorkspaceTokenTrustParamsSpotlightApiVersion.
+const (
+	UpdateWorkspaceTokenTrustParamsSpotlightApiVersionN20260923 UpdateWorkspaceTokenTrustParamsSpotlightApiVersion = "2026-09-23"
+)
+
+// Valid indicates whether the value is a known member of the UpdateWorkspaceTokenTrustParamsSpotlightApiVersion enum.
+func (e UpdateWorkspaceTokenTrustParamsSpotlightApiVersion) Valid() bool {
+	switch e {
+	case UpdateWorkspaceTokenTrustParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateWorkspaceTokenTrustJSONBodyScopes.
+const (
+	UpdateWorkspaceTokenTrustJSONBodyScopesConfigure UpdateWorkspaceTokenTrustJSONBodyScopes = "configure"
+	UpdateWorkspaceTokenTrustJSONBodyScopesPlan      UpdateWorkspaceTokenTrustJSONBodyScopes = "plan"
+	UpdateWorkspaceTokenTrustJSONBodyScopesRead      UpdateWorkspaceTokenTrustJSONBodyScopes = "read"
+	UpdateWorkspaceTokenTrustJSONBodyScopesRunners   UpdateWorkspaceTokenTrustJSONBodyScopes = "runners"
+	UpdateWorkspaceTokenTrustJSONBodyScopesSecrets   UpdateWorkspaceTokenTrustJSONBodyScopes = "secrets"
+	UpdateWorkspaceTokenTrustJSONBodyScopesTrusts    UpdateWorkspaceTokenTrustJSONBodyScopes = "trusts"
+)
+
+// Valid indicates whether the value is a known member of the UpdateWorkspaceTokenTrustJSONBodyScopes enum.
+func (e UpdateWorkspaceTokenTrustJSONBodyScopes) Valid() bool {
+	switch e {
+	case UpdateWorkspaceTokenTrustJSONBodyScopesConfigure:
+		return true
+	case UpdateWorkspaceTokenTrustJSONBodyScopesPlan:
+		return true
+	case UpdateWorkspaceTokenTrustJSONBodyScopesRead:
+		return true
+	case UpdateWorkspaceTokenTrustJSONBodyScopesRunners:
+		return true
+	case UpdateWorkspaceTokenTrustJSONBodyScopesSecrets:
+		return true
+	case UpdateWorkspaceTokenTrustJSONBodyScopesTrusts:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for DeleteWorkspaceRunnersParamsSpotlightApiVersion.
 const (
 	DeleteWorkspaceRunnersParamsSpotlightApiVersionN20260923 DeleteWorkspaceRunnersParamsSpotlightApiVersion = "2026-09-23"
@@ -1136,6 +1274,81 @@ func (e ImportTeamParamsSpotlightApiVersion) Valid() bool {
 	}
 }
 
+// Defines values for ListWorkspaceTokenTrustsParamsSpotlightApiVersion.
+const (
+	ListWorkspaceTokenTrustsParamsSpotlightApiVersionN20260923 ListWorkspaceTokenTrustsParamsSpotlightApiVersion = "2026-09-23"
+)
+
+// Valid indicates whether the value is a known member of the ListWorkspaceTokenTrustsParamsSpotlightApiVersion enum.
+func (e ListWorkspaceTokenTrustsParamsSpotlightApiVersion) Valid() bool {
+	switch e {
+	case ListWorkspaceTokenTrustsParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CreateWorkspaceTokenTrustParamsSpotlightApiVersion.
+const (
+	CreateWorkspaceTokenTrustParamsSpotlightApiVersionN20260923 CreateWorkspaceTokenTrustParamsSpotlightApiVersion = "2026-09-23"
+)
+
+// Valid indicates whether the value is a known member of the CreateWorkspaceTokenTrustParamsSpotlightApiVersion enum.
+func (e CreateWorkspaceTokenTrustParamsSpotlightApiVersion) Valid() bool {
+	switch e {
+	case CreateWorkspaceTokenTrustParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CreateWorkspaceTokenTrustJSONBodyScopes.
+const (
+	Configure CreateWorkspaceTokenTrustJSONBodyScopes = "configure"
+	Plan      CreateWorkspaceTokenTrustJSONBodyScopes = "plan"
+	Read      CreateWorkspaceTokenTrustJSONBodyScopes = "read"
+	Runners   CreateWorkspaceTokenTrustJSONBodyScopes = "runners"
+	Secrets   CreateWorkspaceTokenTrustJSONBodyScopes = "secrets"
+	Trusts    CreateWorkspaceTokenTrustJSONBodyScopes = "trusts"
+)
+
+// Valid indicates whether the value is a known member of the CreateWorkspaceTokenTrustJSONBodyScopes enum.
+func (e CreateWorkspaceTokenTrustJSONBodyScopes) Valid() bool {
+	switch e {
+	case Configure:
+		return true
+	case Plan:
+		return true
+	case Read:
+		return true
+	case Runners:
+		return true
+	case Secrets:
+		return true
+	case Trusts:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ImportWorkspaceTokenTrustParamsSpotlightApiVersion.
+const (
+	ImportWorkspaceTokenTrustParamsSpotlightApiVersionN20260923 ImportWorkspaceTokenTrustParamsSpotlightApiVersion = "2026-09-23"
+)
+
+// Valid indicates whether the value is a known member of the ImportWorkspaceTokenTrustParamsSpotlightApiVersion enum.
+func (e ImportWorkspaceTokenTrustParamsSpotlightApiVersion) Valid() bool {
+	switch e {
+	case ImportWorkspaceTokenTrustParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ListWorkspaceRunnersParamsSpotlightApiVersion.
 const (
 	ListWorkspaceRunnersParamsSpotlightApiVersionN20260923 ListWorkspaceRunnersParamsSpotlightApiVersion = "2026-09-23"
@@ -1191,6 +1404,15 @@ type CheckExpressionRequestDto struct {
 
 	// Position The attribute that holds the expression, within the definition, written as its problems would name it
 	Position string `json:"position"`
+}
+
+// ExchangeWorkloadTokenRequestDto defines model for ExchangeWorkloadTokenRequestDto.
+type ExchangeWorkloadTokenRequestDto struct {
+	// Token The OIDC token the CI platform issued the workload, for the trust’s audience
+	Token string `json:"token"`
+
+	// Trust The id of the workspace token trust to exchange through
+	Trust string `json:"trust"`
 }
 
 // ExpressionCheckResponseDto defines model for ExpressionCheckResponseDto.
@@ -1410,6 +1632,21 @@ type McpServerResponseDto struct {
 	Env  map[string]string `json:"env"`
 	Name string            `json:"name"`
 }
+
+// MintedTokenResponseDto defines model for MintedTokenResponseDto.
+type MintedTokenResponseDto struct {
+	// ExpiresAt After this it admits nobody
+	ExpiresAt string                         `json:"expiresAt"`
+	Scopes    []MintedTokenResponseDtoScopes `json:"scopes"`
+
+	// Token The token to send as Authorization: Bearer until it expires; answered this once, and kept only as a hash
+	Token       string `json:"token"`
+	TokenId     string `json:"tokenId"`
+	WorkspaceId string `json:"workspaceId"`
+}
+
+// MintedTokenResponseDtoScopes defines model for MintedTokenResponseDto.Scopes.
+type MintedTokenResponseDtoScopes string
 
 // PermissionsResponseDto defines model for PermissionsResponseDto.
 type PermissionsResponseDto struct {
@@ -1790,6 +2027,57 @@ type WorkspaceRunnersResourceResponseDto struct {
 	// WorkspaceId The workspace it belongs to
 	WorkspaceId string `json:"workspaceId"`
 }
+
+// WorkspaceTokenTrustResourceListResponseDto defines model for WorkspaceTokenTrustResourceListResponseDto.
+type WorkspaceTokenTrustResourceListResponseDto struct {
+	// Items Every one there is, each as a read would answer it, in address order
+	Items []WorkspaceTokenTrustResourceResponseDto `json:"items"`
+}
+
+// WorkspaceTokenTrustResourceResponseDto defines model for WorkspaceTokenTrustResourceResponseDto.
+type WorkspaceTokenTrustResourceResponseDto struct {
+	// Address Names the resource within its workspace; terraform import takes it
+	Address string `json:"address"`
+
+	// Audience The audience the workload must ask its issuer for
+	Audience string `json:"audience"`
+
+	// Claims Further claims the workload’s token must carry, each matching its pattern the way subject does
+	Claims map[string]string `json:"claims"`
+
+	// DefinedBy The person who defined the trust, or who issued the token that did; the tokens it mints act on their behalf
+	DefinedBy string `json:"definedBy"`
+
+	// Id Issued by Spotlight when the resource is created, and never changed
+	Id string `json:"id"`
+
+	// Issuer The OIDC issuer whose signed tokens the trust accepts
+	Issuer string `json:"issuer"`
+
+	// Key Names the trust within its workspace, and every token it mints; fixed for its life
+	Key string `json:"key"`
+
+	// LifetimeMinutes How many minutes a token it mints admits its bearer
+	LifetimeMinutes int `json:"lifetimeMinutes"`
+
+	// Scopes The scopes every token it mints is given
+	Scopes []WorkspaceTokenTrustResourceResponseDtoScopes `json:"scopes"`
+
+	// Subject The subject the workload’s token must carry; * stands for any run of characters
+	Subject string `json:"subject"`
+
+	// Version Rises with every change; the ETag carries it, and a write sends it back as If-Match
+	Version float32 `json:"version"`
+
+	// Warnings What would work better, though nothing stops it working; not settable
+	Warnings []FieldErrorResponseDto `json:"warnings"`
+
+	// WorkspaceId The workspace the tokens it mints act in
+	WorkspaceId string `json:"workspaceId"`
+}
+
+// WorkspaceTokenTrustResourceResponseDtoScopes defines model for WorkspaceTokenTrustResourceResponseDto.Scopes.
+type WorkspaceTokenTrustResourceResponseDtoScopes string
 
 // bearerContextKey is the context key for bearer security scheme
 type bearerContextKey string
@@ -2340,6 +2628,62 @@ type CreateSkillParams struct {
 // CreateSkillParamsSpotlightApiVersion defines parameters for CreateSkill.
 type CreateSkillParamsSpotlightApiVersion string
 
+// DeleteWorkspaceTokenTrustParams defines parameters for DeleteWorkspaceTokenTrust.
+type DeleteWorkspaceTokenTrustParams struct {
+	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	SpotlightApiVersion *DeleteWorkspaceTokenTrustParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
+
+	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown
+	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
+
+	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	IfMatch string `json:"If-Match"`
+}
+
+// DeleteWorkspaceTokenTrustParamsSpotlightApiVersion defines parameters for DeleteWorkspaceTokenTrust.
+type DeleteWorkspaceTokenTrustParamsSpotlightApiVersion string
+
+// ReadWorkspaceTokenTrustParams defines parameters for ReadWorkspaceTokenTrust.
+type ReadWorkspaceTokenTrustParams struct {
+	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	SpotlightApiVersion *ReadWorkspaceTokenTrustParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
+
+	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown
+	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
+}
+
+// ReadWorkspaceTokenTrustParamsSpotlightApiVersion defines parameters for ReadWorkspaceTokenTrust.
+type ReadWorkspaceTokenTrustParamsSpotlightApiVersion string
+
+// UpdateWorkspaceTokenTrustJSONBody defines parameters for UpdateWorkspaceTokenTrust.
+type UpdateWorkspaceTokenTrustJSONBody struct {
+	Audience        *string                                   `json:"audience,omitempty"`
+	Claims          *map[string]string                        `json:"claims,omitempty"`
+	Issuer          string                                    `json:"issuer"`
+	Key             string                                    `json:"key"`
+	LifetimeMinutes *int                                      `json:"lifetimeMinutes,omitempty"`
+	Scopes          []UpdateWorkspaceTokenTrustJSONBodyScopes `json:"scopes"`
+	Subject         string                                    `json:"subject"`
+}
+
+// UpdateWorkspaceTokenTrustParams defines parameters for UpdateWorkspaceTokenTrust.
+type UpdateWorkspaceTokenTrustParams struct {
+	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	SpotlightApiVersion *UpdateWorkspaceTokenTrustParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
+
+	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown
+	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
+
+	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	IfMatch string `json:"If-Match"`
+}
+
+// UpdateWorkspaceTokenTrustParamsSpotlightApiVersion defines parameters for UpdateWorkspaceTokenTrust.
+type UpdateWorkspaceTokenTrustParamsSpotlightApiVersion string
+
+// UpdateWorkspaceTokenTrustJSONBodyScopes defines parameters for UpdateWorkspaceTokenTrust.
+type UpdateWorkspaceTokenTrustJSONBodyScopes string
+
 // DeleteWorkspaceRunnersParams defines parameters for DeleteWorkspaceRunners.
 type DeleteWorkspaceRunnersParams struct {
 	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
@@ -2825,6 +3169,62 @@ type ImportTeamParams struct {
 // ImportTeamParamsSpotlightApiVersion defines parameters for ImportTeam.
 type ImportTeamParamsSpotlightApiVersion string
 
+// ListWorkspaceTokenTrustsParams defines parameters for ListWorkspaceTokenTrusts.
+type ListWorkspaceTokenTrustsParams struct {
+	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	SpotlightApiVersion *ListWorkspaceTokenTrustsParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
+
+	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown
+	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
+}
+
+// ListWorkspaceTokenTrustsParamsSpotlightApiVersion defines parameters for ListWorkspaceTokenTrusts.
+type ListWorkspaceTokenTrustsParamsSpotlightApiVersion string
+
+// CreateWorkspaceTokenTrustJSONBody defines parameters for CreateWorkspaceTokenTrust.
+type CreateWorkspaceTokenTrustJSONBody struct {
+	Audience        *string                                   `json:"audience,omitempty"`
+	Claims          *map[string]string                        `json:"claims,omitempty"`
+	Issuer          string                                    `json:"issuer"`
+	Key             string                                    `json:"key"`
+	LifetimeMinutes *int                                      `json:"lifetimeMinutes,omitempty"`
+	Scopes          []CreateWorkspaceTokenTrustJSONBodyScopes `json:"scopes"`
+	Subject         string                                    `json:"subject"`
+}
+
+// CreateWorkspaceTokenTrustParams defines parameters for CreateWorkspaceTokenTrust.
+type CreateWorkspaceTokenTrustParams struct {
+	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	SpotlightApiVersion *CreateWorkspaceTokenTrustParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
+
+	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown
+	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
+
+	// IdempotencyKey Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more
+	IdempotencyKey string `json:"Idempotency-Key"`
+}
+
+// CreateWorkspaceTokenTrustParamsSpotlightApiVersion defines parameters for CreateWorkspaceTokenTrust.
+type CreateWorkspaceTokenTrustParamsSpotlightApiVersion string
+
+// CreateWorkspaceTokenTrustJSONBodyScopes defines parameters for CreateWorkspaceTokenTrust.
+type CreateWorkspaceTokenTrustJSONBodyScopes string
+
+// ImportWorkspaceTokenTrustParams defines parameters for ImportWorkspaceTokenTrust.
+type ImportWorkspaceTokenTrustParams struct {
+	// Address The workspace-token-trust's address within the workspace
+	Address interface{} `form:"address" json:"address"`
+
+	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	SpotlightApiVersion *ImportWorkspaceTokenTrustParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
+
+	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown
+	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
+}
+
+// ImportWorkspaceTokenTrustParamsSpotlightApiVersion defines parameters for ImportWorkspaceTokenTrust.
+type ImportWorkspaceTokenTrustParamsSpotlightApiVersion string
+
 // ListWorkspaceRunnersParams defines parameters for ListWorkspaceRunners.
 type ListWorkspaceRunnersParams struct {
 	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
@@ -2913,6 +3313,9 @@ type CreateLineJSONRequestBody CreateLineJSONBody
 // CreateSkillJSONRequestBody defines body for CreateSkill for application/json ContentType.
 type CreateSkillJSONRequestBody CreateSkillJSONBody
 
+// UpdateWorkspaceTokenTrustJSONRequestBody defines body for UpdateWorkspaceTokenTrust for application/json ContentType.
+type UpdateWorkspaceTokenTrustJSONRequestBody UpdateWorkspaceTokenTrustJSONBody
+
 // UpdateWorkspaceRunnersJSONRequestBody defines body for UpdateWorkspaceRunners for application/json ContentType.
 type UpdateWorkspaceRunnersJSONRequestBody UpdateWorkspaceRunnersJSONBody
 
@@ -2934,8 +3337,14 @@ type CreateSecretJSONRequestBody CreateSecretJSONBody
 // CreateTeamJSONRequestBody defines body for CreateTeam for application/json ContentType.
 type CreateTeamJSONRequestBody CreateTeamJSONBody
 
+// CreateWorkspaceTokenTrustJSONRequestBody defines body for CreateWorkspaceTokenTrust for application/json ContentType.
+type CreateWorkspaceTokenTrustJSONRequestBody CreateWorkspaceTokenTrustJSONBody
+
 // CreateWorkspaceRunnersJSONRequestBody defines body for CreateWorkspaceRunners for application/json ContentType.
 type CreateWorkspaceRunnersJSONRequestBody CreateWorkspaceRunnersJSONBody
+
+// ExchangeWorkloadTokenJSONRequestBody defines body for ExchangeWorkloadToken for application/json ContentType.
+type ExchangeWorkloadTokenJSONRequestBody = ExchangeWorkloadTokenRequestDto
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -3126,6 +3535,17 @@ type ClientInterface interface {
 
 	CreateSkill(ctx context.Context, teamId string, params *CreateSkillParams, body CreateSkillJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// DeleteWorkspaceTokenTrust request
+	DeleteWorkspaceTokenTrust(ctx context.Context, id string, params *DeleteWorkspaceTokenTrustParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ReadWorkspaceTokenTrust request
+	ReadWorkspaceTokenTrust(ctx context.Context, id string, params *ReadWorkspaceTokenTrustParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateWorkspaceTokenTrustWithBody request with any body
+	UpdateWorkspaceTokenTrustWithBody(ctx context.Context, id string, params *UpdateWorkspaceTokenTrustParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateWorkspaceTokenTrust(ctx context.Context, id string, params *UpdateWorkspaceTokenTrustParams, body UpdateWorkspaceTokenTrustJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// DeleteWorkspaceRunners request
 	DeleteWorkspaceRunners(ctx context.Context, id string, params *DeleteWorkspaceRunnersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -3227,6 +3647,17 @@ type ClientInterface interface {
 	// ImportTeam request
 	ImportTeam(ctx context.Context, workspaceId string, params *ImportTeamParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListWorkspaceTokenTrusts request
+	ListWorkspaceTokenTrusts(ctx context.Context, workspaceId string, params *ListWorkspaceTokenTrustsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateWorkspaceTokenTrustWithBody request with any body
+	CreateWorkspaceTokenTrustWithBody(ctx context.Context, workspaceId string, params *CreateWorkspaceTokenTrustParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateWorkspaceTokenTrust(ctx context.Context, workspaceId string, params *CreateWorkspaceTokenTrustParams, body CreateWorkspaceTokenTrustJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ImportWorkspaceTokenTrust request
+	ImportWorkspaceTokenTrust(ctx context.Context, workspaceId string, params *ImportWorkspaceTokenTrustParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListWorkspaceRunners request
 	ListWorkspaceRunners(ctx context.Context, workspaceId string, params *ListWorkspaceRunnersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -3237,6 +3668,11 @@ type ClientInterface interface {
 
 	// ImportWorkspaceRunners request
 	ImportWorkspaceRunners(ctx context.Context, workspaceId string, params *ImportWorkspaceRunnersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ExchangeWorkloadTokenWithBody request with any body
+	ExchangeWorkloadTokenWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	ExchangeWorkloadToken(ctx context.Context, body ExchangeWorkloadTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) CheckExpressionWithBody(ctx context.Context, params *CheckExpressionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -3755,6 +4191,54 @@ func (c *Client) CreateSkill(ctx context.Context, teamId string, params *CreateS
 	return c.Client.Do(req)
 }
 
+func (c *Client) DeleteWorkspaceTokenTrust(ctx context.Context, id string, params *DeleteWorkspaceTokenTrustParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteWorkspaceTokenTrustRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ReadWorkspaceTokenTrust(ctx context.Context, id string, params *ReadWorkspaceTokenTrustParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewReadWorkspaceTokenTrustRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateWorkspaceTokenTrustWithBody(ctx context.Context, id string, params *UpdateWorkspaceTokenTrustParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateWorkspaceTokenTrustRequestWithBody(c.Server, id, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateWorkspaceTokenTrust(ctx context.Context, id string, params *UpdateWorkspaceTokenTrustParams, body UpdateWorkspaceTokenTrustJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateWorkspaceTokenTrustRequest(c.Server, id, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) DeleteWorkspaceRunners(ctx context.Context, id string, params *DeleteWorkspaceRunnersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteWorkspaceRunnersRequest(c.Server, id, params)
 	if err != nil {
@@ -4187,6 +4671,54 @@ func (c *Client) ImportTeam(ctx context.Context, workspaceId string, params *Imp
 	return c.Client.Do(req)
 }
 
+func (c *Client) ListWorkspaceTokenTrusts(ctx context.Context, workspaceId string, params *ListWorkspaceTokenTrustsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListWorkspaceTokenTrustsRequest(c.Server, workspaceId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateWorkspaceTokenTrustWithBody(ctx context.Context, workspaceId string, params *CreateWorkspaceTokenTrustParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateWorkspaceTokenTrustRequestWithBody(c.Server, workspaceId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateWorkspaceTokenTrust(ctx context.Context, workspaceId string, params *CreateWorkspaceTokenTrustParams, body CreateWorkspaceTokenTrustJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateWorkspaceTokenTrustRequest(c.Server, workspaceId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ImportWorkspaceTokenTrust(ctx context.Context, workspaceId string, params *ImportWorkspaceTokenTrustParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewImportWorkspaceTokenTrustRequest(c.Server, workspaceId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) ListWorkspaceRunners(ctx context.Context, workspaceId string, params *ListWorkspaceRunnersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListWorkspaceRunnersRequest(c.Server, workspaceId, params)
 	if err != nil {
@@ -4225,6 +4757,30 @@ func (c *Client) CreateWorkspaceRunners(ctx context.Context, workspaceId string,
 
 func (c *Client) ImportWorkspaceRunners(ctx context.Context, workspaceId string, params *ImportWorkspaceRunnersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewImportWorkspaceRunnersRequest(c.Server, workspaceId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ExchangeWorkloadTokenWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewExchangeWorkloadTokenRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ExchangeWorkloadToken(ctx context.Context, body ExchangeWorkloadTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewExchangeWorkloadTokenRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -6370,6 +6926,217 @@ func NewCreateSkillRequestWithBody(server string, teamId string, params *CreateS
 	return req, nil
 }
 
+// NewDeleteWorkspaceTokenTrustRequest generates requests for DeleteWorkspaceTokenTrust
+func NewDeleteWorkspaceTokenTrustRequest(server string, id string, params *DeleteWorkspaceTokenTrustParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/resources/token-trusts/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+
+		if params.SpotlightApiVersion != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Api-Version", headerParam0)
+		}
+
+		if params.SpotlightClient != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Client", headerParam1)
+		}
+
+		var headerParam2 string
+
+		headerParam2, err = runtime.StyleParamWithOptions("simple", false, "If-Match", params.IfMatch, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("If-Match", headerParam2)
+
+	}
+
+	return req, nil
+}
+
+// NewReadWorkspaceTokenTrustRequest generates requests for ReadWorkspaceTokenTrust
+func NewReadWorkspaceTokenTrustRequest(server string, id string, params *ReadWorkspaceTokenTrustParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/resources/token-trusts/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+
+		if params.SpotlightApiVersion != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Api-Version", headerParam0)
+		}
+
+		if params.SpotlightClient != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Client", headerParam1)
+		}
+
+	}
+
+	return req, nil
+}
+
+// NewUpdateWorkspaceTokenTrustRequest calls the generic UpdateWorkspaceTokenTrust builder with application/json body
+func NewUpdateWorkspaceTokenTrustRequest(server string, id string, params *UpdateWorkspaceTokenTrustParams, body UpdateWorkspaceTokenTrustJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateWorkspaceTokenTrustRequestWithBody(server, id, params, "application/json", bodyReader)
+}
+
+// NewUpdateWorkspaceTokenTrustRequestWithBody generates requests for UpdateWorkspaceTokenTrust with any type of body
+func NewUpdateWorkspaceTokenTrustRequestWithBody(server string, id string, params *UpdateWorkspaceTokenTrustParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/resources/token-trusts/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		if params.SpotlightApiVersion != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Api-Version", headerParam0)
+		}
+
+		if params.SpotlightClient != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Client", headerParam1)
+		}
+
+		var headerParam2 string
+
+		headerParam2, err = runtime.StyleParamWithOptions("simple", false, "If-Match", params.IfMatch, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("If-Match", headerParam2)
+
+	}
+
+	return req, nil
+}
+
 // NewDeleteWorkspaceRunnersRequest generates requests for DeleteWorkspaceRunners
 func NewDeleteWorkspaceRunnersRequest(server string, id string, params *DeleteWorkspaceRunnersParams) (*http.Request, error) {
 	var err error
@@ -8468,6 +9235,231 @@ func NewImportTeamRequest(server string, workspaceId string, params *ImportTeamP
 	return req, nil
 }
 
+// NewListWorkspaceTokenTrustsRequest generates requests for ListWorkspaceTokenTrusts
+func NewListWorkspaceTokenTrustsRequest(server string, workspaceId string, params *ListWorkspaceTokenTrustsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/resources/workspaces/%s/token-trusts", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+
+		if params.SpotlightApiVersion != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Api-Version", headerParam0)
+		}
+
+		if params.SpotlightClient != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Client", headerParam1)
+		}
+
+	}
+
+	return req, nil
+}
+
+// NewCreateWorkspaceTokenTrustRequest calls the generic CreateWorkspaceTokenTrust builder with application/json body
+func NewCreateWorkspaceTokenTrustRequest(server string, workspaceId string, params *CreateWorkspaceTokenTrustParams, body CreateWorkspaceTokenTrustJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateWorkspaceTokenTrustRequestWithBody(server, workspaceId, params, "application/json", bodyReader)
+}
+
+// NewCreateWorkspaceTokenTrustRequestWithBody generates requests for CreateWorkspaceTokenTrust with any type of body
+func NewCreateWorkspaceTokenTrustRequestWithBody(server string, workspaceId string, params *CreateWorkspaceTokenTrustParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/resources/workspaces/%s/token-trusts", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		if params.SpotlightApiVersion != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Api-Version", headerParam0)
+		}
+
+		if params.SpotlightClient != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Client", headerParam1)
+		}
+
+		var headerParam2 string
+
+		headerParam2, err = runtime.StyleParamWithOptions("simple", false, "Idempotency-Key", params.IdempotencyKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("Idempotency-Key", headerParam2)
+
+	}
+
+	return req, nil
+}
+
+// NewImportWorkspaceTokenTrustRequest generates requests for ImportWorkspaceTokenTrust
+func NewImportWorkspaceTokenTrustRequest(server string, workspaceId string, params *ImportWorkspaceTokenTrustParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/resources/workspaces/%s/token-trusts/import", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "address", params.Address, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+
+		if params.SpotlightApiVersion != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Api-Version", headerParam0)
+		}
+
+		if params.SpotlightClient != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Client", headerParam1)
+		}
+
+	}
+
+	return req, nil
+}
+
 // NewListWorkspaceRunnersRequest generates requests for ListWorkspaceRunners
 func NewListWorkspaceRunnersRequest(server string, workspaceId string, params *ListWorkspaceRunnersParams) (*http.Request, error) {
 	var err error
@@ -8693,6 +9685,46 @@ func NewImportWorkspaceRunnersRequest(server string, workspaceId string, params 
 	return req, nil
 }
 
+// NewExchangeWorkloadTokenRequest calls the generic ExchangeWorkloadToken builder with application/json body
+func NewExchangeWorkloadTokenRequest(server string, body ExchangeWorkloadTokenJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewExchangeWorkloadTokenRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewExchangeWorkloadTokenRequestWithBody generates requests for ExchangeWorkloadToken with any type of body
+func NewExchangeWorkloadTokenRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/workspace-tokens/exchange")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -8852,6 +9884,17 @@ type ClientWithResponsesInterface interface {
 
 	CreateSkillWithResponse(ctx context.Context, teamId string, params *CreateSkillParams, body CreateSkillJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateSkillResponse, error)
 
+	// DeleteWorkspaceTokenTrustWithResponse request
+	DeleteWorkspaceTokenTrustWithResponse(ctx context.Context, id string, params *DeleteWorkspaceTokenTrustParams, reqEditors ...RequestEditorFn) (*DeleteWorkspaceTokenTrustResponse, error)
+
+	// ReadWorkspaceTokenTrustWithResponse request
+	ReadWorkspaceTokenTrustWithResponse(ctx context.Context, id string, params *ReadWorkspaceTokenTrustParams, reqEditors ...RequestEditorFn) (*ReadWorkspaceTokenTrustResponse, error)
+
+	// UpdateWorkspaceTokenTrustWithBodyWithResponse request with any body
+	UpdateWorkspaceTokenTrustWithBodyWithResponse(ctx context.Context, id string, params *UpdateWorkspaceTokenTrustParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWorkspaceTokenTrustResponse, error)
+
+	UpdateWorkspaceTokenTrustWithResponse(ctx context.Context, id string, params *UpdateWorkspaceTokenTrustParams, body UpdateWorkspaceTokenTrustJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWorkspaceTokenTrustResponse, error)
+
 	// DeleteWorkspaceRunnersWithResponse request
 	DeleteWorkspaceRunnersWithResponse(ctx context.Context, id string, params *DeleteWorkspaceRunnersParams, reqEditors ...RequestEditorFn) (*DeleteWorkspaceRunnersResponse, error)
 
@@ -8953,6 +9996,17 @@ type ClientWithResponsesInterface interface {
 	// ImportTeamWithResponse request
 	ImportTeamWithResponse(ctx context.Context, workspaceId string, params *ImportTeamParams, reqEditors ...RequestEditorFn) (*ImportTeamResponse, error)
 
+	// ListWorkspaceTokenTrustsWithResponse request
+	ListWorkspaceTokenTrustsWithResponse(ctx context.Context, workspaceId string, params *ListWorkspaceTokenTrustsParams, reqEditors ...RequestEditorFn) (*ListWorkspaceTokenTrustsResponse, error)
+
+	// CreateWorkspaceTokenTrustWithBodyWithResponse request with any body
+	CreateWorkspaceTokenTrustWithBodyWithResponse(ctx context.Context, workspaceId string, params *CreateWorkspaceTokenTrustParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkspaceTokenTrustResponse, error)
+
+	CreateWorkspaceTokenTrustWithResponse(ctx context.Context, workspaceId string, params *CreateWorkspaceTokenTrustParams, body CreateWorkspaceTokenTrustJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkspaceTokenTrustResponse, error)
+
+	// ImportWorkspaceTokenTrustWithResponse request
+	ImportWorkspaceTokenTrustWithResponse(ctx context.Context, workspaceId string, params *ImportWorkspaceTokenTrustParams, reqEditors ...RequestEditorFn) (*ImportWorkspaceTokenTrustResponse, error)
+
 	// ListWorkspaceRunnersWithResponse request
 	ListWorkspaceRunnersWithResponse(ctx context.Context, workspaceId string, params *ListWorkspaceRunnersParams, reqEditors ...RequestEditorFn) (*ListWorkspaceRunnersResponse, error)
 
@@ -8963,6 +10017,11 @@ type ClientWithResponsesInterface interface {
 
 	// ImportWorkspaceRunnersWithResponse request
 	ImportWorkspaceRunnersWithResponse(ctx context.Context, workspaceId string, params *ImportWorkspaceRunnersParams, reqEditors ...RequestEditorFn) (*ImportWorkspaceRunnersResponse, error)
+
+	// ExchangeWorkloadTokenWithBodyWithResponse request with any body
+	ExchangeWorkloadTokenWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ExchangeWorkloadTokenResponse, error)
+
+	ExchangeWorkloadTokenWithResponse(ctx context.Context, body ExchangeWorkloadTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*ExchangeWorkloadTokenResponse, error)
 }
 
 type CheckExpressionResponse struct {
@@ -10015,6 +11074,111 @@ func (r CreateSkillResponse) ContentType() string {
 	return ""
 }
 
+type DeleteWorkspaceTokenTrustResponse struct {
+	Body                      []byte
+	HTTPResponse              *http.Response
+	ApplicationproblemJSON400 *ProblemResponseDto
+	ApplicationproblemJSON401 *ProblemResponseDto
+	ApplicationproblemJSON403 *ProblemResponseDto
+	ApplicationproblemJSON404 *ProblemResponseDto
+	ApplicationproblemJSON409 *ProblemResponseDto
+	ApplicationproblemJSON428 *ProblemResponseDto
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteWorkspaceTokenTrustResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteWorkspaceTokenTrustResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteWorkspaceTokenTrustResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ReadWorkspaceTokenTrustResponse struct {
+	Body                      []byte
+	HTTPResponse              *http.Response
+	JSON200                   *WorkspaceTokenTrustResourceResponseDto
+	ApplicationproblemJSON400 *ProblemResponseDto
+	ApplicationproblemJSON401 *ProblemResponseDto
+	ApplicationproblemJSON404 *ProblemResponseDto
+}
+
+// Status returns HTTPResponse.Status
+func (r ReadWorkspaceTokenTrustResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ReadWorkspaceTokenTrustResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ReadWorkspaceTokenTrustResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type UpdateWorkspaceTokenTrustResponse struct {
+	Body                      []byte
+	HTTPResponse              *http.Response
+	JSON200                   *WorkspaceTokenTrustResourceResponseDto
+	ApplicationproblemJSON400 *ProblemResponseDto
+	ApplicationproblemJSON401 *ProblemResponseDto
+	ApplicationproblemJSON403 *ProblemResponseDto
+	ApplicationproblemJSON404 *ProblemResponseDto
+	ApplicationproblemJSON409 *ProblemResponseDto
+	ApplicationproblemJSON422 *ProblemResponseDto
+	ApplicationproblemJSON428 *ProblemResponseDto
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateWorkspaceTokenTrustResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateWorkspaceTokenTrustResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r UpdateWorkspaceTokenTrustResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type DeleteWorkspaceRunnersResponse struct {
 	Body                      []byte
 	HTTPResponse              *http.Response
@@ -10998,6 +12162,108 @@ func (r ImportTeamResponse) ContentType() string {
 	return ""
 }
 
+type ListWorkspaceTokenTrustsResponse struct {
+	Body                      []byte
+	HTTPResponse              *http.Response
+	JSON200                   *WorkspaceTokenTrustResourceListResponseDto
+	ApplicationproblemJSON400 *ProblemResponseDto
+	ApplicationproblemJSON401 *ProblemResponseDto
+	ApplicationproblemJSON404 *ProblemResponseDto
+}
+
+// Status returns HTTPResponse.Status
+func (r ListWorkspaceTokenTrustsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListWorkspaceTokenTrustsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListWorkspaceTokenTrustsResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type CreateWorkspaceTokenTrustResponse struct {
+	Body                      []byte
+	HTTPResponse              *http.Response
+	JSON201                   *WorkspaceTokenTrustResourceResponseDto
+	ApplicationproblemJSON400 *ProblemResponseDto
+	ApplicationproblemJSON401 *ProblemResponseDto
+	ApplicationproblemJSON403 *ProblemResponseDto
+	ApplicationproblemJSON404 *ProblemResponseDto
+	ApplicationproblemJSON409 *ProblemResponseDto
+	ApplicationproblemJSON422 *ProblemResponseDto
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateWorkspaceTokenTrustResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateWorkspaceTokenTrustResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateWorkspaceTokenTrustResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ImportWorkspaceTokenTrustResponse struct {
+	Body                      []byte
+	HTTPResponse              *http.Response
+	JSON200                   *WorkspaceTokenTrustResourceResponseDto
+	ApplicationproblemJSON400 *ProblemResponseDto
+	ApplicationproblemJSON401 *ProblemResponseDto
+	ApplicationproblemJSON404 *ProblemResponseDto
+}
+
+// Status returns HTTPResponse.Status
+func (r ImportWorkspaceTokenTrustResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ImportWorkspaceTokenTrustResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ImportWorkspaceTokenTrustResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type ListWorkspaceRunnersResponse struct {
 	Body                      []byte
 	HTTPResponse              *http.Response
@@ -11094,6 +12360,36 @@ func (r ImportWorkspaceRunnersResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r ImportWorkspaceRunnersResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ExchangeWorkloadTokenResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *MintedTokenResponseDto
+}
+
+// Status returns HTTPResponse.Status
+func (r ExchangeWorkloadTokenResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ExchangeWorkloadTokenResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ExchangeWorkloadTokenResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -11474,6 +12770,41 @@ func (c *ClientWithResponses) CreateSkillWithResponse(ctx context.Context, teamI
 	return ParseCreateSkillResponse(rsp)
 }
 
+// DeleteWorkspaceTokenTrustWithResponse request returning *DeleteWorkspaceTokenTrustResponse
+func (c *ClientWithResponses) DeleteWorkspaceTokenTrustWithResponse(ctx context.Context, id string, params *DeleteWorkspaceTokenTrustParams, reqEditors ...RequestEditorFn) (*DeleteWorkspaceTokenTrustResponse, error) {
+	rsp, err := c.DeleteWorkspaceTokenTrust(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteWorkspaceTokenTrustResponse(rsp)
+}
+
+// ReadWorkspaceTokenTrustWithResponse request returning *ReadWorkspaceTokenTrustResponse
+func (c *ClientWithResponses) ReadWorkspaceTokenTrustWithResponse(ctx context.Context, id string, params *ReadWorkspaceTokenTrustParams, reqEditors ...RequestEditorFn) (*ReadWorkspaceTokenTrustResponse, error) {
+	rsp, err := c.ReadWorkspaceTokenTrust(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseReadWorkspaceTokenTrustResponse(rsp)
+}
+
+// UpdateWorkspaceTokenTrustWithBodyWithResponse request with arbitrary body returning *UpdateWorkspaceTokenTrustResponse
+func (c *ClientWithResponses) UpdateWorkspaceTokenTrustWithBodyWithResponse(ctx context.Context, id string, params *UpdateWorkspaceTokenTrustParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWorkspaceTokenTrustResponse, error) {
+	rsp, err := c.UpdateWorkspaceTokenTrustWithBody(ctx, id, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateWorkspaceTokenTrustResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateWorkspaceTokenTrustWithResponse(ctx context.Context, id string, params *UpdateWorkspaceTokenTrustParams, body UpdateWorkspaceTokenTrustJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWorkspaceTokenTrustResponse, error) {
+	rsp, err := c.UpdateWorkspaceTokenTrust(ctx, id, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateWorkspaceTokenTrustResponse(rsp)
+}
+
 // DeleteWorkspaceRunnersWithResponse request returning *DeleteWorkspaceRunnersResponse
 func (c *ClientWithResponses) DeleteWorkspaceRunnersWithResponse(ctx context.Context, id string, params *DeleteWorkspaceRunnersParams, reqEditors ...RequestEditorFn) (*DeleteWorkspaceRunnersResponse, error) {
 	rsp, err := c.DeleteWorkspaceRunners(ctx, id, params, reqEditors...)
@@ -11791,6 +13122,41 @@ func (c *ClientWithResponses) ImportTeamWithResponse(ctx context.Context, worksp
 	return ParseImportTeamResponse(rsp)
 }
 
+// ListWorkspaceTokenTrustsWithResponse request returning *ListWorkspaceTokenTrustsResponse
+func (c *ClientWithResponses) ListWorkspaceTokenTrustsWithResponse(ctx context.Context, workspaceId string, params *ListWorkspaceTokenTrustsParams, reqEditors ...RequestEditorFn) (*ListWorkspaceTokenTrustsResponse, error) {
+	rsp, err := c.ListWorkspaceTokenTrusts(ctx, workspaceId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListWorkspaceTokenTrustsResponse(rsp)
+}
+
+// CreateWorkspaceTokenTrustWithBodyWithResponse request with arbitrary body returning *CreateWorkspaceTokenTrustResponse
+func (c *ClientWithResponses) CreateWorkspaceTokenTrustWithBodyWithResponse(ctx context.Context, workspaceId string, params *CreateWorkspaceTokenTrustParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkspaceTokenTrustResponse, error) {
+	rsp, err := c.CreateWorkspaceTokenTrustWithBody(ctx, workspaceId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateWorkspaceTokenTrustResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateWorkspaceTokenTrustWithResponse(ctx context.Context, workspaceId string, params *CreateWorkspaceTokenTrustParams, body CreateWorkspaceTokenTrustJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkspaceTokenTrustResponse, error) {
+	rsp, err := c.CreateWorkspaceTokenTrust(ctx, workspaceId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateWorkspaceTokenTrustResponse(rsp)
+}
+
+// ImportWorkspaceTokenTrustWithResponse request returning *ImportWorkspaceTokenTrustResponse
+func (c *ClientWithResponses) ImportWorkspaceTokenTrustWithResponse(ctx context.Context, workspaceId string, params *ImportWorkspaceTokenTrustParams, reqEditors ...RequestEditorFn) (*ImportWorkspaceTokenTrustResponse, error) {
+	rsp, err := c.ImportWorkspaceTokenTrust(ctx, workspaceId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseImportWorkspaceTokenTrustResponse(rsp)
+}
+
 // ListWorkspaceRunnersWithResponse request returning *ListWorkspaceRunnersResponse
 func (c *ClientWithResponses) ListWorkspaceRunnersWithResponse(ctx context.Context, workspaceId string, params *ListWorkspaceRunnersParams, reqEditors ...RequestEditorFn) (*ListWorkspaceRunnersResponse, error) {
 	rsp, err := c.ListWorkspaceRunners(ctx, workspaceId, params, reqEditors...)
@@ -11824,6 +13190,23 @@ func (c *ClientWithResponses) ImportWorkspaceRunnersWithResponse(ctx context.Con
 		return nil, err
 	}
 	return ParseImportWorkspaceRunnersResponse(rsp)
+}
+
+// ExchangeWorkloadTokenWithBodyWithResponse request with arbitrary body returning *ExchangeWorkloadTokenResponse
+func (c *ClientWithResponses) ExchangeWorkloadTokenWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ExchangeWorkloadTokenResponse, error) {
+	rsp, err := c.ExchangeWorkloadTokenWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseExchangeWorkloadTokenResponse(rsp)
+}
+
+func (c *ClientWithResponses) ExchangeWorkloadTokenWithResponse(ctx context.Context, body ExchangeWorkloadTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*ExchangeWorkloadTokenResponse, error) {
+	rsp, err := c.ExchangeWorkloadToken(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseExchangeWorkloadTokenResponse(rsp)
 }
 
 // ParseCheckExpressionResponse parses an HTTP response from a CheckExpressionWithResponse call
@@ -13656,6 +15039,189 @@ func ParseCreateSkillResponse(rsp *http.Response) (*CreateSkillResponse, error) 
 	return response, nil
 }
 
+// ParseDeleteWorkspaceTokenTrustResponse parses an HTTP response from a DeleteWorkspaceTokenTrustWithResponse call
+func ParseDeleteWorkspaceTokenTrustResponse(rsp *http.Response) (*DeleteWorkspaceTokenTrustResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteWorkspaceTokenTrustResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 428:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON428 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseReadWorkspaceTokenTrustResponse parses an HTTP response from a ReadWorkspaceTokenTrustWithResponse call
+func ParseReadWorkspaceTokenTrustResponse(rsp *http.Response) (*ReadWorkspaceTokenTrustResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ReadWorkspaceTokenTrustResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest WorkspaceTokenTrustResourceResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateWorkspaceTokenTrustResponse parses an HTTP response from a UpdateWorkspaceTokenTrustWithResponse call
+func ParseUpdateWorkspaceTokenTrustResponse(rsp *http.Response) (*UpdateWorkspaceTokenTrustResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateWorkspaceTokenTrustResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest WorkspaceTokenTrustResourceResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 428:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON428 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseDeleteWorkspaceRunnersResponse parses an HTTP response from a DeleteWorkspaceRunnersWithResponse call
 func ParseDeleteWorkspaceRunnersResponse(rsp *http.Response) (*DeleteWorkspaceRunnersResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -15201,6 +16767,168 @@ func ParseImportTeamResponse(rsp *http.Response) (*ImportTeamResponse, error) {
 	return response, nil
 }
 
+// ParseListWorkspaceTokenTrustsResponse parses an HTTP response from a ListWorkspaceTokenTrustsWithResponse call
+func ParseListWorkspaceTokenTrustsResponse(rsp *http.Response) (*ListWorkspaceTokenTrustsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListWorkspaceTokenTrustsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest WorkspaceTokenTrustResourceListResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateWorkspaceTokenTrustResponse parses an HTTP response from a CreateWorkspaceTokenTrustWithResponse call
+func ParseCreateWorkspaceTokenTrustResponse(rsp *http.Response) (*CreateWorkspaceTokenTrustResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateWorkspaceTokenTrustResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest WorkspaceTokenTrustResourceResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseImportWorkspaceTokenTrustResponse parses an HTTP response from a ImportWorkspaceTokenTrustWithResponse call
+func ParseImportWorkspaceTokenTrustResponse(rsp *http.Response) (*ImportWorkspaceTokenTrustResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ImportWorkspaceTokenTrustResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest WorkspaceTokenTrustResourceResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListWorkspaceRunnersResponse parses an HTTP response from a ListWorkspaceRunnersWithResponse call
 func ParseListWorkspaceRunnersResponse(rsp *http.Response) (*ListWorkspaceRunnersResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -15357,6 +17085,32 @@ func ParseImportWorkspaceRunnersResponse(rsp *http.Response) (*ImportWorkspaceRu
 			return nil, err
 		}
 		response.ApplicationproblemJSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseExchangeWorkloadTokenResponse parses an HTTP response from a ExchangeWorkloadTokenWithResponse call
+func ParseExchangeWorkloadTokenResponse(rsp *http.Response) (*ExchangeWorkloadTokenResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ExchangeWorkloadTokenResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest MintedTokenResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
 
 	}
 

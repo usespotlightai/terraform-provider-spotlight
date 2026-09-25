@@ -26,8 +26,8 @@ const WorkspaceEnv = "SPOTLIGHT_ACC_WORKSPACE"
 
 // The prefixes of everything the acceptance tests create, which the
 // sweepers delete: KeyPrefix starts the keys and names of teams, runners,
-// runner trusts and runner pools, and so the address of everything a team
-// holds;
+// runner trusts, runner pools and workspace token trusts, and so the
+// address of everything a team holds;
 // SecretPrefix starts the names of secrets.
 const (
 	KeyPrefix    = "tf-acc-"
@@ -51,7 +51,8 @@ type ControlPlane struct {
 
 // PreCheck skips the test unless TF_ACC is set and the environment names a
 // control plane, a token there and the workspace to work in, and answers
-// that control plane.
+// that control plane. The token is granted configure, secrets, runners and
+// trusts, which together write everything the tests do.
 func PreCheck(t *testing.T) ControlPlane {
 	t.Helper()
 
@@ -101,6 +102,7 @@ type Keys struct {
 	Team, Line, Skill, Integration, Profile string
 	Secret, AWSSecret                       string
 	Trust, Pool, PushPool                   string
+	TokenTrust                              string
 }
 
 // RandomKeys answers keys no other test uses.
@@ -119,6 +121,7 @@ func RandomKeys() Keys {
 		Trust:       KeyPrefix + "cluster-" + suffix,
 		Pool:        KeyPrefix + "pool-" + suffix,
 		PushPool:    KeyPrefix + "push-" + suffix,
+		TokenTrust:  KeyPrefix + "github-" + suffix,
 	}
 }
 
@@ -239,6 +242,7 @@ func (cp ControlPlane) created(k Keys) []held {
 		holding("runner trust", api.ImportRunnerTrust, func(t client.RunnerTrust) client.Meta { return t.Meta }, api.DeleteRunnerTrust, id, k.Trust),
 		holding("runner pool", api.ImportRunnerPool, func(p client.RunnerPool) client.Meta { return p.Meta }, api.DeleteRunnerPool, id, k.Pool),
 		holding("runner pool", api.ImportRunnerPool, func(p client.RunnerPool) client.Meta { return p.Meta }, api.DeleteRunnerPool, id, k.PushPool),
+		holding("workspace token trust", api.ImportWorkspaceTokenTrust, func(t client.WorkspaceTokenTrust) client.Meta { return t.Meta }, api.DeleteWorkspaceTokenTrust, id, k.TokenTrust),
 	}
 }
 

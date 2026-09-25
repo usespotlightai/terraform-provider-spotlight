@@ -2,8 +2,9 @@
 // follows the resource conventions the provider relies on: bearer tokens and
 // their scopes, idempotent creates, If-Match versions, problem answers that
 // name fields, reads that fill in defaults, imports by address, lists in
-// address order, write-only values that are never answered, and the
-// expression check.
+// address order, write-only values that are never answered, the
+// expression check, and the exchange of a workload's OIDC token for a
+// minted one.
 package fakeapi
 
 import (
@@ -17,10 +18,18 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 // Token is the API token the fake accepts.
 const Token = "test-token"
+
+// WorkloadToken is the only OIDC token the fake's workspace token trusts
+// admit.
+const WorkloadToken = "test-workload-token"
+
+// Admin is who the fake says defined every workspace token trust.
+const Admin = "test-admin"
 
 const apiVersion = "2026-09-23"
 
@@ -48,6 +57,8 @@ type Server struct {
 	scopes     map[string]bool
 	kept       map[string]string
 	given      map[string]struct{}
+	minted     map[string]string
+	mintedFor  time.Duration
 }
 
 type resource struct {
@@ -66,8 +77,10 @@ func New(t interface{ Cleanup(func()) }) *Server {
 		idempotent: map[string]string{},
 		kept:       map[string]string{},
 		given:      map[string]struct{}{},
+		minted:     map[string]string{},
+		mintedFor:  15 * time.Minute,
 	}
-	s.Grant("configure", "secrets", "runners")
+	s.Grant("configure", "secrets", "runners", "trusts")
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/resources/workspaces", s.listWorkspaces)
@@ -85,6 +98,7 @@ func New(t interface{ Cleanup(func()) }) *Server {
 	mux.HandleFunc("DELETE /api/resources/{kinds}/{id}", s.removeHeld)
 	mux.HandleFunc("GET /api/expressions/positions", s.positions)
 	mux.HandleFunc("POST /api/expressions/check", s.check)
+	mux.HandleFunc("POST /api/workspace-tokens/exchange", s.exchange)
 	mux.HandleFunc("/", noRoute)
 
 	s.Server = httptest.NewServer(s.guard(mux))
@@ -102,6 +116,14 @@ func (s *Server) Grant(scopes ...string) {
 	for _, each := range scopes {
 		s.scopes[each] = true
 	}
+}
+
+// MintFor makes the tokens the fake mints from now on expire after d.
+func (s *Server) MintFor(d time.Duration) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.mintedFor = d
 }
 
 // Requests lists every request received so far.
@@ -201,7 +223,7 @@ func (s *Server) guard(next http.Handler) http.Handler {
 			return
 		}
 
-		if r.Header.Get("Authorization") != "Bearer "+Token {
+		if r.URL.Path != exchangePath && !s.admits(r.Header.Get("Authorization")) {
 			problem(w, http.StatusUnauthorized, "unauthenticated", "No valid credentials", "Send a Spotlight API token as a bearer token", nil)
 			return
 		}
@@ -221,6 +243,62 @@ func (s *Server) guard(next http.Handler) http.Handler {
 	})
 }
 
+const exchangePath = "/api/workspace-tokens/exchange"
+
+func (s *Server) admits(authorization string) bool {
+	bearer, ok := strings.CutPrefix(authorization, "Bearer ")
+	if !ok {
+		return false
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	_, minted := s.minted[bearer]
+
+	return bearer == Token || minted
+}
+
+func (s *Server) lapse(trust string) {
+	for token, mintedBy := range s.minted {
+		if mintedBy == trust {
+			delete(s.minted, token)
+		}
+	}
+}
+
+func (s *Server) exchange(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		Trust string `json:"trust"`
+		Token string `json:"token"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		problem(w, http.StatusBadRequest, "bad-request", "The request is malformed", err.Error(), nil)
+		return
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	trust, ok := s.held[body.Trust]
+	if !ok || trust.kind != "workspace-token-trust" || body.Token != WorkloadToken {
+		problem(w, http.StatusUnauthorized, "unauthenticated", "The workload token was not admitted", "No trust here admits that workload", nil)
+		return
+	}
+
+	s.next++
+	token := fmt.Sprintf("minted-%04d-%s", s.next, strings.Repeat("m", 32))
+	s.minted[token] = trust.id
+
+	writeJSON(w, http.StatusOK, "application/json", map[string]any{
+		"token":       token,
+		"tokenId":     fmt.Sprintf("token-%04d", s.next),
+		"workspaceId": trust.owner,
+		"scopes":      trust.fields["scopes"],
+		"expiresAt":   time.Now().Add(s.mintedFor).UTC().Format(time.RFC3339Nano),
+	})
+}
+
 var kinds = map[string]string{
 	"teams":             "team",
 	"lines":             "line",
@@ -231,6 +309,7 @@ var kinds = map[string]string{
 	"runner-trusts":     "runner-trust",
 	"runner-pools":      "runner-pool",
 	"workspace-runners": "workspace-runners",
+	"token-trusts":      "workspace-token-trust",
 }
 
 func ownerKind(kind string) string {
@@ -254,6 +333,16 @@ func (s *Server) allowed(w http.ResponseWriter, kind string) bool {
 		return true
 	}
 
+	if kind == "workspace-token-trust" {
+		if s.scopes["trusts"] {
+			return true
+		}
+
+		refuseTrust(w, "You may read this workspace-token-trust, but your role in its workspace, or your token’s scopes, do not let you change it")
+
+		return false
+	}
+
 	needs, ok := grants[kind]
 	if !ok {
 		needs = "configure"
@@ -267,6 +356,45 @@ func (s *Server) allowed(w http.ResponseWriter, kind string) bool {
 		"You may read this "+kind+", but your role in its workspace, or your token’s scopes, do not let you change it", nil)
 
 	return false
+}
+
+var implied = map[string][]string{
+	"read":      {"read"},
+	"plan":      {"plan", "read"},
+	"configure": {"configure", "plan", "read"},
+	"secrets":   {"secrets", "read"},
+	"runners":   {"runners", "read"},
+	"trusts":    {"trusts", "read"},
+}
+
+func (s *Server) grants(w http.ResponseWriter, scopes ...any) bool {
+	held := map[string]bool{}
+	for granted := range s.scopes {
+		for _, each := range implied[granted] {
+			held[each] = true
+		}
+	}
+
+	for _, listed := range scopes {
+		for _, each := range texts(listed) {
+			if !held[textOf(each)] {
+				refuseTrust(w, fmt.Sprintf("A token may give a trust only scopes it holds itself, and it does not hold %s", each))
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
+func refuseTrust(w http.ResponseWriter, detail string) {
+	writeJSON(w, http.StatusForbidden, "application/problem+json", map[string]any{
+		"type":       "urn:spotlight:problem:forbidden",
+		"title":      "Not allowed to change the workspace-token-trust",
+		"status":     http.StatusForbidden,
+		"detail":     detail,
+		"permission": "manage-token-trusts",
+	})
 }
 
 func (s *Server) createHeld(owner string) http.HandlerFunc {
@@ -352,6 +480,10 @@ func (s *Server) create(kind string) http.HandlerFunc {
 			return
 		}
 
+		if kind == "workspace-token-trust" && !s.grants(w, fields["scopes"]) {
+			return
+		}
+
 		s.next++
 		held := &resource{kind: kind, id: fmt.Sprintf("%s-%04d", kind, s.next), version: 1, owner: owner, fields: fields}
 
@@ -414,6 +546,10 @@ func (s *Server) update(kind string) http.HandlerFunc {
 			errs = s.refusedPoolToken(kind, held.id, value)
 		}
 
+		if len(errs) == 0 && kind == "workspace-token-trust" && !s.grants(w, held.fields["scopes"], fields["scopes"]) {
+			return
+		}
+
 		if len(errs) > 0 {
 			invalid(w, kind, errs)
 			return
@@ -427,6 +563,7 @@ func (s *Server) update(kind string) http.HandlerFunc {
 
 		held.fields = fields
 		held.version++
+		s.lapse(held.id)
 		s.answer(w, http.StatusOK, held)
 	}
 }
@@ -450,6 +587,7 @@ func (s *Server) remove(kind string) http.HandlerFunc {
 
 		delete(s.held, held.id)
 		delete(s.kept, held.id)
+		s.lapse(held.id)
 		w.WriteHeader(http.StatusNoContent)
 	}
 }
@@ -612,15 +750,16 @@ func (s *Server) holds(id, kind string) bool {
 }
 
 var fixedFields = map[string][]string{
-	"workspace":       {"slug"},
-	"team":            {"key"},
-	"line":            {"key"},
-	"skill":           {"key"},
-	"integration":     {"source"},
-	"harness-profile": {"key"},
-	"secret":          {"name"},
-	"runner-trust":    {"key"},
-	"runner-pool":     {"key"},
+	"workspace":             {"slug"},
+	"team":                  {"key"},
+	"line":                  {"key"},
+	"skill":                 {"key"},
+	"integration":           {"source"},
+	"harness-profile":       {"key"},
+	"secret":                {"name"},
+	"runner-trust":          {"key"},
+	"runner-pool":           {"key"},
+	"workspace-token-trust": {"key"},
 }
 
 func givesPoolToken(kind string, fields map[string]any) bool {
@@ -638,7 +777,7 @@ func (s *Server) addressOf(held *resource) string {
 	switch held.kind {
 	case "workspace":
 		return textOf(held.fields["slug"])
-	case "team", "runner-trust", "runner-pool":
+	case "team", "runner-trust", "runner-pool", "workspace-token-trust":
 		return textOf(held.fields["key"])
 	case "secret":
 		return textOf(held.fields["name"])
@@ -704,6 +843,10 @@ func (s *Server) bodyOf(held *resource) map[string]any {
 
 	if held.kind == "workspace-runners" {
 		body["warnings"] = s.unansweredOf(held)
+	}
+
+	if held.kind == "workspace-token-trust" {
+		body["definedBy"] = Admin
 	}
 
 	return body

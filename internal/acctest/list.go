@@ -184,9 +184,11 @@ func ConfiguredServer(t *testing.T, fake *fakeapi.Server) (tfprotov6.ProviderSer
 		t.Fatal(err)
 	}
 
-	providerConfig, err := tfprotov6.NewDynamicValue(schemas.Provider.ValueType(), tftypes.NewValue(schemas.Provider.ValueType(), map[string]tftypes.Value{
+	providerType, _ := schemas.Provider.ValueType().(tftypes.Object)
+	providerConfig, err := tfprotov6.NewDynamicValue(providerType, tftypes.NewValue(providerType, map[string]tftypes.Value{
 		"url":   tftypes.NewValue(tftypes.String, nil),
 		"token": tftypes.NewValue(tftypes.String, nil),
+		"oidc":  tftypes.NewValue(providerType.AttributeTypes["oidc"], nil),
 	}))
 	if err != nil {
 		t.Fatal(err)

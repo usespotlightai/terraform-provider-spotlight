@@ -12,7 +12,7 @@ import (
 
 const warning = "warning"
 
-const oneTokenForAll = "One token granted configure, secrets and runners manages everything Terraform can in its workspace."
+const oneTokenForAll = "One token granted configure, secrets, runners and trusts manages everything Terraform can in its workspace."
 
 const unexplained = "The API token's scopes, or the workspace it belongs to, do not allow this. A token acts only inside its own workspace."
 
@@ -22,6 +22,8 @@ var lacking = map[client.Scope]string{
 	client.ScopeConfigure: "The API token lacks the configure scope, which changing the workspace's configuration needs.",
 	client.ScopeSecrets:   "The API token lacks the secrets scope, which setting, rebinding, rotating and deleting secrets needs; grant it secrets beside configure.",
 	client.ScopeRunners:   "The API token lacks the runners scope, which creating, rekeying and deleting runner pools and runner trusts, and declaring the workspace's runners, needs; grant it runners beside configure.",
+	client.ScopeTrusts: "The API token lacks the trusts scope, which creating, changing and deleting workspace token trusts needs, or a scope the trust gives: " +
+		"a token may give a trust only scopes it holds itself, and change one only while it holds both the trust's scopes and the new ones. Grant it trusts beside configure and every scope the trusts give.",
 }
 
 var beyondTokens = map[client.Permission]string{

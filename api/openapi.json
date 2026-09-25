@@ -121,6 +121,13 @@
                 "example": {
                   "key": "delivery",
                   "name": "Delivery",
+                  "repositories": [
+                    {
+                      "name": "acme/api",
+                      "image": "ghcr.io/acme/api-runner:main",
+                      "setup": "go mod download"
+                    }
+                  ],
                   "stations": [
                     {
                       "key": "backlog",
@@ -134,7 +141,6 @@
                       "key": "implementation",
                       "name": "Implementation",
                       "harness": "claude-code",
-                      "harnessVersion": "0.23.1",
                       "profile": "careful",
                       "prompt": "Implement the task.",
                       "passesTo": [
@@ -415,6 +421,13 @@
                 "example": {
                   "key": "delivery",
                   "name": "Delivery",
+                  "repositories": [
+                    {
+                      "name": "acme/api",
+                      "image": "ghcr.io/acme/api-runner:main",
+                      "setup": "go mod download"
+                    }
+                  ],
                   "stations": [
                     {
                       "key": "backlog",
@@ -428,7 +441,6 @@
                       "key": "implementation",
                       "name": "Implementation",
                       "harness": "claude-code",
-                      "harnessVersion": "0.23.1",
                       "profile": "careful",
                       "prompt": "Implement the task.",
                       "passesTo": [
@@ -1232,6 +1244,47 @@
         ]
       }
     },
+    "/runs/{runId}/image": {
+      "post": {
+        "description": "The host pulls the image named for the run just after it claims it, and records the digest it pulled here, so the run shows the environment it had.",
+        "operationId": "recordRunImage",
+        "parameters": [
+          {
+            "name": "runId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordRunImageRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "401": {
+            "description": "Missing, spent or wrong runner token"
+          },
+          "409": {
+            "description": "The run is not held by this runner"
+          }
+        },
+        "summary": "Say which image, by digest, the run’s sandbox started from",
+        "tags": [
+          "runners"
+        ]
+      }
+    },
     "/runs/{runId}/events": {
       "post": {
         "operationId": "appendRunEvents",
@@ -1638,9 +1691,9 @@
         ]
       }
     },
-    "/hosts/harnesses": {
+    "/hosts/requirements": {
       "get": {
-        "operationId": "hostHarnesses",
+        "operationId": "hostRequirements",
         "parameters": [
           {
             "name": "Spotlight-Trust",
@@ -1658,10 +1711,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/InstallableHarnessResponseDto"
-                  }
+                  "$ref": "#/components/schemas/HostRequirementsResponseDto"
                 }
               }
             }
@@ -1675,7 +1725,7 @@
             "bearer": []
           }
         ],
-        "summary": "What a host looks for in its runner images, so its claims can say what they hold",
+        "summary": "Which runner images a host should serve, what to look for in them, and how new their runner must be",
         "tags": [
           "runners"
         ]
@@ -1724,7 +1774,7 @@
             "description": "Missing, rotated or unknown pool token, or a workload the trust does not admit"
           },
           "409": {
-            "description": "The host has not reported through this pool or trust"
+            "description": "The host has not reported through this pool or trust (`host-unreported`), or has not reported serving the image it claims for (`image-unreported`)"
           }
         },
         "security": [
@@ -4754,7 +4804,8 @@
                         "plan",
                         "configure",
                         "secrets",
-                        "runners"
+                        "runners",
+                        "trusts"
                       ]
                     },
                     "minItems": 1,
@@ -5156,7 +5207,8 @@
                         "plan",
                         "configure",
                         "secrets",
-                        "runners"
+                        "runners",
+                        "trusts"
                       ]
                     },
                     "minItems": 1,
@@ -5523,6 +5575,914 @@
           "kind": "workspace-token",
           "operation": "import"
         }
+      }
+    },
+    "/resources/workspaces/{workspaceId}/token-trusts": {
+      "post": {
+        "operationId": "createWorkspaceTokenTrust",
+        "parameters": [
+          {
+            "name": "Spotlight-Api-Version",
+            "in": "header",
+            "description": "The API version the client was written against; every response names the version it was answered in",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2026-09-23"
+              ],
+              "default": "2026-09-23"
+            }
+          },
+          {
+            "name": "Spotlight-Client",
+            "in": "header",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "terraform-provider/0.1.0"
+            }
+          },
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "5b1e9d2c-7a43-4f8e-b6c0-3d9a8e1f2b57",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 255
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "key",
+                  "issuer",
+                  "subject",
+                  "scopes"
+                ],
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "example": "github-main"
+                  },
+                  "issuer": {
+                    "type": "string",
+                    "example": "https://token.actions.githubusercontent.com"
+                  },
+                  "audience": {
+                    "type": "string",
+                    "default": "spotlight"
+                  },
+                  "subject": {
+                    "type": "string",
+                    "example": "repo:acme/platform:ref:refs/heads/main"
+                  },
+                  "claims": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "example": {
+                      "repository": "acme/platform"
+                    }
+                  },
+                  "scopes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "read",
+                        "plan",
+                        "configure",
+                        "secrets",
+                        "runners",
+                        "trusts"
+                      ]
+                    },
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "example": [
+                      "configure",
+                      "secrets"
+                    ]
+                  },
+                  "lifetimeMinutes": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 60,
+                    "default": 15
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The workspace-token-trust, as a read would answer it",
+            "headers": {
+              "ETag": {
+                "description": "The version answered, to send back as If-Match",
+                "schema": {
+                  "type": "string",
+                  "example": "\"3\""
+                }
+              },
+              "Idempotent-Replayed": {
+                "description": "true when this answers an earlier attempt",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceTokenTrustResourceResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed, or asking for an API version this server does not serve",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid credentials",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not allowed to do this to the workspace-token-trust: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workspace-token-trust that you may see",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "There is already a workspace-token-trust at that address",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "What is wrong, field by field; or the Idempotency-Key was used for a different request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Trust a CI workload to exchange the OIDC token its platform issues for a short-lived workspace token; needs a workspace admin, or a token granted trusts",
+        "tags": [
+          "workspace-tokens"
+        ],
+        "x-spotlight-resource": {
+          "kind": "workspace-token-trust",
+          "operation": "create"
+        }
+      },
+      "get": {
+        "operationId": "listWorkspaceTokenTrusts",
+        "parameters": [
+          {
+            "name": "Spotlight-Api-Version",
+            "in": "header",
+            "description": "The API version the client was written against; every response names the version it was answered in",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2026-09-23"
+              ],
+              "default": "2026-09-23"
+            }
+          },
+          {
+            "name": "Spotlight-Client",
+            "in": "header",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "terraform-provider/0.1.0"
+            }
+          },
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "5b1e9d2c-7a43-4f8e-b6c0-3d9a8e1f2b57",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Every workspace-token-trust there, each as a read would answer it, in address order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceTokenTrustResourceListResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed, or asking for an API version this server does not serve",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid credentials",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workspace that you may see",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List every token trust in a workspace",
+        "tags": [
+          "workspace-tokens"
+        ],
+        "x-spotlight-resource": {
+          "kind": "workspace-token-trust",
+          "operation": "list"
+        }
+      }
+    },
+    "/resources/token-trusts/{id}": {
+      "get": {
+        "operationId": "readWorkspaceTokenTrust",
+        "parameters": [
+          {
+            "name": "Spotlight-Api-Version",
+            "in": "header",
+            "description": "The API version the client was written against; every response names the version it was answered in",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2026-09-23"
+              ],
+              "default": "2026-09-23"
+            }
+          },
+          {
+            "name": "Spotlight-Client",
+            "in": "header",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "terraform-provider/0.1.0"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "0d6f3c1e-8a52-4f7b-9c1d-5e2a7b3f9c40",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The workspace-token-trust, every field of it",
+            "headers": {
+              "ETag": {
+                "description": "The version answered, to send back as If-Match",
+                "schema": {
+                  "type": "string",
+                  "example": "\"3\""
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceTokenTrustResourceResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed, or asking for an API version this server does not serve",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid credentials",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workspace-token-trust that you may see",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Read a workspace token trust",
+        "tags": [
+          "workspace-tokens"
+        ],
+        "x-spotlight-resource": {
+          "kind": "workspace-token-trust",
+          "operation": "read"
+        }
+      },
+      "put": {
+        "operationId": "updateWorkspaceTokenTrust",
+        "parameters": [
+          {
+            "name": "Spotlight-Api-Version",
+            "in": "header",
+            "description": "The API version the client was written against; every response names the version it was answered in",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2026-09-23"
+              ],
+              "default": "2026-09-23"
+            }
+          },
+          {
+            "name": "Spotlight-Client",
+            "in": "header",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "terraform-provider/0.1.0"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "0d6f3c1e-8a52-4f7b-9c1d-5e2a7b3f9c40",
+              "type": "string"
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "\"3\""
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "key",
+                  "issuer",
+                  "subject",
+                  "scopes"
+                ],
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "example": "github-main"
+                  },
+                  "issuer": {
+                    "type": "string",
+                    "example": "https://token.actions.githubusercontent.com"
+                  },
+                  "audience": {
+                    "type": "string",
+                    "default": "spotlight"
+                  },
+                  "subject": {
+                    "type": "string",
+                    "example": "repo:acme/platform:ref:refs/heads/main"
+                  },
+                  "claims": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "example": {
+                      "repository": "acme/platform"
+                    }
+                  },
+                  "scopes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "read",
+                        "plan",
+                        "configure",
+                        "secrets",
+                        "runners",
+                        "trusts"
+                      ]
+                    },
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "example": [
+                      "configure",
+                      "secrets"
+                    ]
+                  },
+                  "lifetimeMinutes": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 60,
+                    "default": 15
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The workspace-token-trust, as a read would answer it",
+            "headers": {
+              "ETag": {
+                "description": "The version answered, to send back as If-Match",
+                "schema": {
+                  "type": "string",
+                  "example": "\"3\""
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceTokenTrustResourceResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed, or asking for an API version this server does not serve",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid credentials",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not allowed to do this to the workspace-token-trust: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workspace-token-trust that you may see",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "It changed since the version in If-Match, and currentVersion says where it is; or something else still uses what this would remove",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "What is wrong, field by field",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "If-Match is missing",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Change which workloads a token trust admits, or what the tokens it mints may do; tokens minted with scopes it no longer grants stop admitting their bearers",
+        "tags": [
+          "workspace-tokens"
+        ],
+        "x-spotlight-resource": {
+          "kind": "workspace-token-trust",
+          "operation": "update"
+        }
+      },
+      "delete": {
+        "operationId": "deleteWorkspaceTokenTrust",
+        "parameters": [
+          {
+            "name": "Spotlight-Api-Version",
+            "in": "header",
+            "description": "The API version the client was written against; every response names the version it was answered in",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2026-09-23"
+              ],
+              "default": "2026-09-23"
+            }
+          },
+          {
+            "name": "Spotlight-Client",
+            "in": "header",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "terraform-provider/0.1.0"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "0d6f3c1e-8a52-4f7b-9c1d-5e2a7b3f9c40",
+              "type": "string"
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "\"3\""
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          },
+          "400": {
+            "description": "Malformed, or asking for an API version this server does not serve",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid credentials",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not allowed to do this to the workspace-token-trust: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workspace-token-trust that you may see",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "It changed since the version in If-Match, and currentVersion says where it is; or something else still uses what this would remove",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "If-Match is missing",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Stop trusting a workload; every token the trust minted admits nobody from this moment",
+        "tags": [
+          "workspace-tokens"
+        ],
+        "x-spotlight-resource": {
+          "kind": "workspace-token-trust",
+          "operation": "delete"
+        }
+      }
+    },
+    "/resources/workspaces/{workspaceId}/token-trusts/import": {
+      "get": {
+        "operationId": "importWorkspaceTokenTrust",
+        "parameters": [
+          {
+            "name": "Spotlight-Api-Version",
+            "in": "header",
+            "description": "The API version the client was written against; every response names the version it was answered in",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2026-09-23"
+              ],
+              "default": "2026-09-23"
+            }
+          },
+          {
+            "name": "Spotlight-Client",
+            "in": "header",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "terraform-provider/0.1.0"
+            }
+          },
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "5b1e9d2c-7a43-4f8e-b6c0-3d9a8e1f2b57",
+              "type": "string"
+            }
+          },
+          {
+            "name": "address",
+            "required": true,
+            "in": "query",
+            "description": "The workspace-token-trust's address within the workspace",
+            "schema": {
+              "example": "github-main"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The workspace-token-trust, as a read would answer it",
+            "headers": {
+              "ETag": {
+                "description": "The version answered, to send back as If-Match",
+                "schema": {
+                  "type": "string",
+                  "example": "\"3\""
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceTokenTrustResourceResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed, or asking for an API version this server does not serve",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid credentials",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workspace-token-trust that you may see",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Find the token trust with a key in a workspace, to import it",
+        "tags": [
+          "workspace-tokens"
+        ],
+        "x-spotlight-resource": {
+          "kind": "workspace-token-trust",
+          "operation": "import"
+        }
+      }
+    },
+    "/workspace-tokens/exchange": {
+      "post": {
+        "operationId": "exchangeWorkloadToken",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExchangeWorkloadTokenRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MintedTokenResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No such trust, a token its issuer did not sign for its audience, a workload it does not admit, or a closed workspace"
+          }
+        },
+        "summary": "Exchange the OIDC token a CI platform issued a workload for a short-lived workspace token, through a workspace token trust that admits it",
+        "tags": [
+          "workspace-tokens"
+        ]
       }
     },
     "/workspaces": {
@@ -11893,6 +12853,7 @@
                 "harness-profiles",
                 "integrations",
                 "secrets",
+                "token-trusts",
                 "runner-trusts",
                 "runner-pools",
                 "workspace-runners"
@@ -13620,7 +14581,7 @@
   },
   "info": {
     "title": "Spotlight Control Plane",
-    "description": "HTTP API for the Spotlight Control Plane.\n\n## Resource conventions\n\nOperations marked `x-spotlight-resource` manage configuration resources, the ones the Terraform provider writes. They live under `/resources` and address everything by id. Every resource follows these rules, and a conformance suite holds each one to them.\n\n- **Stable ids.** Spotlight issues a resource's `id` when it is created. It never changes for the resource's life, whatever else does.\n- **Reads return every field.** A read answers the whole resource, defaults filled in, so a client comparing it with what it wrote sees any drift. A write answers exactly what a read would.\n- **Versions.** Every resource carries a `version` that rises with each change, and each answer carries it as a strong `ETag` (`\"3\"`). An update or delete must send it back as `If-Match`: without one it is refused with 428, and against a version that is no longer current with 409, whose body gives the `currentVersion` and whose `ETag` names it. A write that would remove something another resource still uses is refused with 409 `in-use`.\n- **Idempotent creates.** A create must carry an `Idempotency-Key`. Retrying with the same key and body within 24 hours answers the resource the first attempt created, marked `Idempotent-Replayed: true`, and creates nothing more; the same key with a different body is refused with 422.\n- **Problems name fields.** Errors are `application/problem+json` (RFC 9457). `type` is stable and safe to branch on. An invalid request lists `errors`, each with the `path` of the attribute it is about, as in `stations[2].check`; a key that is not a plain name is quoted, as Terraform addresses it: `on[\"task.opened\"].to.thread`.\n- **API versions.** A client may send `Spotlight-Api-Version`; every response names the version it was answered in, currently `2026-09-23`. Changes within a version are additive only: fields and operations are added, never removed, renamed or given a new meaning.\n- **Expression checks.** `POST /expressions/check` type-checks one CEL expression at the attribute that holds it, named within the resource's whole definition (`integration.webhook.events[0].when`), as `terraform plan` needs. What the expression may read is worked out from that definition exactly as applying it would, so a plan fails where an apply would; a definition holding any error is refused with 422, each error under `definition`. It answers the type and any errors, each with the span it is about and a suggestion where a declared name is near, and warnings about the definition, such as a capture shadowing a built-in name. `GET /expressions/positions` lists every position, with `[*]` for any index or key, and what an expression there sees. They follow these headers and problems, but are not resources.\n- **Credentials.** A client calls with a person's session or with a workspace token, sent as `Authorization: Bearer <token>`. A token acts only within its own workspace and only as its scopes allow. `read`, `plan` and `configure` are a ladder: `read` reads, `plan` also checks expressions, and `configure` also creates, changes and deletes configuration as a workspace admin may, except secrets and runners. `secrets` is granted beside one of them and lets the token set, rebind, rotate and delete secrets; Terraform that manages secrets uses `[\"configure\", \"secrets\"]`. `runners` is granted the same way and lets the token create, rekey and delete runners and runner trusts and declare the workspace's runners, since a runner claims runs, checks out repositories and holds git credentials; Terraform that manages runners uses `[\"configure\", \"runners\"]`. No token manages members or tokens, or reads the audit.\n- **Refusals.** A change by someone who may read the resource but not change it, person or token, is refused with 403 `forbidden`, whose `permission` names what the caller lacks, one of `configure`, `manage-secrets`, `manage-runners`, `administer`, `open-workspaces`, `plan`. Anything they may not see at all answers 404.\n- **Who changed what.** A client names itself in `Spotlight-Client` (`terraform-provider/<version>` or `web`), and every configuration change is recorded with who made it, person or token, and through which client. A secret's change also records the value version it moved to and the hosts it is bound to, never its value.\n- **Import by address.** Each resource has an `address` that names it within its workspace, such as `core/linear`, and an import operation that answers the resource at that address, as `terraform import` needs. A workspace's address is its slug; a team's is its key; anything a team holds is the team's key and its own, as in `core/delivery`.",
+    "description": "HTTP API for the Spotlight Control Plane.\n\n## Resource conventions\n\nOperations marked `x-spotlight-resource` manage configuration resources, the ones the Terraform provider writes. They live under `/resources` and address everything by id. Every resource follows these rules, and a conformance suite holds each one to them.\n\n- **Stable ids.** Spotlight issues a resource's `id` when it is created. It never changes for the resource's life, whatever else does.\n- **Reads return every field.** A read answers the whole resource, defaults filled in, so a client comparing it with what it wrote sees any drift. A write answers exactly what a read would.\n- **Versions.** Every resource carries a `version` that rises with each change, and each answer carries it as a strong `ETag` (`\"3\"`). An update or delete must send it back as `If-Match`: without one it is refused with 428, and against a version that is no longer current with 409, whose body gives the `currentVersion` and whose `ETag` names it. A write that would remove something another resource still uses is refused with 409 `in-use`.\n- **Idempotent creates.** A create must carry an `Idempotency-Key`. Retrying with the same key and body within 24 hours answers the resource the first attempt created, marked `Idempotent-Replayed: true`, and creates nothing more; the same key with a different body is refused with 422.\n- **Problems name fields.** Errors are `application/problem+json` (RFC 9457). `type` is stable and safe to branch on. An invalid request lists `errors`, each with the `path` of the attribute it is about, as in `stations[2].check`; a key that is not a plain name is quoted, as Terraform addresses it: `on[\"task.opened\"].to.thread`.\n- **API versions.** A client may send `Spotlight-Api-Version`; every response names the version it was answered in, currently `2026-09-23`. Changes within a version are additive only: fields and operations are added, never removed, renamed or given a new meaning.\n- **Expression checks.** `POST /expressions/check` type-checks one CEL expression at the attribute that holds it, named within the resource's whole definition (`integration.webhook.events[0].when`), as `terraform plan` needs. What the expression may read is worked out from that definition exactly as applying it would, so a plan fails where an apply would; a definition holding any error is refused with 422, each error under `definition`. It answers the type and any errors, each with the span it is about and a suggestion where a declared name is near, and warnings about the definition, such as a capture shadowing a built-in name. `GET /expressions/positions` lists every position, with `[*]` for any index or key, and what an expression there sees. They follow these headers and problems, but are not resources.\n- **Credentials.** A client calls with a person's session or with a workspace token, sent as `Authorization: Bearer <token>`. A token acts only within its own workspace and only as its scopes allow. `read`, `plan` and `configure` are a ladder: `read` reads, `plan` also checks expressions, and `configure` also creates, changes and deletes configuration as a workspace admin may, except secrets, runners and token trusts. `secrets` is granted beside one of them and lets the token set, rebind, rotate and delete secrets; Terraform that manages secrets uses `[\"configure\", \"secrets\"]`. `runners` is granted the same way and lets the token create, rekey and delete runners and runner trusts and declare the workspace's runners, since a runner claims runs, checks out repositories and holds git credentials; Terraform that manages runners uses `[\"configure\", \"runners\"]`. `trusts` is granted the same way and lets the token create, change and delete workspace token trusts, since a trust hands out tokens; a token can only define a trust granting scopes it holds itself, so bootstrap the trusts once with a token holding `trusts` and every scope they grant, as in `[\"configure\", \"secrets\", \"trusts\"]`, and revoke it. No token manages members or tokens, or reads the audit.\n- **CI without a stored token.** A workspace admin, or a token granted `trusts`, defines a workspace token trust naming an OIDC issuer, audience, subject and claims, and the scopes and lifetime (at most an hour) of the tokens it mints. A CI job exchanges the OIDC token its platform issues it at `POST /api/workspace-tokens/exchange` with `{ \"trust\": <trust id>, \"token\": <OIDC token> }`, and calls with the short-lived token it gets back. Deleting the trust stops every token it minted at once, and the audit names the trust and the workload's subject beside each exchange and each change made with a minted token.\n- **Refusals.** A change by someone who may read the resource but not change it, person or token, is refused with 403 `forbidden`, whose `permission` names what the caller lacks, one of `configure`, `manage-secrets`, `manage-runners`, `manage-token-trusts`, `administer`, `open-workspaces`, `plan`. Anything they may not see at all answers 404.\n- **Who changed what.** A client names itself in `Spotlight-Client` (`terraform-provider/<version>` or `web`), and every configuration change is recorded with who made it, person or token, and through which client. A secret's change also records the value version it moved to and the hosts it is bound to, never its value.\n- **Import by address.** Each resource has an `address` that names it within its workspace, such as `core/linear`, and an import operation that answers the resource at that address, as `terraform import` needs. A workspace's address is its slug; a team's is its key; anything a team holds is the team's key and its own, as in `core/delivery`.",
     "version": "2026-09-23",
     "contact": {}
   },
@@ -13881,6 +14842,7 @@
               "configure",
               "manage-secrets",
               "manage-runners",
+              "manage-token-trusts",
               "administer",
               "open-workspaces",
               "plan"
@@ -14081,13 +15043,19 @@
             "type": "string",
             "example": "9c2e6d5a-1f47-4c8b-9a3d-2b7e5f0c1d84"
           },
+          "harness": {
+            "type": "string",
+            "example": "claude-code",
+            "description": "The harness the run needs, so a host can tell whether the image it pulled still holds it"
+          },
           "spec": {
             "type": "object",
-            "description": "Opaque to the control plane, meaningful to the hook"
+            "description": "What the runner lays out and starts, as the runner reads it"
           }
         },
         "required": [
           "id",
+          "harness",
           "spec"
         ]
       },
@@ -14580,6 +15548,19 @@
           "stop"
         ]
       },
+      "RecordRunImageRequestDto": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "example": "ghcr.io/acme/api-runner@sha256:9b2f5c1e0d7a4b3c8e6f1a2d5c7b9e0f3a4d6c8b1e2f5a7c9d0b3e6f8a1c4d7e",
+            "description": "The image the sandbox started from, named by its digest"
+          }
+        },
+        "required": [
+          "image"
+        ]
+      },
       "RunEventRequestDto": {
         "type": "object",
         "properties": {
@@ -14887,6 +15868,49 @@
           "labels"
         ]
       },
+      "RunnerReleaseResponseDto": {
+        "type": "object",
+        "properties": {
+          "atLeast": {
+            "type": "string",
+            "example": "20260925-01",
+            "description": "The oldest runner release this control plane works with; a host refuses an image whose runner is older"
+          }
+        },
+        "required": [
+          "atLeast"
+        ]
+      },
+      "HostRequirementsResponseDto": {
+        "type": "object",
+        "properties": {
+          "runner": {
+            "$ref": "#/components/schemas/RunnerReleaseResponseDto"
+          },
+          "harnesses": {
+            "description": "What a host looks for in each runner image",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InstallableHarnessResponseDto"
+            }
+          },
+          "images": {
+            "example": [
+              "ghcr.io/acme/api-runner:main"
+            ],
+            "description": "The images this workspace’s lines name; a host serves those its allow-list admits, beside its default",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "runner",
+          "harnesses",
+          "images"
+        ]
+      },
       "ClaimHostWorkRequestDto": {
         "type": "object",
         "properties": {
@@ -14895,19 +15919,15 @@
             "example": "K7Q2M4ZC3VYH6N5RB8WX1TDJ9P",
             "description": "The host claiming, as it names itself in its presence"
           },
-          "harnesses": {
-            "description": "The harnesses in the runner image this claim will run in, as the host found them",
-            "items": {
-              "type": "array",
-              "items": {
-                "type": "hostHarnessRequestDto"
-              }
-            },
-            "type": "array"
+          "image": {
+            "type": "string",
+            "example": "ghcr.io/acme/api-runner:main",
+            "description": "The runner image this claim will run in, one the host reported serving; what it holds and whether it is the default come from that report"
           }
         },
         "required": [
-          "host"
+          "host",
+          "image"
         ]
       },
       "HostClaimResponseDto": {
@@ -15838,6 +16858,12 @@
             "type": "string",
             "example": "claude-code"
           },
+          "image": {
+            "type": "string",
+            "nullable": true,
+            "example": "ghcr.io/acme/api-runner@sha256:9b2f5c1e0d7a4b3c8e6f1a2d5c7b9e0f3a4d6c8b1e2f5a7c9d0b3e6f8a1c4d7e",
+            "description": "The image, by digest, its sandbox started from; null before it started or where a push pool provisioned it"
+          },
           "station": {
             "nullable": true,
             "description": "Where it ran, which the task may since have left",
@@ -15881,6 +16907,7 @@
           "startedAt",
           "updatedAt",
           "harness",
+          "image",
           "station",
           "review",
           "taskId",
@@ -16145,6 +17172,12 @@
             "type": "string",
             "example": "claude-code"
           },
+          "image": {
+            "type": "string",
+            "nullable": true,
+            "example": "ghcr.io/acme/api-runner@sha256:9b2f5c1e0d7a4b3c8e6f1a2d5c7b9e0f3a4d6c8b1e2f5a7c9d0b3e6f8a1c4d7e",
+            "description": "The image, by digest, its sandbox started from; null before it started or where a push pool provisioned it"
+          },
           "station": {
             "nullable": true,
             "description": "Where it ran, which the task may since have left",
@@ -16174,6 +17207,7 @@
           "startedAt",
           "updatedAt",
           "harness",
+          "image",
           "station",
           "review"
         ]
@@ -16800,7 +17834,7 @@
               "configure",
               "secrets"
             ],
-            "description": "What it may do: read reads; plan also checks expressions; configure also changes configuration as a workspace admin may, except secrets and runners; secrets, granted beside one of those, manages secrets; runners, granted the same way, manages runners, runner trusts and the workspace’s runners. Fixed for its life",
+            "description": "What it may do: read reads; plan also checks expressions; configure also changes configuration as a workspace admin may, except secrets, runners and token trusts; secrets, granted beside one of those, manages secrets; runners, granted the same way, manages runners, runner trusts and the workspace’s runners; trusts, granted the same way, manages workspace token trusts. Fixed for its life",
             "items": {
               "type": "string",
               "enum": [
@@ -16808,7 +17842,8 @@
                 "plan",
                 "configure",
                 "secrets",
-                "runners"
+                "runners",
+                "trusts"
               ]
             }
           },
@@ -16855,6 +17890,196 @@
         },
         "required": [
           "items"
+        ]
+      },
+      "WorkspaceTokenTrustResourceResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "0d6f3c1e-8a52-4f7b-9c1d-5e2a7b3f9c40",
+            "description": "Issued by Spotlight when the resource is created, and never changed"
+          },
+          "version": {
+            "type": "number",
+            "example": 3,
+            "description": "Rises with every change; the ETag carries it, and a write sends it back as If-Match"
+          },
+          "address": {
+            "type": "string",
+            "example": "core/linear",
+            "description": "Names the resource within its workspace; terraform import takes it"
+          },
+          "warnings": {
+            "description": "What would work better, though nothing stops it working; not settable",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldErrorResponseDto"
+            }
+          },
+          "workspaceId": {
+            "type": "string",
+            "example": "5b1e9d2c-7a43-4f8e-b6c0-3d9a8e1f2b57",
+            "description": "The workspace the tokens it mints act in"
+          },
+          "key": {
+            "type": "string",
+            "example": "github-main",
+            "description": "Names the trust within its workspace, and every token it mints; fixed for its life"
+          },
+          "issuer": {
+            "type": "string",
+            "example": "https://token.actions.githubusercontent.com",
+            "description": "The OIDC issuer whose signed tokens the trust accepts"
+          },
+          "audience": {
+            "type": "string",
+            "example": "spotlight",
+            "description": "The audience the workload must ask its issuer for"
+          },
+          "subject": {
+            "type": "string",
+            "example": "repo:acme/platform:ref:refs/heads/main",
+            "description": "The subject the workload’s token must carry; * stands for any run of characters"
+          },
+          "claims": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "repository": "acme/platform",
+              "ref": "refs/heads/main"
+            },
+            "description": "Further claims the workload’s token must carry, each matching its pattern the way subject does"
+          },
+          "scopes": {
+            "type": "array",
+            "example": [
+              "configure",
+              "secrets"
+            ],
+            "description": "The scopes every token it mints is given",
+            "items": {
+              "type": "string",
+              "enum": [
+                "read",
+                "plan",
+                "configure",
+                "secrets",
+                "runners",
+                "trusts"
+              ]
+            }
+          },
+          "lifetimeMinutes": {
+            "type": "integer",
+            "example": 15,
+            "minimum": 1,
+            "maximum": 60,
+            "description": "How many minutes a token it mints admits its bearer"
+          },
+          "definedBy": {
+            "type": "string",
+            "example": "kR3vUzPq9sY2mB8nT1wXcA",
+            "description": "The person who defined the trust, or who issued the token that did; the tokens it mints act on their behalf"
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "address",
+          "warnings",
+          "workspaceId",
+          "key",
+          "issuer",
+          "audience",
+          "subject",
+          "claims",
+          "scopes",
+          "lifetimeMinutes",
+          "definedBy"
+        ]
+      },
+      "WorkspaceTokenTrustResourceListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Every one there is, each as a read would answer it, in address order",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceTokenTrustResourceResponseDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "ExchangeWorkloadTokenRequestDto": {
+        "type": "object",
+        "properties": {
+          "trust": {
+            "type": "string",
+            "example": "0d6f3c1e-8a52-4f7b-9c1d-5e2a7b3f9c40",
+            "description": "The id of the workspace token trust to exchange through"
+          },
+          "token": {
+            "type": "string",
+            "example": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjEifQ.eyJzdWIiOiJyZXBvOmFjbWUvcGxhdGZvcm0ifQ.c2ln",
+            "description": "The OIDC token the CI platform issued the workload, for the trust’s audience"
+          }
+        },
+        "required": [
+          "trust",
+          "token"
+        ]
+      },
+      "MintedTokenResponseDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "example": "q3Vd0n8yXbT2c4kPzR7mW1sLhA9eJ5gUfN6oYiC0xEw",
+            "description": "The token to send as Authorization: Bearer until it expires; answered this once, and kept only as a hash"
+          },
+          "tokenId": {
+            "type": "string",
+            "example": "3f7a2c1d-9b84-4e6f-a05d-7c2e1b9f4a63"
+          },
+          "workspaceId": {
+            "type": "string",
+            "example": "5b1e9d2c-7a43-4f8e-b6c0-3d9a8e1f2b57"
+          },
+          "scopes": {
+            "type": "array",
+            "example": [
+              "plan"
+            ],
+            "items": {
+              "type": "string",
+              "enum": [
+                "read",
+                "plan",
+                "configure",
+                "secrets",
+                "runners",
+                "trusts"
+              ]
+            }
+          },
+          "expiresAt": {
+            "type": "string",
+            "example": "2026-09-25T10:15:00.000Z",
+            "description": "After this it admits nobody"
+          }
+        },
+        "required": [
+          "token",
+          "tokenId",
+          "workspaceId",
+          "scopes",
+          "expiresAt"
         ]
       },
       "CreateWorkspaceRequestDto": {
@@ -17040,12 +18265,18 @@
           "tokenId": {
             "type": "string",
             "nullable": true
+          },
+          "trustId": {
+            "type": "string",
+            "nullable": true,
+            "description": "For a token minted through a workspace token trust, that trust; the person is then whoever defined the trust"
           }
         },
         "required": [
           "kind",
           "userId",
-          "tokenId"
+          "tokenId",
+          "trustId"
         ]
       },
       "ConfigurationChangeResponseDto": {
@@ -17067,6 +18298,7 @@
               "integration",
               "secret",
               "workspace-token",
+              "workspace-token-trust",
               "runner-trust",
               "runner-pool",
               "workspace-runners"
@@ -17583,7 +18815,7 @@
           "release": {
             "type": "string",
             "example": "v1.4.0",
-            "description": "The spotlight-host release it runs"
+            "description": "The spotlight release it runs"
           },
           "executor": {
             "type": "string",
@@ -17605,12 +18837,12 @@
               "type": "string"
             }
           },
-          "harnesses": {
-            "description": "The harnesses its runner images hold, each with the models it discovered",
+          "images": {
+            "description": "The runner images it serves or refused, each with what it found inside",
             "items": {
               "type": "array",
               "items": {
-                "type": "registeredHarnessRequestDto"
+                "type": "hostImageRequestDto"
               }
             },
             "type": "array"
@@ -17659,6 +18891,70 @@
           "key"
         ]
       },
+      "HostHarnessResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "claude-code"
+          },
+          "version": {
+            "type": "string",
+            "nullable": true,
+            "example": "2.1.270"
+          }
+        },
+        "required": [
+          "id",
+          "version"
+        ]
+      },
+      "HostImageResponseDto": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "example": "ghcr.io/acme/api-runner:main"
+          },
+          "digest": {
+            "type": "string",
+            "nullable": true,
+            "example": "ghcr.io/acme/api-runner@sha256:9b2f5c1e0d7a4b3c8e6f1a2d5c7b9e0f3a4d6c8b1e2f5a7c9d0b3e6f8a1c4d7e",
+            "description": "The digest its sandboxes start from now"
+          },
+          "usual": {
+            "type": "boolean",
+            "example": true,
+            "description": "Runs every line that names no image"
+          },
+          "release": {
+            "type": "string",
+            "nullable": true,
+            "example": "20260925-01",
+            "description": "The release of the runner inside"
+          },
+          "harnesses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HostHarnessResponseDto"
+            }
+          },
+          "refused": {
+            "type": "string",
+            "nullable": true,
+            "example": null,
+            "description": "Why the host will not run it, when it will not"
+          }
+        },
+        "required": [
+          "image",
+          "digest",
+          "usual",
+          "release",
+          "harnesses",
+          "refused"
+        ]
+      },
       "HostResponseDto": {
         "type": "object",
         "properties": {
@@ -17676,7 +18972,7 @@
           "release": {
             "type": "string",
             "example": "v1.4.0",
-            "description": "The spotlight-host release"
+            "description": "The spotlight release"
           },
           "executor": {
             "type": "string",
@@ -17694,15 +18990,11 @@
               "type": "string"
             }
           },
-          "harnesses": {
-            "example": [
-              "claude-code",
-              "codex"
-            ],
-            "description": "The harnesses its runner images hold",
+          "images": {
+            "description": "The runner images it serves or refused, and what each holds",
             "type": "array",
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/HostImageResponseDto"
             }
           },
           "firstSeenAt": {
@@ -17727,7 +19019,7 @@
           "executor",
           "capacity",
           "running",
-          "harnesses",
+          "images",
           "firstSeenAt",
           "lastSeenAt",
           "answering"
@@ -17747,6 +19039,12 @@
             "type": "string",
             "nullable": true,
             "description": "The host whose sandbox it runs in; null where a push pool provisioned it"
+          },
+          "image": {
+            "type": "string",
+            "nullable": true,
+            "example": "ghcr.io/acme/api-runner:main",
+            "description": "The image its sandbox runs; null where a push pool provisioned it"
           },
           "harnesses": {
             "example": [
@@ -17771,6 +19069,7 @@
           "id",
           "through",
           "hostId",
+          "image",
           "harnesses",
           "startedAt",
           "lastSeenAt"
@@ -19145,7 +20444,8 @@
               "checkout-failed",
               "setup-failed",
               "no-room",
-              "out-of-time"
+              "out-of-time",
+              "no-image"
             ],
             "description": "Why the runner could not check the stack at all"
           },

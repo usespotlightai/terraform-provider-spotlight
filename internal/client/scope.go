@@ -1,8 +1,8 @@
 package client
 
 // Scope is what an API token is granted. Read, plan and configure are a
-// ladder, each allowing what the one before does; secrets and runners are
-// granted beside one of them.
+// ladder, each allowing what the one before does; secrets, runners and
+// trusts are granted beside one of them.
 type Scope string
 
 // The scopes a token may carry.
@@ -12,6 +12,7 @@ const (
 	ScopeConfigure Scope = "configure"
 	ScopeSecrets   Scope = "secrets"
 	ScopeRunners   Scope = "runners"
+	ScopeTrusts    Scope = "trusts"
 )
 
 // Permission is what a refused caller lacked, as a 403 problem names it.
@@ -24,6 +25,7 @@ const (
 	PermissionConfigure      Permission = "configure"
 	PermissionManageSecrets  Permission = "manage-secrets"
 	PermissionManageRunners  Permission = "manage-runners"
+	PermissionManageTrusts   Permission = "manage-token-trusts"
 	PermissionAdminister     Permission = "administer"
 	PermissionOpenWorkspaces Permission = "open-workspaces"
 )
@@ -34,6 +36,7 @@ var grantedBy = map[Permission]Scope{
 	PermissionConfigure:     ScopeConfigure,
 	PermissionManageSecrets: ScopeSecrets,
 	PermissionManageRunners: ScopeRunners,
+	PermissionManageTrusts:  ScopeTrusts,
 }
 
 // Scope answers the token scope that grants the permission, and false for
