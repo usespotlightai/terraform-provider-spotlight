@@ -7,6 +7,7 @@ name: Generated client
 # checks it out with.
 #   APP_REPO_APP_ID       that app's id
 #   APP_REPO_PRIVATE_KEY  its private key
+# Runs without them (Dependabot and fork pull requests) skip the check.
 
 on:
   push:
@@ -26,17 +27,26 @@ permissions:
 jobs:
   generate:
     runs-on: ubuntu-latest
+    env:
+      APP_ID: ${{ secrets.APP_REPO_APP_ID }}
+      PRIVATE_KEY: ${{ secrets.APP_REPO_PRIVATE_KEY }}
     steps:
+      - name: Skip without the control plane app
+        if: env.APP_ID == '' || env.PRIVATE_KEY == ''
+        run: echo "::notice::APP_REPO_APP_ID and APP_REPO_PRIVATE_KEY are not both set; the generated client check is skipped."
       - uses: actions/checkout@v7
+        if: env.APP_ID != '' && env.PRIVATE_KEY != ''
       - name: Generate a control plane repository token
         id: app-token
+        if: env.APP_ID != '' && env.PRIVATE_KEY != ''
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ secrets.APP_REPO_APP_ID }}
-          private-key: ${{ secrets.APP_REPO_PRIVATE_KEY }}
+          app-id: ${{ env.APP_ID }}
+          private-key: ${{ env.PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
           repositories: spotlight
       - uses: actions/checkout@v7
+        if: env.APP_ID != '' && env.PRIVATE_KEY != ''
         with:
           repository: usespotlightai/spotlight
           ref: ${{ inputs.ref || 'develop' }}
@@ -45,13 +55,17 @@ jobs:
           sparse-checkout: control-plane/openapi.json
           sparse-checkout-cone-mode: false
       - uses: actions/setup-go@v7
+        if: env.APP_ID != '' && env.PRIVATE_KEY != ''
         with:
           go-version-file: go.mod
       - name: Vendor openapi.json
+        if: env.APP_ID != '' && env.PRIVATE_KEY != ''
         run: make openapi SPOTLIGHT_REPO=spotlight
       - name: Regenerate the client
+        if: env.APP_ID != '' && env.PRIVATE_KEY != ''
         run: make client
       - name: The committed client matches the schema
+        if: env.APP_ID != '' && env.PRIVATE_KEY != ''
         run: |
           rm -rf spotlight
           git diff --exit-code -- api internal/client/apigen || {
