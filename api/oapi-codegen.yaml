@@ -53,6 +53,12 @@ output-options:
     - deleteRunnerTrust
     - importRunnerTrust
     - listRunnerTrusts
+    - createRunnerPool
+    - readRunnerPool
+    - updateRunnerPool
+    - deleteRunnerPool
+    - importRunnerPool
+    - listRunnerPools
     - createWorkspaceRunners
     - readWorkspaceRunners
     - updateWorkspaceRunners

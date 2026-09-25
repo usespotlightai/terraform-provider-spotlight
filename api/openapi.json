@@ -1495,6 +1495,123 @@
         ]
       }
     },
+    "/pools/harnesses": {
+      "get": {
+        "operationId": "poolHarnesses",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InstallableHarnessResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, rotated or unknown pool token"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "What a pool’s runner looks for, so its claim can say what it has",
+        "tags": [
+          "runners"
+        ]
+      }
+    },
+    "/pools/claim": {
+      "post": {
+        "description": "The pool token may only claim. A claim starts a one-run runner and answers its credential, which every later call carries; the pool token is never needed again for that work.",
+        "operationId": "claimPoolWork",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClaimPoolWorkRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PoolClaimResponseDto"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Nothing for this pool yet, or it is at maxRuns"
+          },
+          "401": {
+            "description": "Missing, rotated or unknown pool token"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Long-poll with the pool token for one run or check, swapped for a credential good for that work alone",
+        "tags": [
+          "runners"
+        ]
+      }
+    },
+    "/pools/{id}/queue": {
+      "get": {
+        "operationId": "poolQueue",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "3f7c2a9e-1b64-4d8f-a5e0-9c2b7d4e1f86",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PoolQueueResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, rotated or unknown pool token"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "How many runs wait for this pool, per label, for an autoscaler such as a KEDA ScaledJob",
+        "tags": [
+          "runners"
+        ]
+      }
+    },
     "/workspaces/{slug}/runner-activity": {
       "get": {
         "description": "A runner that holds no run is idle, and is not listed.",
@@ -8859,6 +8976,893 @@
         }
       }
     },
+    "/resources/workspaces/{workspaceId}/runner-pools": {
+      "post": {
+        "operationId": "createRunnerPool",
+        "parameters": [
+          {
+            "name": "Spotlight-Api-Version",
+            "in": "header",
+            "description": "The API version the client was written against; every response names the version it was answered in",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2026-09-23"
+              ],
+              "default": "2026-09-23"
+            }
+          },
+          {
+            "name": "Spotlight-Client",
+            "in": "header",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "terraform-provider/0.1.0"
+            }
+          },
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "5b1e9d2c-7a43-4f8e-b6c0-3d9a8e1f2b57",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 255
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "key"
+                ],
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "example": "ephemeral"
+                  },
+                  "labels": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "example": [
+                      "linux"
+                    ]
+                  },
+                  "maxRuns": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "nullable": true,
+                    "example": 8,
+                    "description": "The most runs the pool serves at once; left out, no limit"
+                  },
+                  "token": {
+                    "type": "string",
+                    "writeOnly": true,
+                    "minLength": 32,
+                    "maxLength": 255,
+                    "description": "Write-only, and only for a pool without provision: the token its runners claim with, kept only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Pool-Token"
+                  },
+                  "tokenVersion": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "nullable": true,
+                    "description": "Changed, with a new token, to rotate the pool token in place: the old token is refused at once, while runs already claimed keep their own one-run credentials"
+                  },
+                  "provision": {
+                    "type": "object",
+                    "nullable": true,
+                    "required": [
+                      "url"
+                    ],
+                    "description": "Makes the pool push: Spotlight calls url with each run it is to serve, and the pool has no token. Fixed for the pool’s life",
+                    "properties": {
+                      "url": {
+                        "type": "string",
+                        "example": "https://provision.example.com/runs"
+                      },
+                      "secret": {
+                        "type": "string",
+                        "writeOnly": true,
+                        "description": "Write-only: signs each call as Standard Webhooks sign, given as whsec_ and 24 to 64 base64 bytes. Required on create, and whenever secretVersion changes"
+                      },
+                      "secretVersion": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "nullable": true,
+                        "description": "Changed to rotate the secret"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The runner-pool, as a read would answer it\n\nThe runner pool, as a read would answer it",
+            "headers": {
+              "ETag": {
+                "description": "The version answered, to send back as If-Match",
+                "schema": {
+                  "type": "string",
+                  "example": "\"0\""
+                }
+              },
+              "Idempotent-Replayed": {
+                "description": "true when this answers an earlier attempt",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              },
+              "Spotlight-Pool-Token": {
+                "description": "The pool token Spotlight issued, when none was given; answered this once and never again, not even to a retry",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunnerPoolResourceResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed, or asking for an API version this server does not serve",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid credentials",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not allowed to do this to the runner-pool: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such runner-pool that you may see",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "There is already a runner-pool at that address",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "What is wrong, field by field; or the Idempotency-Key was used for a different request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Define a pool of one-run runners, pulled from with a token or pushed to through provision",
+        "tags": [
+          "runners"
+        ],
+        "x-spotlight-resource": {
+          "kind": "runner-pool",
+          "operation": "create"
+        }
+      },
+      "get": {
+        "operationId": "listRunnerPools",
+        "parameters": [
+          {
+            "name": "Spotlight-Api-Version",
+            "in": "header",
+            "description": "The API version the client was written against; every response names the version it was answered in",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2026-09-23"
+              ],
+              "default": "2026-09-23"
+            }
+          },
+          {
+            "name": "Spotlight-Client",
+            "in": "header",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "terraform-provider/0.1.0"
+            }
+          },
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "5b1e9d2c-7a43-4f8e-b6c0-3d9a8e1f2b57",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Every runner-pool there, each as a read would answer it, in address order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunnerPoolResourceListResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed, or asking for an API version this server does not serve",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid credentials",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workspace that you may see",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List every runner pool in a workspace",
+        "tags": [
+          "runners"
+        ],
+        "x-spotlight-resource": {
+          "kind": "runner-pool",
+          "operation": "list"
+        }
+      }
+    },
+    "/resources/runner-pools/{id}": {
+      "get": {
+        "operationId": "readRunnerPool",
+        "parameters": [
+          {
+            "name": "Spotlight-Api-Version",
+            "in": "header",
+            "description": "The API version the client was written against; every response names the version it was answered in",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2026-09-23"
+              ],
+              "default": "2026-09-23"
+            }
+          },
+          {
+            "name": "Spotlight-Client",
+            "in": "header",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "terraform-provider/0.1.0"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "3f7c2a9e-1b64-4d8f-a5e0-9c2b7d4e1f86",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The runner-pool, every field of it",
+            "headers": {
+              "ETag": {
+                "description": "The version answered, to send back as If-Match",
+                "schema": {
+                  "type": "string",
+                  "example": "\"3\""
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunnerPoolResourceResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed, or asking for an API version this server does not serve",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid credentials",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such runner-pool that you may see",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Read a runner pool",
+        "tags": [
+          "runners"
+        ],
+        "x-spotlight-resource": {
+          "kind": "runner-pool",
+          "operation": "read"
+        }
+      },
+      "put": {
+        "operationId": "updateRunnerPool",
+        "parameters": [
+          {
+            "name": "Spotlight-Api-Version",
+            "in": "header",
+            "description": "The API version the client was written against; every response names the version it was answered in",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2026-09-23"
+              ],
+              "default": "2026-09-23"
+            }
+          },
+          {
+            "name": "Spotlight-Client",
+            "in": "header",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "terraform-provider/0.1.0"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "3f7c2a9e-1b64-4d8f-a5e0-9c2b7d4e1f86",
+              "type": "string"
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "\"3\""
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "key"
+                ],
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "example": "ephemeral"
+                  },
+                  "labels": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "example": [
+                      "linux"
+                    ]
+                  },
+                  "maxRuns": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "nullable": true,
+                    "example": 8,
+                    "description": "The most runs the pool serves at once; left out, no limit"
+                  },
+                  "token": {
+                    "type": "string",
+                    "writeOnly": true,
+                    "minLength": 32,
+                    "maxLength": 255,
+                    "description": "Write-only, and only for a pool without provision: the token its runners claim with, kept only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Pool-Token"
+                  },
+                  "tokenVersion": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "nullable": true,
+                    "description": "Changed, with a new token, to rotate the pool token in place: the old token is refused at once, while runs already claimed keep their own one-run credentials"
+                  },
+                  "provision": {
+                    "type": "object",
+                    "nullable": true,
+                    "required": [
+                      "url"
+                    ],
+                    "description": "Makes the pool push: Spotlight calls url with each run it is to serve, and the pool has no token. Fixed for the pool’s life",
+                    "properties": {
+                      "url": {
+                        "type": "string",
+                        "example": "https://provision.example.com/runs"
+                      },
+                      "secret": {
+                        "type": "string",
+                        "writeOnly": true,
+                        "description": "Write-only: signs each call as Standard Webhooks sign, given as whsec_ and 24 to 64 base64 bytes. Required on create, and whenever secretVersion changes"
+                      },
+                      "secretVersion": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "nullable": true,
+                        "description": "Changed to rotate the secret"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The runner-pool, as a read would answer it",
+            "headers": {
+              "ETag": {
+                "description": "The version answered, to send back as If-Match",
+                "schema": {
+                  "type": "string",
+                  "example": "\"3\""
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunnerPoolResourceResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed, or asking for an API version this server does not serve",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid credentials",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not allowed to do this to the runner-pool: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such runner-pool that you may see",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "It changed since the version in If-Match, and currentVersion says where it is; or something else still uses what this would remove",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "What is wrong, field by field",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "If-Match is missing",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Relabel or resize a runner pool, move where it provisions, or rotate its token or secret",
+        "tags": [
+          "runners"
+        ],
+        "x-spotlight-resource": {
+          "kind": "runner-pool",
+          "operation": "update"
+        }
+      },
+      "delete": {
+        "operationId": "deleteRunnerPool",
+        "parameters": [
+          {
+            "name": "Spotlight-Api-Version",
+            "in": "header",
+            "description": "The API version the client was written against; every response names the version it was answered in",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2026-09-23"
+              ],
+              "default": "2026-09-23"
+            }
+          },
+          {
+            "name": "Spotlight-Client",
+            "in": "header",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "terraform-provider/0.1.0"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "3f7c2a9e-1b64-4d8f-a5e0-9c2b7d4e1f86",
+              "type": "string"
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "\"3\""
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          },
+          "400": {
+            "description": "Malformed, or asking for an API version this server does not serve",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid credentials",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not allowed to do this to the runner-pool: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such runner-pool that you may see",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "It changed since the version in If-Match, and currentVersion says where it is; or something else still uses what this would remove",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "If-Match is missing",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Retire a runner pool; runs its runners already hold carry on to their end",
+        "tags": [
+          "runners"
+        ],
+        "x-spotlight-resource": {
+          "kind": "runner-pool",
+          "operation": "delete"
+        }
+      }
+    },
+    "/resources/workspaces/{workspaceId}/runner-pools/import": {
+      "get": {
+        "operationId": "importRunnerPool",
+        "parameters": [
+          {
+            "name": "Spotlight-Api-Version",
+            "in": "header",
+            "description": "The API version the client was written against; every response names the version it was answered in",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2026-09-23"
+              ],
+              "default": "2026-09-23"
+            }
+          },
+          {
+            "name": "Spotlight-Client",
+            "in": "header",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "terraform-provider/0.1.0"
+            }
+          },
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "5b1e9d2c-7a43-4f8e-b6c0-3d9a8e1f2b57",
+              "type": "string"
+            }
+          },
+          {
+            "name": "address",
+            "required": true,
+            "in": "query",
+            "description": "The runner-pool's address within the workspace",
+            "schema": {
+              "example": "ephemeral"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The runner-pool, as a read would answer it",
+            "headers": {
+              "ETag": {
+                "description": "The version answered, to send back as If-Match",
+                "schema": {
+                  "type": "string",
+                  "example": "\"3\""
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunnerPoolResourceResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed, or asking for an API version this server does not serve",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid credentials",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such runner-pool that you may see",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Find the runner pool with a key in a workspace, to import it",
+        "tags": [
+          "runners"
+        ],
+        "x-spotlight-resource": {
+          "kind": "runner-pool",
+          "operation": "import"
+        }
+      }
+    },
     "/resources/workspaces/{workspaceId}/workspace-runners": {
       "post": {
         "operationId": "createWorkspaceRunners",
@@ -8929,6 +9933,15 @@
                     },
                     "example": [
                       "production-cluster"
+                    ]
+                  },
+                  "pools": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "example": [
+                      "ephemeral"
                     ]
                   }
                 }
@@ -9304,6 +10317,15 @@
                     },
                     "example": [
                       "production-cluster"
+                    ]
+                  },
+                  "pools": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "example": [
+                      "ephemeral"
                     ]
                   }
                 }
@@ -11588,6 +12610,7 @@
                 "secrets",
                 "runners",
                 "runner-trusts",
+                "runner-pools",
                 "workspace-runners"
               ],
               "type": "string"
@@ -14501,6 +15524,81 @@
           "failed"
         ]
       },
+      "ClaimPoolWorkRequestDto": {
+        "type": "object",
+        "properties": {
+          "harnesses": {
+            "description": "The harnesses installed where the runner runs, as registering reports them",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "poolHarnessRequestDto"
+              }
+            },
+            "type": "array"
+          }
+        }
+      },
+      "PoolClaimResponseDto": {
+        "type": "object",
+        "properties": {
+          "runnerId": {
+            "type": "string",
+            "example": "9c4e1a7b-2d58-4f36-8b0e-6a1f3c9d7e24",
+            "description": "The one-run runner Spotlight started for this work"
+          },
+          "token": {
+            "type": "string",
+            "description": "The one-run credential, good only for this work and only until it ends; every later call carries it instead of the pool token"
+          },
+          "work": {
+            "$ref": "#/components/schemas/ClaimedWorkResponseDto"
+          }
+        },
+        "required": [
+          "runnerId",
+          "token",
+          "work"
+        ]
+      },
+      "PoolQueueResponseDto": {
+        "type": "object",
+        "properties": {
+          "pending": {
+            "type": "integer",
+            "example": 3,
+            "description": "Runs and checks waiting that this pool could take, for an autoscaler to start runners for"
+          },
+          "running": {
+            "type": "integer",
+            "example": 1,
+            "description": "The pool’s runners standing now: holding a run or check, or started and yet to claim"
+          },
+          "capacity": {
+            "type": "integer",
+            "nullable": true,
+            "example": 7,
+            "description": "How many more runs the pool may take at once under maxRuns, or null for no limit"
+          },
+          "labels": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "example": {
+              "linux": 3,
+              "gpu": 1
+            },
+            "description": "Of what is pending, how many name each of the pool’s labels in their placement"
+          }
+        },
+        "required": [
+          "pending",
+          "running",
+          "capacity",
+          "labels"
+        ]
+      },
       "HeldRunResponseDto": {
         "type": "object",
         "properties": {
@@ -16638,6 +17736,7 @@
               "workspace-token",
               "runner",
               "runner-trust",
+              "runner-pool",
               "workspace-runners"
             ]
           },
@@ -17463,6 +18562,132 @@
           "items"
         ]
       },
+      "PoolProvisionResponseDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "example": "https://provision.example.com/runs",
+            "description": "Called with every run the pool is to serve, signed as Standard Webhooks sign"
+          },
+          "secretVersion": {
+            "type": "integer",
+            "nullable": true,
+            "example": 1,
+            "description": "Changed to rotate provision.secret, which is write-only and never answered"
+          }
+        },
+        "required": [
+          "url",
+          "secretVersion"
+        ]
+      },
+      "RunnerPoolResourceResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "0d6f3c1e-8a52-4f7b-9c1d-5e2a7b3f9c40",
+            "description": "Issued by Spotlight when the resource is created, and never changed"
+          },
+          "version": {
+            "type": "number",
+            "example": 3,
+            "description": "Rises with every change; the ETag carries it, and a write sends it back as If-Match"
+          },
+          "address": {
+            "type": "string",
+            "example": "core/linear",
+            "description": "Names the resource within its workspace; terraform import takes it"
+          },
+          "warnings": {
+            "description": "What would work better, though nothing stops it working; not settable",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldErrorResponseDto"
+            }
+          },
+          "workspaceId": {
+            "type": "string",
+            "example": "5b1e9d2c-7a43-4f8e-b6c0-3d9a8e1f2b57",
+            "description": "The workspace it belongs to"
+          },
+          "key": {
+            "type": "string",
+            "example": "ephemeral",
+            "description": "Names the pool, and is its address; fixed for its life"
+          },
+          "labels": {
+            "example": [
+              "vpc-internal"
+            ],
+            "description": "What a line or station may name in runners to place its work here, beside the runner name",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "maxRuns": {
+            "type": "integer",
+            "nullable": true,
+            "example": 8,
+            "description": "The most runs the pool serves at once, or null for no limit"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "pull",
+              "push"
+            ],
+            "example": "pull",
+            "description": "pull when runners claim with the pool token, push when Spotlight calls provision; fixed for its life, and not settable"
+          },
+          "tokenVersion": {
+            "type": "integer",
+            "nullable": true,
+            "example": 1,
+            "description": "Changed, with a new token, to rotate the pool token of a pull pool, which is write-only and never answered"
+          },
+          "provision": {
+            "nullable": true,
+            "description": "How Spotlight starts a runner for each run, for a push pool",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PoolProvisionResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "address",
+          "warnings",
+          "workspaceId",
+          "key",
+          "labels",
+          "maxRuns",
+          "mode",
+          "tokenVersion",
+          "provision"
+        ]
+      },
+      "RunnerPoolResourceListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Every one there is, each as a read would answer it, in address order",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RunnerPoolResourceResponseDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
       "WorkspaceRunnersResourceResponseDto": {
         "type": "object",
         "properties": {
@@ -17513,6 +18738,16 @@
               "type": "string"
             }
           },
+          "pools": {
+            "example": [
+              "ephemeral"
+            ],
+            "description": "The runner pools, by key, whose runners it means to have",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "drift": {
             "example": [],
             "description": "Runners enrolled all the same, outside what is declared; not settable",
@@ -17530,6 +18765,7 @@
           "workspaceId",
           "runners",
           "trusts",
+          "pools",
           "drift"
         ]
       },
