@@ -49,7 +49,7 @@ resource "spotlight_workspace" "acme" {
 
 - **Workspaces:** a workspace is created by signing up in the web app, then adopted with an `import` block. A token cannot create one.
 - **Scopes:** one token with `configure`, `secrets` and `runners` manages everything.
-- **Adopting an existing workspace:** `spotlight export`, or `terraform query -generate-config-out=…`, writes the configuration and import blocks for you.
+- **Adopting an existing workspace:** **Download as Terraform** in the web app's workspace menu, or `terraform query -generate-config-out=…`, writes the configuration and import blocks for you.
 - **Terraform versions:** Terraform 1.11+ is needed for the write-only `value_wo` (secrets), `token` (runners and runner pools) and `provision.secret` (runner pools).
 
 ## Behaviour
