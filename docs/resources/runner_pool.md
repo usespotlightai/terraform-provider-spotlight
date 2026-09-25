@@ -13,18 +13,27 @@ A pool of one-run runners: each run the pool serves gets a fresh runner of its o
 ## Example Usage
 
 ```terraform
+locals {
+  ephemeral = {
+    key           = "ephemeral"
+    token_version = 1
+  }
+}
+
 resource "random_password" "ephemeral" {
   length  = 48
   special = false
+
+  keepers = local.ephemeral
 }
 
 resource "spotlight_runner_pool" "ephemeral" {
   workspace_id  = spotlight_workspace.acme.id
-  key           = "ephemeral"
+  key           = local.ephemeral.key
   labels        = ["linux"]
   max_runs      = 8
   token         = random_password.ephemeral.result
-  token_version = 1
+  token_version = local.ephemeral.token_version
 }
 
 resource "random_password" "provision" {
@@ -60,7 +69,7 @@ resource "spotlight_runner_pool" "k8s_jobs" {
 - `labels` (Set of String) What a line or station may name in `runners` to place its work on the pool's runners, beside its key, as in `linux`.
 - `max_runs` (Number) The most runs the pool serves at once, from 1 to 10000. Left out, there is no limit.
 - `provision` (Attributes) Makes the pool one Spotlight pushes to: it calls `url` to start a runner for each run, and the pool has no token. Left out, a `spotlight-host` pulls work from the pool with its token. Which of the two a pool does is fixed for its life, so adding or removing `provision` replaces the pool. (see [below for nested schema](#nestedatt--provision))
-- `token` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The token a `spotlight-host` serving the pool claims work with: 32 to 255 URL-safe characters, as a generated password would be. Only for a pool without `provision`. Spotlight keeps only its hash. Left out, Spotlight issues one when it creates the pool, which Terraform does not keep; a change to `token_version` must come with a token. It is sent to Spotlight and never stored in the plan or the state, so it needs Terraform 1.11 or later; change `token_version` to send it again.
+- `token` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The token a `spotlight-host` serving the pool claims work with: 32 to 255 URL-safe characters, as a generated password would be. Only for a pool without `provision`. Spotlight keeps only its hash. Left out, Spotlight issues one when it creates the pool, which Terraform does not keep; a change to `token_version` must come with a token. A token is given once, ever: another pool's token is refused, and one rotated away, or held by a pool since deleted or replaced, is spent and refused to every pool, the same one included, so rotating or replacing a pool always needs a new token. It is sent to Spotlight and never stored in the plan or the state, so it needs Terraform 1.11 or later; change `token_version` to send it again.
 - `token_version` (Number) Any number; change it whenever `token` changes, so Terraform sends the new value.
 
 ### Read-Only

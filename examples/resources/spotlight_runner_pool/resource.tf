@@ -1,15 +1,24 @@
+locals {
+  ephemeral = {
+    key           = "ephemeral"
+    token_version = 1
+  }
+}
+
 resource "random_password" "ephemeral" {
   length  = 48
   special = false
+
+  keepers = local.ephemeral
 }
 
 resource "spotlight_runner_pool" "ephemeral" {
   workspace_id  = spotlight_workspace.acme.id
-  key           = "ephemeral"
+  key           = local.ephemeral.key
   labels        = ["linux"]
   max_runs      = 8
   token         = random_password.ephemeral.result
-  token_version = 1
+  token_version = local.ephemeral.token_version
 }
 
 resource "random_password" "provision" {

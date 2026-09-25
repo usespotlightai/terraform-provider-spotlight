@@ -71,7 +71,7 @@ Integrations hold CEL expressions, written {{ "`$${{ ... }}`" }} in HCL so Terra
 
 ## Values Terraform never keeps
 
-A secret's value (`value_wo`), a pull pool's token (`token`) and a push pool's signing secret (`provision.secret`) are write-only attributes: they are sent to Spotlight and never stored in the plan or the state, so they need Terraform 1.11 or later. Terraform cannot see a change to a value it never keeps, so each has a version beside it (`value_wo_version`, `token_version`, `provision.secret_version`): change it to send the value again. A pull pool created without a token is issued one by Spotlight, answered only once; the provider does not keep it, and warns that no host can claim with it until it is given a token you hold.
+A secret's value (`value_wo`), a pull pool's token (`token`) and a push pool's signing secret (`provision.secret`) are write-only attributes: they are sent to Spotlight and never stored in the plan or the state, so they need Terraform 1.11 or later. Terraform cannot see a change to a value it never keeps, so each has a version beside it (`value_wo_version`, `token_version`, `provision.secret_version`): change it to send the value again. A pull pool created without a token is issued one by Spotlight, answered only once; the provider does not keep it, and warns that no host can claim with it until it is given a token you hold. A pool token is given once, ever: rotating it, or deleting or replacing its pool, spends it for good, so a new `token_version` or a replaced pool needs a fresh value, such as a new `random_password`.
 
 ## Example Usage
 

@@ -189,6 +189,11 @@ func rotatedAt(held *resource) any {
 	return held.fields["rotatedAt"]
 }
 
+const (
+	poolTokenTaken = "is already another pool’s token; give each pool its own"
+	poolTokenSpent = "was given to a pool before, and a pool token is given once, ever: one rotated away, or held by a pool since deleted or replaced, never works again; give a new one"
+)
+
 const pullOnly = "is only for a pool that is pulled from; a pool that provisions is called instead, and has no token"
 
 func runnerPool(body map[string]any) (map[string]any, []fieldError) {

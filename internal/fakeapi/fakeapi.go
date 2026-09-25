@@ -47,6 +47,7 @@ type Server struct {
 	failNext   []int
 	scopes     map[string]bool
 	kept       map[string]string
+	given      map[string]struct{}
 }
 
 type resource struct {
@@ -64,6 +65,7 @@ func New(t interface{ Cleanup(func()) }) *Server {
 		held:       map[string]*resource{},
 		idempotent: map[string]string{},
 		kept:       map[string]string{},
+		given:      map[string]struct{}{},
 	}
 	s.Grant("configure", "secrets", "runners")
 
@@ -341,8 +343,12 @@ func (s *Server) create(kind string) http.HandlerFunc {
 
 		fields, errs := normalized(kind, body)
 		value, more := written(kind, nil, fields, body)
-		if len(append(errs, more...)) > 0 {
-			invalid(w, kind, append(errs, more...))
+		errs = append(errs, more...)
+		if len(errs) == 0 {
+			errs = s.refusedPoolToken(kind, "", value)
+		}
+		if len(errs) > 0 {
+			invalid(w, kind, errs)
 			return
 		}
 
@@ -356,14 +362,11 @@ func (s *Server) create(kind string) http.HandlerFunc {
 			}
 		}
 
-		if value == "" && mints(kind, fields) {
+		if value == "" && givesPoolToken(kind, fields) {
 			value = issue(w, held)
 		}
 
-		if value != "" {
-			s.kept[held.id] = value
-		}
-
+		s.keep(held, value)
 		s.held[held.id] = held
 		s.idempotent[key] = held.id
 		s.answer(w, http.StatusCreated, held)
@@ -407,15 +410,16 @@ func (s *Server) update(kind string) http.HandlerFunc {
 
 		value, more := written(kind, held, fields, body)
 		errs = append(errs, more...)
+		if len(errs) == 0 {
+			errs = s.refusedPoolToken(kind, held.id, value)
+		}
 
 		if len(errs) > 0 {
 			invalid(w, kind, errs)
 			return
 		}
 
-		if value != "" {
-			s.kept[held.id] = value
-		}
+		s.keep(held, value)
 
 		if kind == "secret" && objectOf(fields["source"])["kind"] != "built-in" {
 			delete(s.kept, held.id)
@@ -448,6 +452,39 @@ func (s *Server) remove(kind string) http.HandlerFunc {
 		delete(s.kept, held.id)
 		w.WriteHeader(http.StatusNoContent)
 	}
+}
+
+func (s *Server) keep(held *resource, value string) {
+	if value == "" {
+		return
+	}
+
+	s.kept[held.id] = value
+	if givesPoolToken(held.kind, held.fields) {
+		s.given[value] = struct{}{}
+	}
+}
+
+func (s *Server) refusedPoolToken(kind, claimant, value string) []fieldError {
+	if kind != "runner-pool" || value == "" {
+		return nil
+	}
+
+	if _, ever := s.given[value]; !ever {
+		return nil
+	}
+
+	for id, kept := range s.kept {
+		if held := s.held[id]; kept == value && held != nil && givesPoolToken(held.kind, held.fields) {
+			if id == claimant {
+				return nil
+			}
+
+			return []fieldError{{"token", poolTokenTaken}}
+		}
+	}
+
+	return []fieldError{{"token", poolTokenSpent}}
 }
 
 func (s *Server) importWorkspace(w http.ResponseWriter, r *http.Request) {
@@ -586,7 +623,7 @@ var fixedFields = map[string][]string{
 	"runner-pool":     {"key"},
 }
 
-func mints(kind string, fields map[string]any) bool {
+func givesPoolToken(kind string, fields map[string]any) bool {
 	return kind == "runner-pool" && fields["mode"] == "pull"
 }
 
