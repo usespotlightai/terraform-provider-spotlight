@@ -362,52 +362,6 @@ func TestARefusalSaysWhatPermissionTheCallerLacked(t *testing.T) {
 	}
 }
 
-var runner = map[string]any{
-	"id": "runner-1", "version": 1, "address": "build-1", "warnings": []any{}, "workspaceId": "ws-1",
-	"name": "build-1", "labels": []any{}, "trust": nil,
-}
-
-func TestATokenSpotlightIssuesIsDroppedUnread(t *testing.T) {
-	const issued = "issued-token-that-must-never-be-kept-anywhere"
-
-	api, _ := serve(t, func(w http.ResponseWriter, _ *http.Request, _ int) {
-		w.Header().Set(client.RunnerTokenHeader, issued)
-		reply(w, http.StatusCreated, "application/json", runner)
-	})
-
-	created, err := api.CreateRunner(context.Background(), "ws-1", client.RunnerInput{Name: "build-1", Labels: []string{}})
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if !created.IssuedToken || strings.Contains(fmt.Sprintf("%#v", created), issued) {
-		t.Errorf("runner %#v", created)
-	}
-}
-
-func TestWriteOnlyValuesAreSentOnlyWhenGiven(t *testing.T) {
-	api, recorded := serve(t, func(w http.ResponseWriter, _ *http.Request, _ int) {
-		reply(w, http.StatusCreated, "application/json", runner)
-	})
-
-	token := strings.Repeat("t", 40)
-	for _, in := range []client.RunnerInput{{Name: "build-1"}, {Name: "build-1", Token: token}} {
-		created, err := api.CreateRunner(context.Background(), "ws-1", in)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if created.IssuedToken != (in.Token == "") {
-			t.Errorf("issued %v for %+v", created.IssuedToken, in.Token != "")
-		}
-	}
-
-	seen := recorded.all()
-	if strings.Contains(seen[0].Body, `"token"`) || !strings.Contains(seen[1].Body, `"token":"`+token+`"`) {
-		t.Errorf("bodies %q and %q", seen[0].Body, seen[1].Body)
-	}
-}
-
 var pool = map[string]any{
 	"id": "pool-1", "version": 1, "address": "ephemeral", "warnings": []any{}, "workspaceId": "ws-1",
 	"key": "ephemeral", "labels": []any{}, "maxRuns": 4, "mode": "pull", "tokenVersion": 2, "provision": nil,
@@ -428,6 +382,24 @@ func TestAPoolTokenSpotlightIssuesIsDroppedUnread(t *testing.T) {
 
 	if strings.Contains(fmt.Sprintf("%#v", created), issued) || *created.MaxRuns != 4 || *created.TokenVersion != 2 || created.Mode != "pull" {
 		t.Errorf("pool %#v", created)
+	}
+}
+
+func TestWriteOnlyValuesAreSentOnlyWhenGiven(t *testing.T) {
+	api, recorded := serve(t, func(w http.ResponseWriter, _ *http.Request, _ int) {
+		reply(w, http.StatusCreated, "application/json", pool)
+	})
+
+	token := strings.Repeat("t", 40)
+	for _, in := range []client.RunnerPoolInput{{Key: "ephemeral"}, {Key: "ephemeral", Token: token}} {
+		if _, err := api.CreateRunnerPool(context.Background(), "ws-1", in); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	seen := recorded.all()
+	if strings.Contains(seen[0].Body, `"token"`) || !strings.Contains(seen[1].Body, `"token":"`+token+`"`) {
+		t.Errorf("bodies %q and %q", seen[0].Body, seen[1].Body)
 	}
 }
 

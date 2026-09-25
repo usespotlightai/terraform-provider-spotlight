@@ -90,7 +90,7 @@ func TestAnExportAppliesFromScratchAndAdoptsWithNoDiff(t *testing.T) {
 					holdsOneOfEach(fake),
 					acctest.NothingHolds(acctest.Value(exportedSecretValue), acctest.Value(provisionFirst)),
 					resource.TestCheckResourceAttr("spotlight_line.core_delivery", "station.1.profile", "careful"),
-					resource.TestCheckResourceAttr("spotlight_workspace_runners.acme", "runners.0", "build-1"),
+					resource.TestCheckResourceAttr("spotlight_workspace_runners.acme", "trusts.0", "production-cluster"),
 					resource.TestCheckResourceAttr("spotlight_workspace_runners.acme", "pools.#", "2"),
 					resource.TestCheckResourceAttr("spotlight_runner_pool.burst", "token_version", "2"),
 				),
@@ -123,7 +123,7 @@ func TestAnExportAppliesFromScratchAndAdoptsWithNoDiff(t *testing.T) {
 func holdsOneOfEach(fake *fakeapi.Server) resource.TestCheckFunc {
 	return func(*terraform.State) error {
 		for kind, want := range map[string]int{
-			"workspace": 1, "secret": 2, "runner": 1, "runner-trust": 1, "runner-pool": 2, "workspace-runners": 1,
+			"workspace": 1, "secret": 2, "runner-trust": 1, "runner-pool": 2, "workspace-runners": 1,
 			"team": 1, "line": 1, "skill": 1, "integration": 1, "harness-profile": 1,
 		} {
 			if got := fake.Count(kind); got != want {
@@ -212,9 +212,6 @@ func seedExported(t *testing.T, cp acctest.ControlPlane, k acctest.Keys) (declar
 	})
 	must(err)
 
-	_, err = cp.Client.CreateRunner(ctx, cp.Workspace.ID, client.RunnerInput{Name: k.Runner, Labels: []string{"tf-acc-vpc"}, Token: acctest.RandomToken()})
-	must(err)
-
 	_, err = cp.Client.CreateRunnerTrust(ctx, cp.Workspace.ID, client.RunnerTrustInput{
 		Key: k.Trust, Issuer: "https://oidc.eks.eu-west-1.amazonaws.com/id/TFACC", Subject: "system:serviceaccount:tf-acc:runner", Audience: "spotlight", Labels: []string{"tf-acc-gpu"},
 	})
@@ -265,7 +262,7 @@ func seedExported(t *testing.T, cp acctest.ControlPlane, k acctest.Keys) (declar
 	must(err)
 
 	_, err = cp.Client.CreateLine(ctx, team.ID, client.Definition{
-		"key": k.Line, "name": "Review", "role": "review", "runners": []any{k.Runner, "tf-acc-vpc"},
+		"key": k.Line, "name": "Review", "role": "review", "runners": []any{"tf-acc-linux"},
 		"stations": []any{
 			map[string]any{"key": "backlog", "name": "Backlog", "kind": "backlog", "passesTo": []any{"implementation"}},
 			map[string]any{
@@ -284,7 +281,7 @@ func seedExported(t *testing.T, cp acctest.ControlPlane, k acctest.Keys) (declar
 		return false
 	}
 
-	_, err = cp.Client.CreateWorkspaceRunners(ctx, cp.Workspace.ID, client.WorkspaceRunnersInput{Runners: []string{k.Runner}, Trusts: []string{k.Trust}, Pools: []string{k.Pool, k.PushPool}})
+	_, err = cp.Client.CreateWorkspaceRunners(ctx, cp.Workspace.ID, client.WorkspaceRunnersInput{Trusts: []string{k.Trust}, Pools: []string{k.Pool, k.PushPool}})
 	must(err)
 
 	return true
@@ -305,7 +302,7 @@ func forgetSeeded(t *testing.T, cp acctest.ControlPlane, k acctest.Keys, declare
 }
 
 func createdFromScratch(imports map[string]string, workspace client.Workspace, k acctest.Keys, declares bool) []string {
-	names := []string{k.Secret, k.AWSSecret, k.Runner, k.Trust, k.Pool, k.PushPool, k.Team}
+	names := []string{k.Secret, k.AWSSecret, k.Trust, k.Pool, k.PushPool, k.Team}
 	if declares {
 		names = append(names, workspace.Slug)
 	}

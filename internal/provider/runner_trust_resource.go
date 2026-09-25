@@ -55,7 +55,8 @@ func (r *RunnerTrustResource) Schema(_ context.Context, _ resource.SchemaRequest
 
 func runnerTrustSchema() schema.Schema {
 	return schema.Schema{
-		MarkdownDescription: "A workload whose platform-issued tokens enrol runners, as a Kubernetes service account's do: a runner there enrols without holding a Spotlight token. " +
+		MarkdownDescription: "A workload whose platform-issued tokens let a `spotlight-host` claim work, as a Kubernetes service account's do: a host there holds no Spotlight token " +
+			"and claims through the trust with its workload token, given `SPOTLIGHT_TRUST=<trust id>` and `SPOTLIGHT_OIDC_TOKEN_FILE=<projected token path>`. " +
 			"Writing runner trusts needs a token granted the `runners` scope. Import it as `<workspace id>/<key>`.",
 		Attributes: map[string]schema.Attribute{
 			"id":           idAttribute("runner trust"),
@@ -77,7 +78,7 @@ func runnerTrustSchema() schema.Schema {
 				Default:             stringdefault.StaticString("spotlight"),
 				MarkdownDescription: "The audience a token must be issued for.",
 			},
-			"labels": stringSetAttribute("What a line or station may name in `runners` to place its work on the runners that enrol here, as in `gpu`."),
+			"labels": stringSetAttribute("What a line or station may name in `runners` to place its work on the runners claimed through here, as in `gpu`."),
 		},
 	}
 }

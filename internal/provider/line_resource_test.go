@@ -24,7 +24,7 @@ resource "spotlight_line" "core_delivery" {
   name         = "Delivery"
   role         = "review"
   repositories = ["acme/api"]
-  runners      = ["build-1", "vpc-internal"]
+  runners      = ["vpc-internal", "claude-code@2.1.270"]
 
   station {
     key       = "backlog"

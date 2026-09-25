@@ -4,13 +4,6 @@ variable "secret_linear_api_key" {
   sensitive   = true
 }
 
-variable "runner_build-1_token" {
-  description = "The token the runner build-1 calls with; left null, Spotlight issues one when it creates the runner"
-  type        = string
-  sensitive   = true
-  default     = null
-}
-
 variable "runner_pool_burst_token" {
   description = "The token the runner pool burst claims with; left null, Spotlight issues one when it creates the pool"
   type        = string

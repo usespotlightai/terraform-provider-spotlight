@@ -120,3 +120,64 @@ func TestRunnerTrustImportsByIdentity(t *testing.T) {
 		},
 	})
 }
+
+func runnerTrustAccConfig(k acctest.Keys, labels string) string {
+	return fmt.Sprintf(`
+resource "spotlight_runner_trust" "cluster" {
+  workspace_id = local.workspace_id
+  key          = %[1]q
+  issuer       = "https://oidc.eks.eu-west-1.amazonaws.com/id/TFACC"
+  subject      = "system:serviceaccount:tf-acc:%[1]s"
+  labels       = [%[2]s]
+}
+`, k.Trust, labels)
+}
+
+func TestAccRunnerTrust(t *testing.T) {
+	cp := acctest.PreCheck(t)
+	k := acctest.RandomKeys()
+	cp.Sweep(t, k)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories(),
+		CheckDestroy:             cp.NothingLeftButTheWorkspace(k),
+		Steps: []resource.TestStep{
+			{
+				Config: acctest.AdoptedWorkspace(cp.Workspace) + runnerTrustAccConfig(k, `"tf-acc-gpu"`),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(runnerTrustAddress, "address", k.Trust),
+					resource.TestCheckResourceAttr(runnerTrustAddress, "audience", "spotlight"),
+					resource.TestCheckResourceAttr(runnerTrustAddress, "labels.#", "1"),
+				),
+			},
+			{
+				Config:           acctest.AdoptedWorkspace(cp.Workspace) + runnerTrustAccConfig(k, `"tf-acc-gpu"`),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}},
+			},
+			{
+				Config: acctest.AdoptedWorkspace(cp.Workspace) + runnerTrustAccConfig(k, `"tf-acc-gpu", "tf-acc-vpc"`),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction(runnerTrustAddress, plancheck.ResourceActionUpdate),
+				}},
+				Check: resource.TestCheckResourceAttr(runnerTrustAddress, "labels.#", "2"),
+			},
+			{
+				Config:           acctest.AdoptedWorkspace(cp.Workspace) + runnerTrustAccConfig(k, `"tf-acc-vpc", "tf-acc-gpu"`),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}},
+			},
+			{
+				ResourceName:      runnerTrustAddress,
+				ImportState:       true,
+				ImportStateId:     acctest.ImportID(cp.Workspace.ID, k.Trust),
+				ImportStateVerify: true,
+			},
+			{
+				Config: acctest.ReleasedWorkspace(cp.Workspace) + runnerTrustAccConfig(k, `"tf-acc-vpc", "tf-acc-gpu"`),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					acctest.ExpectForgotten("spotlight_workspace.acc"),
+					plancheck.ExpectResourceAction(runnerTrustAddress, plancheck.ResourceActionNoop),
+				}},
+			},
+		},
+	})
+}

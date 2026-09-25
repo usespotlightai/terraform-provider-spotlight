@@ -60,7 +60,7 @@ func (p *SpotlightProvider) Metadata(_ context.Context, _ provider.MetadataReque
 // Schema answers the provider block's schema.
 func (p *SpotlightProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Configure a Spotlight workspace as code: its teams, lines, skills, integrations and harness profiles, its secrets, and its runners. " +
+		MarkdownDescription: "Configure a Spotlight workspace as code: its teams, lines, skills, integrations and harness profiles, its secrets, and its runner pools and trusts. " +
 			"One API token granted the `configure`, `secrets` and `runners` scopes manages all of it.",
 		Attributes: map[string]schema.Attribute{
 			"url": schema.StringAttribute{
@@ -137,7 +137,6 @@ func (p *SpotlightProvider) Resources(_ context.Context) []func() resource.Resou
 		NewIntegrationResource,
 		NewHarnessProfileResource,
 		NewSecretResource,
-		NewRunnerResource,
 		NewRunnerTrustResource,
 		NewRunnerPoolResource,
 		NewWorkspaceRunnersResource,
@@ -163,7 +162,6 @@ func (p *SpotlightProvider) ListResources(_ context.Context) []func() list.ListR
 		NewIntegrationListResource,
 		NewHarnessProfileListResource,
 		NewSecretListResource,
-		NewRunnerListResource,
 		NewRunnerTrustListResource,
 		NewRunnerPoolListResource,
 		NewWorkspaceRunnersListResource,
