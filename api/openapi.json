@@ -84,7 +84,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -277,7 +277,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -378,7 +378,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -570,7 +570,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -697,7 +697,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -809,7 +809,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -3048,7 +3048,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -3151,7 +3151,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -3224,7 +3224,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -3391,7 +3391,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -3492,7 +3492,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -3667,7 +3667,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -3794,7 +3794,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -3968,7 +3968,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -4062,7 +4062,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -4163,7 +4163,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -4338,7 +4338,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -4465,7 +4465,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -4577,7 +4577,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -4784,7 +4784,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -4878,7 +4878,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -4979,7 +4979,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -5180,7 +5180,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -5307,7 +5307,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -5888,7 +5888,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -6114,7 +6114,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -6208,7 +6208,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -6309,7 +6309,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -6536,7 +6536,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -6663,7 +6663,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -6775,7 +6775,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -6906,7 +6906,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -7366,7 +7366,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -7557,7 +7557,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -7651,7 +7651,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -7752,7 +7752,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -7938,7 +7938,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -8065,7 +8065,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -8177,7 +8177,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -8369,7 +8369,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -8463,7 +8463,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -8564,7 +8564,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -8757,7 +8757,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -8884,7 +8884,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -8996,7 +8996,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -9225,7 +9225,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -9319,7 +9319,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -9420,7 +9420,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -9644,7 +9644,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -9771,7 +9771,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -9883,7 +9883,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -10072,7 +10072,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -10166,7 +10166,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -10267,7 +10267,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -10457,7 +10457,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -10584,7 +10584,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -10772,7 +10772,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -10953,7 +10953,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -11054,7 +11054,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -11234,7 +11234,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -11361,7 +11361,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -11473,7 +11473,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -11567,7 +11567,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -11816,7 +11816,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -11917,7 +11917,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -12165,7 +12165,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -12292,7 +12292,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -12404,7 +12404,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -12498,7 +12498,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -12588,7 +12588,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -13356,7 +13356,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -13530,7 +13530,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -13631,7 +13631,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -13804,7 +13804,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -13931,7 +13931,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -14043,7 +14043,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -14137,7 +14137,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -14238,7 +14238,7 @@
           {
             "name": "Spotlight-Client",
             "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown",
             "required": false,
             "schema": {
               "type": "string",
@@ -14336,7 +14336,7 @@
   },
   "info": {
     "title": "Spotlight Control Plane",
-    "description": "HTTP API for the Spotlight Control Plane.\n\n## Resource conventions\n\nOperations marked `x-spotlight-resource` manage configuration resources, the ones the Terraform provider writes. They live under `/resources` and address everything by id. Every resource follows these rules, and a conformance suite holds each one to them.\n\n- **Stable ids.** Spotlight issues a resource's `id` when it is created. It never changes for the resource's life, whatever else does.\n- **Reads return every field.** A read answers the whole resource, defaults filled in, so a client comparing it with what it wrote sees any drift. A write answers exactly what a read would.\n- **Versions.** Every resource carries a `version` that rises with each change, and each answer carries it as a strong `ETag` (`\"3\"`). An update or delete must send it back as `If-Match`: without one it is refused with 428, and against a version that is no longer current with 409, whose body gives the `currentVersion` and whose `ETag` names it. A write that would remove something another resource still uses is refused with 409 `in-use`.\n- **Idempotent creates.** A create must carry an `Idempotency-Key`. Retrying with the same key and body within 24 hours answers the resource the first attempt created, marked `Idempotent-Replayed: true`, and creates nothing more; the same key with a different body is refused with 422.\n- **Problems name fields.** Errors are `application/problem+json` (RFC 9457). `type` is stable and safe to branch on. An invalid request lists `errors`, each with the `path` of the attribute it is about, as in `stations[2].check`; a key that is not a plain name is quoted, as Terraform addresses it: `on[\"task.opened\"].to.thread`.\n- **API versions.** A client may send `Spotlight-Api-Version`; every response names the version it was answered in, currently `2026-09-23`. Changes within a version are additive only: fields and operations are added, never removed, renamed or given a new meaning.\n- **Expression checks.** `POST /expressions/check` type-checks one CEL expression at the attribute that holds it, named within the resource's whole definition (`integration.webhook.events[0].when`), as `terraform plan` needs. What the expression may read is worked out from that definition exactly as applying it would, so a plan fails where an apply would; a definition holding any error is refused with 422, each error under `definition`. It answers the type and any errors, each with the span it is about and a suggestion where a declared name is near, and warnings about the definition, such as a capture shadowing a built-in name. `GET /expressions/positions` lists every position, with `[*]` for any index or key, and what an expression there sees. They follow these headers and problems, but are not resources.\n- **Credentials.** A client calls with a person's session or with a workspace token, sent as `Authorization: Bearer <token>`. A token acts only within its own workspace and only as its scopes allow. `read`, `plan` and `configure` are a ladder: `read` reads, `plan` also checks expressions, and `configure` also creates, changes and deletes configuration as a workspace admin may, except secrets and runners. `secrets` is granted beside one of them and lets the token set, rebind, rotate and delete secrets; Terraform that manages secrets uses `[\"configure\", \"secrets\"]`. `runners` is granted the same way and lets the token create, rekey and delete runners and runner trusts and declare the workspace's runners, since a runner claims runs, checks out repositories and holds git credentials; Terraform that manages runners uses `[\"configure\", \"runners\"]`. No token manages members or tokens, or reads the audit.\n- **Refusals.** A change by someone who may read the resource but not change it, person or token, is refused with 403 `forbidden`, whose `permission` names what the caller lacks, one of `configure`, `manage-secrets`, `manage-runners`, `administer`, `open-workspaces`, `plan`. Anything they may not see at all answers 404.\n- **Who changed what.** A client names itself in `Spotlight-Client` (`terraform-provider/<version>`, `cli/<version>` or `web`), and every configuration change is recorded with who made it, person or token, and through which client. A secret's change also records the value version it moved to and the hosts it is bound to, never its value.\n- **Import by address.** Each resource has an `address` that names it within its workspace, such as `core/linear`, and an import operation that answers the resource at that address, as `terraform import` needs. A workspace's address is its slug; a team's is its key; anything a team holds is the team's key and its own, as in `core/delivery`.",
+    "description": "HTTP API for the Spotlight Control Plane.\n\n## Resource conventions\n\nOperations marked `x-spotlight-resource` manage configuration resources, the ones the Terraform provider writes. They live under `/resources` and address everything by id. Every resource follows these rules, and a conformance suite holds each one to them.\n\n- **Stable ids.** Spotlight issues a resource's `id` when it is created. It never changes for the resource's life, whatever else does.\n- **Reads return every field.** A read answers the whole resource, defaults filled in, so a client comparing it with what it wrote sees any drift. A write answers exactly what a read would.\n- **Versions.** Every resource carries a `version` that rises with each change, and each answer carries it as a strong `ETag` (`\"3\"`). An update or delete must send it back as `If-Match`: without one it is refused with 428, and against a version that is no longer current with 409, whose body gives the `currentVersion` and whose `ETag` names it. A write that would remove something another resource still uses is refused with 409 `in-use`.\n- **Idempotent creates.** A create must carry an `Idempotency-Key`. Retrying with the same key and body within 24 hours answers the resource the first attempt created, marked `Idempotent-Replayed: true`, and creates nothing more; the same key with a different body is refused with 422.\n- **Problems name fields.** Errors are `application/problem+json` (RFC 9457). `type` is stable and safe to branch on. An invalid request lists `errors`, each with the `path` of the attribute it is about, as in `stations[2].check`; a key that is not a plain name is quoted, as Terraform addresses it: `on[\"task.opened\"].to.thread`.\n- **API versions.** A client may send `Spotlight-Api-Version`; every response names the version it was answered in, currently `2026-09-23`. Changes within a version are additive only: fields and operations are added, never removed, renamed or given a new meaning.\n- **Expression checks.** `POST /expressions/check` type-checks one CEL expression at the attribute that holds it, named within the resource's whole definition (`integration.webhook.events[0].when`), as `terraform plan` needs. What the expression may read is worked out from that definition exactly as applying it would, so a plan fails where an apply would; a definition holding any error is refused with 422, each error under `definition`. It answers the type and any errors, each with the span it is about and a suggestion where a declared name is near, and warnings about the definition, such as a capture shadowing a built-in name. `GET /expressions/positions` lists every position, with `[*]` for any index or key, and what an expression there sees. They follow these headers and problems, but are not resources.\n- **Credentials.** A client calls with a person's session or with a workspace token, sent as `Authorization: Bearer <token>`. A token acts only within its own workspace and only as its scopes allow. `read`, `plan` and `configure` are a ladder: `read` reads, `plan` also checks expressions, and `configure` also creates, changes and deletes configuration as a workspace admin may, except secrets and runners. `secrets` is granted beside one of them and lets the token set, rebind, rotate and delete secrets; Terraform that manages secrets uses `[\"configure\", \"secrets\"]`. `runners` is granted the same way and lets the token create, rekey and delete runners and runner trusts and declare the workspace's runners, since a runner claims runs, checks out repositories and holds git credentials; Terraform that manages runners uses `[\"configure\", \"runners\"]`. No token manages members or tokens, or reads the audit.\n- **Refusals.** A change by someone who may read the resource but not change it, person or token, is refused with 403 `forbidden`, whose `permission` names what the caller lacks, one of `configure`, `manage-secrets`, `manage-runners`, `administer`, `open-workspaces`, `plan`. Anything they may not see at all answers 404.\n- **Who changed what.** A client names itself in `Spotlight-Client` (`terraform-provider/<version>` or `web`), and every configuration change is recorded with who made it, person or token, and through which client. A secret's change also records the value version it moved to and the hosts it is bound to, never its value.\n- **Import by address.** Each resource has an `address` that names it within its workspace, such as `core/linear`, and an import operation that answers the resource at that address, as `terraform import` needs. A workspace's address is its slug; a team's is its key; anything a team holds is the team's key and its own, as in `core/delivery`.",
     "version": "2026-09-23",
     "contact": {}
   },
