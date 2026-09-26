@@ -3,6 +3,7 @@ package fakeapi
 import (
 	"fmt"
 	"maps"
+	"regexp"
 	"slices"
 	"strings"
 )
@@ -104,7 +105,6 @@ func line(body map[string]any) (map[string]any, []fieldError) {
 		}
 	}
 
-	orDefault(definition, "repositories", []any{})
 	orDefault(definition, "reactions", []any{})
 
 	listed, _ := definition["stations"].([]any)
@@ -151,13 +151,11 @@ func line(body map[string]any) (map[string]any, []fieldError) {
 
 		placed(station, "runners", fmt.Sprintf("stations[%d].runners", at), &errs)
 
-		if version, ok := station["harnessVersion"].(string); ok {
-			station["harnessVersion"] = strings.TrimPrefix(strings.TrimSpace(version), "v")
-		}
-
 		stations = append(stations, station)
 	}
 	definition["stations"] = stations
+
+	repositories(definition, &errs)
 
 	for at, each := range listOf(definition["reactions"]) {
 		reaction, _ := each.(map[string]any)
@@ -192,6 +190,68 @@ func line(body map[string]any) (map[string]any, []fieldError) {
 	}
 
 	return map[string]any{"key": definition["key"], "definition": definition}, errs
+}
+
+var imageReference = regexp.MustCompile(`^[a-z0-9]+([._-][a-z0-9]+)*(:[0-9]+)?(/[a-z0-9]+([._-][a-z0-9]+)*)*(:[A-Za-z0-9_][A-Za-z0-9._-]{0,127})?(@sha256:[0-9a-f]{64})?$`)
+
+func repositories(definition map[string]any, errs *[]fieldError) {
+	listed := listOf(definition["repositories"])
+	worked := make([]map[string]any, 0, len(listed))
+	var images []string
+	seen := map[string]bool{}
+
+	for at, each := range listed {
+		given := objectOf(each)
+		name := strings.TrimSpace(textOf(given["name"]))
+		if owner, rest, ok := strings.Cut(name, "/"); !ok || owner == "" || rest == "" || strings.Contains(rest, "/") {
+			*errs = append(*errs, fieldError{fmt.Sprintf("repositories[%d].name", at), "A repository is named owner/name"})
+		}
+		if seen[name] {
+			*errs = append(*errs, fieldError{"repositories", fmt.Sprintf("The %s line works in repositories that A line works %s twice, and each is cloned into a directory of its own name", definition["key"], name)})
+		}
+		seen[name] = true
+
+		repository := map[string]any{"name": name}
+		if image := strings.TrimSpace(textOf(given["image"])); image != "" {
+			if len(image) > 255 || !imageReference.MatchString(image) {
+				*errs = append(*errs, fieldError{fmt.Sprintf("repositories[%d].image", at), "A runner image is named by a reference such as ghcr.io/acme/runner:main, in lowercase, with an optional tag or digest"})
+			}
+			if !slices.Contains(images, image) {
+				images = append(images, image)
+			}
+			repository["image"] = image
+		}
+		if setup := textOf(given["setup"]); setup != "" {
+			if said := strings.TrimSpace(setup); said == "" || len(said) > 500 || strings.ContainsAny(said, "\r\n") {
+				*errs = append(*errs, fieldError{fmt.Sprintf("repositories[%d].setup", at), "Invalid repository setup: is one line of at most 500 characters"})
+			}
+			repository["setup"] = setup
+		}
+		worked = append(worked, repository)
+	}
+
+	if len(images) > 1 {
+		*errs = append(*errs, fieldError{"repositories", fmt.Sprintf("The %s line works in repositories that A line runs every station in one image, but its repositories name %s", definition["key"], strings.Join(images, " and "))})
+	}
+
+	stations := listOf(definition["stations"])
+	checking := slices.IndexFunc(stations, func(each any) bool {
+		return textOf(objectOf(each)["check"]) != "" && objectOf(each)["diffs"] == true
+	})
+	unready := slices.IndexFunc(worked, func(each map[string]any) bool { return each["setup"] == nil })
+	if checking >= 0 && unready >= 0 {
+		*errs = append(*errs, fieldError{fmt.Sprintf("repositories[%d].setup", unready), fmt.Sprintf("The %s line has %s, which checks its layers, so %s has to say how its checkout is made ready", definition["key"], objectOf(stations[checking])["key"], worked[unready]["name"])})
+	}
+
+	slices.SortFunc(worked, func(one, other map[string]any) int {
+		return strings.Compare(textOf(one["name"]), textOf(other["name"]))
+	})
+
+	sorted := make([]any, len(worked))
+	for at, each := range worked {
+		sorted[at] = each
+	}
+	definition["repositories"] = sorted
 }
 
 func skill(body map[string]any) (map[string]any, []fieldError) {

@@ -115,12 +115,17 @@ resource "spotlight_harness_profile" "core_careful" {
 }
 
 resource "spotlight_line" "core_delivery" {
-  team_id      = spotlight_team.core.id
-  key          = "delivery"
-  name         = "Delivery"
-  role         = "delivery"
-  repositories = ["acme/api"]
-  runners      = ["vpc-internal"]
+  team_id = spotlight_team.core.id
+  key     = "delivery"
+  name    = "Delivery"
+  role    = "delivery"
+  runners = ["vpc-internal"]
+
+  repository {
+    name  = "acme/api"
+    image = "ghcr.io/acme/api-runner:main"
+    setup = "npm ci"
+  }
 
   station {
     key       = "backlog"

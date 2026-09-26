@@ -263,10 +263,11 @@ func seedExported(t *testing.T, cp acctest.ControlPlane, k acctest.Keys) (declar
 
 	_, err = cp.Client.CreateLine(ctx, team.ID, client.Definition{
 		"key": k.Line, "name": "Review", "role": "review", "runners": []any{"tf-acc-linux"},
+		"repositories": []any{map[string]any{"name": "acme/api", "image": "ghcr.io/acme/api-runner:main", "setup": "npm ci"}},
 		"stations": []any{
 			map[string]any{"key": "backlog", "name": "Backlog", "kind": "backlog", "passesTo": []any{"implementation"}},
 			map[string]any{
-				"key": "implementation", "name": "Implementation", "harness": "claude-code", "harnessVersion": "2.1.270",
+				"key": "implementation", "name": "Implementation", "harness": "claude-code",
 				"profile": k.Profile, "prompt": "Implement the task.\n", "skills": []any{k.Skill},
 				"tools": []any{k.Integration + ".comment"}, "runners": []any{"tf-acc-gpu"}, "passesTo": []any{"code-review"},
 			},
