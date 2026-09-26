@@ -1788,6 +1788,50 @@
         ]
       }
     },
+    "/egress/redeem": {
+      "post": {
+        "description": "Called by egress with the credential its host was handed for this run alone. Each call grants the secrets the run wears; values Spotlight keeps come back sealed to the recipient, and values read from an external store come back as where egress reads them.",
+        "operationId": "redeemEgress",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RedeemEgressRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EgressRedemptionResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or unknown egress token, or its runner no longer holds work"
+          },
+          "422": {
+            "description": "The recipient is not an X25519 public key"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "The secrets the run a sandbox holds may wear, for the egress beside it to inject toward their hosts",
+        "tags": [
+          "runners"
+        ]
+      }
+    },
     "/workspaces/{slug}/runner-activity": {
       "get": {
         "description": "A runner that holds no run is idle, and is not listed.",
@@ -11007,7 +11051,7 @@
                           "additionalProperties": {
                             "type": "string"
                           },
-                          "description": "Environment for the server, never credentials: these values are stored and shown in plain text, in this resource (and so in Terraform state), in the run spec and in what the runner receives. A server that needs a key reads it from the runner’s own environment, as harness API keys do. Secret references come with SPO-97."
+                          "description": "Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace holds, and the server gets only a stand-in, since egress wears the value on its requests to the hosts the secret is bound to."
                         }
                       }
                     }
@@ -11357,7 +11401,7 @@
                           "additionalProperties": {
                             "type": "string"
                           },
-                          "description": "Environment for the server, never credentials: these values are stored and shown in plain text, in this resource (and so in Terraform state), in the run spec and in what the runner receives. A server that needs a key reads it from the runner’s own environment, as harness API keys do. Secret references come with SPO-97."
+                          "description": "Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace holds, and the server gets only a stand-in, since egress wears the value on its requests to the hosts the secret is bound to."
                         }
                       }
                     }
@@ -15030,6 +15074,10 @@
             "type": "string",
             "description": "The one-run credential, good only for this work and only until it ends; every later call carries it instead of the host’s own credential"
           },
+          "egressToken": {
+            "type": "string",
+            "description": "The credential the egress beside the sandbox redeems the run’s secrets with; the host hands it to egress alone, never into the sandbox"
+          },
           "work": {
             "$ref": "#/components/schemas/ClaimedWorkResponseDto"
           }
@@ -15037,7 +15085,148 @@
         "required": [
           "runnerId",
           "token",
+          "egressToken",
           "work"
+        ]
+      },
+      "RedeemEgressRequestDto": {
+        "type": "object",
+        "properties": {
+          "recipient": {
+            "type": "string",
+            "example": "p8kX0q1cVJ3Q0x4yQ2a6m0dD6b8hT3n1gC9sZ7rW2Ek=",
+            "description": "The X25519 public key egress holds for this run alone, in base64; values Spotlight keeps are sealed to it"
+          }
+        },
+        "required": [
+          "recipient"
+        ]
+      },
+      "ReadInNetworkResponseDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "aws-secrets-manager"
+            ]
+          },
+          "secretId": {
+            "type": "string",
+            "example": "arn:aws:secretsmanager:eu-west-1:123456789012:secret:linear-api-key"
+          },
+          "field": {
+            "type": "string",
+            "nullable": true,
+            "example": "token"
+          }
+        },
+        "required": [
+          "kind",
+          "secretId",
+          "field"
+        ]
+      },
+      "RedeemedSecretResponseDto": {
+        "type": "object",
+        "properties": {
+          "secret": {
+            "type": "string",
+            "example": "LINEAR_API_KEY"
+          },
+          "host": {
+            "type": "string",
+            "example": "mcp.linear.app",
+            "description": "The one host egress wears it toward"
+          },
+          "header": {
+            "type": "string",
+            "example": "authorization"
+          },
+          "prefix": {
+            "type": "string",
+            "example": "Bearer "
+          },
+          "sealed": {
+            "type": "string",
+            "nullable": true,
+            "description": "The value, sealed to the recipient for this run; null when egress reads it in its own network"
+          },
+          "readInNetwork": {
+            "nullable": true,
+            "description": "Where egress reads the value with its host’s own identity; null when Spotlight sealed it",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReadInNetworkResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "secret",
+          "host",
+          "header",
+          "prefix",
+          "sealed",
+          "readInNetwork"
+        ]
+      },
+      "WithheldSecretResponseDto": {
+        "type": "object",
+        "properties": {
+          "secret": {
+            "type": "string",
+            "example": "LINEAR_API_KEY"
+          },
+          "reason": {
+            "type": "string",
+            "example": "The workspace holds no secret named LINEAR_API_KEY; define it before anything uses it"
+          }
+        },
+        "required": [
+          "secret",
+          "reason"
+        ]
+      },
+      "EgressRedemptionResponseDto": {
+        "type": "object",
+        "properties": {
+          "runId": {
+            "type": "string",
+            "nullable": true,
+            "example": "run_1",
+            "description": "The run the sealed values are bound to; null when the sandbox checks a change stack and wears nothing"
+          },
+          "reaches": {
+            "example": [
+              "storage.example.com"
+            ],
+            "description": "Hosts every sandbox must reach besides the control plane, whatever else the host allows",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "secrets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RedeemedSecretResponseDto"
+            }
+          },
+          "withheld": {
+            "description": "Secrets the run wears that egress will not get, and why",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WithheldSecretResponseDto"
+            }
+          }
+        },
+        "required": [
+          "runId",
+          "reaches",
+          "secrets",
+          "withheld"
         ]
       },
       "HeldRunResponseDto": {
@@ -18582,7 +18771,7 @@
             "example": {
               "LINEAR_TEAM": "core"
             },
-            "description": "Environment for the server, never credentials: these values are stored and shown in plain text, in this resource (and so in Terraform state), in the run spec and in what the runner receives. A server that needs a key reads it from the runner’s own environment, as harness API keys do. Secret references come with SPO-97."
+            "description": "Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace holds, and the server gets only a stand-in, since egress wears the value on its requests to the hosts the secret is bound to."
           }
         },
         "required": [
