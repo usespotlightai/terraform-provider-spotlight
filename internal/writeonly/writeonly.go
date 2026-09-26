@@ -7,20 +7,24 @@ package writeonly
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // Field is a write-only attribute and the version attribute beside it,
-// at the root or Within a nested attribute.
+// at the root or Within a nested attribute; a version FromOne is a whole
+// number from 1.
 type Field struct {
 	Within   string
 	Name     string
 	Version  string
 	Required bool
+	FromOne  bool
 }
 
 // Value is the value a secret is written with.
@@ -31,6 +35,9 @@ var Token = Field{Name: "token", Version: "token_version"}
 
 // ProvisionSecret is the secret a push pool signs its provision calls with.
 var ProvisionSecret = Field{Within: "provision", Name: "secret", Version: "secret_version", Required: true}
+
+// SigningSecret is the HMAC secret a hook signs its requests with.
+var SigningSecret = Field{Within: "signing", Name: "secret_wo", Version: "secret_wo_version", FromOne: true}
 
 // Path is where the value is written.
 func (f Field) Path() path.Path {
@@ -48,6 +55,15 @@ func (f Field) at(name string) path.Path {
 // Attributes returns the field and its version, to add to the schema of a
 // resource that holds it. described says what the value is.
 func (f Field) Attributes(described string) map[string]schema.Attribute {
+	version := schema.Int64Attribute{
+		Optional:            true,
+		MarkdownDescription: "Any number; change it whenever `" + f.Name + "` changes, so Terraform sends the new value.",
+	}
+	if f.FromOne {
+		version.Validators = []validator.Int64{int64validator.AtLeast(1)}
+		version.MarkdownDescription = "A whole number from 1; change it whenever `" + f.Name + "` changes, so Terraform sends the new value."
+	}
+
 	return map[string]schema.Attribute{
 		f.Name: schema.StringAttribute{
 			Required:  f.Required,
@@ -57,10 +73,7 @@ func (f Field) Attributes(described string) map[string]schema.Attribute {
 			MarkdownDescription: described + " It is sent to Spotlight and never stored in the plan or the state, " +
 				"so it needs Terraform 1.11 or later; change `" + f.Version + "` to send it again.",
 		},
-		f.Version: schema.Int64Attribute{
-			Optional:            true,
-			MarkdownDescription: "Any number; change it whenever `" + f.Name + "` changes, so Terraform sends the new value.",
-		},
+		f.Version: version,
 	}
 }
 

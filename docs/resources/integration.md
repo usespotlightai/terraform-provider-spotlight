@@ -64,6 +64,7 @@ resource "spotlight_integration" "core_linear" {
 - `address` (String) Names the resource within its workspace, as in `core/linear`.
 - `id` (String) Issued by Spotlight when the integration is created, and never changed.
 - `source` (String) The host the integration defines, from `definition.integration`. It is fixed for the integration's life, so changing it replaces the integration.
+- `tools` (Map of String) Each tool the integration offers, by its name in `definition.tools`, to the name a station or hook gives it by, as in `{ search = "grafana.search" }`. Name a tool through it, as in `spotlight_integration.grafana.tools["search"]`, so a tool renamed or removed fails the plan where it is named.
 - `version` (Number) Rises with every change to the integration; each write sends it back so a change made since is not overwritten.
 
 ## Import

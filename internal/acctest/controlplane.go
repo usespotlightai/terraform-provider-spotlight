@@ -100,6 +100,7 @@ func ControlPlaneAt(ctx context.Context, slug string) (ControlPlane, error) {
 // so that tests can run side by side.
 type Keys struct {
 	Team, Line, Skill, Integration, Profile string
+	Hook                                    string
 	Secret, AWSSecret                       string
 	Trust, Pool, PushPool                   string
 	TokenTrust                              string
@@ -116,6 +117,7 @@ func RandomKeys() Keys {
 		Skill:       "grafana-" + suffix,
 		Integration: "tfacc" + suffix,
 		Profile:     "careful-" + suffix,
+		Hook:        "audit-" + suffix,
 		Secret:      SecretPrefix + upper,
 		AWSSecret:   SecretPrefix + "AWS_" + upper,
 		Trust:       KeyPrefix + "cluster-" + suffix,
@@ -232,6 +234,7 @@ func (cp ControlPlane) created(k Keys) []held {
 	inTeam := func(key string) string { return k.Team + "/" + key }
 
 	return []held{
+		holding("hook", api.ImportHook, func(h client.Hook) client.Meta { return h.Meta }, api.DeleteHook, id, inTeam(k.Hook)),
 		holding("line", api.ImportLine, func(l client.Line) client.Meta { return l.Meta }, api.DeleteLine, id, inTeam(k.Line)),
 		holding("skill", api.ImportSkill, func(s client.Skill) client.Meta { return s.Meta }, api.DeleteSkill, id, inTeam(k.Skill)),
 		holding("integration", api.ImportIntegration, func(i client.Integration) client.Meta { return i.Meta }, api.DeleteIntegration, id, inTeam(k.Integration)),

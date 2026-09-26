@@ -146,6 +146,8 @@ func written(kind string, held *resource, fields, body map[string]any) (string, 
 		return secretValue(held, fields, body)
 	case "runner-pool":
 		return poolAccess(held, fields, body)
+	case "hook":
+		return hookSecret(held, fields, body)
 	default:
 		return "", nil
 	}

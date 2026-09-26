@@ -1,6 +1,7 @@
 // Package expressions type-checks the CEL expressions written in an
-// integration's definition during a plan, with the control plane's check
-// endpoint, and attaches what it finds to the attribute that holds each one.
+// integration's definition or a hook during a plan, with the control
+// plane's check endpoint, and attaches what it finds to the attribute that
+// holds each one.
 package expressions
 
 import (
@@ -20,7 +21,7 @@ import (
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/fieldpath"
 )
 
-const resource = "integration"
+const integration = "integration"
 
 // Attribute is the Terraform attribute an integration's definition is held in.
 const Attribute = "definition"
@@ -31,8 +32,8 @@ type API interface {
 	CheckExpression(ctx context.Context, position, expression string, definition client.Definition) (client.ExpressionCheck, error)
 }
 
-// Checker checks the expressions in integration definitions, remembering
-// the positions expressions are written at once it has read them.
+// Checker checks the expressions in definitions, remembering the positions
+// expressions are written at once it has read them.
 type Checker struct {
 	api       API
 	mu        sync.Mutex
@@ -44,25 +45,55 @@ func NewChecker(api API) *Checker {
 	return &Checker{api: api}
 }
 
-var (
-	inDefinition = fieldpath.Locator{Under: fieldpath.Path{fieldpath.Key(Attribute)}}
-	asWritten    = fieldpath.Locator{}
-)
+var inDefinition = fieldpath.Locator{Under: fieldpath.Path{fieldpath.Key(Attribute)}}
 
-// Check type-checks every expression in definition that is known, and
-// answers an error or warning on the attribute of each one that needs it.
+// Subject is a definition whose expressions are checked: the Resource its
+// positions are named under, the Fields locating the attribute each path in
+// it names, the Definition sent beside each expression, with what is not
+// known yet left out unless it is Complete, and the expressions Written in it.
+type Subject struct {
+	Resource   string
+	Fields     fieldpath.Locator
+	Definition client.Definition
+	Complete   bool
+	Written    []Written
+}
+
+// Written is the expressions a string holds, and where it is in its
+// definition.
+type Written struct {
+	At          fieldpath.Path
+	Expressions []string
+}
+
+// Check type-checks every expression in an integration's definition that
+// is known, and answers an error or warning on the attribute of each one
+// that needs it.
 func (c *Checker) Check(ctx context.Context, definition types.Dynamic) diag.Diagnostics {
-	var diags diag.Diagnostics
-
 	if definition.IsNull() || definition.IsUnknown() || definition.IsUnderlyingValueUnknown() {
-		return diags
+		return nil
 	}
 
 	held, complete := dynamic.ToJSONKnown(definition)
 	document, ok := held.(map[string]any)
 	if !ok {
-		return diags
+		return nil
 	}
+
+	return c.CheckSubject(ctx, Subject{
+		Resource:   integration,
+		Fields:     inDefinition,
+		Definition: document,
+		Complete:   complete,
+		Written:    TemplatesIn(definition.UnderlyingValue(), fieldpath.Path{}),
+	})
+}
+
+// CheckSubject type-checks each expression written in subject at a
+// position expressions are written at, and answers an error or warning on
+// the attribute of each one that needs it.
+func (c *Checker) CheckSubject(ctx context.Context, subject Subject) diag.Diagnostics {
+	var diags diag.Diagnostics
 
 	positions, err := c.known(ctx)
 	if err != nil {
@@ -72,12 +103,18 @@ func (c *Checker) Check(ctx context.Context, definition types.Dynamic) diag.Diag
 	}
 
 	warned := map[string]bool{}
+	head := fieldpath.Path{fieldpath.Key(subject.Resource)}
 
-	for _, written := range writtenIn(definition.UnderlyingValue(), positions) {
-		for _, expression := range written.expressions {
-			check, err := c.api.CheckExpression(ctx, resource+"."+written.at.String(), expression, document)
+	for _, written := range subject.Written {
+		position := head.Then(written.At...)
+		if !anyHolds(positions, position) {
+			continue
+		}
+
+		for _, expression := range written.Expressions {
+			check, err := c.api.CheckExpression(ctx, position.String(), expression, subject.Definition)
 			if err != nil {
-				stop := c.refused(ctx, err, complete, written, &diags)
+				stop := refused(ctx, err, subject, written, &diags)
 				if stop {
 					return diags
 				}
@@ -86,7 +123,7 @@ func (c *Checker) Check(ctx context.Context, definition types.Dynamic) diag.Diag
 			}
 
 			for _, found := range check.Errors {
-				at := inDefinition.LocatePath(written.at)
+				at := subject.Fields.LocatePath(written.At)
 				diags.AddAttributeError(at.Path, "Invalid expression in "+at.Written, explained(expression, found))
 			}
 
@@ -97,7 +134,7 @@ func (c *Checker) Check(ctx context.Context, definition types.Dynamic) diag.Diag
 				}
 				warned[key] = true
 
-				at := warningAt(warning.Position, written.at)
+				at := warningAt(subject, warning.Position, written.At)
 				diags.AddAttributeWarning(at.Path, "Expression warning in "+at.Written, warning.Message)
 			}
 		}
@@ -106,7 +143,7 @@ func (c *Checker) Check(ctx context.Context, definition types.Dynamic) diag.Diag
 	return diags
 }
 
-func (c *Checker) refused(ctx context.Context, err error, complete bool, written written, diags *diag.Diagnostics) bool {
+func refused(ctx context.Context, err error, subject Subject, written Written, diags *diag.Diagnostics) bool {
 	if client.IsForbidden(err) {
 		diags.AddWarning("Expressions were not checked", "The API token's scope does not allow checking expressions. Checking is planning, which needs the plan scope or above; the apply checks them instead.")
 
@@ -123,22 +160,22 @@ func (c *Checker) refused(ctx context.Context, err error, complete bool, written
 	var aboutDefinition []client.FieldError
 	for _, each := range problem.Errors {
 		if parsed, err := fieldpath.Parse(each.Path); err == nil && len(parsed) > 0 && parsed[0].Key == Attribute {
-			aboutDefinition = append(aboutDefinition, each)
+			aboutDefinition = append(aboutDefinition, client.FieldError{Path: parsed[1:].String(), Message: each.Message})
 		}
 	}
 
 	if len(aboutDefinition) == 0 {
 		tflog.Debug(ctx, "the check endpoint found no expression where one was expected", map[string]any{
-			"position": written.at.String(),
+			"position": written.At.String(),
 			"detail":   problem.Detail,
 		})
 
 		return false
 	}
 
-	if complete {
+	if subject.Complete {
 		for _, each := range aboutDefinition {
-			at := asWritten.Locate(each.Path)
+			at := subject.Fields.Locate(each.Path)
 			diags.AddAttributeError(at.Path, "Invalid definition at "+at.Written, each.Message)
 		}
 	}
@@ -146,13 +183,13 @@ func (c *Checker) refused(ctx context.Context, err error, complete bool, written
 	return true
 }
 
-func warningAt(position string, fallback fieldpath.Path) fieldpath.Located {
+func warningAt(subject Subject, position string, fallback fieldpath.Path) fieldpath.Located {
 	parsed, err := fieldpath.Parse(position)
-	if err != nil || len(parsed) == 0 || parsed[0].Key != resource {
-		return inDefinition.LocatePath(fallback)
+	if err != nil || len(parsed) == 0 || parsed[0].Key != subject.Resource {
+		return subject.Fields.LocatePath(fallback)
 	}
 
-	return inDefinition.LocatePath(parsed[1:])
+	return subject.Fields.LocatePath(parsed[1:])
 }
 
 func (c *Checker) known(ctx context.Context) ([]fieldpath.Path, error) {
@@ -171,10 +208,10 @@ func (c *Checker) known(ctx context.Context) ([]fieldpath.Path, error) {
 	positions := make([]fieldpath.Path, 0, len(listed))
 	for _, each := range listed {
 		parsed, err := fieldpath.Parse(each.Position)
-		if err != nil || len(parsed) < 2 || parsed[0].Key != resource {
+		if err != nil || len(parsed) < 2 {
 			continue
 		}
-		positions = append(positions, parsed[1:])
+		positions = append(positions, parsed)
 	}
 
 	c.positions = positions
@@ -182,21 +219,15 @@ func (c *Checker) known(ctx context.Context) ([]fieldpath.Path, error) {
 	return positions, nil
 }
 
-type written struct {
-	at          fieldpath.Path
-	expressions []string
-}
+// TemplatesIn lists the ${{ }} expressions each known string in value
+// holds, at its path under at.
+func TemplatesIn(value attr.Value, at fieldpath.Path) []Written {
+	var found []Written
 
-func writtenIn(value attr.Value, positions []fieldpath.Path) []written {
-	var found []written
-
-	walk(value, fieldpath.Path{}, func(at fieldpath.Path, text string) {
-		pieces := Pieces(text)
-		if len(pieces) == 0 || !anyHolds(positions, at) {
-			return
+	walk(value, at, func(at fieldpath.Path, text string) {
+		if pieces := Pieces(text); len(pieces) > 0 {
+			found = append(found, Written{At: at, Expressions: pieces})
 		}
-
-		found = append(found, written{at: at, expressions: pieces})
 	})
 
 	return found

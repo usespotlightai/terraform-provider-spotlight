@@ -77,12 +77,61 @@ type SkillInput struct {
 	Files map[string]string `json:"files"`
 }
 
-// Integration is an integration resource.
+// Integration is an integration resource. Tools names each tool it
+// offers, by its name within the integration, as stations and hooks name
+// it, as in grafana.search.
 type Integration struct {
 	Meta
 	TeamID     string
 	Source     string
 	Definition Definition
+	Tools      map[string]string
+}
+
+// Hook is a team's hook: steps Spotlight takes when an event matches.
+type Hook struct {
+	Meta
+	TeamID string
+	HookInput
+}
+
+// HookInput is what a hook is written from. Each step is held as the JSON
+// it is written as, since what a step gives its tool or sends is any JSON.
+// Signing.Secret is sent only when the hook is to sign with it from now
+// on, and never answered.
+type HookInput struct {
+	Key            string            `json:"key"`
+	On             string            `json:"on"`
+	Match          HookMatch         `json:"match"`
+	When           *string           `json:"when,omitempty"`
+	Vars           map[string]string `json:"vars,omitempty"`
+	Steps          []any             `json:"steps"`
+	Signing        *HookSigning      `json:"signing"`
+	Failure        string            `json:"failure,omitempty"`
+	TimeoutSeconds int64             `json:"timeoutSeconds,omitempty"`
+}
+
+// HookMatch narrows the events a hook fires on; an empty list narrows
+// nothing.
+type HookMatch struct {
+	Tools        []string `json:"tools,omitempty"`
+	Lines        []string `json:"lines,omitempty"`
+	Stations     []string `json:"stations,omitempty"`
+	Repositories []string `json:"repositories,omitempty"`
+	Paths        []string `json:"paths,omitempty"`
+}
+
+// HookSigning is how a hook signs its requests: with an HMAC secret, or
+// with a short-lived OIDC token for an audience.
+type HookSigning struct {
+	Secret        string    `json:"secret,omitempty"`
+	SecretVersion *int64    `json:"secretVersion,omitempty"`
+	OIDC          *HookOIDC `json:"oidc,omitempty"`
+}
+
+// HookOIDC is the audience a hook's OIDC tokens are for.
+type HookOIDC struct {
+	Audience string `json:"audience"`
 }
 
 // Secret is a secret resource. Its value is written, never read back.

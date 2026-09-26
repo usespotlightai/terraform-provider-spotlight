@@ -72,5 +72,11 @@ output-options:
     - deleteHarnessProfile
     - importHarnessProfile
     - listHarnessProfiles
+    - createHook
+    - readHook
+    - updateHook
+    - deleteHook
+    - importHook
+    - listHooks
     - checkExpression
     - listExpressionPositions

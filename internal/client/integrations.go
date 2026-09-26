@@ -14,6 +14,7 @@ func integrationOf(dto apigen.IntegrationResourceResponseDto) Integration {
 		TeamID:     dto.TeamId,
 		Source:     dto.Source,
 		Definition: dto.Definition,
+		Tools:      dto.Tools,
 	}
 }
 
