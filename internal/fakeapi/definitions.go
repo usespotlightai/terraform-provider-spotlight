@@ -50,6 +50,8 @@ func normalized(kind string, body map[string]any) (map[string]any, []fieldError)
 		return secret(body)
 	case "runner-trust":
 		return runnerTrust(body)
+	case "workspace-token-trust":
+		return tokenTrust(body)
 	case "runner-pool":
 		return runnerPool(body)
 	case "workspace-runners":

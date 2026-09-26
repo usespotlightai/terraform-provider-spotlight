@@ -120,7 +120,7 @@ func TestAForbiddenCallNamesTheScopeTheTokenLacks(t *testing.T) {
 		addAPIError(&diags, "Could not update the secret", changing, diagnosedLineFields, needs)
 
 		detail := diags.Errors()[0].Detail()
-		if !strings.HasPrefix(detail, "You may read this secret") || !strings.Contains(detail, says) || !strings.Contains(detail, "configure, secrets and runners") {
+		if !strings.HasPrefix(detail, "You may read this secret") || !strings.Contains(detail, says) || !strings.Contains(detail, "configure, secrets, runners and trusts") {
 			t.Errorf("%s: detail %q", needs, detail)
 		}
 	}
@@ -153,6 +153,7 @@ func TestTheNamedPermissionOutranksTheResourceKind(t *testing.T) {
 		client.PermissionConfigure:      "lacks the configure scope",
 		client.PermissionManageSecrets:  "lacks the secrets scope",
 		client.PermissionManageRunners:  "lacks the runners scope",
+		client.PermissionManageTrusts:   "lacks the trusts scope",
 		client.PermissionAdminister:     "a token never administers",
 		client.PermissionOpenWorkspaces: "cannot open one",
 		"a-permission-from-a-newer-api": "do not allow this",

@@ -12,7 +12,9 @@ Configure a [Spotlight](https://github.com/usespotlightai) workspace as code: it
 
 ## Authentication
 
-The provider calls the Spotlight control plane with an API token, sent as `Authorization: Bearer <token>`. Create one in the web app and give it to the provider through the environment:
+The provider calls the Spotlight control plane with a workspace token, sent as `Authorization: Bearer <token>`, which it gets in one of two ways.
+
+**A stored API token.** Create one in the web app and give it to the provider through the environment:
 
 ```shell
 export SPOTLIGHT_URL=https://spotlight.example.com
@@ -21,15 +23,25 @@ export SPOTLIGHT_API_TOKEN=<token>
 
 or through the provider block, as below. Keep the token out of version control.
 
-A token acts only inside the workspace it was created in, and only as its scopes allow. `read`, `plan` and `configure` are a ladder, each allowing what the one before it does: `read` refreshes and imports, `plan` also checks expressions, and `configure` also creates, updates and deletes configuration. Two grants go beside them:
+**From CI, with no stored token.** A `spotlight_workspace_token_trust` admits the OIDC tokens a CI platform issues its jobs, and the provider exchanges the job's token for a short-lived one with the trust's scopes, exchanging again before it expires. In GitHub Actions, a job granted `permissions: id-token: write` needs only the trust's id:
+
+```shell
+export SPOTLIGHT_URL=https://spotlight.example.com
+export SPOTLIGHT_OIDC_TRUST=<trust id>
+```
+
+or `oidc { trust = "<trust id>" }` in the provider block. On other platforms, give the job's OIDC token in `SPOTLIGHT_OIDC_TOKEN` too. [GitHub Actions without a stored token](guides/github-actions-without-a-stored-token) sets up a pipeline that plans pull requests and applies `main` this way. A stored token and a trust are never used together.
+
+A token, stored or minted, acts only inside the workspace it was created in, and only as its scopes allow. `read`, `plan` and `configure` are a ladder, each allowing what the one before it does: `read` refreshes and imports, `plan` also checks expressions, and `configure` also creates, updates and deletes configuration. Three grants go beside them:
 
 | Scope | Lets the token write |
 | --- | --- |
 | `configure` | the workspace, teams, lines, skills, integrations and harness profiles |
 | `secrets` | `spotlight_secret` |
 | `runners` | `spotlight_runner_pool`, `spotlight_runner_trust` and `spotlight_workspace_runners` |
+| `trusts` | `spotlight_workspace_token_trust` |
 
-**One token granted `configure`, `secrets` and `runners` manages everything this provider can.** A write the token's scopes do not allow is refused with `403`, and the provider's diagnostic names the scope the token lacks.
+**One token granted `configure`, `secrets`, `runners` and `trusts` manages everything this provider can.** `trusts` decides which CI jobs get tokens and with which scopes, so it is as powerful as all the others together: grant it only to a short-lived token that sets up the trusts, as the guide below does. A token may give a trust only scopes it holds itself. A write the token's scopes do not allow is refused with `403`, and the provider's diagnostic names the scope the token lacks.
 
 ## Workspaces are adopted, not created
 

@@ -58,6 +58,11 @@ var sweepers = []*resource.Sweeper{
 		Name: "spotlight_runner_pool",
 		F:    sweeper((*client.Client).ListRunnerPools, (*client.Client).DeleteRunnerPool, func(p client.RunnerPool) client.Meta { return p.Meta }, acctest.KeyPrefix),
 	},
+	{
+		Name: "spotlight_workspace_token_trust",
+		F: sweeper((*client.Client).ListWorkspaceTokenTrusts, (*client.Client).DeleteWorkspaceTokenTrust,
+			func(t client.WorkspaceTokenTrust) client.Meta { return t.Meta }, acctest.KeyPrefix),
+	},
 }
 
 func init() {
@@ -151,6 +156,14 @@ func TestSweepersDeleteOnlyWhatAcceptanceTestsCreate(t *testing.T) {
 		acctest.Must(t, err)
 	}
 
+	for _, key := range []string{k.TokenTrust, "github-main"} {
+		_, err = api.CreateWorkspaceTokenTrust(ctx, seeded.Workspace.ID, client.WorkspaceTokenTrustInput{
+			Key: key, Issuer: "https://token.actions.githubusercontent.com", Audience: "spotlight", Subject: "repo:acme/platform:*",
+			Claims: map[string]string{}, Scopes: []string{"plan"}, LifetimeMinutes: 15,
+		})
+		acctest.Must(t, err)
+	}
+
 	_, err = api.CreateRunnerPool(ctx, seeded.Workspace.ID, client.RunnerPoolInput{
 		Key: k.PushPool, Labels: []string{},
 		Provision: &client.PoolProvision{URL: "https://provision.example.com/runs", Secret: acctest.RandomSigningSecret()},
@@ -165,7 +178,7 @@ func TestSweepersDeleteOnlyWhatAcceptanceTestsCreate(t *testing.T) {
 
 	for kind, want := range map[string]int{
 		"team": 3, "line": 1, "skill": 1, "integration": 1, "harness-profile": 1,
-		"secret": 1, "runner-trust": 1, "runner-pool": 1, "workspace": 2,
+		"secret": 1, "runner-trust": 1, "runner-pool": 1, "workspace-token-trust": 1, "workspace": 2,
 	} {
 		if got := fake.Count(kind); got != want {
 			t.Errorf("%d of %s left after sweeping, want %d", got, kind, want)

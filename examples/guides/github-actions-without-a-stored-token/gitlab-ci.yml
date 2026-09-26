@@ -1,0 +1,12 @@
+plan:
+  image:
+    name: hashicorp/terraform:latest
+    entrypoint: [""]
+  id_tokens:
+    SPOTLIGHT_OIDC_TOKEN:
+      aud: spotlight
+  variables:
+    SPOTLIGHT_OIDC_TRUST: $SPOTLIGHT_PLAN_TRUST
+  script:
+    - terraform init -input=false
+    - terraform plan -input=false

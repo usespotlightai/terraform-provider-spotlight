@@ -518,3 +518,75 @@ func nativeProblems(native map[string]any) []fieldError {
 
 	return errs
 }
+
+var tokenScopes = []string{"read", "plan", "configure", "secrets", "runners", "trusts"}
+
+func tokenTrust(body map[string]any) (map[string]any, []fieldError) {
+	var errs []fieldError
+
+	key, _ := body["key"].(string)
+	key = strings.TrimSpace(key)
+	if why := wordsLike("github-main")(key); why != "" {
+		errs = append(errs, fieldError{"key", why})
+	}
+
+	issued, _ := body["issuer"].(string)
+	if why := issuer(issued); why != "" {
+		errs = append(errs, fieldError{"issuer", why})
+	}
+
+	written, _ := body["subject"].(string)
+	subject, why := oneWord(written, "repo:acme/platform:ref:refs/heads/main")
+	if why != "" {
+		errs = append(errs, fieldError{"subject", why})
+	}
+	if owner, _, wild := strings.Cut(subject, "*"); wild && !strings.Contains(owner, "/") {
+		errs = append(errs, fieldError{"subject", "names its owner before any *, as in repo:acme/platform:*"})
+	}
+
+	written, given := body["audience"].(string)
+	if !given {
+		written = "spotlight"
+	}
+	audience, why := oneWord(written, "spotlight")
+	if why != "" {
+		errs = append(errs, fieldError{"audience", why})
+	}
+
+	claims := map[string]any{}
+	for name, pattern := range objectOf(body["claims"]) {
+		if text, ok := pattern.(string); ok && text != "" {
+			claims[name] = text
+			continue
+		}
+		errs = append(errs, fieldError{"claims." + name, "is a pattern the claim must match, as in acme/platform"})
+	}
+
+	scopes := onceEach(texts(body["scopes"]), "scopes", func(scope string) string {
+		if slices.Contains(tokenScopes, scope) {
+			return ""
+		}
+		return "is one of " + strings.Join(tokenScopes, ", ")
+	}, &errs)
+	if len(scopes) == 0 {
+		errs = append(errs, fieldError{"scopes", "names at least one scope, as in plan"})
+	}
+
+	lifetime := 15.0
+	if held, ok := body["lifetimeMinutes"].(float64); ok {
+		lifetime = held
+	}
+	if lifetime < 1 || lifetime > 60 || lifetime != float64(int(lifetime)) {
+		errs = append(errs, fieldError{"lifetimeMinutes", "is a whole number of minutes from 1 to 60"})
+	}
+
+	return map[string]any{
+		"key":             key,
+		"issuer":          strings.TrimSpace(issued),
+		"audience":        audience,
+		"subject":         subject,
+		"claims":          claims,
+		"scopes":          scopes,
+		"lifetimeMinutes": lifetime,
+	}, errs
+}

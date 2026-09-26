@@ -144,6 +144,26 @@ type RunnerTrustInput struct {
 	Labels   []string `json:"labels"`
 }
 
+// WorkspaceTokenTrust is a CI workload whose OIDC tokens are exchanged for
+// short-lived workspace tokens, with no token stored in the CI platform.
+type WorkspaceTokenTrust struct {
+	Meta
+	WorkspaceID string
+	DefinedBy   string
+	WorkspaceTokenTrustInput
+}
+
+// WorkspaceTokenTrustInput is what a workspace token trust is written from.
+type WorkspaceTokenTrustInput struct {
+	Key             string            `json:"key"`
+	Issuer          string            `json:"issuer"`
+	Audience        string            `json:"audience"`
+	Subject         string            `json:"subject"`
+	Claims          map[string]string `json:"claims"`
+	Scopes          []string          `json:"scopes"`
+	LifetimeMinutes int64             `json:"lifetimeMinutes"`
+}
+
 // RunnerPool is a pool of one-run runners: pulled from by hosts that claim
 // with its token, or pushed to by Spotlight calling its provision
 // URL. Mode, pull or push, is fixed for its life.

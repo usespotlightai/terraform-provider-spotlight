@@ -220,7 +220,7 @@ func TestSecretWritesNeedTheSecretsScope(t *testing.T) {
 			{
 				PreConfig:   func() { fake.Grant("configure", "runners") },
 				Config:      secretBuiltIn("LINEAR_API_KEY", "lin_first", 1, secretLinear),
-				ExpectError: regexp.MustCompile(`(?s)Not allowed to change the secret.*lacks the secrets scope.*configure, secrets and\s+runners`),
+				ExpectError: regexp.MustCompile(`(?s)Not allowed to change the secret.*lacks the secrets scope.*configure, secrets,\s+runners\s+and\s+trusts`),
 			},
 		},
 	})

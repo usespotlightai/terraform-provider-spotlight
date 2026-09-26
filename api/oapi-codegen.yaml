@@ -47,6 +47,13 @@ output-options:
     - deleteRunnerTrust
     - importRunnerTrust
     - listRunnerTrusts
+    - createWorkspaceTokenTrust
+    - readWorkspaceTokenTrust
+    - updateWorkspaceTokenTrust
+    - deleteWorkspaceTokenTrust
+    - importWorkspaceTokenTrust
+    - listWorkspaceTokenTrusts
+    - exchangeWorkloadToken
     - createRunnerPool
     - readRunnerPool
     - updateRunnerPool

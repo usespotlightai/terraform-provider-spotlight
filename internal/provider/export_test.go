@@ -123,7 +123,7 @@ func TestAnExportAppliesFromScratchAndAdoptsWithNoDiff(t *testing.T) {
 func holdsOneOfEach(fake *fakeapi.Server) resource.TestCheckFunc {
 	return func(*terraform.State) error {
 		for kind, want := range map[string]int{
-			"workspace": 1, "secret": 2, "runner-trust": 1, "runner-pool": 2, "workspace-runners": 1,
+			"workspace": 1, "secret": 2, "workspace-token-trust": 2, "runner-trust": 1, "runner-pool": 2, "workspace-runners": 1,
 			"team": 1, "line": 1, "skill": 1, "integration": 1, "harness-profile": 1,
 		} {
 			if got := fake.Count(kind); got != want {

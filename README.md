@@ -47,7 +47,8 @@ resource "spotlight_workspace" "acme" {
 ```
 
 - **Workspaces:** a workspace is created by signing up in the web app, then adopted with an `import` block. A token cannot create one.
-- **Scopes:** one token with `configure`, `secrets` and `runners` manages everything.
+- **Scopes:** one token with `configure`, `secrets`, `runners` and `trusts` manages everything.
+- **CI without a stored token:** `oidc { trust = "<trust id>" }`, or `SPOTLIGHT_OIDC_TRUST`, exchanges the CI job's OIDC token for a short-lived one through a `spotlight_workspace_token_trust`.
 - **Adopting an existing workspace:** **Download as Terraform** in the web app's workspace menu, or `terraform query -generate-config-out=…`, writes the configuration and import blocks for you.
 - **Terraform versions:** Terraform 1.11+ is needed for the write-only `value_wo` (secrets), `token` (runner pools) and `provision.secret` (runner pools).
 
@@ -90,7 +91,7 @@ make sweep SWEEP=<slug>    # delete what an interrupted acceptance run left behi
 ```
 
 - **Terraform binary:** unit tests run the real `terraform`. Tests skip below the version they need: 1.11 for write-only values, 1.12 for identity, 1.14 for list resources.
-- **Acceptance tests:** these need `SPOTLIGHT_URL`, `SPOTLIGHT_API_TOKEN` (with `configure`, `secrets` and `runners`) and `SPOTLIGHT_ACC_WORKSPACE`. They work under random `tf-acc-` keys and leave the workspace as they found it.
+- **Acceptance tests:** these need `SPOTLIGHT_URL`, `SPOTLIGHT_API_TOKEN` (with `configure`, `secrets`, `runners` and `trusts`) and `SPOTLIGHT_ACC_WORKSPACE`. They work under random `tf-acc-` keys and leave the workspace as they found it.
 - **Sweepers:** these delete only `tf-acc-` / `TF_ACC_` resources. There's no sweeper for the workspace or its runner declaration.
 
 ## Generate
