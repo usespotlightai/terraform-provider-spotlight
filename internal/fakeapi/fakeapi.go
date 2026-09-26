@@ -172,8 +172,8 @@ func (s *Server) IDOf(kind, address string) string {
 }
 
 // Kept answers the write-only value the fake keeps for a resource: a
-// secret's value, a pull pool's token, or a push pool's
-// provision secret.
+// secret's value, a pull pool's token, a push pool's provision secret, or
+// the secret a hook signs with.
 func (s *Server) Kept(id string) string {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -310,11 +310,12 @@ var kinds = map[string]string{
 	"runner-pools":      "runner-pool",
 	"workspace-runners": "workspace-runners",
 	"token-trusts":      "workspace-token-trust",
+	"hooks":             "hook",
 }
 
 func ownerKind(kind string) string {
 	switch kind {
-	case "line", "skill", "integration", "harness-profile":
+	case "line", "skill", "integration", "harness-profile", "hook":
 		return "team"
 	default:
 		return "workspace"
@@ -760,6 +761,7 @@ var fixedFields = map[string][]string{
 	"runner-trust":          {"key"},
 	"runner-pool":           {"key"},
 	"workspace-token-trust": {"key"},
+	"hook":                  {"key"},
 }
 
 func givesPoolToken(kind string, fields map[string]any) bool {
@@ -847,6 +849,10 @@ func (s *Server) bodyOf(held *resource) map[string]any {
 
 	if held.kind == "workspace-token-trust" {
 		body["definedBy"] = Admin
+	}
+
+	if held.kind == "integration" {
+		body["tools"] = offered(held.fields)
 	}
 
 	return body

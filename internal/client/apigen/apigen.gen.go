@@ -77,6 +77,138 @@ func (e FieldErrorResponseDtoSeverity) Valid() bool {
 	}
 }
 
+// Defines values for HookDefinitionRequestDtoFailure.
+const (
+	HookDefinitionRequestDtoFailureBlock    HookDefinitionRequestDtoFailure = "block"
+	HookDefinitionRequestDtoFailureContinue HookDefinitionRequestDtoFailure = "continue"
+)
+
+// Valid indicates whether the value is a known member of the HookDefinitionRequestDtoFailure enum.
+func (e HookDefinitionRequestDtoFailure) Valid() bool {
+	switch e {
+	case HookDefinitionRequestDtoFailureBlock:
+		return true
+	case HookDefinitionRequestDtoFailureContinue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for HookDefinitionRequestDtoOn.
+const (
+	HookDefinitionRequestDtoOnHandoverGiving     HookDefinitionRequestDtoOn = "handover.giving"
+	HookDefinitionRequestDtoOnPullRequestMerged  HookDefinitionRequestDtoOn = "pull-request.merged"
+	HookDefinitionRequestDtoOnPullRequestOpening HookDefinitionRequestDtoOn = "pull-request.opening"
+	HookDefinitionRequestDtoOnRunEnded           HookDefinitionRequestDtoOn = "run.ended"
+	HookDefinitionRequestDtoOnRunStarting        HookDefinitionRequestDtoOn = "run.starting"
+	HookDefinitionRequestDtoOnTaskMoved          HookDefinitionRequestDtoOn = "task.moved"
+	HookDefinitionRequestDtoOnTaskOpened         HookDefinitionRequestDtoOn = "task.opened"
+	HookDefinitionRequestDtoOnToolUsed           HookDefinitionRequestDtoOn = "tool.used"
+	HookDefinitionRequestDtoOnToolUsing          HookDefinitionRequestDtoOn = "tool.using"
+)
+
+// Valid indicates whether the value is a known member of the HookDefinitionRequestDtoOn enum.
+func (e HookDefinitionRequestDtoOn) Valid() bool {
+	switch e {
+	case HookDefinitionRequestDtoOnHandoverGiving:
+		return true
+	case HookDefinitionRequestDtoOnPullRequestMerged:
+		return true
+	case HookDefinitionRequestDtoOnPullRequestOpening:
+		return true
+	case HookDefinitionRequestDtoOnRunEnded:
+		return true
+	case HookDefinitionRequestDtoOnRunStarting:
+		return true
+	case HookDefinitionRequestDtoOnTaskMoved:
+		return true
+	case HookDefinitionRequestDtoOnTaskOpened:
+		return true
+	case HookDefinitionRequestDtoOnToolUsed:
+		return true
+	case HookDefinitionRequestDtoOnToolUsing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for HookRequestDtoFrom.
+const (
+	Network   HookRequestDtoFrom = "network"
+	Spotlight HookRequestDtoFrom = "spotlight"
+)
+
+// Valid indicates whether the value is a known member of the HookRequestDtoFrom enum.
+func (e HookRequestDtoFrom) Valid() bool {
+	switch e {
+	case Network:
+		return true
+	case Spotlight:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for HookResourceResponseDtoFailure.
+const (
+	HookResourceResponseDtoFailureBlock    HookResourceResponseDtoFailure = "block"
+	HookResourceResponseDtoFailureContinue HookResourceResponseDtoFailure = "continue"
+)
+
+// Valid indicates whether the value is a known member of the HookResourceResponseDtoFailure enum.
+func (e HookResourceResponseDtoFailure) Valid() bool {
+	switch e {
+	case HookResourceResponseDtoFailureBlock:
+		return true
+	case HookResourceResponseDtoFailureContinue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for HookResourceResponseDtoOn.
+const (
+	HookResourceResponseDtoOnHandoverGiving     HookResourceResponseDtoOn = "handover.giving"
+	HookResourceResponseDtoOnPullRequestMerged  HookResourceResponseDtoOn = "pull-request.merged"
+	HookResourceResponseDtoOnPullRequestOpening HookResourceResponseDtoOn = "pull-request.opening"
+	HookResourceResponseDtoOnRunEnded           HookResourceResponseDtoOn = "run.ended"
+	HookResourceResponseDtoOnRunStarting        HookResourceResponseDtoOn = "run.starting"
+	HookResourceResponseDtoOnTaskMoved          HookResourceResponseDtoOn = "task.moved"
+	HookResourceResponseDtoOnTaskOpened         HookResourceResponseDtoOn = "task.opened"
+	HookResourceResponseDtoOnToolUsed           HookResourceResponseDtoOn = "tool.used"
+	HookResourceResponseDtoOnToolUsing          HookResourceResponseDtoOn = "tool.using"
+)
+
+// Valid indicates whether the value is a known member of the HookResourceResponseDtoOn enum.
+func (e HookResourceResponseDtoOn) Valid() bool {
+	switch e {
+	case HookResourceResponseDtoOnHandoverGiving:
+		return true
+	case HookResourceResponseDtoOnPullRequestMerged:
+		return true
+	case HookResourceResponseDtoOnPullRequestOpening:
+		return true
+	case HookResourceResponseDtoOnRunEnded:
+		return true
+	case HookResourceResponseDtoOnRunStarting:
+		return true
+	case HookResourceResponseDtoOnTaskMoved:
+		return true
+	case HookResourceResponseDtoOnTaskOpened:
+		return true
+	case HookResourceResponseDtoOnToolUsed:
+		return true
+	case HookResourceResponseDtoOnToolUsing:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for JournalStepResponseDtoKind.
 const (
 	Hook    JournalStepResponseDtoKind = "hook"
@@ -347,6 +479,51 @@ const (
 func (e UpdateHarnessProfileParamsSpotlightApiVersion) Valid() bool {
 	switch e {
 	case UpdateHarnessProfileParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DeleteHookParamsSpotlightApiVersion.
+const (
+	DeleteHookParamsSpotlightApiVersionN20260923 DeleteHookParamsSpotlightApiVersion = "2026-09-23"
+)
+
+// Valid indicates whether the value is a known member of the DeleteHookParamsSpotlightApiVersion enum.
+func (e DeleteHookParamsSpotlightApiVersion) Valid() bool {
+	switch e {
+	case DeleteHookParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReadHookParamsSpotlightApiVersion.
+const (
+	ReadHookParamsSpotlightApiVersionN20260923 ReadHookParamsSpotlightApiVersion = "2026-09-23"
+)
+
+// Valid indicates whether the value is a known member of the ReadHookParamsSpotlightApiVersion enum.
+func (e ReadHookParamsSpotlightApiVersion) Valid() bool {
+	switch e {
+	case ReadHookParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateHookParamsSpotlightApiVersion.
+const (
+	UpdateHookParamsSpotlightApiVersionN20260923 UpdateHookParamsSpotlightApiVersion = "2026-09-23"
+)
+
+// Valid indicates whether the value is a known member of the UpdateHookParamsSpotlightApiVersion enum.
+func (e UpdateHookParamsSpotlightApiVersion) Valid() bool {
+	switch e {
+	case UpdateHookParamsSpotlightApiVersionN20260923:
 		return true
 	default:
 		return false
@@ -701,6 +878,21 @@ func (e CreateHarnessProfileParamsSpotlightApiVersion) Valid() bool {
 	}
 }
 
+// Defines values for CreateHookParamsSpotlightApiVersion.
+const (
+	CreateHookParamsSpotlightApiVersionN20260923 CreateHookParamsSpotlightApiVersion = "2026-09-23"
+)
+
+// Valid indicates whether the value is a known member of the CreateHookParamsSpotlightApiVersion enum.
+func (e CreateHookParamsSpotlightApiVersion) Valid() bool {
+	switch e {
+	case CreateHookParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for CreateIntegrationParamsSpotlightApiVersion.
 const (
 	CreateIntegrationParamsSpotlightApiVersionN20260923 CreateIntegrationParamsSpotlightApiVersion = "2026-09-23"
@@ -980,6 +1172,36 @@ const (
 func (e ImportHarnessProfileParamsSpotlightApiVersion) Valid() bool {
 	switch e {
 	case ImportHarnessProfileParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListHooksParamsSpotlightApiVersion.
+const (
+	ListHooksParamsSpotlightApiVersionN20260923 ListHooksParamsSpotlightApiVersion = "2026-09-23"
+)
+
+// Valid indicates whether the value is a known member of the ListHooksParamsSpotlightApiVersion enum.
+func (e ListHooksParamsSpotlightApiVersion) Valid() bool {
+	switch e {
+	case ListHooksParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ImportHookParamsSpotlightApiVersion.
+const (
+	ImportHookParamsSpotlightApiVersionN20260923 ImportHookParamsSpotlightApiVersion = "2026-09-23"
+)
+
+// Valid indicates whether the value is a known member of the ImportHookParamsSpotlightApiVersion enum.
+func (e ImportHookParamsSpotlightApiVersion) Valid() bool {
+	switch e {
+	case ImportHookParamsSpotlightApiVersionN20260923:
 		return true
 	default:
 		return false
@@ -1533,6 +1755,174 @@ type HarnessProfileResourceResponseDto struct {
 	Warnings []FieldErrorResponseDto `json:"warnings"`
 }
 
+// HookDefinitionRequestDto defines model for HookDefinitionRequestDto.
+type HookDefinitionRequestDto struct {
+	Failure        *HookDefinitionRequestDtoFailure `json:"failure,omitempty"`
+	Key            string                           `json:"key"`
+	Match          *HookMatchDto                    `json:"match,omitempty"`
+	On             HookDefinitionRequestDtoOn       `json:"on"`
+	Signing        *HookSigningRequestDto           `json:"signing,omitempty"`
+	Steps          []HookStepDto                    `json:"steps"`
+	TimeoutSeconds *float32                         `json:"timeoutSeconds,omitempty"`
+	Vars           *map[string]string               `json:"vars,omitempty"`
+	When           *string                          `json:"when,omitempty"`
+}
+
+// HookDefinitionRequestDtoFailure defines model for HookDefinitionRequestDto.Failure.
+type HookDefinitionRequestDtoFailure string
+
+// HookDefinitionRequestDtoOn defines model for HookDefinitionRequestDto.On.
+type HookDefinitionRequestDtoOn string
+
+// HookMatchDto defines model for HookMatchDto.
+type HookMatchDto struct {
+	// Lines Line keys whose tasks the hook fires for
+	Lines []string `json:"lines"`
+
+	// Paths Changed paths the hook fires for, as globs; only on pull-request.opening and pull-request.merged
+	Paths []string `json:"paths"`
+
+	// Repositories Repositories, as owner/name, the hook fires for
+	Repositories []string `json:"repositories"`
+
+	// Stations Station keys whose tasks the hook fires for
+	Stations []string `json:"stations"`
+
+	// Tools Tools the hook fires for, as integration.tool; only on tool.using and tool.used
+	Tools []string `json:"tools"`
+}
+
+// HookOidcDto defines model for HookOidcDto.
+type HookOidcDto struct {
+	// Audience The audience the token is for, as the endpoint checks it
+	Audience string `json:"audience"`
+}
+
+// HookRequestDto defines model for HookRequestDto.
+type HookRequestDto struct {
+	// Body The JSON body, any JSON value; strings may hold ${{ }} expressions. Left out, Spotlight sends the event, task and run
+	Body *HookRequestDto_Body `json:"body,omitempty"`
+
+	// From spotlight sends it from Spotlight to an allowed host; network has a host of the workspace send it from inside its network, through egress
+	From HookRequestDtoFrom `json:"from"`
+
+	// Headers Headers to send besides the ones Spotlight signs with
+	Headers map[string]string `json:"headers"`
+
+	// Url Where the request goes; may hold ${{ }} expressions
+	Url string `json:"url"`
+}
+
+// HookRequestDtoBody0 defines model for .
+type HookRequestDtoBody0 map[string]interface{}
+
+// HookRequestDtoBody1 defines model for .
+type HookRequestDtoBody1 = []interface{}
+
+// HookRequestDtoBody2 defines model for .
+type HookRequestDtoBody2 = string
+
+// HookRequestDtoBody3 defines model for .
+type HookRequestDtoBody3 = float32
+
+// HookRequestDtoBody4 defines model for .
+type HookRequestDtoBody4 = bool
+
+// HookRequestDto_Body The JSON body, any JSON value; strings may hold ${{ }} expressions. Left out, Spotlight sends the event, task and run
+type HookRequestDto_Body struct {
+	union json.RawMessage
+}
+
+// HookRequestDtoFrom spotlight sends it from Spotlight to an allowed host; network has a host of the workspace send it from inside its network, through egress
+type HookRequestDtoFrom string
+
+// HookResourceListResponseDto defines model for HookResourceListResponseDto.
+type HookResourceListResponseDto struct {
+	// Items Every one there is, each as a read would answer it, in address order
+	Items []HookResourceResponseDto `json:"items"`
+}
+
+// HookResourceResponseDto defines model for HookResourceResponseDto.
+type HookResourceResponseDto struct {
+	// Address Names the resource within its workspace; terraform import takes it
+	Address string `json:"address"`
+
+	// Failure What a failed step does to the event: continue lets it go on; block stops it, before an event only
+	Failure HookResourceResponseDtoFailure `json:"failure"`
+
+	// Id Issued by Spotlight when the resource is created, and never changed
+	Id string `json:"id"`
+
+	// Key Names the hook within its team; fixed for its life, so changing it means replacing the hook
+	Key   string       `json:"key"`
+	Match HookMatchDto `json:"match"`
+
+	// On The event the hook fires on
+	On      HookResourceResponseDtoOn `json:"on"`
+	Signing *HookSigningDto           `json:"signing,omitempty"`
+	Steps   []HookStepDto             `json:"steps"`
+
+	// TeamId The team it belongs to
+	TeamId string `json:"teamId"`
+
+	// TimeoutSeconds How long each request may take, and a before-hook as a whole
+	TimeoutSeconds float32 `json:"timeoutSeconds"`
+
+	// Vars Values the expressions read as vars.<name>
+	Vars map[string]string `json:"vars"`
+
+	// Version Rises with every change; the ETag carries it, and a write sends it back as If-Match
+	Version float32 `json:"version"`
+
+	// Warnings What would work better, though nothing stops it working; not settable
+	Warnings []FieldErrorResponseDto `json:"warnings"`
+
+	// When A CEL condition the event must meet, besides match
+	When *string `json:"when,omitempty"`
+}
+
+// HookResourceResponseDtoFailure What a failed step does to the event: continue lets it go on; block stops it, before an event only
+type HookResourceResponseDtoFailure string
+
+// HookResourceResponseDtoOn The event the hook fires on
+type HookResourceResponseDtoOn string
+
+// HookSigningDto defines model for HookSigningDto.
+type HookSigningDto struct {
+	// Oidc Sign each request with a short-lived OIDC token instead
+	Oidc *HookOidcDto `json:"oidc,omitempty"`
+
+	// SecretVersion The version of the HMAC secret; changed to rotate secret, which is write-only and never answered
+	SecretVersion *float32 `json:"secretVersion,omitempty"`
+}
+
+// HookSigningRequestDto defines model for HookSigningRequestDto.
+type HookSigningRequestDto struct {
+	// Oidc Sign each request with a short-lived OIDC token instead
+	Oidc *HookOidcDto `json:"oidc,omitempty"`
+
+	// Secret The HMAC secret, whsec_ and 24 to 64 base64 bytes; write-only, sent when secretVersion changes
+	Secret *string `json:"secret,omitempty"`
+
+	// SecretVersion The version of secret; change it to rotate secret
+	SecretVersion *float32 `json:"secretVersion,omitempty"`
+}
+
+// HookStepDto defines model for HookStepDto.
+type HookStepDto struct {
+	// Call The tool the step calls, as integration.tool
+	Call *string `json:"call,omitempty"`
+
+	// Name Names the step; later steps read its output as step.<name>
+	Name string `json:"name"`
+
+	// Request The request the step makes
+	Request *HookRequestDto `json:"request,omitempty"`
+
+	// With The inputs the step gives its tool
+	With *map[string]interface{} `json:"with,omitempty"`
+}
+
 // IntegrationResourceListResponseDto defines model for IntegrationResourceListResponseDto.
 type IntegrationResourceListResponseDto struct {
 	// Items Every one there is, each as a read would answer it, in address order
@@ -1555,6 +1945,9 @@ type IntegrationResourceResponseDto struct {
 
 	// TeamId The team it belongs to
 	TeamId string `json:"teamId"`
+
+	// Tools Each tool the integration offers, by its name within the integration, to the name a station or hook gives it by; not settable
+	Tools map[string]string `json:"tools"`
 
 	// Version Rises with every change; the ETag carries it, and a write sends it back as If-Match
 	Version float32 `json:"version"`
@@ -2167,6 +2560,48 @@ type UpdateHarnessProfileParams struct {
 // UpdateHarnessProfileParamsSpotlightApiVersion defines parameters for UpdateHarnessProfile.
 type UpdateHarnessProfileParamsSpotlightApiVersion string
 
+// DeleteHookParams defines parameters for DeleteHook.
+type DeleteHookParams struct {
+	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	SpotlightApiVersion *DeleteHookParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
+
+	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown
+	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
+
+	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	IfMatch string `json:"If-Match"`
+}
+
+// DeleteHookParamsSpotlightApiVersion defines parameters for DeleteHook.
+type DeleteHookParamsSpotlightApiVersion string
+
+// ReadHookParams defines parameters for ReadHook.
+type ReadHookParams struct {
+	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	SpotlightApiVersion *ReadHookParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
+
+	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown
+	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
+}
+
+// ReadHookParamsSpotlightApiVersion defines parameters for ReadHook.
+type ReadHookParamsSpotlightApiVersion string
+
+// UpdateHookParams defines parameters for UpdateHook.
+type UpdateHookParams struct {
+	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	SpotlightApiVersion *UpdateHookParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
+
+	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown
+	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
+
+	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	IfMatch string `json:"If-Match"`
+}
+
+// UpdateHookParamsSpotlightApiVersion defines parameters for UpdateHook.
+type UpdateHookParamsSpotlightApiVersion string
+
 // DeleteIntegrationParams defines parameters for DeleteIntegration.
 type DeleteIntegrationParams struct {
 	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
@@ -2571,6 +3006,21 @@ type CreateHarnessProfileParams struct {
 // CreateHarnessProfileParamsSpotlightApiVersion defines parameters for CreateHarnessProfile.
 type CreateHarnessProfileParamsSpotlightApiVersion string
 
+// CreateHookParams defines parameters for CreateHook.
+type CreateHookParams struct {
+	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	SpotlightApiVersion *CreateHookParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
+
+	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown
+	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
+
+	// IdempotencyKey Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more
+	IdempotencyKey string `json:"Idempotency-Key"`
+}
+
+// CreateHookParamsSpotlightApiVersion defines parameters for CreateHook.
+type CreateHookParamsSpotlightApiVersion string
+
 // CreateIntegrationJSONBody defines parameters for CreateIntegration.
 type CreateIntegrationJSONBody map[string]interface{}
 
@@ -2855,6 +3305,33 @@ type ImportHarnessProfileParams struct {
 
 // ImportHarnessProfileParamsSpotlightApiVersion defines parameters for ImportHarnessProfile.
 type ImportHarnessProfileParamsSpotlightApiVersion string
+
+// ListHooksParams defines parameters for ListHooks.
+type ListHooksParams struct {
+	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	SpotlightApiVersion *ListHooksParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
+
+	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown
+	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
+}
+
+// ListHooksParamsSpotlightApiVersion defines parameters for ListHooks.
+type ListHooksParamsSpotlightApiVersion string
+
+// ImportHookParams defines parameters for ImportHook.
+type ImportHookParams struct {
+	// Address The hook's address within the workspace
+	Address interface{} `form:"address" json:"address"`
+
+	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	SpotlightApiVersion *ImportHookParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
+
+	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version> or web; anything else is recorded as unknown
+	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
+}
+
+// ImportHookParamsSpotlightApiVersion defines parameters for ImportHook.
+type ImportHookParamsSpotlightApiVersion string
 
 // ListIntegrationsParams defines parameters for ListIntegrations.
 type ListIntegrationsParams struct {
@@ -3280,6 +3757,9 @@ type CheckExpressionJSONRequestBody = CheckExpressionRequestDto
 // UpdateHarnessProfileJSONRequestBody defines body for UpdateHarnessProfile for application/json ContentType.
 type UpdateHarnessProfileJSONRequestBody UpdateHarnessProfileJSONBody
 
+// UpdateHookJSONRequestBody defines body for UpdateHook for application/json ContentType.
+type UpdateHookJSONRequestBody = HookDefinitionRequestDto
+
 // UpdateIntegrationJSONRequestBody defines body for UpdateIntegration for application/json ContentType.
 type UpdateIntegrationJSONRequestBody UpdateIntegrationJSONBody
 
@@ -3303,6 +3783,9 @@ type UpdateTeamJSONRequestBody UpdateTeamJSONBody
 
 // CreateHarnessProfileJSONRequestBody defines body for CreateHarnessProfile for application/json ContentType.
 type CreateHarnessProfileJSONRequestBody CreateHarnessProfileJSONBody
+
+// CreateHookJSONRequestBody defines body for CreateHook for application/json ContentType.
+type CreateHookJSONRequestBody = HookDefinitionRequestDto
 
 // CreateIntegrationJSONRequestBody defines body for CreateIntegration for application/json ContentType.
 type CreateIntegrationJSONRequestBody CreateIntegrationJSONBody
@@ -3345,6 +3828,146 @@ type CreateWorkspaceRunnersJSONRequestBody CreateWorkspaceRunnersJSONBody
 
 // ExchangeWorkloadTokenJSONRequestBody defines body for ExchangeWorkloadToken for application/json ContentType.
 type ExchangeWorkloadTokenJSONRequestBody = ExchangeWorkloadTokenRequestDto
+
+// AsHookRequestDtoBody0 returns the union data inside the HookRequestDto_Body as a HookRequestDtoBody0
+func (t HookRequestDto_Body) AsHookRequestDtoBody0() (HookRequestDtoBody0, error) {
+	var body HookRequestDtoBody0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromHookRequestDtoBody0 overwrites any union data inside the HookRequestDto_Body as the provided HookRequestDtoBody0
+func (t *HookRequestDto_Body) FromHookRequestDtoBody0(v HookRequestDtoBody0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeHookRequestDtoBody0 performs a merge with any union data inside the HookRequestDto_Body, using the provided HookRequestDtoBody0
+func (t *HookRequestDto_Body) MergeHookRequestDtoBody0(v HookRequestDtoBody0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsHookRequestDtoBody1 returns the union data inside the HookRequestDto_Body as a HookRequestDtoBody1
+func (t HookRequestDto_Body) AsHookRequestDtoBody1() (HookRequestDtoBody1, error) {
+	var body HookRequestDtoBody1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromHookRequestDtoBody1 overwrites any union data inside the HookRequestDto_Body as the provided HookRequestDtoBody1
+func (t *HookRequestDto_Body) FromHookRequestDtoBody1(v HookRequestDtoBody1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeHookRequestDtoBody1 performs a merge with any union data inside the HookRequestDto_Body, using the provided HookRequestDtoBody1
+func (t *HookRequestDto_Body) MergeHookRequestDtoBody1(v HookRequestDtoBody1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsHookRequestDtoBody2 returns the union data inside the HookRequestDto_Body as a HookRequestDtoBody2
+func (t HookRequestDto_Body) AsHookRequestDtoBody2() (HookRequestDtoBody2, error) {
+	var body HookRequestDtoBody2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromHookRequestDtoBody2 overwrites any union data inside the HookRequestDto_Body as the provided HookRequestDtoBody2
+func (t *HookRequestDto_Body) FromHookRequestDtoBody2(v HookRequestDtoBody2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeHookRequestDtoBody2 performs a merge with any union data inside the HookRequestDto_Body, using the provided HookRequestDtoBody2
+func (t *HookRequestDto_Body) MergeHookRequestDtoBody2(v HookRequestDtoBody2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsHookRequestDtoBody3 returns the union data inside the HookRequestDto_Body as a HookRequestDtoBody3
+func (t HookRequestDto_Body) AsHookRequestDtoBody3() (HookRequestDtoBody3, error) {
+	var body HookRequestDtoBody3
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromHookRequestDtoBody3 overwrites any union data inside the HookRequestDto_Body as the provided HookRequestDtoBody3
+func (t *HookRequestDto_Body) FromHookRequestDtoBody3(v HookRequestDtoBody3) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeHookRequestDtoBody3 performs a merge with any union data inside the HookRequestDto_Body, using the provided HookRequestDtoBody3
+func (t *HookRequestDto_Body) MergeHookRequestDtoBody3(v HookRequestDtoBody3) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsHookRequestDtoBody4 returns the union data inside the HookRequestDto_Body as a HookRequestDtoBody4
+func (t HookRequestDto_Body) AsHookRequestDtoBody4() (HookRequestDtoBody4, error) {
+	var body HookRequestDtoBody4
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromHookRequestDtoBody4 overwrites any union data inside the HookRequestDto_Body as the provided HookRequestDtoBody4
+func (t *HookRequestDto_Body) FromHookRequestDtoBody4(v HookRequestDtoBody4) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeHookRequestDtoBody4 performs a merge with any union data inside the HookRequestDto_Body, using the provided HookRequestDtoBody4
+func (t *HookRequestDto_Body) MergeHookRequestDtoBody4(v HookRequestDtoBody4) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t HookRequestDto_Body) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *HookRequestDto_Body) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -3438,6 +4061,17 @@ type ClientInterface interface {
 
 	UpdateHarnessProfile(ctx context.Context, id string, params *UpdateHarnessProfileParams, body UpdateHarnessProfileJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// DeleteHook request
+	DeleteHook(ctx context.Context, id string, params *DeleteHookParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ReadHook request
+	ReadHook(ctx context.Context, id string, params *ReadHookParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateHookWithBody request with any body
+	UpdateHookWithBody(ctx context.Context, id string, params *UpdateHookParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateHook(ctx context.Context, id string, params *UpdateHookParams, body UpdateHookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// DeleteIntegration request
 	DeleteIntegration(ctx context.Context, id string, params *DeleteIntegrationParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -3520,6 +4154,11 @@ type ClientInterface interface {
 
 	CreateHarnessProfile(ctx context.Context, teamId string, params *CreateHarnessProfileParams, body CreateHarnessProfileJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateHookWithBody request with any body
+	CreateHookWithBody(ctx context.Context, teamId string, params *CreateHookParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateHook(ctx context.Context, teamId string, params *CreateHookParams, body CreateHookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateIntegrationWithBody request with any body
 	CreateIntegrationWithBody(ctx context.Context, teamId string, params *CreateIntegrationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -3584,6 +4223,12 @@ type ClientInterface interface {
 
 	// ImportHarnessProfile request
 	ImportHarnessProfile(ctx context.Context, workspaceId string, params *ImportHarnessProfileParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListHooks request
+	ListHooks(ctx context.Context, workspaceId string, params *ListHooksParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ImportHook request
+	ImportHook(ctx context.Context, workspaceId string, params *ImportHookParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListIntegrations request
 	ListIntegrations(ctx context.Context, workspaceId string, params *ListIntegrationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -3749,6 +4394,54 @@ func (c *Client) UpdateHarnessProfileWithBody(ctx context.Context, id string, pa
 
 func (c *Client) UpdateHarnessProfile(ctx context.Context, id string, params *UpdateHarnessProfileParams, body UpdateHarnessProfileJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateHarnessProfileRequest(c.Server, id, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteHook(ctx context.Context, id string, params *DeleteHookParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteHookRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ReadHook(ctx context.Context, id string, params *ReadHookParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewReadHookRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateHookWithBody(ctx context.Context, id string, params *UpdateHookParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateHookRequestWithBody(c.Server, id, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateHook(ctx context.Context, id string, params *UpdateHookParams, body UpdateHookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateHookRequest(c.Server, id, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -4119,6 +4812,30 @@ func (c *Client) CreateHarnessProfile(ctx context.Context, teamId string, params
 	return c.Client.Do(req)
 }
 
+func (c *Client) CreateHookWithBody(ctx context.Context, teamId string, params *CreateHookParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateHookRequestWithBody(c.Server, teamId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateHook(ctx context.Context, teamId string, params *CreateHookParams, body CreateHookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateHookRequest(c.Server, teamId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) CreateIntegrationWithBody(ctx context.Context, teamId string, params *CreateIntegrationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateIntegrationRequestWithBody(c.Server, teamId, params, contentType, body)
 	if err != nil {
@@ -4397,6 +5114,30 @@ func (c *Client) ListHarnessProfiles(ctx context.Context, workspaceId string, pa
 
 func (c *Client) ImportHarnessProfile(ctx context.Context, workspaceId string, params *ImportHarnessProfileParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewImportHarnessProfileRequest(c.Server, workspaceId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListHooks(ctx context.Context, workspaceId string, params *ListHooksParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListHooksRequest(c.Server, workspaceId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ImportHook(ctx context.Context, workspaceId string, params *ImportHookParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewImportHookRequest(c.Server, workspaceId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -5067,6 +5808,217 @@ func NewUpdateHarnessProfileRequestWithBody(server string, id string, params *Up
 	}
 
 	operationPath := fmt.Sprintf("/resources/harness-profiles/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		if params.SpotlightApiVersion != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Api-Version", headerParam0)
+		}
+
+		if params.SpotlightClient != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Client", headerParam1)
+		}
+
+		var headerParam2 string
+
+		headerParam2, err = runtime.StyleParamWithOptions("simple", false, "If-Match", params.IfMatch, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("If-Match", headerParam2)
+
+	}
+
+	return req, nil
+}
+
+// NewDeleteHookRequest generates requests for DeleteHook
+func NewDeleteHookRequest(server string, id string, params *DeleteHookParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/resources/hooks/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+
+		if params.SpotlightApiVersion != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Api-Version", headerParam0)
+		}
+
+		if params.SpotlightClient != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Client", headerParam1)
+		}
+
+		var headerParam2 string
+
+		headerParam2, err = runtime.StyleParamWithOptions("simple", false, "If-Match", params.IfMatch, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("If-Match", headerParam2)
+
+	}
+
+	return req, nil
+}
+
+// NewReadHookRequest generates requests for ReadHook
+func NewReadHookRequest(server string, id string, params *ReadHookParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/resources/hooks/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+
+		if params.SpotlightApiVersion != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Api-Version", headerParam0)
+		}
+
+		if params.SpotlightClient != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Client", headerParam1)
+		}
+
+	}
+
+	return req, nil
+}
+
+// NewUpdateHookRequest calls the generic UpdateHook builder with application/json body
+func NewUpdateHookRequest(server string, id string, params *UpdateHookParams, body UpdateHookJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateHookRequestWithBody(server, id, params, "application/json", bodyReader)
+}
+
+// NewUpdateHookRequestWithBody generates requests for UpdateHook with any type of body
+func NewUpdateHookRequestWithBody(server string, id string, params *UpdateHookParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/resources/hooks/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -6680,6 +7632,88 @@ func NewCreateHarnessProfileRequestWithBody(server string, teamId string, params
 	return req, nil
 }
 
+// NewCreateHookRequest calls the generic CreateHook builder with application/json body
+func NewCreateHookRequest(server string, teamId string, params *CreateHookParams, body CreateHookJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateHookRequestWithBody(server, teamId, params, "application/json", bodyReader)
+}
+
+// NewCreateHookRequestWithBody generates requests for CreateHook with any type of body
+func NewCreateHookRequestWithBody(server string, teamId string, params *CreateHookParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "teamId", teamId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/resources/teams/%s/hooks", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		if params.SpotlightApiVersion != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Api-Version", headerParam0)
+		}
+
+		if params.SpotlightClient != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Client", headerParam1)
+		}
+
+		var headerParam2 string
+
+		headerParam2, err = runtime.StyleParamWithOptions("simple", false, "Idempotency-Key", params.IdempotencyKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("Idempotency-Key", headerParam2)
+
+	}
+
+	return req, nil
+}
+
 // NewCreateIntegrationRequest calls the generic CreateIntegration builder with application/json body
 func NewCreateIntegrationRequest(server string, teamId string, params *CreateIntegrationParams, body CreateIntegrationJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -7840,6 +8874,149 @@ func NewImportHarnessProfileRequest(server string, workspaceId string, params *I
 	}
 
 	operationPath := fmt.Sprintf("/resources/workspaces/%s/harness-profiles/import", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "address", params.Address, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+
+		if params.SpotlightApiVersion != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Api-Version", headerParam0)
+		}
+
+		if params.SpotlightClient != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Client", headerParam1)
+		}
+
+	}
+
+	return req, nil
+}
+
+// NewListHooksRequest generates requests for ListHooks
+func NewListHooksRequest(server string, workspaceId string, params *ListHooksParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/resources/workspaces/%s/hooks", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+
+		if params.SpotlightApiVersion != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Api-Version", headerParam0)
+		}
+
+		if params.SpotlightClient != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Client", headerParam1)
+		}
+
+	}
+
+	return req, nil
+}
+
+// NewImportHookRequest generates requests for ImportHook
+func NewImportHookRequest(server string, workspaceId string, params *ImportHookParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/resources/workspaces/%s/hooks/import", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -9787,6 +10964,17 @@ type ClientWithResponsesInterface interface {
 
 	UpdateHarnessProfileWithResponse(ctx context.Context, id string, params *UpdateHarnessProfileParams, body UpdateHarnessProfileJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateHarnessProfileResponse, error)
 
+	// DeleteHookWithResponse request
+	DeleteHookWithResponse(ctx context.Context, id string, params *DeleteHookParams, reqEditors ...RequestEditorFn) (*DeleteHookResponse, error)
+
+	// ReadHookWithResponse request
+	ReadHookWithResponse(ctx context.Context, id string, params *ReadHookParams, reqEditors ...RequestEditorFn) (*ReadHookResponse, error)
+
+	// UpdateHookWithBodyWithResponse request with any body
+	UpdateHookWithBodyWithResponse(ctx context.Context, id string, params *UpdateHookParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateHookResponse, error)
+
+	UpdateHookWithResponse(ctx context.Context, id string, params *UpdateHookParams, body UpdateHookJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateHookResponse, error)
+
 	// DeleteIntegrationWithResponse request
 	DeleteIntegrationWithResponse(ctx context.Context, id string, params *DeleteIntegrationParams, reqEditors ...RequestEditorFn) (*DeleteIntegrationResponse, error)
 
@@ -9869,6 +11057,11 @@ type ClientWithResponsesInterface interface {
 
 	CreateHarnessProfileWithResponse(ctx context.Context, teamId string, params *CreateHarnessProfileParams, body CreateHarnessProfileJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateHarnessProfileResponse, error)
 
+	// CreateHookWithBodyWithResponse request with any body
+	CreateHookWithBodyWithResponse(ctx context.Context, teamId string, params *CreateHookParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateHookResponse, error)
+
+	CreateHookWithResponse(ctx context.Context, teamId string, params *CreateHookParams, body CreateHookJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateHookResponse, error)
+
 	// CreateIntegrationWithBodyWithResponse request with any body
 	CreateIntegrationWithBodyWithResponse(ctx context.Context, teamId string, params *CreateIntegrationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateIntegrationResponse, error)
 
@@ -9933,6 +11126,12 @@ type ClientWithResponsesInterface interface {
 
 	// ImportHarnessProfileWithResponse request
 	ImportHarnessProfileWithResponse(ctx context.Context, workspaceId string, params *ImportHarnessProfileParams, reqEditors ...RequestEditorFn) (*ImportHarnessProfileResponse, error)
+
+	// ListHooksWithResponse request
+	ListHooksWithResponse(ctx context.Context, workspaceId string, params *ListHooksParams, reqEditors ...RequestEditorFn) (*ListHooksResponse, error)
+
+	// ImportHookWithResponse request
+	ImportHookWithResponse(ctx context.Context, workspaceId string, params *ImportHookParams, reqEditors ...RequestEditorFn) (*ImportHookResponse, error)
 
 	// ListIntegrationsWithResponse request
 	ListIntegrationsWithResponse(ctx context.Context, workspaceId string, params *ListIntegrationsParams, reqEditors ...RequestEditorFn) (*ListIntegrationsResponse, error)
@@ -10189,6 +11388,111 @@ func (r UpdateHarnessProfileResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r UpdateHarnessProfileResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DeleteHookResponse struct {
+	Body                      []byte
+	HTTPResponse              *http.Response
+	ApplicationproblemJSON400 *ProblemResponseDto
+	ApplicationproblemJSON401 *ProblemResponseDto
+	ApplicationproblemJSON403 *ProblemResponseDto
+	ApplicationproblemJSON404 *ProblemResponseDto
+	ApplicationproblemJSON409 *ProblemResponseDto
+	ApplicationproblemJSON428 *ProblemResponseDto
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteHookResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteHookResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteHookResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ReadHookResponse struct {
+	Body                      []byte
+	HTTPResponse              *http.Response
+	JSON200                   *HookResourceResponseDto
+	ApplicationproblemJSON400 *ProblemResponseDto
+	ApplicationproblemJSON401 *ProblemResponseDto
+	ApplicationproblemJSON404 *ProblemResponseDto
+}
+
+// Status returns HTTPResponse.Status
+func (r ReadHookResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ReadHookResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ReadHookResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type UpdateHookResponse struct {
+	Body                      []byte
+	HTTPResponse              *http.Response
+	JSON200                   *HookResourceResponseDto
+	ApplicationproblemJSON400 *ProblemResponseDto
+	ApplicationproblemJSON401 *ProblemResponseDto
+	ApplicationproblemJSON403 *ProblemResponseDto
+	ApplicationproblemJSON404 *ProblemResponseDto
+	ApplicationproblemJSON409 *ProblemResponseDto
+	ApplicationproblemJSON422 *ProblemResponseDto
+	ApplicationproblemJSON428 *ProblemResponseDto
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateHookResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateHookResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r UpdateHookResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -10966,6 +12270,42 @@ func (r CreateHarnessProfileResponse) ContentType() string {
 	return ""
 }
 
+type CreateHookResponse struct {
+	Body                      []byte
+	HTTPResponse              *http.Response
+	JSON201                   *HookResourceResponseDto
+	ApplicationproblemJSON400 *ProblemResponseDto
+	ApplicationproblemJSON401 *ProblemResponseDto
+	ApplicationproblemJSON403 *ProblemResponseDto
+	ApplicationproblemJSON404 *ProblemResponseDto
+	ApplicationproblemJSON409 *ProblemResponseDto
+	ApplicationproblemJSON422 *ProblemResponseDto
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateHookResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateHookResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateHookResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type CreateIntegrationResponse struct {
 	Body                      []byte
 	HTTPResponse              *http.Response
@@ -11550,6 +12890,72 @@ func (r ImportHarnessProfileResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r ImportHarnessProfileResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ListHooksResponse struct {
+	Body                      []byte
+	HTTPResponse              *http.Response
+	JSON200                   *HookResourceListResponseDto
+	ApplicationproblemJSON400 *ProblemResponseDto
+	ApplicationproblemJSON401 *ProblemResponseDto
+	ApplicationproblemJSON404 *ProblemResponseDto
+}
+
+// Status returns HTTPResponse.Status
+func (r ListHooksResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListHooksResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListHooksResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ImportHookResponse struct {
+	Body                      []byte
+	HTTPResponse              *http.Response
+	JSON200                   *HookResourceResponseDto
+	ApplicationproblemJSON400 *ProblemResponseDto
+	ApplicationproblemJSON401 *ProblemResponseDto
+	ApplicationproblemJSON404 *ProblemResponseDto
+}
+
+// Status returns HTTPResponse.Status
+func (r ImportHookResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ImportHookResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ImportHookResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -12457,6 +13863,41 @@ func (c *ClientWithResponses) UpdateHarnessProfileWithResponse(ctx context.Conte
 	return ParseUpdateHarnessProfileResponse(rsp)
 }
 
+// DeleteHookWithResponse request returning *DeleteHookResponse
+func (c *ClientWithResponses) DeleteHookWithResponse(ctx context.Context, id string, params *DeleteHookParams, reqEditors ...RequestEditorFn) (*DeleteHookResponse, error) {
+	rsp, err := c.DeleteHook(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteHookResponse(rsp)
+}
+
+// ReadHookWithResponse request returning *ReadHookResponse
+func (c *ClientWithResponses) ReadHookWithResponse(ctx context.Context, id string, params *ReadHookParams, reqEditors ...RequestEditorFn) (*ReadHookResponse, error) {
+	rsp, err := c.ReadHook(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseReadHookResponse(rsp)
+}
+
+// UpdateHookWithBodyWithResponse request with arbitrary body returning *UpdateHookResponse
+func (c *ClientWithResponses) UpdateHookWithBodyWithResponse(ctx context.Context, id string, params *UpdateHookParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateHookResponse, error) {
+	rsp, err := c.UpdateHookWithBody(ctx, id, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateHookResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateHookWithResponse(ctx context.Context, id string, params *UpdateHookParams, body UpdateHookJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateHookResponse, error) {
+	rsp, err := c.UpdateHook(ctx, id, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateHookResponse(rsp)
+}
+
 // DeleteIntegrationWithResponse request returning *DeleteIntegrationResponse
 func (c *ClientWithResponses) DeleteIntegrationWithResponse(ctx context.Context, id string, params *DeleteIntegrationParams, reqEditors ...RequestEditorFn) (*DeleteIntegrationResponse, error) {
 	rsp, err := c.DeleteIntegration(ctx, id, params, reqEditors...)
@@ -12719,6 +14160,23 @@ func (c *ClientWithResponses) CreateHarnessProfileWithResponse(ctx context.Conte
 	return ParseCreateHarnessProfileResponse(rsp)
 }
 
+// CreateHookWithBodyWithResponse request with arbitrary body returning *CreateHookResponse
+func (c *ClientWithResponses) CreateHookWithBodyWithResponse(ctx context.Context, teamId string, params *CreateHookParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateHookResponse, error) {
+	rsp, err := c.CreateHookWithBody(ctx, teamId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateHookResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateHookWithResponse(ctx context.Context, teamId string, params *CreateHookParams, body CreateHookJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateHookResponse, error) {
+	rsp, err := c.CreateHook(ctx, teamId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateHookResponse(rsp)
+}
+
 // CreateIntegrationWithBodyWithResponse request with arbitrary body returning *CreateIntegrationResponse
 func (c *ClientWithResponses) CreateIntegrationWithBodyWithResponse(ctx context.Context, teamId string, params *CreateIntegrationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateIntegrationResponse, error) {
 	rsp, err := c.CreateIntegrationWithBody(ctx, teamId, params, contentType, body, reqEditors...)
@@ -12926,6 +14384,24 @@ func (c *ClientWithResponses) ImportHarnessProfileWithResponse(ctx context.Conte
 		return nil, err
 	}
 	return ParseImportHarnessProfileResponse(rsp)
+}
+
+// ListHooksWithResponse request returning *ListHooksResponse
+func (c *ClientWithResponses) ListHooksWithResponse(ctx context.Context, workspaceId string, params *ListHooksParams, reqEditors ...RequestEditorFn) (*ListHooksResponse, error) {
+	rsp, err := c.ListHooks(ctx, workspaceId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListHooksResponse(rsp)
+}
+
+// ImportHookWithResponse request returning *ImportHookResponse
+func (c *ClientWithResponses) ImportHookWithResponse(ctx context.Context, workspaceId string, params *ImportHookParams, reqEditors ...RequestEditorFn) (*ImportHookResponse, error) {
+	rsp, err := c.ImportHook(ctx, workspaceId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseImportHookResponse(rsp)
 }
 
 // ListIntegrationsWithResponse request returning *ListIntegrationsResponse
@@ -13427,6 +14903,189 @@ func ParseUpdateHarnessProfileResponse(rsp *http.Response) (*UpdateHarnessProfil
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest HarnessProfileResourceResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 428:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON428 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteHookResponse parses an HTTP response from a DeleteHookWithResponse call
+func ParseDeleteHookResponse(rsp *http.Response) (*DeleteHookResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteHookResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 428:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON428 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseReadHookResponse parses an HTTP response from a ReadHookWithResponse call
+func ParseReadHookResponse(rsp *http.Response) (*ReadHookResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ReadHookResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest HookResourceResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateHookResponse parses an HTTP response from a UpdateHookWithResponse call
+func ParseUpdateHookResponse(rsp *http.Response) (*UpdateHookResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateHookResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest HookResourceResponseDto
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -14835,6 +16494,74 @@ func ParseCreateHarnessProfileResponse(rsp *http.Response) (*CreateHarnessProfil
 	return response, nil
 }
 
+// ParseCreateHookResponse parses an HTTP response from a CreateHookWithResponse call
+func ParseCreateHookResponse(rsp *http.Response) (*CreateHookResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateHookResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest HookResourceResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseCreateIntegrationResponse parses an HTTP response from a CreateIntegrationWithResponse call
 func ParseCreateIntegrationResponse(rsp *http.Response) (*CreateIntegrationResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -15806,6 +17533,100 @@ func ParseImportHarnessProfileResponse(rsp *http.Response) (*ImportHarnessProfil
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest HarnessProfileResourceResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListHooksResponse parses an HTTP response from a ListHooksWithResponse call
+func ParseListHooksResponse(rsp *http.Response) (*ListHooksResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListHooksResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest HookResourceListResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseImportHookResponse parses an HTTP response from a ImportHookWithResponse call
+func ParseImportHookResponse(rsp *http.Response) (*ImportHookResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ImportHookResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest HookResourceResponseDto
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

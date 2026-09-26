@@ -29,6 +29,32 @@ func answered[T any](resp *http.Response, body []byte, value *T) (T, error) {
 	return *value, nil
 }
 
+// readAnswer reads what a call answered as a T, for an answer the
+// generated client cannot read for itself.
+func readAnswer[T any](resp *http.Response, err error) (T, error) {
+	var zero T
+
+	if err != nil {
+		return zero, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return zero, fmt.Errorf("could not read the control plane's answer: %w", err)
+	}
+
+	var held *T
+	if resp.StatusCode < http.StatusBadRequest {
+		var value T
+		if json.Unmarshal(body, &value) == nil {
+			held = &value
+		}
+	}
+
+	return answered(resp, body, held)
+}
+
 func done(resp *http.Response, body []byte) error {
 	if resp == nil {
 		return fmt.Errorf("the control plane gave no answer")

@@ -303,6 +303,81 @@ resource "spotlight_integration" "core_linear" {
 }
 
 import {
+  to = spotlight_hook.core_linear-comments
+  id = "00000000-0000-4000-8000-00000000a0a0/core/linear-comments"
+}
+
+resource "spotlight_hook" "core_linear-comments" {
+  team_id = spotlight_team.core.id
+  key     = "linear-comments"
+  on      = "tool.using"
+  match = {
+    tools    = [spotlight_integration.core_linear.tools["comment"]]
+    stations = ["implementation"]
+  }
+  when = "event.inputs.body != ''"
+  vars = {
+    channel = "C024BE91L"
+  }
+  signing = {
+    secret_wo         = var.hook_core_linear-comments_signing_secret
+    secret_wo_version = 2
+  }
+  failure         = "block"
+  timeout_seconds = 20
+  steps = [
+    {
+      name = "notify"
+      call = spotlight_integration.core_linear.tools["comment"]
+      with = {
+        body = "Agent commented: $${{ event.inputs.body }}"
+      }
+    },
+    {
+      name = "audit"
+      request = {
+        url = "https://audit.acme.dev/events"
+        headers = {
+          x-team = "core"
+        }
+        body = {
+          tool = "$${{ event.tool }}"
+        }
+        from = "network"
+      }
+    },
+  ]
+}
+
+import {
+  to = spotlight_hook.core_merged
+  id = "00000000-0000-4000-8000-00000000a0a0/core/merged"
+}
+
+resource "spotlight_hook" "core_merged" {
+  team_id = spotlight_team.core.id
+  key     = "merged"
+  on      = "pull-request.merged"
+  signing = {
+    oidc = {
+      audience = "https://dba.acme.dev"
+    }
+  }
+  steps = [
+    {
+      name = "review"
+      request = {
+        url = "https://dba.acme.dev/review"
+      }
+    },
+    {
+      name = "tell"
+      call = spotlight_integration.core_linear.tools["comment"]
+    },
+  ]
+}
+
+import {
   to = spotlight_harness_profile.core_careful
   id = "00000000-0000-4000-8000-00000000a0a0/core/careful"
 }

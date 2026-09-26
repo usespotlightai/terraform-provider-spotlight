@@ -56,6 +56,8 @@ func normalized(kind string, body map[string]any) (map[string]any, []fieldError)
 		return runnerPool(body)
 	case "workspace-runners":
 		return workspaceRunners(body)
+	case "hook":
+		return hook(body)
 	default:
 		return integration(body)
 	}
@@ -308,6 +310,17 @@ func integration(body map[string]any) (map[string]any, []fieldError) {
 	}
 
 	return map[string]any{"source": source, "definition": definition}, nil
+}
+
+func offered(fields map[string]any) map[string]any {
+	source := textOf(fields["source"])
+	tools := map[string]any{}
+
+	for name := range objectOf(objectOf(fields["definition"])["tools"]) {
+		tools[name] = source + "." + name
+	}
+
+	return tools
 }
 
 func textOf(held any) string {

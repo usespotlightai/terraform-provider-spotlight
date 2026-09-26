@@ -2,6 +2,8 @@ package provider
 
 import (
 	"context"
+	"maps"
+	"slices"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -36,7 +38,10 @@ type IntegrationResource struct {
 	expressions *expressions.Checker
 }
 
-const integrationHost = "integration"
+const (
+	integrationHost  = "integration"
+	integrationTools = "tools"
+)
 
 // IntegrationResourceModel is a spotlight_integration as Terraform holds it.
 type IntegrationResourceModel struct {
@@ -46,6 +51,7 @@ type IntegrationResourceModel struct {
 	TeamID     types.String  `tfsdk:"team_id"`
 	Source     types.String  `tfsdk:"source"`
 	Definition types.Dynamic `tfsdk:"definition"`
+	Tools      types.Map     `tfsdk:"tools"`
 }
 
 var integrationFields = fieldpath.Locator{Schema: integrationSchema().Type(), Under: fieldpath.Path{fieldpath.Key(expressions.Attribute)}}
@@ -75,6 +81,12 @@ func integrationSchema() schema.Schema {
 			expressions.Attribute: schema.DynamicAttribute{
 				Required:            true,
 				MarkdownDescription: "The integration's whole definition, as an object. Spotlight fills in each field it leaves out when it reads it back.",
+			},
+			integrationTools: schema.MapAttribute{
+				Computed:    true,
+				ElementType: types.StringType,
+				MarkdownDescription: "Each tool the integration offers, by its name in `definition.tools`, to the name a station or hook gives it by, as in `{ search = \"grafana.search\" }`. " +
+					"Name a tool through it, as in `spotlight_integration.grafana.tools[\"search\"]`, so a tool renamed or removed fails the plan where it is named.",
 			},
 		},
 	}
@@ -110,8 +122,8 @@ func (r *IntegrationResource) ValidateConfig(ctx context.Context, req resource.V
 	resp.Diagnostics.Append(r.expressions.Check(ctx, definition)...)
 }
 
-// ModifyPlan plans the source from the definition, and replaces the
-// integration when the definition names another host.
+// ModifyPlan plans the source and tools from the definition, and replaces
+// the integration when the definition names another host.
 func (r *IntegrationResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	if req.Plan.Raw.IsNull() {
 		return
@@ -129,6 +141,10 @@ func (r *IntegrationResource) ModifyPlan(ctx context.Context, req resource.Modif
 	}
 
 	resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("source"), source)...)
+
+	if tools, known := integrationToolsIn(definition, source); known {
+		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root(integrationTools), tools)...)
+	}
 
 	if req.State.Raw.IsNull() {
 		return
@@ -288,6 +304,7 @@ func integrationModel(integration client.Integration, kept *IntegrationResourceM
 		TeamID:     types.StringValue(integration.TeamID),
 		Source:     types.StringValue(integration.Source),
 		Definition: dynamic.FromJSON(integration.Definition),
+		Tools:      stringMap(integration.Tools),
 	}
 
 	if kept != nil {
@@ -313,4 +330,39 @@ func integrationHostIn(definition types.Dynamic) (string, bool) {
 	}
 
 	return named.ValueString(), true
+}
+
+func integrationToolsIn(definition types.Dynamic, source string) (types.Map, bool) {
+	object, ok := definition.UnderlyingValue().(basetypes.ObjectValue)
+	if !ok {
+		return types.Map{}, false
+	}
+
+	var names []string
+	switch tools := object.Attributes()[integrationTools].(type) {
+	case nil:
+	case basetypes.ObjectValue:
+		if tools.IsUnknown() {
+			return types.Map{}, false
+		}
+		names = slices.Collect(maps.Keys(tools.Attributes()))
+	case basetypes.MapValue:
+		if tools.IsUnknown() {
+			return types.Map{}, false
+		}
+		names = slices.Collect(maps.Keys(tools.Elements()))
+	case basetypes.DynamicValue:
+		if !tools.IsNull() {
+			return types.Map{}, false
+		}
+	default:
+		return types.Map{}, false
+	}
+
+	offered := make(map[string]string, len(names))
+	for _, name := range names {
+		offered[name] = source + "." + name
+	}
+
+	return stringMap(offered), true
 }

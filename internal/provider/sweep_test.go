@@ -31,8 +31,12 @@ var sweepers = []*resource.Sweeper{
 		F:            sweeper((*client.Client).ListSkills, (*client.Client).DeleteSkill, func(s client.Skill) client.Meta { return s.Meta }, acctest.KeyPrefix),
 	},
 	{
+		Name: "spotlight_hook",
+		F:    sweeper((*client.Client).ListHooks, (*client.Client).DeleteHook, func(h client.Hook) client.Meta { return h.Meta }, acctest.KeyPrefix),
+	},
+	{
 		Name:         "spotlight_integration",
-		Dependencies: []string{"spotlight_line"},
+		Dependencies: []string{"spotlight_line", "spotlight_hook"},
 		F:            sweeper((*client.Client).ListIntegrations, (*client.Client).DeleteIntegration, func(i client.Integration) client.Meta { return i.Meta }, acctest.KeyPrefix),
 	},
 	{
@@ -42,7 +46,7 @@ var sweepers = []*resource.Sweeper{
 	},
 	{
 		Name:         "spotlight_team",
-		Dependencies: []string{"spotlight_line", "spotlight_skill", "spotlight_integration", "spotlight_harness_profile"},
+		Dependencies: []string{"spotlight_line", "spotlight_skill", "spotlight_integration", "spotlight_harness_profile", "spotlight_hook"},
 		F:            sweeper((*client.Client).ListTeams, (*client.Client).DeleteTeam, func(t client.Team) client.Meta { return t.Meta }, acctest.KeyPrefix),
 	},
 	{
@@ -135,6 +139,12 @@ func TestSweepersDeleteOnlyWhatAcceptanceTestsCreate(t *testing.T) {
 		acctest.Must(t, err)
 		_, err = api.CreateHarnessProfile(ctx, team.ID, client.HarnessProfileInput{Key: "careful"})
 		acctest.Must(t, err)
+		_, err = api.CreateHook(ctx, team.ID, client.HookInput{
+			Key: "audit", On: "run.ended",
+			Steps:   []any{map[string]any{"name": "audit", "request": map[string]any{"url": "https://audit.acme.dev"}}},
+			Signing: &client.HookSigning{OIDC: &client.HookOIDC{Audience: "https://audit.acme.dev"}},
+		})
+		acctest.Must(t, err)
 	}
 
 	for _, name := range []string{k.Secret, k.AWSSecret, "LINEAR_API_KEY"} {
@@ -177,7 +187,7 @@ func TestSweepersDeleteOnlyWhatAcceptanceTestsCreate(t *testing.T) {
 	}
 
 	for kind, want := range map[string]int{
-		"team": 3, "line": 1, "skill": 1, "integration": 1, "harness-profile": 1,
+		"team": 3, "line": 1, "skill": 1, "integration": 1, "harness-profile": 1, "hook": 1,
 		"secret": 1, "runner-trust": 1, "runner-pool": 1, "workspace-token-trust": 1, "workspace": 2,
 	} {
 		if got := fake.Count(kind); got != want {

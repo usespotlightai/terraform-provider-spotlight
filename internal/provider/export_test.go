@@ -72,8 +72,9 @@ func TestAnExportAppliesFromScratchAndAdoptsWithNoDiff(t *testing.T) {
 	fromScratch := acctest.WithoutImports(exported, created...)
 	released := requiredProviders + acctest.Released(acctest.Addresses(exported))
 	variables := config.Variables{
-		"secret_linear_api_key":                 config.StringVariable(exportedSecretValue),
-		"runner_pool_k8s-jobs_provision_secret": config.StringVariable(provisionFirst),
+		"secret_linear_api_key":                    config.StringVariable(exportedSecretValue),
+		"runner_pool_k8s-jobs_provision_secret":    config.StringVariable(provisionFirst),
+		"hook_core_linear-comments_signing_secret": config.StringVariable(provisionSecond),
 	}
 
 	resource.UnitTest(t, resource.TestCase{
@@ -88,11 +89,13 @@ func TestAnExportAppliesFromScratchAndAdoptsWithNoDiff(t *testing.T) {
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
 					holdsOneOfEach(fake),
-					acctest.NothingHolds(acctest.Value(exportedSecretValue), acctest.Value(provisionFirst)),
+					acctest.NothingHolds(acctest.Value(exportedSecretValue), acctest.Value(provisionFirst), acctest.Value(provisionSecond)),
 					resource.TestCheckResourceAttr("spotlight_line.core_delivery", "station.1.profile", "careful"),
 					resource.TestCheckResourceAttr("spotlight_workspace_runners.acme", "trusts.0", "production-cluster"),
 					resource.TestCheckResourceAttr("spotlight_workspace_runners.acme", "pools.#", "2"),
 					resource.TestCheckResourceAttr("spotlight_runner_pool.burst", "token_version", "2"),
+					resource.TestCheckResourceAttr("spotlight_hook.core_linear-comments", "match.tools.0", "linear.comment"),
+					resource.TestCheckResourceAttr("spotlight_hook.core_merged", "signing.oidc.audience", "https://dba.acme.dev"),
 				),
 			},
 			{
@@ -124,7 +127,7 @@ func holdsOneOfEach(fake *fakeapi.Server) resource.TestCheckFunc {
 	return func(*terraform.State) error {
 		for kind, want := range map[string]int{
 			"workspace": 1, "secret": 2, "workspace-token-trust": 2, "runner-trust": 1, "runner-pool": 2, "workspace-runners": 1,
-			"team": 1, "line": 1, "skill": 1, "integration": 1, "harness-profile": 1,
+			"team": 1, "line": 1, "skill": 1, "integration": 1, "harness-profile": 1, "hook": 2,
 		} {
 			if got := fake.Count(kind); got != want {
 				return fmt.Errorf("Spotlight holds %d of %s, want %d", got, kind, want)
@@ -261,6 +264,20 @@ func seedExported(t *testing.T, cp acctest.ControlPlane, k acctest.Keys) (declar
 	})
 	must(err)
 
+	signingVersion := int64(1)
+	_, err = cp.Client.CreateHook(ctx, team.ID, client.HookInput{
+		Key:   k.Hook,
+		On:    "tool.used",
+		Match: client.HookMatch{Tools: []string{k.Integration + ".comment"}},
+		Vars:  map[string]string{"channel": "C024BE91L"},
+		Steps: []any{
+			map[string]any{"name": "note", "call": k.Integration + ".comment", "with": map[string]any{"body": "Commented: ${{ event.inputs.body }}"}},
+			map[string]any{"name": "audit", "request": map[string]any{"url": "https://audit.acme.dev/hooks", "body": map[string]any{"tool": "${{ event.tool }}"}, "from": "network"}},
+		},
+		Signing: &client.HookSigning{Secret: acctest.RandomSigningSecret(), SecretVersion: &signingVersion},
+	})
+	must(err)
+
 	_, err = cp.Client.CreateLine(ctx, team.ID, client.Definition{
 		"key": k.Line, "name": "Review", "role": "review", "runners": []any{"tf-acc-linux"},
 		"repositories": []any{map[string]any{"name": "acme/api", "image": "ghcr.io/acme/api-runner:main", "setup": "npm ci"}},
@@ -380,7 +397,7 @@ func TestAccExportAppliesAndReplansWithNoDiff(t *testing.T) {
 	for _, found := range exportedVariable.FindAllStringSubmatch(module["variables.tf"], -1) {
 		if !strings.Contains(found[0], "default") {
 			value := acctest.RandomToken()
-			if strings.HasSuffix(found[1], "_provision_secret") {
+			if strings.HasSuffix(found[1], "_provision_secret") || strings.HasSuffix(found[1], "_signing_secret") {
 				value = acctest.RandomSigningSecret()
 			}
 			variables[found[1]] = config.StringVariable(value)

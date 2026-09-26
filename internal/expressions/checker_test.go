@@ -15,6 +15,7 @@ import (
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/client"
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/dynamic"
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/expressions"
+	"github.com/usespotlightai/terraform-provider-spotlight/internal/fieldpath"
 )
 
 type asked struct {
@@ -39,6 +40,9 @@ func (s *stub) ExpressionPositions(context.Context) ([]client.Position, error) {
 		{Position: "integration.webhook.events[*].when", Returns: "bool"},
 		{Position: "integration.actions[*].request.body"},
 		{Position: "integration.on[*].to[*]"},
+		{Position: "hook.when", Returns: "bool"},
+		{Position: "hook.steps[*].with[*]"},
+		{Position: "hook.steps[*].request.body"},
 	}, nil
 }
 
@@ -223,6 +227,52 @@ func TestPieces(t *testing.T) {
 		if got := expressions.Pieces(text); !reflect.DeepEqual(got, want) {
 			t.Errorf("Pieces(%q) = %q, want %q", text, got, want)
 		}
+	}
+}
+
+func TestItChecksAHookWhereEachExpressionIsWritten(t *testing.T) {
+	api := &stub{answer: func(position, _ string) (client.ExpressionCheck, error) {
+		if position != "hook.steps[0].with.text" {
+			return client.ExpressionCheck{Type: "bool"}, nil
+		}
+
+		return client.ExpressionCheck{Errors: []client.ExpressionError{{Message: "No such key: qeury", Span: &client.Span{Start: 13, End: 18}, Suggestion: "event.inputs.query"}}}, nil
+	}}
+
+	steps := dynamic.FromJSON([]any{
+		map[string]any{"name": "notify", "call": "slack.post-message", "with": map[string]any{"text": "Searched ${{ event.inputs.qeury }}"}},
+		map[string]any{"name": "audit", "request": map[string]any{"url": "https://audit.acme.dev/${{ task.id }}", "body": map[string]any{"q": "${{ event.inputs }}"}}},
+	})
+
+	subject := expressions.Subject{
+		Resource:   "hook",
+		Fields:     fieldpath.Locator{},
+		Definition: client.Definition{"key": "grafana-reads"},
+		Complete:   true,
+		Written: append(
+			[]expressions.Written{{At: fieldpath.Path{fieldpath.Key("when")}, Expressions: []string{"event.inputs.query != ''"}}},
+			expressions.TemplatesIn(steps, fieldpath.Path{fieldpath.Key("steps")})...,
+		),
+	}
+
+	diags := expressions.NewChecker(api).CheckSubject(context.Background(), subject)
+
+	want := []asked{
+		{"hook.when", "event.inputs.query != ''"},
+		{"hook.steps[0].with.text", "event.inputs.qeury"},
+		{"hook.steps[1].request.body.q", "event.inputs"},
+	}
+	if !reflect.DeepEqual(api.asked, want) {
+		t.Errorf("asked %v\nwant  %v", api.asked, want)
+	}
+
+	errs := diags.Errors()
+	if len(errs) != 1 || !pathOf(errs[0]).Equal(path.Root("steps").AtListIndex(0).AtName("with").AtName("text")) {
+		t.Fatalf("errors %v", errs)
+	}
+
+	if detail := errs[0].Detail(); !strings.Contains(detail, "Did you mean event.inputs.query?") {
+		t.Errorf("detail %q", detail)
 	}
 }
 

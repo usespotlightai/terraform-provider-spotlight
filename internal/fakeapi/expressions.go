@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/fieldpath"
@@ -17,6 +18,11 @@ var Positions = []string{
 	"integration.actions[*].request.headers[*]",
 	"integration.actions[*].request.body",
 	"integration.on[*].to[*]",
+	"hook.when",
+	"hook.steps[*].with[*]",
+	"hook.steps[*].request.url",
+	"hook.steps[*].request.headers[*]",
+	"hook.steps[*].request.body",
 }
 
 var declared = map[string][]string{
@@ -24,6 +30,7 @@ var declared = map[string][]string{
 	"ask":    {"body", "author"},
 	"inputs": {"body", "title"},
 	"task":   {"marks", "title"},
+	"event":  {"inputs", "output", "tool", "title", "changed", "failed"},
 }
 
 var reference = regexp.MustCompile(`\b([a-z][A-Za-z0-9_]*)\.([A-Za-z_][A-Za-z0-9_]*)`)
@@ -64,13 +71,18 @@ func (s *Server) check(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if source, _ := body.Definition["integration"].(string); source == "" {
-		problem(w, http.StatusUnprocessableEntity, "invalid", "The request is not valid", "", []fieldError{{"definition.integration", "names the host this integration defines, as in linear"}})
+	at, err := fieldpath.Parse(body.Position)
+	if err != nil || len(at) < 2 || !slices.Contains([]string{"integration", "hook"}, at[0].Key) {
+		problem(w, http.StatusUnprocessableEntity, "invalid", "The request is not valid", "", []fieldError{{"position", "names an attribute of an integration or a hook, as in integration.webhook.events[0].when or hook.when"}})
 		return
 	}
 
-	at, err := fieldpath.Parse(body.Position)
-	if err != nil || len(at) < 2 || at[0].Key != "integration" || !holdsText(body.Definition, at[1:]) {
+	if refused := definitionRefused(at[0].Key, body.Definition); refused != nil {
+		problem(w, http.StatusUnprocessableEntity, "invalid", "The request is not valid", "", refused)
+		return
+	}
+
+	if !holdsText(body.Definition, at[1:]) {
 		problem(w, http.StatusUnprocessableEntity, "invalid", "The request is not valid", "", []fieldError{{"position", "holds no expression in the definition, so nothing is written there to check"}})
 		return
 	}
@@ -101,6 +113,23 @@ func (s *Server) check(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusOK, "application/json", map[string]any{"type": "bool", "errors": errs, "warnings": []any{}})
+}
+
+func definitionRefused(resource string, definition map[string]any) []fieldError {
+	if resource == "integration" {
+		if source, _ := definition["integration"].(string); source == "" {
+			return []fieldError{{"definition.integration", "names the host this integration defines, as in linear"}}
+		}
+
+		return nil
+	}
+
+	_, errs := hook(definition)
+	for at, each := range errs {
+		errs[at].path = "definition." + each.path
+	}
+
+	return errs
 }
 
 func holdsText(held any, at fieldpath.Path) bool {

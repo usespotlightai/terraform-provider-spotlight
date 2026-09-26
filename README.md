@@ -12,6 +12,7 @@ Manages a Spotlight workspace as code. Full reference: [`docs/`](docs/index.md).
 | `spotlight_skill` | `configure` | `<workspace id>/<team key>/<key>` |
 | `spotlight_integration` | `configure` | `<workspace id>/<team key>/<source>` |
 | `spotlight_harness_profile` | `configure` | `<workspace id>/<team key>/<key>` |
+| `spotlight_hook` | `configure` | `<workspace id>/<team key>/<key>` |
 | `spotlight_secret` | `secrets` | `<workspace id>/<name>` |
 | `spotlight_runner_trust` | `runners` | `<workspace id>/<key>` |
 | `spotlight_runner_pool` | `runners` | `<workspace id>/<key>` |
@@ -50,7 +51,7 @@ resource "spotlight_workspace" "acme" {
 - **Scopes:** one token with `configure`, `secrets`, `runners` and `trusts` manages everything.
 - **CI without a stored token:** `oidc { trust = "<trust id>" }`, or `SPOTLIGHT_OIDC_TRUST`, exchanges the CI job's OIDC token for a short-lived one through a `spotlight_workspace_token_trust`.
 - **Adopting an existing workspace:** **Download as Terraform** in the web app's workspace menu, or `terraform query -generate-config-out=…`, writes the configuration and import blocks for you.
-- **Terraform versions:** Terraform 1.11+ is needed for the write-only `value_wo` (secrets), `token` (runner pools) and `provision.secret` (runner pools).
+- **Terraform versions:** Terraform 1.11+ is needed for the write-only `value_wo` (secrets), `token` (runner pools), `provision.secret` (runner pools) and `signing.secret_wo` (hooks).
 
 ## Behaviour
 
@@ -59,7 +60,8 @@ resource "spotlight_workspace" "acme" {
 - **Concurrency:** writes send `If-Match` with the version last read, so a resource changed since is refused, not overwritten.
 - **Retries:** creates carry an `Idempotency-Key`, so a retried create makes one resource.
 - **Errors:** a refused write is reported on the attribute it's about, and a `403` names the scope the token lacks.
-- **Expressions:** `terraform plan` type-checks every CEL expression in an integration. Write them as `$${{ ... }}`.
+- **Expressions:** `terraform plan` type-checks every CEL expression in an integration or a hook. Write them as `$${{ ... }}`, and a hook's `when` bare.
+- **Tools:** name a tool through its integration, as in `spotlight_integration.grafana.tools["search"]`, so a tool renamed or removed fails the plan where it is named.
 
 ## Develop
 
