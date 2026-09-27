@@ -38,6 +38,7 @@ resource "spotlight_line" "core_delivery" {
     color     = "#a3a8b0"
     diffs     = false
     decisions = false
+    memories  = false
     tools     = []
     skills    = []
     passes_to = ["implementation"]
@@ -55,6 +56,7 @@ resource "spotlight_line" "core_delivery" {
     check     = "npm test"
     diffs     = true
     decisions = true
+    memories  = false
     tools     = ["linear.comment"]
     skills    = ["grafana"]
     runners   = ["gpu"]
@@ -69,6 +71,7 @@ resource "spotlight_line" "core_delivery" {
     color     = "#56b98d"
     diffs     = false
     decisions = false
+    memories  = false
     tools     = []
     skills    = []
     passes_to = ["implementation"]
@@ -82,6 +85,7 @@ resource "spotlight_line" "core_delivery" {
     color     = "#3fa46a"
     diffs     = false
     decisions = false
+    memories  = false
     tools     = []
     skills    = []
     passes_to = []
@@ -254,6 +258,7 @@ func TestLineFillsWhatItLeavesOutWithoutDrift(t *testing.T) {
 					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "color"), knownvalue.StringExact("#a3a8b0")),
 					statecheck.ExpectKnownValue(lineAddress, lineStation(1, "kind"), knownvalue.StringExact("work")),
 					statecheck.ExpectKnownValue(lineAddress, lineStation(1, "diffs"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue(lineAddress, lineStation(1, "memories"), knownvalue.Bool(false)),
 					statecheck.ExpectKnownValue(lineAddress, lineStation(2, "tools"), knownvalue.ListSizeExact(0)),
 					statecheck.ExpectKnownValue(lineAddress, lineStation(2, "runners"), knownvalue.SetSizeExact(0)),
 					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("runners"), knownvalue.SetSizeExact(0)),
@@ -278,6 +283,46 @@ func TestLineFillsWhatItLeavesOutWithoutDrift(t *testing.T) {
 			},
 			{
 				Config:   acctest.Workspace + lineGrown,
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
+func TestLineStationDraftsMemories(t *testing.T) {
+	fake := fakeapi.New(t)
+
+	drafting := acctest.Workspace + `
+resource "spotlight_line" "core_delivery" {
+  team_id = spotlight_team.core.id
+  key     = "delivery"
+  name    = "Delivery"
+
+  station {
+    key      = "implementation"
+    name     = "Implementation"
+    memories = true
+  }
+
+  station {
+    key  = "code-review"
+    name = "Code review"
+  }
+}
+`
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
+		Steps: []resource.TestStep{
+			{
+				Config: drafting,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "memories"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(lineAddress, lineStation(1, "memories"), knownvalue.Bool(false)),
+				},
+			},
+			{
+				Config:   drafting,
 				PlanOnly: true,
 			},
 		},

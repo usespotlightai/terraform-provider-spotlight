@@ -125,6 +125,7 @@ func lineSchema() schema.Schema {
 						"check":       lineOptional("A command that must pass before a task moves on, as in `npm test`."),
 						"diffs":       lineDerived("Whether the station's runs draft a change stack from their diff."),
 						"decisions":   lineDerived("Whether the station records the agent's decisions for review."),
+						"memories":    lineDerived("Whether the station drafts proposed team memories from each run it completes, for people to approve."),
 						"tools":       stringListAttribute("The tools the station gives its agent, as in `linear.comment`."),
 						"skills":      stringListAttribute("The skills the station gives its agent, by key."),
 						"runners":     stringSetAttribute("Where the station's work runs, in place of the line's `runners`: the labels of a runner pool or trust, any of which a runner must answer to. The line's apply when left out."),

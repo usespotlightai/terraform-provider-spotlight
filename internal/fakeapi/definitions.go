@@ -137,6 +137,7 @@ func line(body map[string]any) (map[string]any, []fieldError) {
 		orDefault(station, "color", colors[textOf(station["kind"])])
 		orDefault(station, "diffs", false)
 		orDefault(station, "decisions", false)
+		orDefault(station, "memories", false)
 		orDefault(station, "tools", []any{})
 		orDefault(station, "skills", []any{})
 		orDefault(station, "passesTo", []any{})

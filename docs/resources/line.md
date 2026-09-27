@@ -158,6 +158,7 @@ Optional:
 - `ends` (Boolean) Whether a task that reaches the station is finished.
 - `harness` (String) The agent harness that works tasks here, as in `claude-code`.
 - `kind` (String) `backlog`, `work` or `completed`.
+- `memories` (Boolean) Whether the station drafts proposed team memories from each run it completes, for people to approve.
 - `model` (String) The model the harness uses.
 - `passes_to` (Set of String) The stations a task here may move on to, by key.
 - `profile` (String) The harness profile the station's agent runs with, by key, as in `careful`.
