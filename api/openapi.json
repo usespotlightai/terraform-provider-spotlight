@@ -2777,54 +2777,6 @@
         ]
       }
     },
-    "/teams/{teamId}/traces/analysis": {
-      "post": {
-        "operationId": "analyseTraces",
-        "parameters": [
-          {
-            "name": "teamId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "example": "9c2e6d5a-1f47-4c8b-9a3d-2b7e5f0c1d84",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AnalyseTracesRequestDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/TaskResponseDto"
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "No valid session"
-          }
-        },
-        "summary": "Open a triage task to analyse each selected trace",
-        "tags": [
-          "tasks"
-        ]
-      }
-    },
     "/teams/{teamId}/lines/{lineId}/tasks/{taskId}/move": {
       "post": {
         "operationId": "moveTask",
@@ -15557,7 +15509,17 @@
     "/hook-callbacks/notes": {
       "post": {
         "operationId": "noteOnHookTask",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "The same on every retry of one note, so a retried note is said once",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -17362,6 +17324,31 @@
           "position"
         ]
       },
+      "InboxFailureResponseDto": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "example": "run",
+            "description": "Where the failure came from: the run, or the hook that failed"
+          },
+          "code": {
+            "type": "string",
+            "example": "exited",
+            "description": "What kind of failure it was"
+          },
+          "occurrences": {
+            "type": "number",
+            "example": 3,
+            "description": "How many times it happened while this was open, rather than asking again each time"
+          }
+        },
+        "required": [
+          "source",
+          "code",
+          "occurrences"
+        ]
+      },
       "InboxAuthorResponseDto": {
         "type": "object",
         "properties": {
@@ -17472,7 +17459,8 @@
               "words",
               "setup",
               "settled",
-              "approval"
+              "approval",
+              "failure"
             ],
             "description": "What it shows, which is not what it did"
           },
@@ -17538,6 +17526,16 @@
                 "$ref": "#/components/schemas/InboxApprovalResponseDto"
               }
             ]
+          },
+          "failure": {
+            "nullable": true,
+            "description": "The failure it reports, where it reports one",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InboxFailureResponseDto"
+              }
+            ]
           }
         },
         "required": [
@@ -17553,7 +17551,8 @@
           "attachments",
           "at",
           "author",
-          "approval"
+          "approval",
+          "failure"
         ]
       },
       "InboxItemResponseDto": {
@@ -17654,6 +17653,16 @@
             "nullable": true,
             "description": "What the station that opened this conversation was given"
           },
+          "failure": {
+            "nullable": true,
+            "description": "The failure this conversation is about, where it is about one",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InboxFailureResponseDto"
+              }
+            ]
+          },
           "notes": {
             "type": "array",
             "items": {
@@ -17681,6 +17690,7 @@
           "runId",
           "unread",
           "briefing",
+          "failure",
           "notes"
         ]
       },
@@ -17943,6 +17953,11 @@
             "type": "string",
             "example": "d41f0a2c-8b7e-4f19-9d3a-6c5e2b1a4f80"
           },
+          "revision": {
+            "type": "number",
+            "example": 3,
+            "description": "How many times it has moved; a move names the revision it was based on"
+          },
           "title": {
             "type": "string",
             "example": "Fix the queue"
@@ -18019,6 +18034,7 @@
         "required": [
           "id",
           "stationId",
+          "revision",
           "title",
           "description",
           "attachments",
@@ -18094,7 +18110,8 @@
               "queued",
               "claimed",
               "completed",
-              "failed"
+              "failed",
+              "superseded"
             ]
           },
           "attempt": {
@@ -18241,7 +18258,8 @@
               "queued",
               "claimed",
               "completed",
-              "failed"
+              "failed",
+              "superseded"
             ]
           },
           "startedAt": {
@@ -18408,7 +18426,8 @@
               "queued",
               "claimed",
               "completed",
-              "failed"
+              "failed",
+              "superseded"
             ]
           },
           "attempt": {
@@ -18499,24 +18518,6 @@
           "title"
         ]
       },
-      "AnalyseTracesRequestDto": {
-        "type": "object",
-        "properties": {
-          "taskIds": {
-            "example": [
-              "a17c4e02-9b3d-4f61-8e5a-0c2d7b9f4a13"
-            ],
-            "description": "The tasks whose traces are to be analysed, one work item each",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "taskIds"
-        ]
-      },
       "MoveTaskRequestDto": {
         "type": "object",
         "properties": {
@@ -18524,6 +18525,11 @@
             "type": "string",
             "example": "d41f0a2c-8b7e-4f19-9d3a-6c5e2b1a4f80",
             "description": "The station to move the task to, on the same line"
+          },
+          "revision": {
+            "type": "number",
+            "example": 3,
+            "description": "The revision the move was based on; a task that has moved since is not moved again"
           },
           "afterTaskId": {
             "type": "string",
@@ -18533,7 +18539,8 @@
           }
         },
         "required": [
-          "stationId"
+          "stationId",
+          "revision"
         ]
       },
       "AssignTaskRequestDto": {
@@ -18643,10 +18650,17 @@
           "body": {
             "type": "string",
             "example": "Let’s plan how retries should back off.",
-            "description": "What opens the chat. May be empty where files are attached."
+            "description": "What opens the chat. May be empty where files are attached or traces shared."
           },
           "attachments": {
             "description": "Uploads to attach, by the id each was granted",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "traces": {
+            "description": "Tasks whose traces to share with the agent, by task id",
             "type": "array",
             "items": {
               "type": "string"
@@ -18656,6 +18670,23 @@
         "required": [
           "harness",
           "body"
+        ]
+      },
+      "ChatTraceResponseDto": {
+        "type": "object",
+        "properties": {
+          "taskId": {
+            "type": "string",
+            "example": "a17c4e02-9b3d-4f61-8e5a-0c2d7b9f4a13"
+          },
+          "title": {
+            "type": "string",
+            "example": "Retries back off exponentially"
+          }
+        },
+        "required": [
+          "taskId",
+          "title"
         ]
       },
       "ChatProposalResponseDto": {
@@ -18763,6 +18794,13 @@
               "$ref": "#/components/schemas/AttachmentResponseDto"
             }
           },
+          "traces": {
+            "description": "Traces shared with the agent",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChatTraceResponseDto"
+            }
+          },
           "proposal": {
             "nullable": true,
             "type": "object",
@@ -18781,6 +18819,7 @@
           "author",
           "runId",
           "attachments",
+          "traces",
           "proposal"
         ]
       },
@@ -18863,10 +18902,17 @@
           "body": {
             "type": "string",
             "example": "Split it into two tasks.",
-            "description": "May be empty where files are attached."
+            "description": "May be empty where files are attached or traces shared."
           },
           "attachments": {
             "description": "Uploads to attach, by the id each was granted",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "traces": {
+            "description": "Tasks whose traces to share with the agent, by task id",
             "type": "array",
             "items": {
               "type": "string"
