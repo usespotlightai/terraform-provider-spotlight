@@ -23,7 +23,7 @@ resource "spotlight_line" "core_delivery" {
   key     = "delivery"
   name    = "Delivery"
   role    = "review"
-  runners = ["vpc-internal", "claude-code@2.1.270"]
+  runners = ["vpc-internal", "linux"]
 
   repository {
     name  = "acme/api"

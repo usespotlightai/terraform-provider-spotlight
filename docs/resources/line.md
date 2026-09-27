@@ -84,7 +84,7 @@ resource "spotlight_line" "core_delivery" {
 - `repository` (Block Set) A repository the line works on. Spotlight keeps them sorted by name, so they are a set. The repositories of a line name at most one `image`. (see [below for nested schema](#nestedblock--repository))
 - `reviews` (Block, Optional) Which pull requests the line reviews, for a line whose role is `review`. (see [below for nested schema](#nestedblock--reviews))
 - `role` (String) The role the line plays for its team, as in `delivery` or `review`. A role names one line.
-- `runners` (Set of String) Where the line's work runs: the labels of a runner pool or trust, any of which a runner must answer to. A station's own `runners` narrow it further. Anywhere when left out.
+- `runners` (Set of String) Where the line's work runs: the labels of a runner pool or trust, any of which a runner must answer to. A station's own `runners` replace it. Anywhere when left out.
 - `station` (Block List) A station along the line, in order. A line has at least one. (see [below for nested schema](#nestedblock--station))
 
 ### Read-Only
@@ -162,7 +162,7 @@ Optional:
 - `passes_to` (Set of String) The stations a task here may move on to, by key.
 - `profile` (String) The harness profile the station's agent runs with, by key, as in `careful`.
 - `prompt` (String) What the agent is asked to do, usually read with `file()`.
-- `runners` (Set of String) Where the station's work runs, beside the line's `runners`: the labels of a runner pool or trust, any of which a runner must answer to.
+- `runners` (Set of String) Where the station's work runs, in place of the line's `runners`: the labels of a runner pool or trust, any of which a runner must answer to. The line's apply when left out.
 - `skills` (List of String) The skills the station gives its agent, by key.
 - `tools` (List of String) The tools the station gives its agent, as in `linear.comment`.
 

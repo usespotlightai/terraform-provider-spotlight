@@ -77,7 +77,7 @@ func lineSchema() schema.Schema {
 				MarkdownDescription: "What the line is called.",
 			},
 			"role":    lineOptional("The role the line plays for its team, as in `delivery` or `review`. A role names one line."),
-			"runners": stringSetAttribute("Where the line's work runs: the labels of a runner pool or trust, any of which a runner must answer to. A station's own `runners` narrow it further. Anywhere when left out."),
+			"runners": stringSetAttribute("Where the line's work runs: the labels of a runner pool or trust, any of which a runner must answer to. A station's own `runners` replace it. Anywhere when left out."),
 		},
 		Blocks: map[string]schema.Block{
 			"repository": schema.SetNestedBlock{
@@ -127,7 +127,7 @@ func lineSchema() schema.Schema {
 						"decisions":   lineDerived("Whether the station records the agent's decisions for review."),
 						"tools":       stringListAttribute("The tools the station gives its agent, as in `linear.comment`."),
 						"skills":      stringListAttribute("The skills the station gives its agent, by key."),
-						"runners":     stringSetAttribute("Where the station's work runs, beside the line's `runners`: the labels of a runner pool or trust, any of which a runner must answer to."),
+						"runners":     stringSetAttribute("Where the station's work runs, in place of the line's `runners`: the labels of a runner pool or trust, any of which a runner must answer to. The line's apply when left out."),
 						"passes_to":   stringSetAttribute("The stations a task here may move on to, by key."),
 						"ends":        lineFlag("Whether a task that reaches the station is finished.", false),
 					},

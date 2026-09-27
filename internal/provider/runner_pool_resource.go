@@ -80,8 +80,8 @@ func runnerPoolSchema() schema.Schema {
 	attributes["version"] = versionAttribute("runner pool")
 	attributes["address"] = addressAttribute("ephemeral")
 	attributes["workspace_id"] = ownerAttribute("workspace", "runner pool")
-	attributes["key"] = fixedAttribute("Names the pool, as in `ephemeral`, and is what a line or station names in `runners` to place its work on the pool's runners.", "runner pool")
-	attributes["labels"] = stringSetAttribute("What a line or station may name in `runners` to place its work on the pool's runners, beside its key, as in `linux`.")
+	attributes["key"] = fixedAttribute("Names the pool, as in `ephemeral`. Placement ignores it: a line or station places its work on the pool by its `labels`.", "runner pool")
+	attributes["labels"] = stringSetAttribute("What a line or station may name in `runners` to place its work on the pool's runners, as in `linux`.")
 	attributes["max_runs"] = schema.Int64Attribute{
 		Optional:            true,
 		MarkdownDescription: "The most runs the pool serves at once, from 1 to 10000. Left out, there is no limit.",
