@@ -3,6 +3,8 @@ package provider
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -12,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
 func idAttribute(kind string) schema.StringAttribute {
@@ -96,6 +99,21 @@ func textOrNull(held string) types.String {
 	}
 
 	return types.StringValue(held)
+}
+
+func float64AsWritten(held float64) types.Float64 {
+	written, _, err := big.ParseFloat(strconv.FormatFloat(held, 'g', -1, 64), 10, 512, big.ToNearestEven)
+	if err != nil {
+		return types.Float64Value(held)
+	}
+
+	value, err := types.Float64Type.ValueFromTerraform(context.Background(), tftypes.NewValue(tftypes.Number, written))
+	read, ok := value.(types.Float64)
+	if err != nil || !ok {
+		return types.Float64Value(held)
+	}
+
+	return read
 }
 
 func stringSet(held []string) types.Set {

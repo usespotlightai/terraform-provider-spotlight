@@ -2,11 +2,18 @@ package provider
 
 import (
 	"context"
+	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/float64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/client"
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/fieldpath"
@@ -34,7 +41,10 @@ var lineBlocks = map[string]string{
 	"repositories": "repository",
 	"stations":     "station",
 	"reactions":    "reaction",
+	"alerts":       "alert",
 }
+
+var lineMeasures = []string{"sent_back_rate", "accepted_rate", "checks_failed_rate", "failed_rate", "merged_rate", "cost_per_run"}
 
 var lineFields = fieldpath.Locator{Schema: lineSchema().Type(), Renames: lineBlocks}
 
@@ -61,6 +71,22 @@ func lineFlag(description string, fallback bool) schema.BoolAttribute {
 
 func lineDerived(description string) schema.BoolAttribute {
 	return schema.BoolAttribute{Optional: true, Computed: true, MarkdownDescription: description}
+}
+
+func lineShare(description string) schema.Float64Attribute {
+	return schema.Float64Attribute{
+		Optional:            true,
+		Validators:          []validator.Float64{float64validator.Between(0, 1)},
+		MarkdownDescription: description,
+	}
+}
+
+func lineThreshold(description string, also ...validator.Float64) schema.Float64Attribute {
+	return schema.Float64Attribute{
+		Optional:            true,
+		Validators:          append([]validator.Float64{float64validator.AtLeast(0)}, also...),
+		MarkdownDescription: description,
+	}
 }
 
 func lineSchema() schema.Schema {
@@ -130,6 +156,57 @@ func lineSchema() schema.Schema {
 						"runners":     stringSetAttribute("Where the station's work runs, in place of the line's `runners`: the labels of a runner pool or trust, any of which a runner must answer to. The line's apply when left out."),
 						"passes_to":   stringSetAttribute("The stations a task here may move on to, by key."),
 						"ends":        lineFlag("Whether a task that reaches the station is finished.", false),
+					},
+					Blocks: map[string]schema.Block{
+						"judge": schema.SingleNestedBlock{
+							MarkdownDescription: "Scores the station's runs against a rubric, for Insights. A judge sets `rubric`, `sample` and `trust`. No run is judged when left out.",
+							Validators: []validator.Object{
+								objectvalidator.AlsoRequires(
+									path.MatchRelative().AtName("rubric"),
+									path.MatchRelative().AtName("sample"),
+									path.MatchRelative().AtName("trust"),
+								),
+							},
+							Attributes: map[string]schema.Attribute{
+								"rubric": schema.StringAttribute{
+									Optional:            true,
+									Validators:          []validator.String{stringvalidator.LengthAtLeast(1)},
+									MarkdownDescription: "What a good run looks like, at most 20,000 characters, usually read with `file()`, as in `file(\"judges/implement.md\")`.",
+								},
+								"sample": lineShare("The share of runs judged, from 0 to 1."),
+								"trust":  lineShare("How often the judge must agree with people, from 0 to 1, before Insights shows its scores."),
+							},
+						},
+						"alert": schema.ListNestedBlock{
+							MarkdownDescription: "Warns when a measure of the station's runs moves past a threshold. An alert sets exactly one of `rises_by`, `above`, `falls_by` and `below`. For a rate, amounts are shares from 0 to 1, so 0.2 is 20 percentage points; for `cost_per_run`, they are amounts in the workspace's currency.",
+							NestedObject: schema.NestedBlockObject{
+								Attributes: map[string]schema.Attribute{
+									"measure": schema.StringAttribute{
+										Required:            true,
+										Validators:          []validator.String{stringvalidator.OneOf(lineMeasures...)},
+										MarkdownDescription: "What is watched: `" + strings.Join(lineMeasures, "`, `") + "`.",
+									},
+									"rises_by": lineThreshold(
+										"Alerts when the measure over the last `over` runs is this much higher than over the `over` runs before. For a rate, a share above 0 and at most 1; for `cost_per_run`, an amount above 0.",
+										float64validator.ExactlyOneOf(
+											path.MatchRelative().AtParent().AtName("above"),
+											path.MatchRelative().AtParent().AtName("falls_by"),
+											path.MatchRelative().AtParent().AtName("below"),
+										),
+									),
+									"above": lineThreshold("Alerts when the measure across the last `over` runs is higher than this. For a rate, a share from 0 to 1; for `cost_per_run`, an amount of 0 or more."),
+									"falls_by": lineThreshold(
+										"Alerts when the measure over the last `over` runs is this much lower than over the `over` runs before. For a rate, a share above 0 and at most 1; for `cost_per_run`, an amount above 0.",
+									),
+									"below": lineThreshold("Alerts when the measure across the last `over` runs is lower than this. For a rate, a share from 0 to 1; for `cost_per_run`, an amount of 0 or more."),
+									"over": schema.Int64Attribute{
+										Required:            true,
+										Validators:          []validator.Int64{int64validator.AtLeast(1)},
+										MarkdownDescription: "How many runs are compared, at least 1.",
+									},
+								},
+							},
+						},
 					},
 				},
 			},

@@ -67,6 +67,61 @@ func TestEachFieldErrorLandsOnItsAttribute(t *testing.T) {
 	}
 }
 
+func TestAStationAlertRefusalLandsOnItsBlock(t *testing.T) {
+	var diags diag.Diagnostics
+
+	addAPIError(&diags, "Could not create the line", &client.Problem{
+		Status: 422, Type: client.ProblemInvalid, Title: "The line is not valid",
+		Errors: []client.FieldError{
+			{Path: "stations[1].alerts[0].risesBy", Message: "must be above 0", Severity: "error"},
+			{Path: "stations[1].judge.sample", Message: "is a share from 0 to 1", Severity: "error"},
+		},
+	}, lineFields, client.ScopeConfigure)
+
+	errs := diags.Errors()
+	if len(errs) != 2 {
+		t.Fatalf("errors %v", errs)
+	}
+
+	if !pathOf(errs[0]).Equal(path.Root("station").AtListIndex(1).AtName("alert").AtListIndex(0).AtName("rises_by")) {
+		t.Errorf("alert at %s", pathOf(errs[0]))
+	}
+
+	if !pathOf(errs[1]).Equal(path.Root("station").AtListIndex(1).AtName("judge").AtName("sample")) {
+		t.Errorf("judge at %s", pathOf(errs[1]))
+	}
+}
+
+func TestAStationBlockRefusalLandsOnTheBlock(t *testing.T) {
+	var diags diag.Diagnostics
+
+	addAPIError(&diags, "Could not create the line", &client.Problem{
+		Status: 422, Type: client.ProblemInvalid, Title: "The line is not valid",
+		Errors: []client.FieldError{
+			{Path: "stations[1].alerts[0]", Message: "sets exactly one of risesBy, above, fallsBy, below", Severity: "error"},
+			{Path: "stations[0].judge", Message: "is only for a station where work runs", Severity: "error"},
+			{Path: "stations[2].alerts", Message: "are only for a station where work runs", Severity: "error"},
+			{Path: "stations[1].alerts[1].fallsBy", Message: "falls by a share above 0 and at most 1", Severity: "error"},
+		},
+	}, lineFields, client.ScopeConfigure)
+
+	errs := diags.Errors()
+	if len(errs) != 4 {
+		t.Fatalf("errors %v", errs)
+	}
+
+	for i, want := range []path.Path{
+		path.Root("station").AtListIndex(1).AtName("alert").AtListIndex(0),
+		path.Root("station").AtListIndex(0).AtName("judge"),
+		path.Root("station").AtListIndex(2).AtName("alert"),
+		path.Root("station").AtListIndex(1).AtName("alert").AtListIndex(1).AtName("falls_by"),
+	} {
+		if !pathOf(errs[i]).Equal(want) {
+			t.Errorf("error %d at %s, want %s", i, pathOf(errs[i]), want)
+		}
+	}
+}
+
 func TestAConflictSaysWhatToDo(t *testing.T) {
 	var diags diag.Diagnostics
 
