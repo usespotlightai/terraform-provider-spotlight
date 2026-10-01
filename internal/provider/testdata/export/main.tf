@@ -178,6 +178,7 @@ resource "spotlight_line" "core_delivery" {
     color     = "#a3a8b0"
     diffs     = false
     decisions = false
+    memories  = false
     tools     = []
     skills    = []
     passes_to = ["implementation"]
@@ -195,6 +196,7 @@ resource "spotlight_line" "core_delivery" {
     check     = "npm test"
     diffs     = true
     decisions = true
+    memories  = false
     tools     = ["${spotlight_integration.core_linear.source}.comment", "pull-request"]
     skills    = [spotlight_skill.core_grafana.key]
     runners   = ["gpu"]
@@ -210,6 +212,7 @@ resource "spotlight_line" "core_delivery" {
     harness   = "claude-code"
     diffs     = false
     decisions = false
+    memories  = false
     tools     = []
     skills    = []
     passes_to = ["implementation"]
@@ -223,6 +226,7 @@ resource "spotlight_line" "core_delivery" {
     color     = "#3fa46a"
     diffs     = false
     decisions = false
+    memories  = false
     tools     = []
     skills    = []
     passes_to = []

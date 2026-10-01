@@ -46,6 +46,7 @@ type lineStation struct {
 	Check       types.String `tfsdk:"check"`
 	Diffs       types.Bool   `tfsdk:"diffs"`
 	Decisions   types.Bool   `tfsdk:"decisions"`
+	Memories    types.Bool   `tfsdk:"memories"`
 	Tools       types.List   `tfsdk:"tools"`
 	Skills      types.List   `tfsdk:"skills"`
 	Runners     types.Set    `tfsdk:"runners"`
@@ -143,6 +144,7 @@ func lineInput(plan LineResourceModel) (client.Definition, diag.Diagnostics) {
 		held.text("check", each.Check)
 		held.flag("diffs", each.Diffs)
 		held.flag("decisions", each.Decisions)
+		held.flag("memories", each.Memories)
 		held.texts("tools", each.Tools, &diags)
 		held.texts("skills", each.Skills, &diags)
 		held.texts("runners", each.Runners, &diags)
@@ -306,6 +308,7 @@ func lineStationOf(held lineRead) lineStation {
 		Check:       held.text("check"),
 		Diffs:       held.flag("diffs"),
 		Decisions:   held.flag("decisions"),
+		Memories:    held.flag("memories"),
 		Tools:       held.list("tools"),
 		Skills:      held.list("skills"),
 		Runners:     held.set("runners"),
@@ -337,6 +340,7 @@ func lineModel(answer client.Line, kept *LineResourceModel) LineResourceModel {
 			each.Color = lineOrAnswered(each.Color, found.Color)
 			each.Diffs = lineOrAnsweredFlag(each.Diffs, found.Diffs)
 			each.Decisions = lineOrAnsweredFlag(each.Decisions, found.Decisions)
+			each.Memories = lineOrAnsweredFlag(each.Memories, found.Memories)
 		}
 		held.Stations[at] = each
 	}
