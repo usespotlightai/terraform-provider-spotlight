@@ -142,6 +142,7 @@ func line(body map[string]any) (map[string]any, []fieldError) {
 		orDefault(station, "skills", []any{})
 		orDefault(station, "passesTo", []any{})
 		orDefault(station, "ends", false)
+		orDefault(station, "alerts", []any{})
 
 		for _, next := range texts(station["passesTo"]) {
 			switch {

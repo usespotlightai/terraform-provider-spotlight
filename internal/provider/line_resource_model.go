@@ -52,6 +52,23 @@ type lineStation struct {
 	Runners     types.Set    `tfsdk:"runners"`
 	PassesTo    types.Set    `tfsdk:"passes_to"`
 	Ends        types.Bool   `tfsdk:"ends"`
+	Judge       *lineJudge   `tfsdk:"judge"`
+	Alerts      []lineAlert  `tfsdk:"alert"`
+}
+
+type lineJudge struct {
+	Rubric types.String  `tfsdk:"rubric"`
+	Sample types.Float64 `tfsdk:"sample"`
+	Trust  types.Float64 `tfsdk:"trust"`
+}
+
+type lineAlert struct {
+	Measure types.String  `tfsdk:"measure"`
+	RisesBy types.Float64 `tfsdk:"rises_by"`
+	Above   types.Float64 `tfsdk:"above"`
+	FallsBy types.Float64 `tfsdk:"falls_by"`
+	Below   types.Float64 `tfsdk:"below"`
+	Over    types.Int64   `tfsdk:"over"`
 }
 
 type lineReaction struct {
@@ -83,6 +100,18 @@ func (w lineWritten) text(name string, value types.String) {
 func (w lineWritten) flag(name string, value types.Bool) {
 	if !value.IsNull() && !value.IsUnknown() {
 		w[name] = value.ValueBool()
+	}
+}
+
+func (w lineWritten) number(name string, value types.Float64) {
+	if !value.IsNull() && !value.IsUnknown() {
+		w[name] = value.ValueFloat64()
+	}
+}
+
+func (w lineWritten) count(name string, value types.Int64) {
+	if !value.IsNull() && !value.IsUnknown() {
+		w[name] = value.ValueInt64()
 	}
 }
 
@@ -150,6 +179,28 @@ func lineInput(plan LineResourceModel) (client.Definition, diag.Diagnostics) {
 		held.texts("runners", each.Runners, &diags)
 		held.texts("passesTo", each.PassesTo, &diags)
 		held.flag("ends", each.Ends)
+
+		if each.Judge != nil {
+			judge := lineWritten{}
+			judge.text("rubric", each.Judge.Rubric)
+			judge.number("sample", each.Judge.Sample)
+			judge.number("trust", each.Judge.Trust)
+			held["judge"] = map[string]any(judge)
+		}
+
+		alerts := make([]any, 0, len(each.Alerts))
+		for _, alert := range each.Alerts {
+			raised := lineWritten{}
+			raised.text("measure", alert.Measure)
+			raised.number("risesBy", alert.RisesBy)
+			raised.number("above", alert.Above)
+			raised.number("fallsBy", alert.FallsBy)
+			raised.number("below", alert.Below)
+			raised.count("over", alert.Over)
+			alerts = append(alerts, map[string]any(raised))
+		}
+		held["alerts"] = alerts
+
 		stations = append(stations, map[string]any(held))
 	}
 	line["stations"] = stations
@@ -199,6 +250,23 @@ func (r lineRead) flag(name string) types.Bool {
 	}
 
 	return types.BoolNull()
+}
+
+func (r lineRead) number(name string) types.Float64 {
+	held, ok := r[name].(float64)
+	if !ok {
+		return types.Float64Null()
+	}
+
+	return float64AsWritten(held)
+}
+
+func (r lineRead) count(name string) types.Int64 {
+	if held, ok := r[name].(float64); ok {
+		return types.Int64Value(int64(held))
+	}
+
+	return types.Int64Null()
 }
 
 func (r lineRead) texts(name string) []attr.Value {
@@ -294,7 +362,7 @@ func lineAnswered(answer client.Line) LineResourceModel {
 }
 
 func lineStationOf(held lineRead) lineStation {
-	return lineStation{
+	station := lineStation{
 		Key:         held.text("key"),
 		Name:        held.text("name"),
 		Kind:        held.text("kind"),
@@ -314,7 +382,29 @@ func lineStationOf(held lineRead) lineStation {
 		Runners:     held.set("runners"),
 		PassesTo:    held.set("passesTo"),
 		Ends:        held.flag("ends"),
+		Alerts:      []lineAlert{},
 	}
+
+	if judge, ok := held.object("judge"); ok {
+		station.Judge = &lineJudge{
+			Rubric: judge.text("rubric"),
+			Sample: judge.number("sample"),
+			Trust:  judge.number("trust"),
+		}
+	}
+
+	for _, each := range held.each("alerts") {
+		station.Alerts = append(station.Alerts, lineAlert{
+			Measure: each.text("measure"),
+			RisesBy: each.number("risesBy"),
+			Above:   each.number("above"),
+			FallsBy: each.number("fallsBy"),
+			Below:   each.number("below"),
+			Over:    each.count("over"),
+		})
+	}
+
+	return station
 }
 
 func lineModel(answer client.Line, kept *LineResourceModel) LineResourceModel {

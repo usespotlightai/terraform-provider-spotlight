@@ -1,6 +1,7 @@
 package provider_test
 
 import (
+	"fmt"
 	"regexp"
 	"testing"
 
@@ -62,6 +63,36 @@ resource "spotlight_line" "core_delivery" {
     runners   = ["gpu"]
     passes_to = ["code-review"]
     ends      = false
+
+    judge {
+      rubric = "A good run changes only what the task asks for.\n"
+      sample = 0.2
+      trust  = 0.6
+    }
+
+    alert {
+      measure  = "sent_back_rate"
+      rises_by = 0.2
+      over     = 20
+    }
+
+    alert {
+      measure = "cost_per_run"
+      above   = 5
+      over    = 10
+    }
+
+    alert {
+      measure  = "accepted_rate"
+      falls_by = 0.1
+      over     = 20
+    }
+
+    alert {
+      measure = "merged_rate"
+      below   = 0.4
+      over    = 20
+    }
   }
 
   station {
@@ -211,6 +242,20 @@ func lineRepository(name string, image, setup knownvalue.Check) knownvalue.Check
 	})
 }
 
+func lineAlert(measure, threshold string, value float64, over int64) knownvalue.Check {
+	checks := map[string]knownvalue.Check{
+		"measure":  knownvalue.StringExact(measure),
+		"rises_by": knownvalue.Null(),
+		"above":    knownvalue.Null(),
+		"falls_by": knownvalue.Null(),
+		"below":    knownvalue.Null(),
+		"over":     knownvalue.Int64Exact(over),
+	}
+	checks[threshold] = knownvalue.Float64Exact(value)
+
+	return knownvalue.ObjectExact(checks)
+}
+
 func TestLineExportedShapeRoundTrips(t *testing.T) {
 	fake := fakeapi.New(t)
 
@@ -230,6 +275,15 @@ func TestLineExportedShapeRoundTrips(t *testing.T) {
 					statecheck.ExpectKnownValue(lineAddress, lineStation(1, "runners"), knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact("gpu")})),
 					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("runners"), knownvalue.SetSizeExact(2)),
 					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("reaction"), knownvalue.SetSizeExact(1)),
+					statecheck.ExpectKnownValue(lineAddress, lineStation(1, "judge").AtMapKey("sample"), knownvalue.Float64Exact(0.2)),
+					statecheck.ExpectKnownValue(lineAddress, lineStation(1, "alert"), knownvalue.ListExact([]knownvalue.Check{
+						lineAlert("sent_back_rate", "rises_by", 0.2, 20),
+						lineAlert("cost_per_run", "above", 5, 10),
+						lineAlert("accepted_rate", "falls_by", 0.1, 20),
+						lineAlert("merged_rate", "below", 0.4, 20),
+					})),
+					statecheck.ExpectKnownValue(lineAddress, lineStation(2, "judge"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(lineAddress, lineStation(2, "alert"), knownvalue.ListSizeExact(0)),
 				},
 			},
 			{
@@ -642,6 +696,348 @@ func TestLineImportsByIdentity(t *testing.T) {
 				ConfigStateChecks: acctest.ExpectIdentity(lineAddress),
 			},
 			acctest.ImportedByIdentity(lineAddress),
+		},
+	})
+}
+
+func lineJudged(station string) string {
+	return acctest.Workspace + `
+resource "spotlight_line" "core_delivery" {
+  team_id = spotlight_team.core.id
+  key     = "delivery"
+  name    = "Delivery"
+
+  station {
+    key  = "implementation"
+    name = "Implementation"
+` + station + `
+  }
+}
+`
+}
+
+func TestLineStationsJudgeAndAlert(t *testing.T) {
+	fake := fakeapi.New(t)
+
+	judged := lineJudged(`
+    judge {
+      rubric = "A good run changes only what the task asks for."
+      sample = 0.2
+      trust  = 0.6
+    }
+
+    alert {
+      measure  = "sent_back_rate"
+      rises_by = 0.2
+      over     = 20
+    }
+`)
+	retuned := lineJudged(`
+    judge {
+      rubric = "A good run changes only what the task asks for."
+      sample = 1
+      trust  = 0.6
+    }
+
+    alert {
+      measure = "failed_rate"
+      above   = 0.1
+      over    = 5
+    }
+
+    alert {
+      measure  = "sent_back_rate"
+      rises_by = 0.2
+      over     = 20
+    }
+
+    alert {
+      measure  = "accepted_rate"
+      falls_by = 0.05
+      over     = 20
+    }
+
+    alert {
+      measure = "merged_rate"
+      below   = 0
+      over    = 20
+    }
+`)
+	unjudged := lineJudged("")
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
+		CheckDestroy:             acctest.NoneLeft(fake, "line", "team", "workspace"),
+		Steps: []resource.TestStep{
+			{
+				Config: judged,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "judge"), knownvalue.ObjectExact(map[string]knownvalue.Check{
+						"rubric": knownvalue.StringExact("A good run changes only what the task asks for."),
+						"sample": knownvalue.Float64Exact(0.2),
+						"trust":  knownvalue.Float64Exact(0.6),
+					})),
+					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "alert"), knownvalue.ListExact([]knownvalue.Check{
+						lineAlert("sent_back_rate", "rises_by", 0.2, 20),
+					})),
+				},
+			},
+			{
+				Config:   judged,
+				PlanOnly: true,
+			},
+			{
+				ResourceName:      lineAddress,
+				ImportState:       true,
+				ImportStateIdFunc: lineImportID,
+				ImportStateVerify: true,
+			},
+			{
+				Config: retuned,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(lineAddress, plancheck.ResourceActionUpdate)},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "judge").AtMapKey("sample"), knownvalue.Float64Exact(1)),
+					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "alert"), knownvalue.ListExact([]knownvalue.Check{
+						lineAlert("failed_rate", "above", 0.1, 5),
+						lineAlert("sent_back_rate", "rises_by", 0.2, 20),
+						lineAlert("accepted_rate", "falls_by", 0.05, 20),
+						lineAlert("merged_rate", "below", 0, 20),
+					})),
+				},
+			},
+			{
+				Config:   retuned,
+				PlanOnly: true,
+			},
+			{
+				Config: unjudged,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(lineAddress, plancheck.ResourceActionUpdate)},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "judge"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "alert"), knownvalue.ListSizeExact(0)),
+				},
+			},
+			{
+				Config:   unjudged,
+				PlanOnly: true,
+			},
+			{
+				ResourceName:      lineAddress,
+				ImportState:       true,
+				ImportStateIdFunc: lineImportID,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func lineInvalid(t *testing.T, station string, want *regexp.Regexp) {
+	t.Helper()
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fakeapi.New(t)),
+		Steps: []resource.TestStep{
+			{
+				Config:      lineJudged(station),
+				PlanOnly:    true,
+				ExpectError: want,
+			},
+		},
+	})
+}
+
+func TestLineJudgeSamplesAShare(t *testing.T) {
+	lineInvalid(t, `
+    judge {
+      rubric = "A good run."
+      sample = 1.5
+      trust  = 0.6
+    }
+`, regexp.MustCompile(`(?s)station\[0\]\.judge\.sample value must be between 0\.0+ and\s+1\.0+`))
+}
+
+func TestLineJudgeSetsItsRubricSampleAndTrust(t *testing.T) {
+	lineInvalid(t, `
+    judge {
+      rubric = "A good run."
+      sample = 0.2
+    }
+`, regexp.MustCompile(`(?s)station\[0\]\.judge\.trust.*must be specified`))
+}
+
+func TestLineAlertWatchesAKnownMeasure(t *testing.T) {
+	lineInvalid(t, `
+    alert {
+      measure  = "happiness"
+      rises_by = 0.2
+      over     = 20
+    }
+`, regexp.MustCompile(`(?s)station\[0\]\.alert\[0\]\.measure.*sent_back_rate`))
+}
+
+func TestLineAlertSetsExactlyOneThreshold(t *testing.T) {
+	for _, alert := range []string{`
+    alert {
+      measure  = "merged_rate"
+      rises_by = 0.2
+      above    = 0.5
+      over     = 20
+    }
+`, `
+    alert {
+      measure  = "accepted_rate"
+      falls_by = 0.1
+      below    = 0.4
+      over     = 20
+    }
+`, `
+    alert {
+      measure = "merged_rate"
+      over    = 20
+    }
+`} {
+		lineInvalid(t, alert, regexp.MustCompile(`(?s)Invalid Attribute Combination.*falls_by`))
+	}
+}
+
+func TestLineAlertThresholdsAreNotNegative(t *testing.T) {
+	for _, threshold := range []string{"rises_by", "above", "falls_by", "below"} {
+		lineInvalid(t, fmt.Sprintf(`
+    alert {
+      measure = "cost_per_run"
+      %s = -1
+      over    = 10
+    }
+`, threshold), regexp.MustCompile(`(?s)station\[0\]\.alert\[0\]\.`+threshold+`.*at least 0`))
+	}
+}
+
+func TestLineJudgeRubricIsNotEmpty(t *testing.T) {
+	lineInvalid(t, `
+    judge {
+      rubric = ""
+      sample = 0.2
+      trust  = 0.6
+    }
+`, regexp.MustCompile(`(?s)station\[0\]\.judge\.rubric.*at least 1`))
+}
+
+func TestLineAlertComparesAtLeastOneRun(t *testing.T) {
+	lineInvalid(t, `
+    alert {
+      measure = "checks_failed_rate"
+      above   = 0.1
+      over    = 0
+    }
+`, regexp.MustCompile(`(?s)station\[0\]\.alert\[0\]\.over.*at least 1`))
+}
+
+func lineJudgedAccConfig(k acctest.Keys, sample string, alert string) string {
+	return fmt.Sprintf(`
+resource "spotlight_team" "acc" {
+  workspace_id = local.workspace_id
+  key          = %[1]q
+  name         = "Terraform acceptance %[1]s"
+}
+
+resource "spotlight_line" "delivery" {
+  team_id = spotlight_team.acc.id
+  key     = %[2]q
+  name    = "Delivery"
+
+  station {
+    key     = "implementation"
+    name    = "Implementation"
+    harness = "claude-code"
+    prompt  = "Implement the task."
+
+    judge {
+      rubric = "A good run changes only what the task asks for."
+      sample = %[3]s
+      trust  = 0.6
+    }
+%[4]s
+  }
+}
+`, k.Team, k.Line, sample, alert)
+}
+
+func TestAccLineStationJudgeAndAlerts(t *testing.T) {
+	cp := acctest.PreCheck(t)
+	k := acctest.RandomKeys()
+	cp.Sweep(t, k)
+
+	id := cp.Workspace.ID
+	judged := acctest.AdoptedWorkspace(cp.Workspace) + lineJudgedAccConfig(k, "0.2", `
+    alert {
+      measure  = "sent_back_rate"
+      rises_by = 0.2
+      over     = 20
+    }
+`)
+	retuned := acctest.AdoptedWorkspace(cp.Workspace) + lineJudgedAccConfig(k, "0.35", `
+    alert {
+      measure = "cost_per_run"
+      above   = 2.5
+      over    = 10
+    }
+
+    alert {
+      measure  = "accepted_rate"
+      falls_by = 0.1
+      over     = 20
+    }
+
+    alert {
+      measure = "merged_rate"
+      below   = 0.4
+      over    = 20
+    }
+
+    alert {
+      measure  = "sent_back_rate"
+      rises_by = 0.2
+      over     = 20
+    }
+`)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories(),
+		CheckDestroy:             cp.NothingLeftButTheWorkspace(k),
+		Steps: []resource.TestStep{
+			{
+				Config: judged,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("spotlight_line.delivery", lineStation(0, "judge").AtMapKey("trust"), knownvalue.Float64Exact(0.6)),
+					statecheck.ExpectKnownValue("spotlight_line.delivery", lineStation(0, "alert"), knownvalue.ListExact([]knownvalue.Check{
+						lineAlert("sent_back_rate", "rises_by", 0.2, 20),
+					})),
+				},
+			},
+			{
+				Config:           judged,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}},
+			},
+			{
+				Config: retuned,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("spotlight_line.delivery", plancheck.ResourceActionUpdate),
+				}},
+			},
+			{
+				Config:           retuned,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}},
+			},
+			{
+				ResourceName:      "spotlight_line.delivery",
+				ImportState:       true,
+				ImportStateId:     acctest.ImportID(id, k.Team+"/"+k.Line),
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

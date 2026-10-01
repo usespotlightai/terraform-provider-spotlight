@@ -44,6 +44,36 @@ resource "spotlight_line" "core_delivery" {
     skills    = ["grafana"]
     runners   = ["gpu"]
     passes_to = ["code-review"]
+
+    judge {
+      rubric = file("${path.module}/judges/core/delivery/implementation.md")
+      sample = 0.2
+      trust  = 0.6
+    }
+
+    alert {
+      measure  = "sent_back_rate"
+      rises_by = 0.2
+      over     = 20
+    }
+
+    alert {
+      measure = "cost_per_run"
+      above   = 5
+      over    = 10
+    }
+
+    alert {
+      measure  = "accepted_rate"
+      falls_by = 0.1
+      over     = 20
+    }
+
+    alert {
+      measure = "merged_rate"
+      below   = 0.4
+      over    = 20
+    }
   }
 
   station {
@@ -149,6 +179,7 @@ Required:
 
 Optional:
 
+- `alert` (Block List) Warns when a measure of the station's runs moves past a threshold. An alert sets exactly one of `rises_by`, `above`, `falls_by` and `below`. For a rate, amounts are shares from 0 to 1, so 0.2 is 20 percentage points; for `cost_per_run`, they are amounts in the workspace's currency. (see [below for nested schema](#nestedblock--station--alert))
 - `check` (String) A command that must pass before a task moves on, as in `npm test`.
 - `color` (String) A six digit hex colour, as in `#6d78d5`. Spotlight picks one when it is left out.
 - `decisions` (Boolean) Whether the station records the agent's decisions for review.
@@ -157,6 +188,7 @@ Optional:
 - `effort` (String) How hard the agent thinks: `low`, `medium`, `high`, `xhigh` or `max`.
 - `ends` (Boolean) Whether a task that reaches the station is finished.
 - `harness` (String) The agent harness that works tasks here, as in `claude-code`.
+- `judge` (Block, Optional) Scores the station's runs against a rubric, for Insights. A judge sets `rubric`, `sample` and `trust`. No run is judged when left out. (see [below for nested schema](#nestedblock--station--judge))
 - `kind` (String) `backlog`, `work` or `completed`.
 - `memories` (Boolean) Whether the station drafts proposed team memories from each run it completes, for people to approve.
 - `model` (String) The model the harness uses.
@@ -166,6 +198,31 @@ Optional:
 - `runners` (Set of String) Where the station's work runs, in place of the line's `runners`: the labels of a runner pool or trust, any of which a runner must answer to. The line's apply when left out.
 - `skills` (List of String) The skills the station gives its agent, by key.
 - `tools` (List of String) The tools the station gives its agent, as in `linear.comment`.
+
+<a id="nestedblock--station--alert"></a>
+### Nested Schema for `station.alert`
+
+Required:
+
+- `measure` (String) What is watched: `sent_back_rate`, `accepted_rate`, `checks_failed_rate`, `failed_rate`, `merged_rate`, `cost_per_run`.
+- `over` (Number) How many runs are compared, at least 1.
+
+Optional:
+
+- `above` (Number) Alerts when the measure across the last `over` runs is higher than this. For a rate, a share from 0 to 1; for `cost_per_run`, an amount of 0 or more.
+- `below` (Number) Alerts when the measure across the last `over` runs is lower than this. For a rate, a share from 0 to 1; for `cost_per_run`, an amount of 0 or more.
+- `falls_by` (Number) Alerts when the measure over the last `over` runs is this much lower than over the `over` runs before. For a rate, a share above 0 and at most 1; for `cost_per_run`, an amount above 0.
+- `rises_by` (Number) Alerts when the measure over the last `over` runs is this much higher than over the `over` runs before. For a rate, a share above 0 and at most 1; for `cost_per_run`, an amount above 0.
+
+
+<a id="nestedblock--station--judge"></a>
+### Nested Schema for `station.judge`
+
+Optional:
+
+- `rubric` (String) What a good run looks like, at most 20,000 characters, usually read with `file()`, as in `file("judges/implement.md")`.
+- `sample` (Number) The share of runs judged, from 0 to 1.
+- `trust` (Number) How often the judge must agree with people, from 0 to 1, before Insights shows its scores.
 
 ## Import
 

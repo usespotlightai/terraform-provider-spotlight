@@ -144,6 +144,36 @@ resource "spotlight_line" "core_delivery" {
     tools     = ["linear.comment"]
     skills    = [spotlight_skill.core_grafana.key]
     passes_to = ["code-review"]
+
+    judge {
+      rubric = file("${path.module}/judges/core/delivery/implementation.md")
+      sample = 0.2
+      trust  = 0.6
+    }
+
+    alert {
+      measure  = "sent_back_rate"
+      rises_by = 0.2
+      over     = 20
+    }
+
+    alert {
+      measure = "cost_per_run"
+      above   = 5
+      over    = 10
+    }
+
+    alert {
+      measure  = "accepted_rate"
+      falls_by = 0.1
+      over     = 20
+    }
+
+    alert {
+      measure = "merged_rate"
+      below   = 0.4
+      over    = 20
+    }
   }
 
   station {
