@@ -273,6 +273,17 @@ resource "spotlight_line" "core_delivery" {
       authors   = ["dependabot[bot]", "renovate[bot]"]
     }
   }
+
+  replay_check {
+    most_regressions = 1
+    ceiling          = 12.5
+    currency         = "USD"
+  }
+
+  source {
+    repository = "acme/platform"
+    path       = "teams/core/delivery.tf"
+  }
 }
 
 import {

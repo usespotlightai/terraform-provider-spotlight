@@ -196,4 +196,15 @@ resource "spotlight_line" "core_delivery" {
     from      = "implementation"
     to        = "implementation"
   }
+
+  replay_check {
+    most_regressions = 0
+    ceiling          = 10
+    currency         = "USD"
+  }
+
+  source {
+    repository = "acme/platform"
+    path       = "teams/core/delivery.tf"
+  }
 }

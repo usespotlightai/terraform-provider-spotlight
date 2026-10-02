@@ -24,6 +24,8 @@ type LineResourceModel struct {
 	Stations     []lineStation    `tfsdk:"station"`
 	Reactions    []lineReaction   `tfsdk:"reaction"`
 	Reviews      *lineReviews     `tfsdk:"reviews"`
+	ReplayCheck  *lineReplayCheck `tfsdk:"replay_check"`
+	Source       *lineSource      `tfsdk:"source"`
 }
 
 type lineRepository struct {
@@ -87,6 +89,17 @@ type lineSkip struct {
 	Spotlight types.Bool `tfsdk:"spotlight"`
 	Drafts    types.Bool `tfsdk:"drafts"`
 	Authors   types.Set  `tfsdk:"authors"`
+}
+
+type lineReplayCheck struct {
+	MostRegressions types.Int64   `tfsdk:"most_regressions"`
+	Ceiling         types.Float64 `tfsdk:"ceiling"`
+	Currency        types.String  `tfsdk:"currency"`
+}
+
+type lineSource struct {
+	Repository types.String `tfsdk:"repository"`
+	Path       types.String `tfsdk:"path"`
 }
 
 type lineWritten map[string]any
@@ -231,6 +244,21 @@ func lineInput(plan LineResourceModel) (client.Definition, diag.Diagnostics) {
 		line["reviews"] = map[string]any(held)
 	}
 
+	if plan.ReplayCheck != nil {
+		held := lineWritten{}
+		held.count("mostRegressions", plan.ReplayCheck.MostRegressions)
+		held.number("ceiling", plan.ReplayCheck.Ceiling)
+		held.text("currency", plan.ReplayCheck.Currency)
+		line["replayCheck"] = map[string]any(held)
+	}
+
+	if plan.Source != nil {
+		held := lineWritten{}
+		held.text("repository", plan.Source.Repository)
+		held.text("path", plan.Source.Path)
+		line["source"] = map[string]any(held)
+	}
+
 	return client.Definition(line), diags
 }
 
@@ -356,6 +384,18 @@ func lineAnswered(answer client.Line) LineResourceModel {
 				Authors:   skipped.set("authors"),
 			}
 		}
+	}
+
+	if found, ok := line.object("replayCheck"); ok {
+		held.ReplayCheck = &lineReplayCheck{
+			MostRegressions: found.count("mostRegressions"),
+			Ceiling:         found.number("ceiling"),
+			Currency:        found.text("currency"),
+		}
+	}
+
+	if found, ok := line.object("source"); ok {
+		held.Source = &lineSource{Repository: found.text("repository"), Path: found.text("path")}
 	}
 
 	return held

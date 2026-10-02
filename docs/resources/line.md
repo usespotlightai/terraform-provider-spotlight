@@ -96,6 +96,17 @@ resource "spotlight_line" "core_delivery" {
     from      = "implementation"
     to        = "implementation"
   }
+
+  replay_check {
+    most_regressions = 0
+    ceiling          = 10
+    currency         = "USD"
+  }
+
+  source {
+    repository = "acme/platform"
+    path       = "teams/core/delivery.tf"
+  }
 }
 ```
 
@@ -111,10 +122,12 @@ resource "spotlight_line" "core_delivery" {
 ### Optional
 
 - `reaction` (Block Set) Moves a task when something happens, as when a pull request's checks fail. (see [below for nested schema](#nestedblock--reaction))
+- `replay_check` (Block, Optional) When a planned change to the line passes `spotlight replay check`, which replays the changed station's replay set under the change and compares it with the live config. `spotlight replay check` checks no change to a line without one. (see [below for nested schema](#nestedblock--replay_check))
 - `repository` (Block Set) A repository the line works on. Spotlight keeps them sorted by name, so they are a set. The repositories of a line name at most one `image`. (see [below for nested schema](#nestedblock--repository))
 - `reviews` (Block, Optional) Which pull requests the line reviews, for a line whose role is `review`. (see [below for nested schema](#nestedblock--reviews))
 - `role` (String) The role the line plays for its team, as in `delivery` or `review`. A role names one line.
 - `runners` (Set of String) Where the line's work runs: the labels of a runner pool or trust, any of which a runner must answer to. A station's own `runners` replace it. Anywhere when left out.
+- `source` (Block, Optional) Where the line's Terraform lives, which Spotlight opens pull requests against when a person picks a better station config. A source sets `repository` and `path`. (see [below for nested schema](#nestedblock--source))
 - `station` (Block List) A station along the line, in order. A line has at least one. (see [below for nested schema](#nestedblock--station))
 
 ### Read-Only
@@ -134,6 +147,16 @@ Required:
 Optional:
 
 - `from` (String) The station the task must be at, by key; any station when left out.
+
+
+<a id="nestedblock--replay_check"></a>
+### Nested Schema for `replay_check`
+
+Optional:
+
+- `ceiling` (Number) The most one check's replay may spend, in `currency`, above 0 and at most 1,000. 10 when left out.
+- `currency` (String) The three-letter currency the ceiling is counted in, in upper case, as in `EUR`. `USD` when left out.
+- `most_regressions` (Number) How many tasks a planned change may regress on and still pass, a whole number from 0. 0 when left out.
 
 
 <a id="nestedblock--repository"></a>
@@ -167,6 +190,15 @@ Optional:
 - `drafts` (Boolean) Skip draft pull requests.
 - `spotlight` (Boolean) Skip pull requests Spotlight opened.
 
+
+
+<a id="nestedblock--source"></a>
+### Nested Schema for `source`
+
+Optional:
+
+- `path` (String) The Terraform file in it that holds the line, from the repository root, as in `teams/core/delivery.tf`.
+- `repository` (String) The GitHub repository that holds the line's Terraform, named `owner/name`.
 
 
 <a id="nestedblock--station"></a>

@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"regexp"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/float64validator"
@@ -12,6 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/float64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 
@@ -45,6 +48,14 @@ var lineBlocks = map[string]string{
 }
 
 var lineMeasures = []string{"sent_back_rate", "accepted_rate", "checks_failed_rate", "failed_rate", "merged_rate", "cost_per_run"}
+
+const lineMostCeiling = 1000
+
+var (
+	lineCurrency         = regexp.MustCompile(`^[A-Z]{3}$`)
+	lineSourceRepository = regexp.MustCompile(`^[A-Za-z0-9._-]{1,100}/[A-Za-z0-9._-]{1,100}$`)
+	lineSourcePath       = regexp.MustCompile(`^(([^/\\]*[^./\\][^/\\]*|\.{3,})/)*[^/\\]+\.tf$`)
+)
 
 var lineFields = fieldpath.Locator{Schema: lineSchema().Type(), Renames: lineBlocks}
 
@@ -251,6 +262,56 @@ func lineSchema() schema.Schema {
 							"drafts":    lineFlag("Skip draft pull requests.", true),
 							"authors":   stringSetAttribute("Skip pull requests by these GitHub logins, in lower case, as in `dependabot[bot]`. Spotlight keeps them sorted and each once, so they are a set."),
 						},
+					},
+				},
+			},
+			"replay_check": schema.SingleNestedBlock{
+				MarkdownDescription: "When a planned change to the line passes `spotlight replay check`, which replays the changed station's replay set under the change and compares it with the live config. `spotlight replay check` checks no change to a line without one.",
+				Attributes: map[string]schema.Attribute{
+					"most_regressions": schema.Int64Attribute{
+						Optional:            true,
+						Computed:            true,
+						Default:             int64default.StaticInt64(0),
+						Validators:          []validator.Int64{int64validator.AtLeast(0)},
+						MarkdownDescription: "How many tasks a planned change may regress on and still pass, a whole number from 0. 0 when left out.",
+					},
+					"ceiling": schema.Float64Attribute{
+						Optional:            true,
+						Computed:            true,
+						Default:             float64default.StaticFloat64(10),
+						Validators:          []validator.Float64{float64validator.Between(0, lineMostCeiling), float64validator.NoneOf(0)},
+						MarkdownDescription: "The most one check's replay may spend, in `currency`, above 0 and at most 1,000. 10 when left out.",
+					},
+					"currency": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Default:             stringdefault.StaticString("USD"),
+						Validators:          []validator.String{stringvalidator.RegexMatches(lineCurrency, "must be a three-letter currency in upper case, as in USD")},
+						MarkdownDescription: "The three-letter currency the ceiling is counted in, in upper case, as in `EUR`. `USD` when left out.",
+					},
+				},
+			},
+			"source": schema.SingleNestedBlock{
+				MarkdownDescription: "Where the line's Terraform lives, which Spotlight opens pull requests against when a person picks a better station config. A source sets `repository` and `path`.",
+				Validators: []validator.Object{
+					objectvalidator.AlsoRequires(
+						path.MatchRelative().AtName("repository"),
+						path.MatchRelative().AtName("path"),
+					),
+				},
+				Attributes: map[string]schema.Attribute{
+					"repository": schema.StringAttribute{
+						Optional:            true,
+						Validators:          []validator.String{stringvalidator.RegexMatches(lineSourceRepository, "must be a GitHub repository named owner/name")},
+						MarkdownDescription: "The GitHub repository that holds the line's Terraform, named `owner/name`.",
+					},
+					"path": schema.StringAttribute{
+						Optional: true,
+						Validators: []validator.String{
+							stringvalidator.LengthBetween(1, 1024),
+							stringvalidator.RegexMatches(lineSourcePath, "must be a Terraform file ending in .tf, from the root of the repository, with forward slashes, no leading slash and no empty, . or .. parts"),
+						},
+						MarkdownDescription: "The Terraform file in it that holds the line, from the repository root, as in `teams/core/delivery.tf`.",
 					},
 				},
 			},
