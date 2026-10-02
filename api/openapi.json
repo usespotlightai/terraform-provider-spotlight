@@ -3380,6 +3380,103 @@
         ]
       }
     },
+    "/teams/{teamId}/search-runs/{runId}": {
+      "get": {
+        "operationId": "readSearchRun",
+        "parameters": [
+          {
+            "name": "Spotlight-Api-Version",
+            "in": "header",
+            "description": "The API version the client was written against; every response names the version it was answered in",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2026-09-23"
+              ],
+              "default": "2026-09-23"
+            }
+          },
+          {
+            "name": "Spotlight-Client",
+            "in": "header",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "terraform-provider/0.1.0"
+            }
+          },
+          {
+            "name": "teamId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "runId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchRunResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed, or asking for an API version this server does not serve",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid credentials",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such search run of the team for a caller who may read it",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "A search’s agent run: its search and iteration, the agent it ran, what it did and said, and what it spent",
+        "tags": [
+          "replays"
+        ]
+      }
+    },
     "/teams/{teamId}/chats": {
       "get": {
         "operationId": "listChats",
@@ -21316,6 +21413,16 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique per check asked for; a retry with the same key and body answers the check the first attempt started, and starts nothing more",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 255
+            }
           }
         ],
         "requestBody": {
@@ -21330,7 +21437,7 @@
         },
         "responses": {
           "200": {
-            "description": "The check this change already has against the same live config, or the one this Idempotency-Key started",
+            "description": "The check this change already has against the same live config, set runs and threshold, while it runs, passed or failed; reused is true",
             "content": {
               "application/json": {
                 "schema": {
@@ -21340,7 +21447,18 @@
             }
           },
           "201": {
-            "description": "",
+            "description": "The check started, as a read would answer it; or, on a retry with the same Idempotency-Key, the check the first attempt answered",
+            "headers": {
+              "Idempotent-Replayed": {
+                "description": "true when this answers an earlier attempt",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -21416,6 +21534,124 @@
           }
         ],
         "summary": "Check a planned change of a station against the replay set that guards its changes, under the live line’s replay_check; a change already checked against the same live config answers its check",
+        "tags": [
+          "replays"
+        ]
+      }
+    },
+    "/teams/{teamId}/replay-sets/{setId}/replay-checks": {
+      "get": {
+        "operationId": "listReplaySetChecks",
+        "parameters": [
+          {
+            "name": "Spotlight-Api-Version",
+            "in": "header",
+            "description": "The API version the client was written against; every response names the version it was answered in",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2026-09-23"
+              ],
+              "default": "2026-09-23"
+            }
+          },
+          {
+            "name": "Spotlight-Client",
+            "in": "header",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "terraform-provider/0.1.0"
+            }
+          },
+          {
+            "name": "teamId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "setId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "At most this many, up to 200; 50 unless told",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "before",
+            "required": false,
+            "in": "query",
+            "description": "Only checks started before this one, by its id; a check the set does not hold answers an empty page",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReplayCheckSummaryResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed, or asking for an API version this server does not serve",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid credentials",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such team, station or check for this caller",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "The checks of planned changes replayed over a replay set, newest first, a page at a time, with each one’s verdict",
         "tags": [
           "replays"
         ]
@@ -21959,6 +22195,31 @@
           "path"
         ]
       },
+      "LineReplayCheckResponseDto": {
+        "type": "object",
+        "properties": {
+          "mostRegressions": {
+            "type": "number",
+            "example": 0,
+            "description": "How many tasks a planned change may regress on and still pass `spotlight replay check`"
+          },
+          "ceiling": {
+            "type": "number",
+            "example": 10,
+            "description": "The most one check’s replay may spend"
+          },
+          "currency": {
+            "type": "string",
+            "example": "USD",
+            "description": "The currency of the ceiling"
+          }
+        },
+        "required": [
+          "mostRegressions",
+          "ceiling",
+          "currency"
+        ]
+      },
       "LineResponseDto": {
         "type": "object",
         "properties": {
@@ -22006,6 +22267,16 @@
                 "$ref": "#/components/schemas/LineSourceResponseDto"
               }
             ]
+          },
+          "replayCheck": {
+            "nullable": true,
+            "description": "The threshold planned changes of the line’s stations are checked against, set through Terraform; null when the line checks none",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LineReplayCheckResponseDto"
+              }
+            ]
           }
         },
         "required": [
@@ -22015,7 +22286,8 @@
           "stations",
           "reactions",
           "repositories",
-          "source"
+          "source",
+          "replayCheck"
         ]
       },
       "FieldErrorResponseDto": {
@@ -25921,6 +26193,200 @@
           "station",
           "review",
           "original",
+          "spend",
+          "journals"
+        ]
+      },
+      "SearchRunAgentResponseDto": {
+        "type": "object",
+        "properties": {
+          "harness": {
+            "type": "string",
+            "example": "claude-code"
+          },
+          "model": {
+            "type": "string",
+            "nullable": true
+          },
+          "effort": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "harness",
+          "model",
+          "effort"
+        ]
+      },
+      "SearchRunCostResponseDto": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number",
+            "example": 0.42
+          },
+          "currency": {
+            "type": "string",
+            "example": "USD"
+          }
+        },
+        "required": [
+          "amount",
+          "currency"
+        ]
+      },
+      "SearchRunSpentResponseDto": {
+        "type": "object",
+        "properties": {
+          "spentCosts": {
+            "description": "What its model calls cost, one sum per currency, across every attempt",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchRunCostResponseDto"
+            }
+          },
+          "unpricedCalls": {
+            "type": "number",
+            "description": "Model sessions that came back with no price; the search charges each its agent run’s whole share"
+          }
+        },
+        "required": [
+          "spentCosts",
+          "unpricedCalls"
+        ]
+      },
+      "SearchRunResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "4e1e84a2-0c39-406d-bbbb-559f29e450be"
+          },
+          "state": {
+            "type": "string",
+            "example": "completed",
+            "enum": [
+              "queued",
+              "claimed",
+              "waiting",
+              "parked",
+              "completed",
+              "failed",
+              "superseded"
+            ]
+          },
+          "attempt": {
+            "type": "number",
+            "example": 1
+          },
+          "exitCode": {
+            "type": "number",
+            "example": 0,
+            "nullable": true
+          },
+          "startedAt": {
+            "type": "string",
+            "example": "2026-08-28T16:32:47.877Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2026-08-28T16:33:25.712Z"
+          },
+          "harness": {
+            "type": "string",
+            "example": "claude-code"
+          },
+          "image": {
+            "type": "string",
+            "nullable": true,
+            "example": "ghcr.io/acme/api-runner@sha256:9b2f5c1e0d7a4b3c8e6f1a2d5c7b9e0f3a4d6c8b1e2f5a7c9d0b3e6f8a1c4d7e",
+            "description": "The image, by digest, its sandbox started from; null before it started or where a push pool provisioned it"
+          },
+          "station": {
+            "nullable": true,
+            "description": "Where it ran, which the task may since have left",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RunStationResponseDto"
+              }
+            ]
+          },
+          "review": {
+            "nullable": true,
+            "description": "Set where it put the task to a person",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RunReviewResponseDto"
+              }
+            ]
+          },
+          "searchId": {
+            "type": "string",
+            "description": "The search this run is an iteration of"
+          },
+          "iteration": {
+            "type": "number",
+            "example": 1
+          },
+          "agent": {
+            "nullable": true,
+            "description": "The harness, model and effort the search ran its agent on",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SearchRunAgentResponseDto"
+              }
+            ]
+          },
+          "failure": {
+            "type": "string",
+            "nullable": true,
+            "description": "How the run failed, once it did"
+          },
+          "endedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "spent": {
+            "$ref": "#/components/schemas/SearchRunSpentResponseDto"
+          },
+          "spend": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RunSpendResponseDto"
+              }
+            ]
+          },
+          "journals": {
+            "description": "What it did and said, attempt by attempt",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RunJournalResponseDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "state",
+          "attempt",
+          "exitCode",
+          "startedAt",
+          "updatedAt",
+          "harness",
+          "image",
+          "station",
+          "review",
+          "searchId",
+          "iteration",
+          "agent",
+          "failure",
+          "endedAt",
+          "spent",
           "spend",
           "journals"
         ]
@@ -36764,6 +37230,24 @@
           "baseline"
         ]
       },
+      "ReplaySearchResponseDto": {
+        "type": "object",
+        "properties": {
+          "searchId": {
+            "type": "string",
+            "description": "The search the replay belongs to"
+          },
+          "candidateName": {
+            "type": "string",
+            "example": "terse-prompt",
+            "description": "The candidate it replays in that search; seed for the live config the search started from"
+          }
+        },
+        "required": [
+          "searchId",
+          "candidateName"
+        ]
+      },
       "EntryComparisonResponseDto": {
         "type": "object",
         "properties": {
@@ -36905,6 +37389,16 @@
             "type": "string",
             "nullable": true
           },
+          "search": {
+            "nullable": true,
+            "description": "The search it belongs to, when a search started it",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReplaySearchResponseDto"
+              }
+            ]
+          },
           "comparison": {
             "description": "Per task against the set’s baseline, regressions first",
             "type": "array",
@@ -36928,6 +37422,7 @@
           "totals",
           "entries",
           "baselineReplayId",
+          "search",
           "comparison"
         ]
       },
@@ -36988,6 +37483,16 @@
                 "$ref": "#/components/schemas/ReplayEntryResponseDto"
               }
             ]
+          },
+          "search": {
+            "nullable": true,
+            "description": "The search its replay belongs to, when a search started it",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReplaySearchResponseDto"
+              }
+            ]
           }
         },
         "required": [
@@ -37000,7 +37505,8 @@
           "startedAsBaseline",
           "isBaseline",
           "state",
-          "entry"
+          "entry",
+          "search"
         ]
       },
       "SearchAgentResponseDto": {
@@ -37371,7 +37877,7 @@
             "description": "The harness the search’s agent runs on"
           },
           "model": {
-            "type": "object",
+            "type": "string",
             "example": "claude-opus-4-5",
             "nullable": true
           },
@@ -37542,6 +38048,9 @@
               "blocks-ambiguous",
               "computed-attribute",
               "drifted",
+              "edit-failed",
+              "branch-taken",
+              "file-unwritable",
               "github-refused"
             ],
             "example": "computed-attribute",
@@ -38093,12 +38602,28 @@
             "description": "How many tasks the change may regress on and still pass, taken from the live line’s replay_check when the check started"
           },
           "ceiling": {
-            "$ref": "#/components/schemas/SpendResponseDto"
+            "description": "The most each replay of the check may spend: the replay of the planned change and, when the set has no baseline of the live config yet, the baseline replay the check starts, each up to this ceiling on its own; a baseline already there costs the check nothing. A replay reaching its ceiling starts no more runs, though runs already going finish, so it may end a little over it",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SpendResponseDto"
+              }
+            ]
+          },
+          "unpricedRun": {
+            "nullable": true,
+            "description": "What a run that reports no price, or a price in another currency, counts against the ceiling: the ceiling shared out over the set’s runs; null once the replay is gone",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SpendResponseDto"
+              }
+            ]
           }
         },
         "required": [
           "mostRegressions",
-          "ceiling"
+          "ceiling",
+          "unpricedRun"
         ]
       },
       "ReplayCheckSideResponseDto": {
@@ -38262,10 +38787,6 @@
             "nullable": true,
             "description": "The replay of the live config it is compared with: the newest baseline of the set replaying the live config the check was started against; null while that baseline is still being started"
           },
-          "setVersion": {
-            "type": "number",
-            "description": "The version of the guarding set the check replayed; checking the change again reuses the check only while the set is unchanged"
-          },
           "attempt": {
             "type": "number",
             "description": "Counts the checks of the same change against the same live config, from 1; a new attempt starts when an earlier one cannot be reused"
@@ -38312,6 +38833,7 @@
               "stopped",
               "over-ceiling",
               "baseline-unfinished",
+              "no-baseline",
               "too-few-scored",
               null
             ],
@@ -38343,6 +38865,10 @@
             "example": "https://app.usespotlight.ai/w/acme/team/9c2e6d5a-1f47-4c8b-9a3d-2b7e5f0c1d84/lines/3f7a2c9e-5d18-4b6a-8e2f-1c9d7b4a6e03/stations/7b1d/replays/2e9c",
             "description": "Where the web app shows the check’s replay"
           },
+          "reused": {
+            "type": "boolean",
+            "description": "True when starting a check answered one this change already had against the same live config, set runs and threshold, rather than starting another; always false on a read"
+          },
           "createdAt": {
             "type": "string",
             "example": "2026-10-02T09:00:00.000Z"
@@ -38359,7 +38885,6 @@
           "candidateId",
           "replayId",
           "baselineReplayId",
-          "setVersion",
           "attempt",
           "reference",
           "liveFingerprint",
@@ -38374,7 +38899,78 @@
           "baseline",
           "regressions",
           "replayUrl",
+          "reused",
           "createdAt"
+        ]
+      },
+      "ReplayCheckSummaryResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "6a2d9f4c-1e83-4b7a-9c5d-2f8e0b3a7d61"
+          },
+          "stationId": {
+            "type": "string"
+          },
+          "stationKey": {
+            "type": "string",
+            "example": "build"
+          },
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "running",
+              "passed",
+              "failed",
+              "undecided"
+            ]
+          },
+          "undecidedBecause": {
+            "type": "string",
+            "enum": [
+              "replay-gone",
+              "stopped",
+              "over-ceiling",
+              "baseline-unfinished",
+              "no-baseline",
+              "too-few-scored",
+              null
+            ],
+            "nullable": true
+          },
+          "regressions": {
+            "type": "number",
+            "description": "How many tasks the change regressed on"
+          },
+          "attempt": {
+            "type": "number",
+            "description": "Counts the checks of the same change against the same live config, from 1"
+          },
+          "reference": {
+            "$ref": "#/components/schemas/ReplayCheckReferenceResponseDto"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-10-02T09:00:00.000Z"
+          },
+          "replayUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "Where the web app shows the check’s replay"
+          }
+        },
+        "required": [
+          "id",
+          "stationId",
+          "stationKey",
+          "verdict",
+          "undecidedBecause",
+          "regressions",
+          "attempt",
+          "reference",
+          "createdAt",
+          "replayUrl"
         ]
       },
       "ProposeSearchCandidateRequestDto": {
