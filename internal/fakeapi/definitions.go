@@ -193,6 +193,29 @@ func line(body map[string]any) (map[string]any, []fieldError) {
 		definition["reviews"] = reviews
 	}
 
+	if check, ok := definition["replayCheck"].(map[string]any); ok {
+		check = maps.Clone(check)
+		orDefault(check, "mostRegressions", float64(0))
+		orDefault(check, "ceiling", float64(10))
+		orDefault(check, "currency", "USD")
+		check["currency"] = strings.ToUpper(strings.TrimSpace(textOf(check["currency"])))
+		if ceiling, _ := check["ceiling"].(float64); ceiling <= 0 || ceiling > 1000 {
+			errs = append(errs, fieldError{"replayCheck.ceiling", "is the most one check’s replay may spend, above 0 and at most 1,000"})
+		}
+		definition["replayCheck"] = check
+	}
+
+	if source, ok := definition["source"].(map[string]any); ok {
+		source = maps.Clone(source)
+		source["repository"] = strings.TrimSuffix(strings.TrimSpace(textOf(source["repository"])), ".git")
+		if path := textOf(source["path"]); !strings.HasSuffix(path, ".tf") {
+			errs = append(errs, fieldError{"source.path", "is a Terraform file, ending in .tf"})
+		}
+		definition["source"] = source
+	} else {
+		delete(definition, "source")
+	}
+
 	return map[string]any{"key": definition["key"], "definition": definition}, errs
 }
 

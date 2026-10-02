@@ -122,6 +122,36 @@ func TestAStationBlockRefusalLandsOnTheBlock(t *testing.T) {
 	}
 }
 
+func TestALineReplayCheckOrSourceRefusalLandsOnItsAttribute(t *testing.T) {
+	var diags diag.Diagnostics
+
+	addAPIError(&diags, "Could not create the line", &client.Problem{
+		Status: 422, Type: client.ProblemInvalid, Title: "The line is not valid",
+		Errors: []client.FieldError{
+			{Path: "replayCheck.mostRegressions", Message: "is how many tasks a planned change may regress on and still pass, a whole number from 0", Severity: "error"},
+			{Path: "replayCheck", Message: "is not valid", Severity: "error"},
+			{Path: "source.path", Message: "is a Terraform file, ending in .tf", Severity: "error"},
+			{Path: "source.repository", Message: "is the GitHub repository that holds the line’s Terraform, as owner/name: is named owner/name", Severity: "error"},
+		},
+	}, lineFields, client.ScopeConfigure)
+
+	errs := diags.Errors()
+	if len(errs) != 4 {
+		t.Fatalf("errors %v", errs)
+	}
+
+	for i, want := range []path.Path{
+		path.Root("replay_check").AtName("most_regressions"),
+		path.Root("replay_check"),
+		path.Root("source").AtName("path"),
+		path.Root("source").AtName("repository"),
+	} {
+		if !pathOf(errs[i]).Equal(want) {
+			t.Errorf("error %d at %s, want %s", i, pathOf(errs[i]), want)
+		}
+	}
+}
+
 func TestAConflictSaysWhatToDo(t *testing.T) {
 	var diags diag.Diagnostics
 

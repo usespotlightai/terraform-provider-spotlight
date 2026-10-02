@@ -139,6 +139,17 @@ resource "spotlight_line" "core_delivery" {
       authors   = ["dependabot[bot]", "renovate[bot]"]
     }
   }
+
+  replay_check {
+    most_regressions = 1
+    ceiling          = 12.5
+    currency         = "USD"
+  }
+
+  source {
+    repository = "acme/platform"
+    path       = "teams/core/delivery.tf"
+  }
 }
 `
 
@@ -256,6 +267,21 @@ func lineAlert(measure, threshold string, value float64, over int64) knownvalue.
 	return knownvalue.ObjectExact(checks)
 }
 
+func lineReplayCheck(mostRegressions int64, ceiling float64, currency string) knownvalue.Check {
+	return knownvalue.ObjectExact(map[string]knownvalue.Check{
+		"most_regressions": knownvalue.Int64Exact(mostRegressions),
+		"ceiling":          knownvalue.Float64Exact(ceiling),
+		"currency":         knownvalue.StringExact(currency),
+	})
+}
+
+func lineSource(repository, path string) knownvalue.Check {
+	return knownvalue.ObjectExact(map[string]knownvalue.Check{
+		"repository": knownvalue.StringExact(repository),
+		"path":       knownvalue.StringExact(path),
+	})
+}
+
 func TestLineExportedShapeRoundTrips(t *testing.T) {
 	fake := fakeapi.New(t)
 
@@ -284,6 +310,8 @@ func TestLineExportedShapeRoundTrips(t *testing.T) {
 					})),
 					statecheck.ExpectKnownValue(lineAddress, lineStation(2, "judge"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(lineAddress, lineStation(2, "alert"), knownvalue.ListSizeExact(0)),
+					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("replay_check"), lineReplayCheck(1, 12.5, "USD")),
+					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("source"), lineSource("acme/platform", "teams/core/delivery.tf")),
 				},
 			},
 			{
@@ -317,6 +345,8 @@ func TestLineFillsWhatItLeavesOutWithoutDrift(t *testing.T) {
 					statecheck.ExpectKnownValue(lineAddress, lineStation(2, "runners"), knownvalue.SetSizeExact(0)),
 					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("runners"), knownvalue.SetSizeExact(0)),
 					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("reviews").AtMapKey("skip").AtMapKey("authors"), knownvalue.SetSizeExact(2)),
+					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("replay_check"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("source"), knownvalue.Null()),
 				},
 			},
 			{
@@ -1030,6 +1060,297 @@ func TestAccLineStationJudgeAndAlerts(t *testing.T) {
 			},
 			{
 				Config:           retuned,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}},
+			},
+			{
+				ResourceName:      "spotlight_line.delivery",
+				ImportState:       true,
+				ImportStateId:     acctest.ImportID(id, k.Team+"/"+k.Line),
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func lineChecked(blocks string) string {
+	return acctest.Workspace + `
+resource "spotlight_line" "core_delivery" {
+  team_id = spotlight_team.core.id
+  key     = "delivery"
+  name    = "Delivery"
+
+  station {
+    key  = "implementation"
+    name = "Implementation"
+  }
+` + blocks + `
+}
+`
+}
+
+func TestLineReplayCheckAndSource(t *testing.T) {
+	fake := fakeapi.New(t)
+
+	defaulted := lineChecked(`
+  replay_check {}
+
+  source {
+    repository = "acme/infra"
+    path       = "spotlight/web.tf"
+  }
+`)
+	tightened := lineChecked(`
+  replay_check {
+    most_regressions = 2
+    ceiling          = 0.75
+    currency         = "EUR"
+  }
+
+  source {
+    repository = "acme/platform"
+    path       = "teams/core/delivery.tf"
+  }
+`)
+	unchecked := lineChecked("")
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
+		CheckDestroy:             acctest.NoneLeft(fake, "line", "team", "workspace"),
+		Steps: []resource.TestStep{
+			{
+				Config: defaulted,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("replay_check"), lineReplayCheck(0, 10, "USD")),
+					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("source"), lineSource("acme/infra", "spotlight/web.tf")),
+				},
+			},
+			{
+				Config:   defaulted,
+				PlanOnly: true,
+			},
+			{
+				ResourceName:      lineAddress,
+				ImportState:       true,
+				ImportStateIdFunc: lineImportID,
+				ImportStateVerify: true,
+			},
+			{
+				Config: tightened,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(lineAddress, plancheck.ResourceActionUpdate)},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("replay_check"), lineReplayCheck(2, 0.75, "EUR")),
+					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("source"), lineSource("acme/platform", "teams/core/delivery.tf")),
+				},
+			},
+			{
+				Config:   tightened,
+				PlanOnly: true,
+			},
+			{
+				Config: unchecked,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(lineAddress, plancheck.ResourceActionUpdate)},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("replay_check"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("source"), knownvalue.Null()),
+				},
+			},
+			{
+				Config:   unchecked,
+				PlanOnly: true,
+			},
+			{
+				ResourceName:      lineAddress,
+				ImportState:       true,
+				ImportStateIdFunc: lineImportID,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func lineCheckInvalid(t *testing.T, blocks string, want *regexp.Regexp) {
+	t.Helper()
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fakeapi.New(t)),
+		Steps: []resource.TestStep{
+			{
+				Config:      lineChecked(blocks),
+				PlanOnly:    true,
+				ExpectError: want,
+			},
+		},
+	})
+}
+
+func TestLineReplayCheckAllowsNoNegativeRegressions(t *testing.T) {
+	lineCheckInvalid(t, `
+  replay_check {
+    most_regressions = -1
+  }
+`, regexp.MustCompile(`(?s)replay_check\.most_regressions.*at least 0`))
+}
+
+func TestLineReplayCheckCeilingIsAboveZeroAndAtMostAThousand(t *testing.T) {
+	for _, ceiling := range []string{"0", "-5", "1000.5"} {
+		lineCheckInvalid(t, `
+  replay_check {
+    ceiling = `+ceiling+`
+  }
+`, regexp.MustCompile(`(?s)replay_check\.ceiling`))
+	}
+}
+
+func TestLineReplayCheckCurrencyIsThreeCapitalLetters(t *testing.T) {
+	for _, currency := range []string{"usd", "US", "EURO"} {
+		lineCheckInvalid(t, fmt.Sprintf(`
+  replay_check {
+    currency = %q
+  }
+`, currency), regexp.MustCompile(`(?s)replay_check\.currency.*three-letter currency`))
+	}
+}
+
+func TestLineSourceSetsItsRepositoryAndPath(t *testing.T) {
+	lineCheckInvalid(t, `
+  source {
+    repository = "acme/infra"
+  }
+`, regexp.MustCompile(`(?s)source\.path.*must be specified`))
+}
+
+func TestLineSourceRepositoryIsOwnerAndName(t *testing.T) {
+	for _, repository := range []string{"infra", "acme/infra/web", "acme/in fra"} {
+		lineCheckInvalid(t, fmt.Sprintf(`
+  source {
+    repository = %q
+    path       = "spotlight/web.tf"
+  }
+`, repository), regexp.MustCompile(`(?s)source\.repository.*owner/name`))
+	}
+}
+
+func TestLineSourcePathIsATerraformFileInTheRepository(t *testing.T) {
+	for _, path := range []string{"spotlight/web.yml", "/spotlight/web.tf", "spotlight/../web.tf", "./web.tf", "spotlight//web.tf", `spotlight\\web.tf`} {
+		lineCheckInvalid(t, fmt.Sprintf(`
+  source {
+    repository = "acme/infra"
+    path       = %q
+  }
+`, path), regexp.MustCompile(`(?s)source\.path.*Terraform file ending in \.tf`))
+	}
+}
+
+func TestLineSourcePathMayHoldDots(t *testing.T) {
+	fake := fakeapi.New(t)
+
+	dotted := lineChecked(`
+  source {
+    repository = "acme/infra.config"
+    path       = "...shared/.spotlight/web.tf"
+  }
+`)
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
+		Steps: []resource.TestStep{
+			{
+				Config: dotted,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("source"), lineSource("acme/infra.config", "...shared/.spotlight/web.tf")),
+				},
+			},
+			{
+				Config:   dotted,
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
+func lineCheckedAccConfig(k acctest.Keys, blocks string) string {
+	return fmt.Sprintf(`
+resource "spotlight_team" "acc" {
+  workspace_id = local.workspace_id
+  key          = %[1]q
+  name         = "Terraform acceptance %[1]s"
+}
+
+resource "spotlight_line" "delivery" {
+  team_id = spotlight_team.acc.id
+  key     = %[2]q
+  name    = "Delivery"
+
+  station {
+    key     = "implementation"
+    name    = "Implementation"
+    harness = "claude-code"
+    prompt  = "Implement the task."
+  }
+%[3]s
+}
+`, k.Team, k.Line, blocks)
+}
+
+func TestAccLineReplayCheckAndSource(t *testing.T) {
+	cp := acctest.PreCheck(t)
+	k := acctest.RandomKeys()
+	cp.Sweep(t, k)
+
+	id := cp.Workspace.ID
+	defaulted := acctest.AdoptedWorkspace(cp.Workspace) + lineCheckedAccConfig(k, `
+  replay_check {}
+
+  source {
+    repository = "acme/infra"
+    path       = "spotlight/web.tf"
+  }
+`)
+	tightened := acctest.AdoptedWorkspace(cp.Workspace) + lineCheckedAccConfig(k, `
+  replay_check {
+    most_regressions = 2
+    ceiling          = 12.5
+    currency         = "EUR"
+  }
+`)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories(),
+		CheckDestroy:             cp.NothingLeftButTheWorkspace(k),
+		Steps: []resource.TestStep{
+			{
+				Config: defaulted,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("spotlight_line.delivery", tfjsonpath.New("replay_check"), lineReplayCheck(0, 10, "USD")),
+					statecheck.ExpectKnownValue("spotlight_line.delivery", tfjsonpath.New("source"), lineSource("acme/infra", "spotlight/web.tf")),
+				},
+			},
+			{
+				Config:           defaulted,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}},
+			},
+			{
+				ResourceName:      "spotlight_line.delivery",
+				ImportState:       true,
+				ImportStateId:     acctest.ImportID(id, k.Team+"/"+k.Line),
+				ImportStateVerify: true,
+			},
+			{
+				Config: tightened,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("spotlight_line.delivery", plancheck.ResourceActionUpdate),
+				}},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("spotlight_line.delivery", tfjsonpath.New("replay_check"), lineReplayCheck(2, 12.5, "EUR")),
+					statecheck.ExpectKnownValue("spotlight_line.delivery", tfjsonpath.New("source"), knownvalue.Null()),
+				},
+			},
+			{
+				Config:           tightened,
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}},
 			},
 			{
