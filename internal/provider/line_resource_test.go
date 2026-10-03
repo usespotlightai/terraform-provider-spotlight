@@ -3,6 +3,7 @@ package provider_test
 import (
 	"fmt"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -805,9 +806,11 @@ func TestLineStationsJudgeAndAlert(t *testing.T) {
 				Config: judged,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "judge"), knownvalue.ObjectExact(map[string]knownvalue.Check{
-						"rubric": knownvalue.StringExact("A good run changes only what the task asks for."),
-						"sample": knownvalue.Float64Exact(0.2),
-						"trust":  knownvalue.Float64Exact(0.6),
+						"rubric":     knownvalue.StringExact("A good run changes only what the task asks for."),
+						"claims":     knownvalue.Null(),
+						"pass_share": knownvalue.Null(),
+						"sample":     knownvalue.Float64Exact(0.2),
+						"trust":      knownvalue.Float64Exact(0.6),
 					})),
 					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "alert"), knownvalue.ListExact([]knownvalue.Check{
 						lineAlert("sent_back_rate", "rises_by", 0.2, 20),
@@ -865,6 +868,145 @@ func TestLineStationsJudgeAndAlert(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestLineJudgeChecksClaims(t *testing.T) {
+	fake := fakeapi.New(t)
+
+	claimed := lineJudged(`
+    judge {
+      claims = [
+        "The change touches only files the task names.",
+        "Every new function has a test.",
+      ]
+      sample = 0.2
+      trust  = 0.6
+    }
+`)
+	shared := lineJudged(`
+    judge {
+      rubric     = "A good run changes only what the task asks for."
+      claims     = ["The change touches only files the task names."]
+      pass_share = 0.75
+      sample     = 0.2
+      trust      = 0.6
+    }
+`)
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
+		CheckDestroy:             acctest.NoneLeft(fake, "line", "team", "workspace"),
+		Steps: []resource.TestStep{
+			{
+				Config: claimed,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "judge"), knownvalue.ObjectExact(map[string]knownvalue.Check{
+						"rubric": knownvalue.Null(),
+						"claims": knownvalue.ListExact([]knownvalue.Check{
+							knownvalue.StringExact("The change touches only files the task names."),
+							knownvalue.StringExact("Every new function has a test."),
+						}),
+						"pass_share": knownvalue.Float64Exact(1),
+						"sample":     knownvalue.Float64Exact(0.2),
+						"trust":      knownvalue.Float64Exact(0.6),
+					})),
+				},
+			},
+			{
+				Config:   claimed,
+				PlanOnly: true,
+			},
+			{
+				ResourceName:      lineAddress,
+				ImportState:       true,
+				ImportStateIdFunc: lineImportID,
+				ImportStateVerify: true,
+			},
+			{
+				Config: shared,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(lineAddress, plancheck.ResourceActionUpdate)},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "judge").AtMapKey("rubric"), knownvalue.StringExact("A good run changes only what the task asks for.")),
+					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "judge").AtMapKey("pass_share"), knownvalue.Float64Exact(0.75)),
+				},
+			},
+			{
+				Config:   shared,
+				PlanOnly: true,
+			},
+			{
+				Config: claimed,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "judge").AtMapKey("rubric"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "judge").AtMapKey("pass_share"), knownvalue.Float64Exact(1)),
+				},
+			},
+			{
+				Config:   claimed,
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
+func TestLineJudgeSetsARubricOrClaims(t *testing.T) {
+	lineInvalid(t, `
+    judge {
+      sample = 0.2
+      trust  = 0.6
+    }
+`, regexp.MustCompile(`(?s)Missing Judge Criteria.*rubric.*claims`))
+}
+
+func TestLineJudgePassShareNeedsClaims(t *testing.T) {
+	lineInvalid(t, `
+    judge {
+      rubric     = "A good run."
+      pass_share = 0.5
+      sample     = 0.2
+      trust      = 0.6
+    }
+`, regexp.MustCompile(`(?s)station\[0\]\.judge\.claims"?\s+must be specified when\s+"?station\[0\]\.judge\.pass_share`))
+}
+
+func TestLineJudgePassShareIsAShare(t *testing.T) {
+	lineInvalid(t, `
+    judge {
+      claims     = ["Every new function has a test."]
+      pass_share = 1.5
+      sample     = 0.2
+      trust      = 0.6
+    }
+`, regexp.MustCompile(`(?s)station\[0\]\.judge\.pass_share value must be between 0\.0+ and\s+1\.0+`))
+}
+
+func TestLineJudgeClaimsAreFew(t *testing.T) {
+	claims := make([]string, 21)
+	for at := range claims {
+		claims[at] = fmt.Sprintf("%q", fmt.Sprintf("Claim %d holds.", at))
+	}
+
+	lineInvalid(t, `
+    judge {
+      claims = [`+strings.Join(claims, ", ")+`]
+      sample = 0.2
+      trust  = 0.6
+    }
+`, regexp.MustCompile(`(?s)station\[0\]\.judge\.claims list must contain at least 1 elements and\s+at most 20`))
+}
+
+func TestLineJudgeClaimsAreShortAndNotEmpty(t *testing.T) {
+	for _, claim := range []string{`""`, fmt.Sprintf("%q", strings.Repeat("a", 501))} {
+		lineInvalid(t, `
+    judge {
+      claims = [`+claim+`]
+      sample = 0.2
+      trust  = 0.6
+    }
+`, regexp.MustCompile(`(?s)station\[0\]\.judge\.claims\[0\].*between 1 and 500`))
+	}
 }
 
 func lineInvalid(t *testing.T, station string, want *regexp.Regexp) {

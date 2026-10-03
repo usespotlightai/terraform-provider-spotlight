@@ -47,8 +47,13 @@ resource "spotlight_line" "core_delivery" {
 
     judge {
       rubric = file("${path.module}/judges/core/delivery/implementation.md")
-      sample = 0.2
-      trust  = 0.6
+      claims = [
+        "The change touches only the files the task names.",
+        "Every new function has a test.",
+      ]
+      pass_share = 0.5
+      sample     = 0.2
+      trust      = 0.6
     }
 
     alert {
@@ -222,7 +227,7 @@ Optional:
 - `effort` (String) How hard the agent thinks: `low`, `medium`, `high`, `xhigh` or `max`.
 - `ends` (Boolean) Whether a task that reaches the station is finished.
 - `harness` (String) The agent harness that works tasks here, as in `claude-code`.
-- `judge` (Block, Optional) Scores the station's runs against a rubric, for Insights. A judge sets `rubric`, `sample` and `trust`. No run is judged when left out. (see [below for nested schema](#nestedblock--station--judge))
+- `judge` (Block, Optional) Scores the station's runs against a rubric or checkable claims, for Insights. A judge sets `sample`, `trust` and at least one of `rubric` and `claims`. No run is judged when left out. (see [below for nested schema](#nestedblock--station--judge))
 - `kind` (String) `backlog`, `work` or `completed`.
 - `memories` (Boolean) Whether the station drafts proposed team memories from each run it completes, for people to approve.
 - `model` (String) The model the harness uses.
@@ -254,7 +259,9 @@ Optional:
 
 Optional:
 
-- `rubric` (String) What a good run looks like, at most 20,000 characters, usually read with `file()`, as in `file("judges/implement.md")`.
+- `claims` (List of String) Checkable claims the judge answers yes or no about each change, from 1 to 20, each at most 500 characters. A change passes when the share of claims met reaches `pass_share`.
+- `pass_share` (Number) Share of claims a change must meet to pass, from 0 to 1, set only with `claims`. 1 means every claim. 1 when left out.
+- `rubric` (String) What a good run looks like, at most 20,000 characters, usually read with `file()`, as in `file("judges/implement.md")`. Optional when `claims` is set.
 - `sample` (Number) The share of runs judged, from 0 to 1.
 - `trust` (Number) How often the judge must agree with people, from 0 to 1, before Insights shows its scores.
 
