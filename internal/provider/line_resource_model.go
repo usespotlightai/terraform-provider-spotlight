@@ -59,9 +59,11 @@ type lineStation struct {
 }
 
 type lineJudge struct {
-	Rubric types.String  `tfsdk:"rubric"`
-	Sample types.Float64 `tfsdk:"sample"`
-	Trust  types.Float64 `tfsdk:"trust"`
+	Rubric    types.String  `tfsdk:"rubric"`
+	Claims    types.List    `tfsdk:"claims"`
+	PassShare types.Float64 `tfsdk:"pass_share"`
+	Sample    types.Float64 `tfsdk:"sample"`
+	Trust     types.Float64 `tfsdk:"trust"`
 }
 
 type lineAlert struct {
@@ -197,6 +199,8 @@ func lineInput(plan LineResourceModel) (client.Definition, diag.Diagnostics) {
 		if each.Judge != nil {
 			judge := lineWritten{}
 			judge.text("rubric", each.Judge.Rubric)
+			judge.texts("claims", each.Judge.Claims, &diags)
+			judge.number("passShare", each.Judge.PassShare)
 			judge.number("sample", each.Judge.Sample)
 			judge.number("trust", each.Judge.Trust)
 			held["judge"] = map[string]any(judge)
@@ -316,6 +320,14 @@ func (r lineRead) list(name string) types.List {
 	return types.ListValueMust(types.StringType, r.texts(name))
 }
 
+func (r lineRead) claims() types.List {
+	if _, ok := r["claims"]; !ok {
+		return types.ListNull(types.StringType)
+	}
+
+	return r.list("claims")
+}
+
 func (r lineRead) set(name string) types.Set {
 	return types.SetValueMust(types.StringType, r.texts(name))
 }
@@ -430,9 +442,11 @@ func lineStationOf(held lineRead) lineStation {
 
 	if judge, ok := held.object("judge"); ok {
 		station.Judge = &lineJudge{
-			Rubric: judge.text("rubric"),
-			Sample: judge.number("sample"),
-			Trust:  judge.number("trust"),
+			Rubric:    judge.text("rubric"),
+			Claims:    judge.claims(),
+			PassShare: judge.number("passShare"),
+			Sample:    judge.number("sample"),
+			Trust:     judge.number("trust"),
 		}
 	}
 

@@ -205,8 +205,13 @@ resource "spotlight_line" "core_delivery" {
 
     judge {
       rubric = file("${path.module}/judges/core/delivery/implementation.md")
-      sample = 0.2
-      trust  = 0.6
+      claims = [
+        "The change touches only the files the task names.",
+        "Every new function has a test.",
+      ]
+      pass_share = 1
+      sample     = 0.2
+      trust      = 0.6
     }
 
     alert {

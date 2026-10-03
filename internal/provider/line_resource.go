@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/float64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -15,8 +16,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/float64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/client"
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/fieldpath"
@@ -100,6 +103,55 @@ func lineThreshold(description string, also ...validator.Float64) schema.Float64
 	}
 }
 
+type judgeRubricOrClaims struct{}
+
+func (judgeRubricOrClaims) Description(_ context.Context) string {
+	return "A judge sets rubric, claims, or both."
+}
+
+func (v judgeRubricOrClaims) MarkdownDescription(ctx context.Context) string {
+	return v.Description(ctx)
+}
+
+func (judgeRubricOrClaims) ValidateObject(_ context.Context, req validator.ObjectRequest, resp *validator.ObjectResponse) {
+	if req.ConfigValue.IsNull() || req.ConfigValue.IsUnknown() {
+		return
+	}
+
+	held := req.ConfigValue.Attributes()
+	if held["rubric"].IsNull() && held["claims"].IsNull() {
+		resp.Diagnostics.AddAttributeError(req.Path, "Missing Judge Criteria", "A judge sets `rubric`, `claims`, or both.")
+	}
+}
+
+type passShareWhenClaimed struct{}
+
+func (passShareWhenClaimed) Description(_ context.Context) string {
+	return "Defaults to 1 when claims are set."
+}
+
+func (m passShareWhenClaimed) MarkdownDescription(ctx context.Context) string {
+	return m.Description(ctx)
+}
+
+func (passShareWhenClaimed) PlanModifyFloat64(ctx context.Context, req planmodifier.Float64Request, resp *planmodifier.Float64Response) {
+	if !req.ConfigValue.IsNull() {
+		return
+	}
+
+	var claims types.List
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, req.Path.ParentPath().AtName("claims"), &claims)...)
+
+	switch {
+	case claims.IsUnknown():
+		resp.PlanValue = types.Float64Unknown()
+	case claims.IsNull():
+		resp.PlanValue = types.Float64Null()
+	default:
+		resp.PlanValue = float64AsWritten(1)
+	}
+}
+
 func lineSchema() schema.Schema {
 	return schema.Schema{
 		MarkdownDescription: "A line: the stations a team's tasks move along, in order, and how they move. Import it as `<workspace id>/<team key>/<key>`.",
@@ -171,19 +223,40 @@ func lineSchema() schema.Schema {
 					},
 					Blocks: map[string]schema.Block{
 						"judge": schema.SingleNestedBlock{
-							MarkdownDescription: "Scores the station's runs against a rubric, for Insights. A judge sets `rubric`, `sample` and `trust`. No run is judged when left out.",
+							MarkdownDescription: "Scores the station's runs against a rubric or checkable claims, for Insights. A judge sets `sample`, `trust` and at least one of `rubric` and `claims`. No run is judged when left out.",
 							Validators: []validator.Object{
 								objectvalidator.AlsoRequires(
-									path.MatchRelative().AtName("rubric"),
 									path.MatchRelative().AtName("sample"),
 									path.MatchRelative().AtName("trust"),
 								),
+								judgeRubricOrClaims{},
 							},
 							Attributes: map[string]schema.Attribute{
 								"rubric": schema.StringAttribute{
-									Optional:            true,
-									Validators:          []validator.String{stringvalidator.LengthAtLeast(1)},
-									MarkdownDescription: "What a good run looks like, at most 20,000 characters, usually read with `file()`, as in `file(\"judges/implement.md\")`.",
+									Optional: true,
+									Validators: []validator.String{
+										stringvalidator.LengthAtLeast(1),
+									},
+									MarkdownDescription: "What a good run looks like, at most 20,000 characters, usually read with `file()`, as in `file(\"judges/implement.md\")`. Optional when `claims` is set.",
+								},
+								"claims": schema.ListAttribute{
+									Optional:    true,
+									ElementType: types.StringType,
+									Validators: []validator.List{
+										listvalidator.SizeBetween(1, 20),
+										listvalidator.ValueStringsAre(stringvalidator.LengthBetween(1, 500)),
+									},
+									MarkdownDescription: "Checkable claims the judge answers yes or no about each change, from 1 to 20, each at most 500 characters. A change passes when the share of claims met reaches `pass_share`.",
+								},
+								"pass_share": schema.Float64Attribute{
+									Optional: true,
+									Computed: true,
+									Validators: []validator.Float64{
+										float64validator.Between(0, 1),
+										float64validator.AlsoRequires(path.MatchRelative().AtParent().AtName("claims")),
+									},
+									PlanModifiers:       []planmodifier.Float64{passShareWhenClaimed{}},
+									MarkdownDescription: "Share of claims a change must meet to pass, from 0 to 1, set only with `claims`. 1 means every claim. 1 when left out.",
 								},
 								"sample": lineShare("The share of runs judged, from 0 to 1."),
 								"trust":  lineShare("How often the judge must agree with people, from 0 to 1, before Insights shows its scores."),
