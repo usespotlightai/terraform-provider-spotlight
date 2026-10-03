@@ -144,6 +144,7 @@ resource "spotlight_line" "core_delivery" {
     most_regressions = 1
     ceiling          = 12.5
     currency         = "USD"
+    min_gain         = 0.05
   }
 
   source {
@@ -267,11 +268,12 @@ func lineAlert(measure, threshold string, value float64, over int64) knownvalue.
 	return knownvalue.ObjectExact(checks)
 }
 
-func lineReplayCheck(mostRegressions int64, ceiling float64, currency string) knownvalue.Check {
+func lineReplayCheck(mostRegressions int64, ceiling float64, currency string, minGain float64) knownvalue.Check {
 	return knownvalue.ObjectExact(map[string]knownvalue.Check{
 		"most_regressions": knownvalue.Int64Exact(mostRegressions),
 		"ceiling":          knownvalue.Float64Exact(ceiling),
 		"currency":         knownvalue.StringExact(currency),
+		"min_gain":         knownvalue.Float64Exact(minGain),
 	})
 }
 
@@ -310,7 +312,7 @@ func TestLineExportedShapeRoundTrips(t *testing.T) {
 					})),
 					statecheck.ExpectKnownValue(lineAddress, lineStation(2, "judge"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(lineAddress, lineStation(2, "alert"), knownvalue.ListSizeExact(0)),
-					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("replay_check"), lineReplayCheck(1, 12.5, "USD")),
+					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("replay_check"), lineReplayCheck(1, 12.5, "USD", 0.05)),
 					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("source"), lineSource("acme/platform", "teams/core/delivery.tf")),
 				},
 			},
@@ -1104,6 +1106,7 @@ func TestLineReplayCheckAndSource(t *testing.T) {
     most_regressions = 2
     ceiling          = 0.75
     currency         = "EUR"
+    min_gain         = 0.1
   }
 
   source {
@@ -1120,7 +1123,7 @@ func TestLineReplayCheckAndSource(t *testing.T) {
 			{
 				Config: defaulted,
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("replay_check"), lineReplayCheck(0, 10, "USD")),
+					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("replay_check"), lineReplayCheck(0, 10, "USD", 0.05)),
 					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("source"), lineSource("acme/infra", "spotlight/web.tf")),
 				},
 			},
@@ -1140,7 +1143,7 @@ func TestLineReplayCheckAndSource(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(lineAddress, plancheck.ResourceActionUpdate)},
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("replay_check"), lineReplayCheck(2, 0.75, "EUR")),
+					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("replay_check"), lineReplayCheck(2, 0.75, "EUR", 0.1)),
 					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("source"), lineSource("acme/platform", "teams/core/delivery.tf")),
 				},
 			},
@@ -1202,6 +1205,16 @@ func TestLineReplayCheckCeilingIsAboveZeroAndAtMostAThousand(t *testing.T) {
     ceiling = `+ceiling+`
   }
 `, regexp.MustCompile(`(?s)replay_check\.ceiling`))
+	}
+}
+
+func TestLineReplayCheckMinGainIsAboveZeroAndAtMostOne(t *testing.T) {
+	for _, gain := range []string{"0", "-0.1", "1.5"} {
+		lineCheckInvalid(t, `
+  replay_check {
+    min_gain = `+gain+`
+  }
+`, regexp.MustCompile(`(?s)replay_check\.min_gain`))
 	}
 }
 
@@ -1315,6 +1328,7 @@ func TestAccLineReplayCheckAndSource(t *testing.T) {
     most_regressions = 2
     ceiling          = 12.5
     currency         = "EUR"
+    min_gain         = 0.1
   }
 `)
 
@@ -1325,7 +1339,7 @@ func TestAccLineReplayCheckAndSource(t *testing.T) {
 			{
 				Config: defaulted,
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue("spotlight_line.delivery", tfjsonpath.New("replay_check"), lineReplayCheck(0, 10, "USD")),
+					statecheck.ExpectKnownValue("spotlight_line.delivery", tfjsonpath.New("replay_check"), lineReplayCheck(0, 10, "USD", 0.05)),
 					statecheck.ExpectKnownValue("spotlight_line.delivery", tfjsonpath.New("source"), lineSource("acme/infra", "spotlight/web.tf")),
 				},
 			},
@@ -1345,7 +1359,7 @@ func TestAccLineReplayCheckAndSource(t *testing.T) {
 					plancheck.ExpectResourceAction("spotlight_line.delivery", plancheck.ResourceActionUpdate),
 				}},
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue("spotlight_line.delivery", tfjsonpath.New("replay_check"), lineReplayCheck(2, 12.5, "EUR")),
+					statecheck.ExpectKnownValue("spotlight_line.delivery", tfjsonpath.New("replay_check"), lineReplayCheck(2, 12.5, "EUR", 0.1)),
 					statecheck.ExpectKnownValue("spotlight_line.delivery", tfjsonpath.New("source"), knownvalue.Null()),
 				},
 			},

@@ -289,6 +289,13 @@ func lineSchema() schema.Schema {
 						Validators:          []validator.String{stringvalidator.RegexMatches(lineCurrency, "must be a three-letter currency in upper case, as in USD")},
 						MarkdownDescription: "The three-letter currency the ceiling is counted in, in upper case, as in `EUR`. `USD` when left out.",
 					},
+					"min_gain": schema.Float64Attribute{
+						Optional:            true,
+						Computed:            true,
+						Default:             float64Default(0.05),
+						Validators:          []validator.Float64{float64validator.Between(0, 1), float64validator.NoneOf(0)},
+						MarkdownDescription: "The smallest change in success rate worth acting on, above 0 and at most 1. Gains smaller than this, or inside the replays' confidence interval, read as within noise. 0.05 when left out.",
+					},
 				},
 			},
 			"source": schema.SingleNestedBlock{

@@ -101,6 +101,7 @@ resource "spotlight_line" "core_delivery" {
     most_regressions = 0
     ceiling          = 10
     currency         = "USD"
+    min_gain         = 0.05
   }
 
   source {
@@ -156,6 +157,7 @@ Optional:
 
 - `ceiling` (Number) The most one check's replay may spend, in `currency`, above 0 and at most 1,000. 10 when left out.
 - `currency` (String) The three-letter currency the ceiling is counted in, in upper case, as in `EUR`. `USD` when left out.
+- `min_gain` (Number) The smallest change in success rate worth acting on, above 0 and at most 1. Gains smaller than this, or inside the replays' confidence interval, read as within noise. 0.05 when left out.
 - `most_regressions` (Number) How many tasks a planned change may regress on and still pass, a whole number from 0. 0 when left out.
 
 

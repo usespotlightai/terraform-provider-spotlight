@@ -278,6 +278,7 @@ resource "spotlight_line" "core_delivery" {
     most_regressions = 1
     ceiling          = 12.5
     currency         = "USD"
+    min_gain         = 0.05
   }
 
   source {
