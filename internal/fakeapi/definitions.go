@@ -198,9 +198,13 @@ func line(body map[string]any) (map[string]any, []fieldError) {
 		orDefault(check, "mostRegressions", float64(0))
 		orDefault(check, "ceiling", float64(10))
 		orDefault(check, "currency", "USD")
+		orDefault(check, "minGain", 0.05)
 		check["currency"] = strings.ToUpper(strings.TrimSpace(textOf(check["currency"])))
 		if ceiling, _ := check["ceiling"].(float64); ceiling <= 0 || ceiling > 1000 {
 			errs = append(errs, fieldError{"replayCheck.ceiling", "is the most one check’s replay may spend, above 0 and at most 1,000"})
+		}
+		if gain, _ := check["minGain"].(float64); gain <= 0 || gain > 1 {
+			errs = append(errs, fieldError{"replayCheck.minGain", "is the smallest change in success rate worth acting on, above 0 and at most 1"})
 		}
 		definition["replayCheck"] = check
 	}

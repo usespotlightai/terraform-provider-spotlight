@@ -95,6 +95,7 @@ type lineReplayCheck struct {
 	MostRegressions types.Int64   `tfsdk:"most_regressions"`
 	Ceiling         types.Float64 `tfsdk:"ceiling"`
 	Currency        types.String  `tfsdk:"currency"`
+	MinGain         types.Float64 `tfsdk:"min_gain"`
 }
 
 type lineSource struct {
@@ -249,6 +250,7 @@ func lineInput(plan LineResourceModel) (client.Definition, diag.Diagnostics) {
 		held.count("mostRegressions", plan.ReplayCheck.MostRegressions)
 		held.number("ceiling", plan.ReplayCheck.Ceiling)
 		held.text("currency", plan.ReplayCheck.Currency)
+		held.number("minGain", plan.ReplayCheck.MinGain)
 		line["replayCheck"] = map[string]any(held)
 	}
 
@@ -391,6 +393,7 @@ func lineAnswered(answer client.Line) LineResourceModel {
 			MostRegressions: found.count("mostRegressions"),
 			Ceiling:         found.number("ceiling"),
 			Currency:        found.text("currency"),
+			MinGain:         found.number("minGain"),
 		}
 	}
 

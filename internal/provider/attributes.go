@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/defaults"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
@@ -114,6 +115,20 @@ func float64AsWritten(held float64) types.Float64 {
 	}
 
 	return read
+}
+
+type float64Default float64
+
+func (d float64Default) Description(_ context.Context) string {
+	return fmt.Sprintf("value defaults to %v", float64(d))
+}
+
+func (d float64Default) MarkdownDescription(ctx context.Context) string {
+	return d.Description(ctx)
+}
+
+func (d float64Default) DefaultFloat64(_ context.Context, _ defaults.Float64Request, resp *defaults.Float64Response) {
+	resp.PlanValue = float64AsWritten(float64(d))
 }
 
 func stringSet(held []string) types.Set {
