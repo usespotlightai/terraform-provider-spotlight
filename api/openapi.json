@@ -7807,9 +7807,18 @@
                           "type": "string",
                           "example": "api.linear.app"
                         },
-                        "header": {
+                        "carrier": {
                           "type": "string",
-                          "default": "authorization"
+                          "enum": [
+                            "header",
+                            "query"
+                          ],
+                          "default": "header"
+                        },
+                        "name": {
+                          "type": "string",
+                          "description": "The header or query parameter it is worn in; authorization when a header is not named",
+                          "example": "authorization"
                         },
                         "prefix": {
                           "type": "string",
@@ -8228,9 +8237,18 @@
                           "type": "string",
                           "example": "api.linear.app"
                         },
-                        "header": {
+                        "carrier": {
                           "type": "string",
-                          "default": "authorization"
+                          "enum": [
+                            "header",
+                            "query"
+                          ],
+                          "default": "header"
+                        },
+                        "name": {
+                          "type": "string",
+                          "description": "The header or query parameter it is worn in; authorization when a header is not named",
+                          "example": "authorization"
                         },
                         "prefix": {
                           "type": "string",
@@ -14441,6 +14459,69 @@
           }
         },
         "summary": "Remove the connection the caller made to this integration",
+        "tags": [
+          "integrations"
+        ]
+      }
+    },
+    "/teams/{teamId}/integrations/{source}/connections/mine/tools/{tool}": {
+      "put": {
+        "description": "The stricter of the team’s rule and the caller’s wins, so this can ask first or block where the team allows, but never lets through a call the team asks about.",
+        "operationId": "setMyToolRule",
+        "parameters": [
+          {
+            "name": "teamId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "team_1",
+              "type": "string"
+            }
+          },
+          {
+            "name": "source",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "linear",
+              "type": "string"
+            }
+          },
+          {
+            "name": "tool",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "linear.comment",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetToolRuleRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "The rule is set"
+          },
+          "401": {
+            "description": "No valid session"
+          },
+          "404": {
+            "description": "No such team for this caller, or the integration offers no such tool"
+          },
+          "422": {
+            "description": "No such rule"
+          }
+        },
+        "summary": "Set what the caller asks of calls a tool makes with their own connection: allowed, needs-approval or blocked",
         "tags": [
           "integrations"
         ]
@@ -25166,9 +25247,19 @@
             "example": "mcp.linear.app",
             "description": "The one host egress wears it toward"
           },
-          "header": {
+          "carrier": {
             "type": "string",
-            "example": "authorization"
+            "enum": [
+              "header",
+              "query"
+            ],
+            "example": "header",
+            "description": "Whether egress wears it in a request header or a query parameter"
+          },
+          "name": {
+            "type": "string",
+            "example": "authorization",
+            "description": "The header or query parameter that holds its stand-in"
           },
           "prefix": {
             "type": "string",
@@ -25193,7 +25284,8 @@
         "required": [
           "secret",
           "host",
-          "header",
+          "carrier",
+          "name",
           "prefix",
           "sealed",
           "readInNetwork"
@@ -25523,6 +25615,23 @@
           "value"
         ]
       },
+      "InboxApprovalAskedOfResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "user_1"
+          },
+          "name": {
+            "type": "string",
+            "example": "Alice Martin"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
       "InboxApprovalResponseDto": {
         "type": "object",
         "properties": {
@@ -25574,6 +25683,16 @@
             "nullable": true,
             "example": "post the drain summary on ENG-412, publicly under the team’s name",
             "description": "What the agent said it wants to do, completing “Spotlight would like to …”; absent where it said nothing, as a harness asking permission never does"
+          },
+          "askedOf": {
+            "nullable": true,
+            "description": "The one person who can approve it, where it asks first because of their own rule for their connection; anyone can still dismiss it",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InboxApprovalAskedOfResponseDto"
+              }
+            ]
           }
         },
         "required": [
@@ -25583,7 +25702,8 @@
           "inputs",
           "standing",
           "edited",
-          "intent"
+          "intent",
+          "askedOf"
         ]
       },
       "InboxConnectionResponseDto": {
@@ -28796,20 +28916,30 @@
             "example": "api.linear.app",
             "description": "A host the secret may be sent to, over HTTPS only"
           },
-          "header": {
+          "carrier": {
+            "type": "string",
+            "enum": [
+              "header",
+              "query"
+            ],
+            "example": "header",
+            "description": "Whether it is worn in a request header or a query parameter"
+          },
+          "name": {
             "type": "string",
             "example": "authorization",
-            "description": "The request header it is worn in"
+            "description": "The header or query parameter it is worn in"
           },
           "prefix": {
             "type": "string",
             "example": "Bearer ",
-            "description": "Written before the value in that header"
+            "description": "Written before the value it is worn with"
           }
         },
         "required": [
           "host",
-          "header",
+          "carrier",
+          "name",
           "prefix"
         ]
       },
@@ -31190,7 +31320,30 @@
           "url"
         ]
       },
-      "OwnConnectionResponseDto": {
+      "ConnectionToolRuleResponseDto": {
+        "type": "object",
+        "properties": {
+          "tool": {
+            "type": "string",
+            "example": "linear.comment"
+          },
+          "rule": {
+            "type": "string",
+            "enum": [
+              "allowed",
+              "needs-approval",
+              "blocked"
+            ],
+            "example": "needs-approval",
+            "description": "What the caller asks of calls made with their connection: allowed follows the team, needs-approval asks them first, blocked never sends"
+          }
+        },
+        "required": [
+          "tool",
+          "rule"
+        ]
+      },
+      "MyConnectionResponseDto": {
         "type": "object",
         "properties": {
           "source": {
@@ -31206,12 +31359,20 @@
           "connectedAt": {
             "type": "string",
             "example": "2026-10-05T10:00:00.000Z"
+          },
+          "tools": {
+            "description": "Each tool the integration offers, with the caller’s rule for calls made with this connection",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConnectionToolRuleResponseDto"
+            }
           }
         },
         "required": [
           "source",
           "handle",
-          "connectedAt"
+          "connectedAt",
+          "tools"
         ]
       },
       "PersonConnectionResponseDto": {
@@ -31255,7 +31416,7 @@
             "description": "The connections the caller made themselves",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/OwnConnectionResponseDto"
+              "$ref": "#/components/schemas/MyConnectionResponseDto"
             }
           },
           "people": {
@@ -31270,6 +31431,24 @@
         "required": [
           "mine",
           "people"
+        ]
+      },
+      "SetToolRuleRequestDto": {
+        "type": "object",
+        "properties": {
+          "rule": {
+            "type": "string",
+            "enum": [
+              "allowed",
+              "needs-approval",
+              "blocked"
+            ],
+            "description": "What to ask of calls made with the caller’s connection; it can only make the team’s rule stricter",
+            "example": "needs-approval"
+          }
+        },
+        "required": [
+          "rule"
         ]
       },
       "DescribedSourceResponseDto": {
