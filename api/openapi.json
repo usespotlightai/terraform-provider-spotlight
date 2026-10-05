@@ -14331,6 +14331,16 @@
             }
           }
         ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnectIntegrationRequestDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "",
@@ -14342,6 +14352,9 @@
               }
             }
           },
+          "400": {
+            "description": "It asks to connect for someone other than the team or me"
+          },
           "401": {
             "description": "No valid session"
           },
@@ -14349,7 +14362,85 @@
             "description": "No such team, not yours to link, or the host does not link so"
           }
         },
-        "summary": "Begin linking this team to a host over OAuth2",
+        "summary": "Begin connecting the team, or the caller, to a host over OAuth2",
+        "tags": [
+          "integrations"
+        ]
+      }
+    },
+    "/teams/{teamId}/connections": {
+      "get": {
+        "operationId": "listConnections",
+        "parameters": [
+          {
+            "name": "teamId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "team_1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HostConnectionsResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session"
+          },
+          "404": {
+            "description": "No such team for this caller"
+          }
+        },
+        "summary": "List the connections the caller made in this team, and for admins who else has connected what",
+        "tags": [
+          "integrations"
+        ]
+      }
+    },
+    "/teams/{teamId}/integrations/{source}/connections/mine": {
+      "delete": {
+        "operationId": "disconnectMine",
+        "parameters": [
+          {
+            "name": "teamId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "team_1",
+              "type": "string"
+            }
+          },
+          {
+            "name": "source",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "linear",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The caller’s connection is gone"
+          },
+          "401": {
+            "description": "No valid session"
+          },
+          "404": {
+            "description": "No such team for this caller"
+          }
+        },
+        "summary": "Remove the connection the caller made to this integration",
         "tags": [
           "integrations"
         ]
@@ -24461,6 +24552,37 @@
           "events"
         ]
       },
+      "ToolActingAsResponseDto": {
+        "type": "object",
+        "properties": {
+          "holder": {
+            "type": "string",
+            "description": "Whose connection the call used: the team’s, or the person’s who started the task",
+            "enum": [
+              "team",
+              "person"
+            ],
+            "example": "person"
+          },
+          "personId": {
+            "type": "string",
+            "description": "The person whose connection it was, where it was a person’s",
+            "example": "user_1",
+            "nullable": true
+          },
+          "handle": {
+            "type": "string",
+            "description": "What the host calls whoever the call acted as, where it says",
+            "example": "@alice",
+            "nullable": true
+          }
+        },
+        "required": [
+          "holder",
+          "personId",
+          "handle"
+        ]
+      },
       "ToolAnswerResponseDto": {
         "type": "object",
         "properties": {
@@ -24486,10 +24608,21 @@
                 "items": {}
               }
             ]
+          },
+          "actingAs": {
+            "nullable": true,
+            "description": "Whose connection the call acted with, where its integration connects",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ToolActingAsResponseDto"
+              }
+            ]
           }
         },
         "required": [
-          "output"
+          "output",
+          "actingAs"
         ]
       },
       "AskPermissionRequestDto": {
@@ -25453,6 +25586,39 @@
           "intent"
         ]
       },
+      "InboxConnectionResponseDto": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "example": "linear"
+          },
+          "integration": {
+            "type": "string",
+            "example": "Linear"
+          },
+          "personId": {
+            "type": "string",
+            "example": "user_1",
+            "description": "The person asked to connect, whose connection the tool acts with"
+          },
+          "personName": {
+            "type": "string",
+            "example": "Alice Martin"
+          },
+          "met": {
+            "type": "boolean",
+            "description": "Whether they have connected since"
+          }
+        },
+        "required": [
+          "source",
+          "integration",
+          "personId",
+          "personName",
+          "met"
+        ]
+      },
       "InboxMessageResponseDto": {
         "type": "object",
         "properties": {
@@ -25478,7 +25644,8 @@
               "setup",
               "settled",
               "approval",
-              "failure"
+              "failure",
+              "connection"
             ],
             "description": "What it shows, which is not what it did"
           },
@@ -25554,6 +25721,16 @@
                 "$ref": "#/components/schemas/InboxFailureResponseDto"
               }
             ]
+          },
+          "connection": {
+            "nullable": true,
+            "description": "The connection this asks a person to make, where a tool acts as them and they have not connected",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InboxConnectionResponseDto"
+              }
+            ]
           }
         },
         "required": [
@@ -25570,7 +25747,8 @@
           "at",
           "author",
           "approval",
-          "failure"
+          "failure",
+          "connection"
         ]
       },
       "InboxItemResponseDto": {
@@ -29555,6 +29733,15 @@
             ],
             "example": "linked"
           },
+          "holding": {
+            "type": "string",
+            "description": "Whose connection its tools act with: the team’s, or that of the person who started the task",
+            "enum": [
+              "team",
+              "requester"
+            ],
+            "example": "team"
+          },
           "handle": {
             "type": "string",
             "description": "What the host calls the team once linked, where it says",
@@ -29577,6 +29764,7 @@
           "name",
           "path",
           "standing",
+          "holding",
           "handle",
           "described"
         ]
@@ -30969,6 +31157,25 @@
           "verdict"
         ]
       },
+      "ConnectIntegrationRequestDto": {
+        "type": "object",
+        "properties": {
+          "for": {
+            "type": "string",
+            "description": "Whose connection to make: the team’s, which only an admin makes, or the caller’s own",
+            "enum": [
+              "team",
+              "me"
+            ],
+            "default": "team"
+          },
+          "back": {
+            "type": "string",
+            "description": "Where in the app to land once connected, as a path in a workspace’s inbox or settings; anything else lands on the team’s integrations",
+            "example": "/w/acme/inbox/task_1"
+          }
+        }
+      },
       "OAuth2StartResponseDto": {
         "type": "object",
         "properties": {
@@ -30980,6 +31187,88 @@
         },
         "required": [
           "url"
+        ]
+      },
+      "OwnConnectionResponseDto": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "example": "linear"
+          },
+          "handle": {
+            "type": "string",
+            "description": "What the host calls the person, where it says",
+            "example": "@alice",
+            "nullable": true
+          },
+          "connectedAt": {
+            "type": "string",
+            "example": "2026-10-05T10:00:00.000Z"
+          }
+        },
+        "required": [
+          "source",
+          "handle",
+          "connectedAt"
+        ]
+      },
+      "PersonConnectionResponseDto": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "example": "linear"
+          },
+          "handle": {
+            "type": "string",
+            "description": "What the host calls the person, where it says",
+            "example": "@alice",
+            "nullable": true
+          },
+          "connectedAt": {
+            "type": "string",
+            "example": "2026-10-05T10:00:00.000Z"
+          },
+          "personId": {
+            "type": "string",
+            "example": "user_1"
+          },
+          "name": {
+            "type": "string",
+            "example": "Alice Martin"
+          }
+        },
+        "required": [
+          "source",
+          "handle",
+          "connectedAt",
+          "personId",
+          "name"
+        ]
+      },
+      "HostConnectionsResponseDto": {
+        "type": "object",
+        "properties": {
+          "mine": {
+            "description": "The connections the caller made themselves",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OwnConnectionResponseDto"
+            }
+          },
+          "people": {
+            "nullable": true,
+            "description": "Who in the team has connected what, shown to admins only; it never holds a token",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PersonConnectionResponseDto"
+            }
+          }
+        },
+        "required": [
+          "mine",
+          "people"
         ]
       },
       "DescribedSourceResponseDto": {
