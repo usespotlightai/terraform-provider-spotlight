@@ -21,6 +21,12 @@ An integration can name an OpenAPI or GraphQL description instead of writing eac
 
 The generated tools are known only after apply, so `tools` reads `(known after apply)` in the plan. A generated tool named through `tools["…"]` that the description does not offer fails the apply, not the plan. When a later read fails, the tools from the last good read stay offered: `described.hash` keeps that read, and `described.problem` says why the latest one failed.
 
+## Tools from a remote MCP server
+
+An integration can name a remote MCP server, reached over streamable HTTP, in `mcp.url`. Spotlight lists its tools and offers each one as a tool of the integration, and calls them itself, so they get approvals, hooks and the run's journal. A tool the server marks `readOnlyHint` runs without asking; any other asks a person first unless `tools.approval` says `false`. Spotlight lists the tools again every ten minutes, so `tools` can change between applies. With `connection.oauth2.discover`, Spotlight finds where to sign in from what the server publishes, and registers itself there when the server allows it.
+
+{{ tffile "examples/resources/spotlight_integration/tracker.tf" }}
+
 {{ .SchemaMarkdown | trimspace }}
 
 ## Import

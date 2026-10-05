@@ -24,6 +24,7 @@ const (
 // Defines values for DescribedSourceResponseDtoKind.
 const (
 	Graphql DescribedSourceResponseDtoKind = "graphql"
+	Mcp     DescribedSourceResponseDtoKind = "mcp"
 	Openapi DescribedSourceResponseDtoKind = "openapi"
 )
 
@@ -31,6 +32,8 @@ const (
 func (e DescribedSourceResponseDtoKind) Valid() bool {
 	switch e {
 	case Graphql:
+		return true
+	case Mcp:
 		return true
 	case Openapi:
 		return true
@@ -1652,10 +1655,10 @@ type DescribedSourceResponseDto struct {
 	// Hash The sha256 of what was last read, kept while a later read fails; null when it has never been read
 	Hash *string `json:"hash"`
 
-	// Kind The kind of API description its tools are generated from
+	// Kind The kind of API description, or the MCP server, its tools are generated from
 	Kind DescribedSourceResponseDtoKind `json:"kind"`
 
-	// Problem Why the description could not be read when it was last asked for, or null when it was; Spotlight reads it again when its url, document, baseUrl, revision or depth changes, on any update after a failed read, and when the integration is connected
+	// Problem Why the description could not be read when it was last asked for, or null when it was; Spotlight reads it again when its url, document, baseUrl, revision or depth changes, on any update after a failed read, and when the integration is connected, and lists an MCP server’s tools again every MCP_RELIST_SECONDS
 	Problem *string `json:"problem"`
 
 	// ReadAt When the description was last read
@@ -1665,7 +1668,7 @@ type DescribedSourceResponseDto struct {
 	Tools int `json:"tools"`
 }
 
-// DescribedSourceResponseDtoKind The kind of API description its tools are generated from
+// DescribedSourceResponseDtoKind The kind of API description, or the MCP server, its tools are generated from
 type DescribedSourceResponseDtoKind string
 
 // ExchangeWorkloadTokenRequestDto defines model for ExchangeWorkloadTokenRequestDto.
