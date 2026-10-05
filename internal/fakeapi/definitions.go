@@ -377,15 +377,50 @@ func integration(body map[string]any) (map[string]any, []fieldError) {
 	return map[string]any{"source": source, "definition": definition}, nil
 }
 
+var generated = map[string][]string{
+	"openapi": {"find-pets", "add-pet"},
+	"graphql": {"viewer", "create-issue"},
+}
+
+func describedBy(fields map[string]any) string {
+	definition := objectOf(fields["definition"])
+	for _, kind := range slices.Sorted(maps.Keys(generated)) {
+		if definition[kind] != nil {
+			return kind
+		}
+	}
+
+	return ""
+}
+
 func offered(fields map[string]any) map[string]any {
 	source := textOf(fields["source"])
 	tools := map[string]any{}
+
+	for _, name := range generated[describedBy(fields)] {
+		tools[name] = source + "." + name
+	}
 
 	for name := range objectOf(objectOf(fields["definition"])["tools"]) {
 		tools[name] = source + "." + name
 	}
 
 	return tools
+}
+
+func described(fields map[string]any) any {
+	kind := describedBy(fields)
+	if kind == "" {
+		return nil
+	}
+
+	return map[string]any{
+		"kind":    kind,
+		"hash":    strings.Repeat("a", 64),
+		"readAt":  "2026-10-05T09:00:00.000Z",
+		"problem": nil,
+		"tools":   len(generated[kind]),
+	}
 }
 
 func textOf(held any) string {

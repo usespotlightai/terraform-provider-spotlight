@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/oapi-codegen/runtime"
 )
@@ -19,6 +20,24 @@ import (
 const (
 	BearerScopes bearerContextKey = "bearer.Scopes"
 )
+
+// Defines values for DescribedSourceResponseDtoKind.
+const (
+	Graphql DescribedSourceResponseDtoKind = "graphql"
+	Openapi DescribedSourceResponseDtoKind = "openapi"
+)
+
+// Valid indicates whether the value is a known member of the DescribedSourceResponseDtoKind enum.
+func (e DescribedSourceResponseDtoKind) Valid() bool {
+	switch e {
+	case Graphql:
+		return true
+	case Openapi:
+		return true
+	default:
+		return false
+	}
+}
 
 // Defines values for ExpressionPositionResponseDtoAlsoSees.
 const (
@@ -1628,6 +1647,27 @@ type CheckExpressionRequestDto struct {
 	Position string `json:"position"`
 }
 
+// DescribedSourceResponseDto defines model for DescribedSourceResponseDto.
+type DescribedSourceResponseDto struct {
+	// Hash The sha256 of what was last read, kept while a later read fails; null when it has never been read
+	Hash *string `json:"hash"`
+
+	// Kind The kind of API description its tools are generated from
+	Kind DescribedSourceResponseDtoKind `json:"kind"`
+
+	// Problem Why the description could not be read when it was last asked for, or null when it was; Spotlight reads it again when its url, document, baseUrl, revision or depth changes, on any update after a failed read, and when the integration is connected
+	Problem *string `json:"problem"`
+
+	// ReadAt When the description was last read
+	ReadAt time.Time `json:"readAt"`
+
+	// Tools How many of its tools were generated from the description
+	Tools int `json:"tools"`
+}
+
+// DescribedSourceResponseDtoKind The kind of API description its tools are generated from
+type DescribedSourceResponseDtoKind string
+
 // ExchangeWorkloadTokenRequestDto defines model for ExchangeWorkloadTokenRequestDto.
 type ExchangeWorkloadTokenRequestDto struct {
 	// Token The OIDC token the CI platform issued the workload, for the trust’s audience
@@ -1937,6 +1977,9 @@ type IntegrationResourceResponseDto struct {
 	// Definition The integration as it was defined, with every field it left out filled in
 	Definition map[string]interface{} `json:"definition"`
 
+	// Described The API description its tools are generated from, as last read; null when it names none; not settable
+	Described *DescribedSourceResponseDto `json:"described"`
+
 	// Id Issued by Spotlight when the resource is created, and never changed
 	Id string `json:"id"`
 
@@ -1946,7 +1989,7 @@ type IntegrationResourceResponseDto struct {
 	// TeamId The team it belongs to
 	TeamId string `json:"teamId"`
 
-	// Tools Each tool the integration offers, by its name within the integration, to the name a station or hook gives it by; not settable
+	// Tools Each tool the integration offers, hand-written or generated from its API description, by its name within the integration, to the name a station or hook gives it by; not settable
 	Tools map[string]string `json:"tools"`
 
 	// Version Rises with every change; the ETag carries it, and a write sends it back as If-Match

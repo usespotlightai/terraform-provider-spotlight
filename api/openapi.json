@@ -2431,7 +2431,7 @@
             "description": "No such conversation for this caller"
           },
           "409": {
-            "description": "Only a conversation waiting on a tool call can be approved or rejected"
+            "description": "Only a conversation waiting on a tool call can be approved or rejected, and only an approved tool call can be changed, naming exactly the inputs it asked with"
           }
         },
         "summary": "Answer what a conversation is waiting on, and let it carry on",
@@ -2515,45 +2515,6 @@
           }
         },
         "summary": "Mark what was put aside for a person as seen",
-        "tags": [
-          "inbox"
-        ]
-      }
-    },
-    "/workspaces/{slug}/inbox/notices/{noticeId}/read": {
-      "post": {
-        "operationId": "readInboxNotice",
-        "parameters": [
-          {
-            "name": "slug",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "example": "acme",
-              "type": "string"
-            }
-          },
-          {
-            "name": "noticeId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "It is no longer unread"
-          },
-          "401": {
-            "description": "No valid session"
-          },
-          "404": {
-            "description": "No such notice for this caller"
-          }
-        },
-        "summary": "Mark a notice put to a person as seen",
         "tags": [
           "inbox"
         ]
@@ -3652,6 +3613,9 @@
               }
             }
           },
+          "400": {
+            "description": "A model or effort that is not text"
+          },
           "401": {
             "description": "No valid session"
           },
@@ -3799,11 +3763,17 @@
           "204": {
             "description": "The agent hears it"
           },
+          "400": {
+            "description": "A model or effort that is not text"
+          },
           "401": {
             "description": "No valid session"
           },
           "404": {
             "description": "No such chat for this caller"
+          },
+          "422": {
+            "description": "An unknown model or effort"
           }
         },
         "summary": "Say something to the agent in a chat",
@@ -18097,8 +18067,6 @@
                 "parked",
                 "closed",
                 "answered",
-                "approved",
-                "refused",
                 "sent-back"
               ],
               "type": "string"
@@ -25165,11 +25133,40 @@
           "state": {
             "type": "string",
             "example": "claimed"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "task",
+              "chat",
+              "replay",
+              "search",
+              "spec"
+            ],
+            "description": "What the run is for: a task at a station, an agent chat, a replay, a search, or only the spec it was queued with"
+          },
+          "teamId": {
+            "type": "string",
+            "nullable": true,
+            "description": "The team the run is for; null where it is for none"
+          },
+          "readable": {
+            "type": "boolean",
+            "description": "Whether the caller reads the run’s team, and so may see its title and open it; false where the run is for no team"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true,
+            "description": "The task’s or chat’s title; null for a replay, a search or a run queued with only a spec, or where the caller cannot read the run’s team"
           }
         },
         "required": [
           "id",
-          "state"
+          "state",
+          "kind",
+          "teamId",
+          "readable",
+          "title"
         ]
       },
       "RunnerActivityResponseDto": {
@@ -25430,6 +25427,20 @@
               "granted",
               "refused"
             ]
+          },
+          "edited": {
+            "nullable": true,
+            "description": "What it was approved to run with instead, where the person changed it",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InboxApprovalInputResponseDto"
+            }
+          },
+          "intent": {
+            "type": "string",
+            "nullable": true,
+            "example": "post the drain summary on ENG-412, publicly under the team’s name",
+            "description": "What the agent said it wants to do, completing “Spotlight would like to …”; absent where it said nothing, as a harness asking permission never does"
           }
         },
         "required": [
@@ -25437,7 +25448,9 @@
           "name",
           "because",
           "inputs",
-          "standing"
+          "standing",
+          "edited",
+          "intent"
         ]
       },
       "InboxMessageResponseDto": {
@@ -25797,6 +25810,23 @@
           "resolved"
         ]
       },
+      "AnswerInboxItemInputRequestDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "body"
+          },
+          "value": {
+            "type": "string",
+            "example": "Fixed in #41."
+          }
+        },
+        "required": [
+          "name",
+          "value"
+        ]
+      },
       "AnswerInboxItemRequestDto": {
         "type": "object",
         "properties": {
@@ -25815,6 +25845,13 @@
           "approve": {
             "type": "boolean",
             "description": "Where the conversation asks for a tool call to be approved: true lets it run, false rejects it. Left out, the words answer it and the tool call stays undecided. Refused anywhere else."
+          },
+          "inputs": {
+            "description": "With approve: true on a tool call, what it runs with instead, as the person changed it. Names exactly the inputs it asked with; a harness asking permission takes no changes.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AnswerInboxItemInputRequestDto"
+            }
           }
         },
         "required": [
@@ -26870,6 +26907,28 @@
           "title"
         ]
       },
+      "RunAgentResponseDto": {
+        "type": "object",
+        "properties": {
+          "harness": {
+            "type": "string",
+            "example": "claude-code"
+          },
+          "model": {
+            "type": "string",
+            "nullable": true
+          },
+          "effort": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "harness",
+          "model",
+          "effort"
+        ]
+      },
       "ReplayRunResponseDto": {
         "type": "object",
         "properties": {
@@ -26960,6 +27019,25 @@
             "items": {
               "$ref": "#/components/schemas/RunJournalResponseDto"
             }
+          },
+          "briefing": {
+            "type": "string",
+            "description": "What the replay told its agent when it was dispatched"
+          },
+          "agent": {
+            "description": "The harness, model and effort the replay ran its agent on",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RunAgentResponseDto"
+              }
+            ]
+          },
+          "repositories": {
+            "description": "The repositories the replay was given",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [
@@ -26975,29 +27053,10 @@
           "review",
           "original",
           "spend",
-          "journals"
-        ]
-      },
-      "SearchRunAgentResponseDto": {
-        "type": "object",
-        "properties": {
-          "harness": {
-            "type": "string",
-            "example": "claude-code"
-          },
-          "model": {
-            "type": "string",
-            "nullable": true
-          },
-          "effort": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "harness",
-          "model",
-          "effort"
+          "journals",
+          "briefing",
+          "agent",
+          "repositories"
         ]
       },
       "SearchRunCostResponseDto": {
@@ -27118,7 +27177,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/SearchRunAgentResponseDto"
+                "$ref": "#/components/schemas/RunAgentResponseDto"
               }
             ]
           },
@@ -27149,6 +27208,10 @@
             "items": {
               "$ref": "#/components/schemas/RunJournalResponseDto"
             }
+          },
+          "briefing": {
+            "type": "string",
+            "description": "What the search told its agent when it dispatched this iteration"
           }
         },
         "required": [
@@ -27169,7 +27232,8 @@
           "endedAt",
           "spent",
           "spend",
-          "journals"
+          "journals",
+          "briefing"
         ]
       },
       "ChatImprovingResponseDto": {
@@ -27593,6 +27657,18 @@
             "items": {
               "type": "string"
             }
+          },
+          "model": {
+            "type": "string",
+            "nullable": true,
+            "example": "opus",
+            "description": "The model the agent answers this and later messages with; null for the harness default, left out to keep the chat’s"
+          },
+          "effort": {
+            "type": "string",
+            "nullable": true,
+            "example": "high",
+            "description": "The effort the agent answers this and later messages with; null for the harness default, left out to keep the chat’s"
           }
         },
         "required": [
@@ -28796,6 +28872,11 @@
       "HostPresenceRequestDto": {
         "type": "object",
         "properties": {
+          "session": {
+            "type": "string",
+            "example": "K7Q2M4ZC3VYH6N5RB8WX1TDJ9P",
+            "description": "New each time the host starts, so a restart shows as one"
+          },
           "name": {
             "type": "string",
             "example": "build-box-1",
@@ -28838,6 +28919,7 @@
           }
         },
         "required": [
+          "session",
           "name",
           "release",
           "executor",
@@ -28990,6 +29072,11 @@
             "type": "string",
             "example": "2026-09-25T11:00:00.000Z"
           },
+          "upSince": {
+            "type": "string",
+            "example": "2026-09-25T11:30:00.000Z",
+            "description": "When it last came up: started, or answered again after going quiet"
+          },
           "lastSeenAt": {
             "type": "string",
             "example": "2026-09-25T12:00:00.000Z"
@@ -29010,6 +29097,7 @@
           "running",
           "images",
           "firstSeenAt",
+          "upSince",
           "lastSeenAt",
           "answering"
         ]
@@ -29404,6 +29492,43 @@
           "items"
         ]
       },
+      "ConfiguredDescriptionResponseDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "openapi",
+              "graphql"
+            ],
+            "example": "openapi",
+            "description": "The kind of API description its tools are generated from"
+          },
+          "tools": {
+            "type": "integer",
+            "example": 19,
+            "description": "How many tools were generated from it"
+          },
+          "readAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-05T12:00:00.000Z",
+            "description": "When it was last read"
+          },
+          "problem": {
+            "type": "string",
+            "nullable": true,
+            "example": null,
+            "description": "Why it could not be read when it was last asked for; the tools from the last good read stay offered"
+          }
+        },
+        "required": [
+          "kind",
+          "tools",
+          "readAt",
+          "problem"
+        ]
+      },
       "ConfiguredIntegrationResponseDto": {
         "type": "object",
         "properties": {
@@ -29435,6 +29560,16 @@
             "description": "What the host calls the team once linked, where it says",
             "example": "Acme",
             "nullable": true
+          },
+          "described": {
+            "description": "The API description its tools are generated from, as last read; null where it names none",
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConfiguredDescriptionResponseDto"
+              }
+            ]
           }
         },
         "required": [
@@ -29442,7 +29577,8 @@
           "name",
           "path",
           "standing",
-          "handle"
+          "handle",
+          "described"
         ]
       },
       "ConfigurationResponseDto": {
@@ -29469,17 +29605,11 @@
           "description": {
             "type": "string",
             "example": "Reading this team’s dashboards."
-          },
-          "path": {
-            "type": "string",
-            "example": ".spotlight/skills/grafana-dashboards",
-            "description": "Where the skill is defined"
           }
         },
         "required": [
           "key",
-          "description",
-          "path"
+          "description"
         ]
       },
       "TeamSkillsResponseDto": {
@@ -30017,6 +30147,77 @@
           "layers"
         ]
       },
+      "CheckedStepResponseDto": {
+        "type": "object",
+        "properties": {
+          "step": {
+            "type": "string",
+            "example": "whole",
+            "description": "The step it ran: whole, or the layer it checked"
+          },
+          "passed": {
+            "type": "boolean"
+          },
+          "output": {
+            "type": "string",
+            "description": "The end of what the check printed"
+          },
+          "tookMs": {
+            "type": "number",
+            "example": 41000
+          }
+        },
+        "required": [
+          "step",
+          "passed",
+          "output",
+          "tookMs"
+        ]
+      },
+      "StackCheckResponseDto": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string",
+            "example": "npm test"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "waiting",
+              "checked",
+              "skipped"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true,
+            "description": "Why it was skipped, where it was"
+          },
+          "whole": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CheckedStepResponseDto"
+              }
+            ]
+          },
+          "layers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CheckedStepResponseDto"
+            }
+          }
+        },
+        "required": [
+          "command",
+          "state",
+          "reason",
+          "whole",
+          "layers"
+        ]
+      },
       "ChangeStackResponseDto": {
         "type": "object",
         "properties": {
@@ -30051,15 +30252,15 @@
               "$ref": "#/components/schemas/StackCohortResponseDto"
             }
           },
-          "checkState": {
-            "type": "string",
-            "enum": [
-              "waiting",
-              "checked",
-              "skipped",
-              null
-            ],
-            "nullable": true
+          "check": {
+            "nullable": true,
+            "description": "What the check ran and what each step printed",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StackCheckResponseDto"
+              }
+            ]
           }
         },
         "required": [
@@ -30069,7 +30270,7 @@
           "failure",
           "files",
           "cohorts",
-          "checkState"
+          "check"
         ]
       },
       "RunChangeStacksResponseDto": {
@@ -30781,6 +30982,50 @@
           "url"
         ]
       },
+      "DescribedSourceResponseDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "openapi",
+              "graphql"
+            ],
+            "example": "openapi",
+            "description": "The kind of API description its tools are generated from"
+          },
+          "hash": {
+            "type": "string",
+            "nullable": true,
+            "example": "9f2c4e1a7b3d5f6081a2c3e4f5061728394a5b6c7d8e9f0a1b2c3d4e5f607182",
+            "description": "The sha256 of what was last read, kept while a later read fails; null when it has never been read"
+          },
+          "readAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-05T12:00:00.000Z",
+            "description": "When the description was last read"
+          },
+          "problem": {
+            "type": "string",
+            "nullable": true,
+            "example": null,
+            "description": "Why the description could not be read when it was last asked for, or null when it was; Spotlight reads it again when its url, document, baseUrl, revision or depth changes, on any update after a failed read, and when the integration is connected"
+          },
+          "tools": {
+            "type": "integer",
+            "example": 19,
+            "description": "How many of its tools were generated from the description"
+          }
+        },
+        "required": [
+          "kind",
+          "hash",
+          "readAt",
+          "problem",
+          "tools"
+        ]
+      },
       "IntegrationResourceResponseDto": {
         "type": "object",
         "properties": {
@@ -30829,7 +31074,17 @@
             "example": {
               "search": "grafana.search"
             },
-            "description": "Each tool the integration offers, by its name within the integration, to the name a station or hook gives it by; not settable"
+            "description": "Each tool the integration offers, hand-written or generated from its API description, by its name within the integration, to the name a station or hook gives it by; not settable"
+          },
+          "described": {
+            "nullable": true,
+            "description": "The API description its tools are generated from, as last read; null when it names none; not settable",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DescribedSourceResponseDto"
+              }
+            ]
           }
         },
         "required": [
@@ -30840,7 +31095,8 @@
           "teamId",
           "source",
           "definition",
-          "tools"
+          "tools",
+          "described"
         ]
       },
       "IntegrationResourceListResponseDto": {
@@ -31602,6 +31858,30 @@
           "text"
         ]
       },
+      "MemoryPersonResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "user_1"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "example": "Maya Chen"
+          },
+          "image": {
+            "type": "string",
+            "nullable": true,
+            "example": "https://avatars.githubusercontent.com/u/1"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "image"
+        ]
+      },
       "MemoryGroundNoteResponseDto": {
         "type": "object",
         "properties": {
@@ -31615,6 +31895,16 @@
             "example": "person",
             "description": "person: a teammate signed in to Spotlight; world: someone writing through another tool"
           },
+          "author": {
+            "nullable": true,
+            "description": "The teammate who said it; absent for words from another tool, which carry no author",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MemoryPersonResponseDto"
+              }
+            ]
+          },
           "text": {
             "type": "string",
             "example": "Never retry an upload refused with a 403."
@@ -31623,6 +31913,7 @@
         "required": [
           "position",
           "by",
+          "author",
           "text"
         ]
       },
@@ -31716,6 +32007,12 @@
               }
             ]
           },
+          "harness": {
+            "type": "string",
+            "nullable": true,
+            "example": "claude-code",
+            "description": "The harness the run whose steps it rests on ran on"
+          },
           "steps": {
             "description": "The steps of its run it rests on",
             "type": "array",
@@ -31743,6 +32040,7 @@
           "paths",
           "supersedes",
           "decision",
+          "harness",
           "steps",
           "notes"
         ]
@@ -31801,24 +32099,6 @@
         },
         "required": [
           "memories"
-        ]
-      },
-      "MemoryPersonResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "example": "user_1"
-          },
-          "name": {
-            "type": "string",
-            "nullable": true,
-            "example": "Maya Chen"
-          }
-        },
-        "required": [
-          "id",
-          "name"
         ]
       },
       "MemoryRetirementResponseDto": {
@@ -32189,6 +32469,12 @@
             "example": 3,
             "description": "How many runs were briefed with it or recalled it"
           },
+          "harness": {
+            "type": "string",
+            "nullable": true,
+            "example": "claude-code",
+            "description": "The harness the run whose steps it rests on ran on"
+          },
           "steps": {
             "type": "array",
             "items": {
@@ -32238,6 +32524,7 @@
           "retirement",
           "grounds",
           "runs",
+          "harness",
           "steps",
           "notes",
           "superseded",
@@ -32347,6 +32634,12 @@
               }
             ]
           },
+          "harness": {
+            "type": "string",
+            "nullable": true,
+            "example": "claude-code",
+            "description": "The harness the run whose steps it rests on ran on"
+          },
           "steps": {
             "description": "The steps of its run it rests on",
             "type": "array",
@@ -32386,6 +32679,7 @@
           "paths",
           "supersedes",
           "decision",
+          "harness",
           "steps",
           "notes",
           "handle",
@@ -32422,13 +32716,20 @@
             "items": {
               "$ref": "#/components/schemas/RunProposalResponseDto"
             }
+          },
+          "reviewItemId": {
+            "type": "string",
+            "nullable": true,
+            "example": "aside_8f2c",
+            "description": "The inbox item where people keep or reject what the run proposed; null where it proposed nothing"
           }
         },
         "required": [
           "briefed",
           "cut",
           "recalled",
-          "proposed"
+          "proposed",
+          "reviewItemId"
         ]
       },
       "RecallMemoriesRequestDto": {
@@ -32523,8 +32824,6 @@
               "parked",
               "closed",
               "answered",
-              "approved",
-              "refused",
               "sent-back"
             ]
           },
@@ -33490,13 +33789,18 @@
             ],
             "description": "The scale the run is graded on: its judge’s, else its station’s rubric’s, else yes or no"
           },
+          "rubricBody": {
+            "type": "string",
+            "nullable": true,
+            "description": "The body of the rubric the run is graded by: the rubric without the line or front matter naming its scale, so a person grades it by what the judge did; the judge’s own where it scored the run, else the station’s; null where there is none"
+          },
           "claims": {
             "type": "array",
             "items": {
               "type": "string",
               "nullable": true
             },
-            "description": "The claims the run is graded on, in order, on a claims scale, empty on any other; a claim reads null where its words changed since the judge marked it"
+            "description": "The claims the run is graded on, in order, on a claims scale, empty on any other: the ones the judge marked where it scored the run; a claim reads null only where the rubric the judge was given is no longer held"
           },
           "judged": {
             "type": "boolean",
@@ -33528,6 +33832,7 @@
           "taskId",
           "stationId",
           "kind",
+          "rubricBody",
           "claims",
           "judged",
           "judge",

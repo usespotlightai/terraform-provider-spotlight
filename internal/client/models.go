@@ -1,5 +1,7 @@
 package client
 
+import "time"
+
 // Definition is a resource's definition as the API writes and reads it,
 // with camelCase field names.
 type Definition = map[string]any
@@ -78,14 +80,26 @@ type SkillInput struct {
 }
 
 // Integration is an integration resource. Tools names each tool it
-// offers, by its name within the integration, as stations and hooks name
-// it, as in grafana.search.
+// offers, hand-written or generated from the API description it names, by
+// its name within the integration, as stations and hooks name it, as in
+// grafana.search.
 type Integration struct {
 	Meta
 	TeamID     string
 	Source     string
 	Definition Definition
 	Tools      map[string]string
+	Described  *Described
+}
+
+// Described is the API description an integration's tools are generated
+// from, as Spotlight last read it.
+type Described struct {
+	Kind    string
+	Hash    *string
+	ReadAt  time.Time
+	Problem *string
+	Tools   int64
 }
 
 // Hook is a team's hook: steps Spotlight takes when an event matches.
