@@ -408,6 +408,38 @@ func TestIntegrationToolsWithoutAnAPIDescriptionAreKnownAtPlan(t *testing.T) {
 	})
 }
 
+func TestIntegrationToolsFromAnMCPServerAreKnownAfterApply(t *testing.T) {
+	fake := fakeapi.New(t)
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
+		CheckDestroy:             acctest.NoneLeft(fake, "integration", "team", "workspace"),
+		Steps: []resource.TestStep{
+			{
+				Config: integrationPetstoreConfig(`mcp = { url = "https://mcp.petstore.example/mcp" }`),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectUnknownValue(integrationPetstoreAddress, tfjsonpath.New("tools")),
+						plancheck.ExpectUnknownValue(integrationPetstoreAddress, tfjsonpath.New("described")),
+					},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("tools"), knownvalue.MapExact(map[string]knownvalue.Check{
+						"adopt":         knownvalue.StringExact("petstore.adopt"),
+						"search-issues": knownvalue.StringExact("petstore.search-issues"),
+						"delete-issue":  knownvalue.StringExact("petstore.delete-issue"),
+					})),
+					statecheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("described").AtMapKey("kind"), knownvalue.StringExact("mcp")),
+				},
+			},
+			{
+				Config:   integrationPetstoreConfig(`mcp = { url = "https://mcp.petstore.example/mcp" }`),
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
 func TestIntegrationToolsOfADefinitionNotKnownYetAreUnknown(t *testing.T) {
 	for name, definition := range map[string]string{
 		"whole": `spotlight_team.core.id == "" ? local.petstore : local.petstore`,

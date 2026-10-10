@@ -380,6 +380,7 @@ func integration(body map[string]any) (map[string]any, []fieldError) {
 var generated = map[string][]string{
 	"openapi": {"find-pets", "add-pet"},
 	"graphql": {"viewer", "create-issue"},
+	"mcp":     {"search-issues", "delete-issue"},
 }
 
 func describedBy(fields map[string]any) string {

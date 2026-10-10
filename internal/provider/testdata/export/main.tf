@@ -29,9 +29,10 @@ resource "spotlight_secret" "linear_api_key" {
   }
   bindings = [
     {
-      header = "authorization"
-      host   = "api.linear.app"
-      prefix = "Bearer "
+      carrier = "header"
+      host    = "api.linear.app"
+      name    = "authorization"
+      prefix  = "Bearer "
     },
   ]
   value_wo         = var.secret_linear_api_key

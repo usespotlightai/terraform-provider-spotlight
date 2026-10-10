@@ -24,6 +24,7 @@ const (
 // Defines values for DescribedSourceResponseDtoKind.
 const (
 	Graphql DescribedSourceResponseDtoKind = "graphql"
+	Mcp     DescribedSourceResponseDtoKind = "mcp"
 	Openapi DescribedSourceResponseDtoKind = "openapi"
 )
 
@@ -31,6 +32,8 @@ const (
 func (e DescribedSourceResponseDtoKind) Valid() bool {
 	switch e {
 	case Graphql:
+		return true
+	case Mcp:
 		return true
 	case Openapi:
 		return true
@@ -330,6 +333,24 @@ func (e RunnerPoolResourceResponseDtoMode) Valid() bool {
 	case Pull:
 		return true
 	case Push:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SecretBindingResponseDtoCarrier.
+const (
+	SecretBindingResponseDtoCarrierHeader SecretBindingResponseDtoCarrier = "header"
+	SecretBindingResponseDtoCarrierQuery  SecretBindingResponseDtoCarrier = "query"
+)
+
+// Valid indicates whether the value is a known member of the SecretBindingResponseDtoCarrier enum.
+func (e SecretBindingResponseDtoCarrier) Valid() bool {
+	switch e {
+	case SecretBindingResponseDtoCarrierHeader:
+		return true
+	case SecretBindingResponseDtoCarrierQuery:
 		return true
 	default:
 		return false
@@ -768,6 +789,24 @@ const (
 func (e UpdateSecretParamsSpotlightApiVersion) Valid() bool {
 	switch e {
 	case UpdateSecretParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateSecretJSONBodyBindingsCarrier.
+const (
+	UpdateSecretJSONBodyBindingsCarrierHeader UpdateSecretJSONBodyBindingsCarrier = "header"
+	UpdateSecretJSONBodyBindingsCarrierQuery  UpdateSecretJSONBodyBindingsCarrier = "query"
+)
+
+// Valid indicates whether the value is a known member of the UpdateSecretJSONBodyBindingsCarrier enum.
+func (e UpdateSecretJSONBodyBindingsCarrier) Valid() bool {
+	switch e {
+	case UpdateSecretJSONBodyBindingsCarrierHeader:
+		return true
+	case UpdateSecretJSONBodyBindingsCarrierQuery:
 		return true
 	default:
 		return false
@@ -1407,6 +1446,24 @@ func (e CreateSecretParamsSpotlightApiVersion) Valid() bool {
 	}
 }
 
+// Defines values for CreateSecretJSONBodyBindingsCarrier.
+const (
+	Header CreateSecretJSONBodyBindingsCarrier = "header"
+	Query  CreateSecretJSONBodyBindingsCarrier = "query"
+)
+
+// Valid indicates whether the value is a known member of the CreateSecretJSONBodyBindingsCarrier enum.
+func (e CreateSecretJSONBodyBindingsCarrier) Valid() bool {
+	switch e {
+	case Header:
+		return true
+	case Query:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for CreateSecretJSONBodySourceKind.
 const (
 	AwsSecretsManager CreateSecretJSONBodySourceKind = "aws-secrets-manager"
@@ -1652,10 +1709,10 @@ type DescribedSourceResponseDto struct {
 	// Hash The sha256 of what was last read, kept while a later read fails; null when it has never been read
 	Hash *string `json:"hash"`
 
-	// Kind The kind of API description its tools are generated from
+	// Kind The kind of API description, or the MCP server, its tools are generated from
 	Kind DescribedSourceResponseDtoKind `json:"kind"`
 
-	// Problem Why the description could not be read when it was last asked for, or null when it was; Spotlight reads it again when its url, document, baseUrl, revision or depth changes, on any update after a failed read, and when the integration is connected
+	// Problem Why the description could not be read when it was last asked for, or null when it was; Spotlight reads it again when its url, document, baseUrl, revision or depth changes, on any update after a failed read, and when the integration is connected, and lists an MCP server’s tools again every MCP_RELIST_SECONDS
 	Problem *string `json:"problem"`
 
 	// ReadAt When the description was last read
@@ -1665,7 +1722,7 @@ type DescribedSourceResponseDto struct {
 	Tools int `json:"tools"`
 }
 
-// DescribedSourceResponseDtoKind The kind of API description its tools are generated from
+// DescribedSourceResponseDtoKind The kind of API description, or the MCP server, its tools are generated from
 type DescribedSourceResponseDtoKind string
 
 // ExchangeWorkloadTokenRequestDto defines model for ExchangeWorkloadTokenRequestDto.
@@ -2223,15 +2280,21 @@ type RunnerTrustResourceResponseDto struct {
 
 // SecretBindingResponseDto defines model for SecretBindingResponseDto.
 type SecretBindingResponseDto struct {
-	// Header The request header it is worn in
-	Header string `json:"header"`
+	// Carrier Whether it is worn in a request header or a query parameter
+	Carrier SecretBindingResponseDtoCarrier `json:"carrier"`
 
 	// Host A host the secret may be sent to, over HTTPS only
 	Host string `json:"host"`
 
-	// Prefix Written before the value in that header
+	// Name The header or query parameter it is worn in
+	Name string `json:"name"`
+
+	// Prefix Written before the value it is worn with
 	Prefix string `json:"prefix"`
 }
+
+// SecretBindingResponseDtoCarrier Whether it is worn in a request header or a query parameter
+type SecretBindingResponseDtoCarrier string
 
 // SecretResourceListResponseDto defines model for SecretResourceListResponseDto.
 type SecretResourceListResponseDto struct {
@@ -2883,8 +2946,11 @@ type ReadSecretParamsSpotlightApiVersion string
 // UpdateSecretJSONBody defines parameters for UpdateSecret.
 type UpdateSecretJSONBody struct {
 	Bindings *[]struct {
-		Header *string `json:"header,omitempty"`
-		Host   string  `json:"host"`
+		Carrier *UpdateSecretJSONBodyBindingsCarrier `json:"carrier,omitempty"`
+		Host    string                               `json:"host"`
+
+		// Name The header or query parameter it is worn in; authorization when a header is not named
+		Name   *string `json:"name,omitempty"`
 		Prefix *string `json:"prefix,omitempty"`
 	} `json:"bindings,omitempty"`
 	Name   string `json:"name"`
@@ -2915,6 +2981,9 @@ type UpdateSecretParams struct {
 
 // UpdateSecretParamsSpotlightApiVersion defines parameters for UpdateSecret.
 type UpdateSecretParamsSpotlightApiVersion string
+
+// UpdateSecretJSONBodyBindingsCarrier defines parameters for UpdateSecret.
+type UpdateSecretJSONBodyBindingsCarrier string
 
 // UpdateSecretJSONBodySourceKind defines parameters for UpdateSecret.
 type UpdateSecretJSONBodySourceKind string
@@ -3563,8 +3632,11 @@ type ListSecretsParamsSpotlightApiVersion string
 // CreateSecretJSONBody defines parameters for CreateSecret.
 type CreateSecretJSONBody struct {
 	Bindings *[]struct {
-		Header *string `json:"header,omitempty"`
-		Host   string  `json:"host"`
+		Carrier *CreateSecretJSONBodyBindingsCarrier `json:"carrier,omitempty"`
+		Host    string                               `json:"host"`
+
+		// Name The header or query parameter it is worn in; authorization when a header is not named
+		Name   *string `json:"name,omitempty"`
 		Prefix *string `json:"prefix,omitempty"`
 	} `json:"bindings,omitempty"`
 	Name   string `json:"name"`
@@ -3595,6 +3667,9 @@ type CreateSecretParams struct {
 
 // CreateSecretParamsSpotlightApiVersion defines parameters for CreateSecret.
 type CreateSecretParamsSpotlightApiVersion string
+
+// CreateSecretJSONBodyBindingsCarrier defines parameters for CreateSecret.
+type CreateSecretJSONBodyBindingsCarrier string
 
 // CreateSecretJSONBodySourceKind defines parameters for CreateSecret.
 type CreateSecretJSONBodySourceKind string

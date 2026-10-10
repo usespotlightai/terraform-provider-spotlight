@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -10,7 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -58,9 +61,10 @@ type secretSource struct {
 }
 
 type secretBinding struct {
-	Host   types.String `tfsdk:"host"`
-	Header types.String `tfsdk:"header"`
-	Prefix types.String `tfsdk:"prefix"`
+	Host    types.String `tfsdk:"host"`
+	Carrier types.String `tfsdk:"carrier"`
+	Name    types.String `tfsdk:"name"`
+	Prefix  types.String `tfsdk:"prefix"`
 }
 
 var (
@@ -70,10 +74,16 @@ var (
 		"field":     types.StringType,
 	}
 	secretBindingType = types.ObjectType{AttrTypes: map[string]attr.Type{
-		"host":   types.StringType,
-		"header": types.StringType,
-		"prefix": types.StringType,
+		"host":    types.StringType,
+		"carrier": types.StringType,
+		"name":    types.StringType,
+		"prefix":  types.StringType,
 	}}
+)
+
+const (
+	carrierHeader = "header"
+	carrierQuery  = "query"
 )
 
 var secretFields = fieldpath.Locator{Schema: secretSchema().Type()}
@@ -125,17 +135,25 @@ func secretSchema() schema.Schema {
 					Required:            true,
 					MarkdownDescription: "The host, as in `api.linear.app`, with no scheme, port or path. The secret goes there over HTTPS only.",
 				},
-				"header": schema.StringAttribute{
+				"carrier": schema.StringAttribute{
 					Optional:            true,
 					Computed:            true,
-					Default:             stringdefault.StaticString("authorization"),
-					MarkdownDescription: "The request header the secret is worn in, in lower case.",
+					Default:             stringdefault.StaticString(carrierHeader),
+					MarkdownDescription: "Whether the secret is worn in a request header or a query parameter: `header` (the default) or `query`.",
+					Validators:          []validator.String{stringvalidator.OneOf(carrierHeader, carrierQuery)},
+				},
+				"name": schema.StringAttribute{
+					Optional:            true,
+					Computed:            true,
+					MarkdownDescription: "The header or query parameter the secret is worn in. A header defaults to `authorization`; Spotlight holds a header name in lower case. A query parameter must be named.",
+					Validators:          []validator.String{stringvalidator.LengthAtLeast(1)},
+					PlanModifiers:       []planmodifier.String{headerNamedByDefault{}},
 				},
 				"prefix": schema.StringAttribute{
 					Optional:            true,
 					Computed:            true,
 					Default:             stringdefault.StaticString(""),
-					MarkdownDescription: "Written before the value in that header, as in `Bearer `.",
+					MarkdownDescription: "Written before the value where it is worn, as in `Bearer `.",
 				},
 			},
 		},
@@ -161,7 +179,8 @@ func (r *SecretResource) Configure(_ context.Context, req resource.ConfigureRequ
 }
 
 // ValidateConfig refuses a value for a secret read from AWS Secrets
-// Manager, which keeps it there.
+// Manager, which keeps it there, and a binding worn in a query parameter
+// with no name. Values not yet known are left for the plan.
 func (r *SecretResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
 	var kept, value types.String
 	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("source").AtName("kind"), &kept)...)
@@ -170,6 +189,53 @@ func (r *SecretResource) ValidateConfig(ctx context.Context, req resource.Valida
 	if kept.ValueString() == client.SourceAWSSecretsManager && !value.IsNull() {
 		resp.Diagnostics.AddAttributeError(path.Root(writeonly.Value.Name), "A secret read from AWS takes no value",
 			"value_wo: is kept only by Spotlight; a secret read from AWS Secrets Manager is set there. Leave value_wo out, or keep the secret in Spotlight with source.kind = \"built-in\".")
+	}
+
+	var listed types.List
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("bindings"), &listed)...)
+	if listed.IsNull() || listed.IsUnknown() {
+		return
+	}
+
+	for at, element := range listed.Elements() {
+		binding, ok := element.(types.Object)
+		if !ok || binding.IsNull() || binding.IsUnknown() {
+			continue
+		}
+
+		carrier, _ := binding.Attributes()["carrier"].(types.String)
+		name, _ := binding.Attributes()["name"].(types.String)
+		if carrier.IsUnknown() || name.IsUnknown() {
+			continue
+		}
+
+		if carrier.ValueString() == carrierQuery && name.IsNull() {
+			resp.Diagnostics.AddAttributeError(path.Root("bindings").AtListIndex(at).AtName("name"), "A query parameter must be named",
+				"name: is the query parameter the secret is worn in, as in key or api_key. Name it, or wear the secret in a header with carrier = \"header\".")
+		}
+	}
+}
+
+type headerNamedByDefault struct{}
+
+func (headerNamedByDefault) Description(_ context.Context) string {
+	return "a header defaults to authorization"
+}
+
+func (m headerNamedByDefault) MarkdownDescription(ctx context.Context) string {
+	return m.Description(ctx)
+}
+
+func (headerNamedByDefault) PlanModifyString(ctx context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse) {
+	if !req.ConfigValue.IsNull() || !req.PlanValue.IsUnknown() {
+		return
+	}
+
+	var carrier types.String
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, req.Path.ParentPath().AtName("carrier"), &carrier)...)
+
+	if carrier.ValueString() == carrierHeader {
+		resp.PlanValue = types.StringValue("authorization")
 	}
 }
 
@@ -300,9 +366,10 @@ func secretInput(plan SecretResourceModel) client.SecretInput {
 
 	for _, each := range plan.Bindings {
 		in.Bindings = append(in.Bindings, client.SecretBinding{
-			Host:   each.Host.ValueString(),
-			Header: each.Header.ValueString(),
-			Prefix: each.Prefix.ValueString(),
+			Host:    each.Host.ValueString(),
+			Carrier: each.Carrier.ValueString(),
+			Name:    each.Name.ValueString(),
+			Prefix:  each.Prefix.ValueString(),
 		})
 	}
 
@@ -376,9 +443,10 @@ func secretModel(secret client.Secret, kept *SecretResourceModel) SecretResource
 
 	for _, each := range secret.Bindings {
 		model.Bindings = append(model.Bindings, secretBinding{
-			Host:   types.StringValue(each.Host),
-			Header: types.StringValue(each.Header),
-			Prefix: types.StringValue(each.Prefix),
+			Host:    types.StringValue(each.Host),
+			Carrier: types.StringValue(each.Carrier),
+			Name:    types.StringValue(each.Name),
+			Prefix:  types.StringValue(each.Prefix),
 		})
 	}
 

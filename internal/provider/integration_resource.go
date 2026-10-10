@@ -46,7 +46,7 @@ const (
 	integrationDescribed = "described"
 )
 
-var integrationDescriptions = []string{"openapi", "graphql"}
+var integrationDescriptions = []string{"openapi", "graphql", "mcp"}
 
 // IntegrationResourceModel is a spotlight_integration as Terraform holds it.
 type IntegrationResourceModel struct {
@@ -78,7 +78,7 @@ func integrationSchema() schema.Schema {
 		MarkdownDescription: "An integration a team has defined: how Spotlight hears from a host, and the actions and tools it offers against it. " +
 			"The definition is held whole, exactly as the integration's definition is written, with its keys verbatim; write each expression as `$${{ ... }}` so Terraform leaves it alone. " +
 			"`terraform plan` type-checks every expression in it where it is written. " +
-			"A definition may name an API description, `openapi` or `graphql`, that Spotlight generates a tool from for each operation when it reads it; those tools are known only after apply. " +
+			"A definition may name an API description, `openapi` or `graphql`, that Spotlight generates a tool from for each operation when it reads it, or a remote MCP server, `mcp`, whose tools it lists; those tools are known only after apply. " +
 			"Import it as `<workspace id>/<team key>/<source>`.",
 		Attributes: map[string]schema.Attribute{
 			"id":      idAttribute("integration"),
@@ -96,17 +96,17 @@ func integrationSchema() schema.Schema {
 			integrationTools: schema.MapAttribute{
 				Computed:    true,
 				ElementType: types.StringType,
-				MarkdownDescription: "Each tool the integration offers, by its name in `definition.tools` or as generated from its API description, to the name a station or hook gives it by, as in `{ search = \"grafana.search\" }`. " +
+				MarkdownDescription: "Each tool the integration offers, by its name in `definition.tools` or as generated from its API description or MCP server, to the name a station or hook gives it by, as in `{ search = \"grafana.search\" }`. " +
 					"Name a tool through it, as in `spotlight_integration.grafana.tools[\"search\"]`, so a tool renamed or removed fails the plan where it is named. " +
-					"When the definition names an API description the tools are known only after apply, so a generated tool named through it that is not there fails the apply, not the plan.",
+					"When the definition names an API description or an MCP server the tools are known only after apply, so a generated tool named through it that is not there fails the apply, not the plan.",
 			},
 			integrationDescribed: schema.SingleNestedAttribute{
 				Computed:            true,
-				MarkdownDescription: "The API description the integration's tools are generated from, as Spotlight last read it; null when the definition names none.",
+				MarkdownDescription: "The API description or MCP server the integration's tools are generated from, as Spotlight last read it; null when the definition names none.",
 				Attributes: map[string]schema.Attribute{
 					"kind": schema.StringAttribute{
 						Computed:            true,
-						MarkdownDescription: "`openapi` or `graphql`.",
+						MarkdownDescription: "`openapi`, `graphql` or `mcp`.",
 					},
 					"hash": schema.StringAttribute{
 						Computed:            true,
@@ -120,7 +120,7 @@ func integrationSchema() schema.Schema {
 						Computed: true,
 						MarkdownDescription: "Why the latest read failed; null when it succeeded. While it is set, the tools from the last good read stay offered. " +
 							"Spotlight reads the description when the integration is created, and again when its `url`, `document`, `baseUrl`, `revision`, `depth` or kind of `auth` changes, " +
-							"on any update after a failed read, and when the integration's host is connected over OAuth. Calling a tool never reads it.",
+							"on any update after a failed read, and when the integration's host is connected over OAuth. Spotlight lists an MCP server's tools again every ten minutes, or as often as its deployment sets. Calling a tool never reads it.",
 					},
 					"tools": schema.Int64Attribute{
 						Computed:            true,
