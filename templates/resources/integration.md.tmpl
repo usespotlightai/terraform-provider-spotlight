@@ -1,0 +1,48 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.RenderedProviderName}}"
+subcategory: ""
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+## Example Usage
+
+{{ tffile .ExampleFile }}
+
+## Tools from an API description
+
+An integration can name an OpenAPI or GraphQL description instead of writing each tool out. Spotlight generates a tool for each operation `tools.include` and `tools.exclude` leave in. It reads the description when the integration is created, and again when its `url`, `document`, `baseUrl`, `revision`, `depth` or kind of `auth` (`oauth2` or `secrets`) changes, on any update after a failed read, and when the integration's host is connected over OAuth. Calling a tool never reads it. `tools.approval` asks a person before a tool runs, or with `false` lets it run without asking.
+
+{{ tffile "examples/resources/spotlight_integration/petstore.tf" }}
+
+The generated tools are known only after apply, so `tools` reads `(known after apply)` in the plan. A generated tool named through `tools["…"]` that the description does not offer fails the apply, not the plan. When a later read fails, the tools from the last good read stay offered: `described.hash` keeps that read, and `described.problem` says why the latest one failed.
+
+## Tools from a remote MCP server
+
+An integration can name a remote MCP server, reached over streamable HTTP, in `mcp.url`. Spotlight lists its tools and offers each one as a tool of the integration, and calls them itself, so they get approvals, hooks and the run's journal. A tool the server marks `readOnlyHint` runs without asking; any other asks a person first unless `tools.approval` says `false`. Spotlight lists the tools again every ten minutes, so `tools` can change between applies. With `connection.oauth2.discover`, Spotlight finds where to sign in from what the server publishes, and registers itself there when the server allows it.
+
+{{ tffile "examples/resources/spotlight_integration/tracker.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Import is supported using the following syntax:
+
+In Terraform v1.12.0 and later, the [`import` block](https://developer.hashicorp.com/terraform/language/import) can be used with the `identity` attribute, for example:
+
+{{ tffile .ImportIdentityConfigFile }}
+
+{{ .IdentitySchemaMarkdown | trimspace }}
+
+In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.com/terraform/language/import) can be used with the `id` attribute, for example:
+
+{{ tffile .ImportIDConfigFile }}
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+{{ codefile "shell" .ImportFile }}

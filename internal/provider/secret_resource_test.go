@@ -1,11 +1,15 @@
 package provider_test
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"regexp"
 	"testing"
 
+	fwresource "github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -16,6 +20,7 @@ import (
 
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/acctest"
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/fakeapi"
+	"github.com/usespotlightai/terraform-provider-spotlight/internal/provider"
 )
 
 const secretAddress = "spotlight_secret.linear_api_key"
@@ -34,10 +39,18 @@ resource "spotlight_secret" "linear_api_key" {
 
 const secretLinear = `{ host = "API.linear.app", prefix = "Bearer " }`
 
-const secretLinearAndGitHub = `{ host = "api.linear.app", prefix = "Bearer " }, { host = "api.github.com", header = "x-api-key" }`
+const secretLinearAndGitHub = `{ host = "api.linear.app", prefix = "Bearer " }, { host = "api.github.com", name = "x-api-key" }`
+
+const secretMaps = `{ host = "maps.googleapis.com", carrier = "query", name = "key" }`
 
 func secretImportID(state *terraform.State) (string, error) {
-	return state.RootModule().Resources["spotlight_workspace.acme"].Primary.ID + "/LINEAR_API_KEY", nil
+	return secretImportIDOf("LINEAR_API_KEY")(state)
+}
+
+func secretImportIDOf(name string) resource.ImportStateIdFunc {
+	return func(state *terraform.State) (string, error) {
+		return state.RootModule().Resources["spotlight_workspace.acme"].Primary.ID + "/" + name, nil
+	}
 }
 
 func secretSentValue(fake *fakeapi.Server) (int, bool) {
@@ -83,7 +96,8 @@ func TestSecretIsWrittenButItsValueNeverKept(t *testing.T) {
 					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("value_wo"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("value_wo_version"), knownvalue.Int64Exact(1)),
 					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("source").AtMapKey("kind"), knownvalue.StringExact("built-in")),
-					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("bindings").AtSliceIndex(0).AtMapKey("header"), knownvalue.StringExact("authorization")),
+					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("bindings").AtSliceIndex(0).AtMapKey("carrier"), knownvalue.StringExact("header")),
+					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("bindings").AtSliceIndex(0).AtMapKey("name"), knownvalue.StringExact("authorization")),
 					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("rotated_at"), knownvalue.NotNull()),
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -155,6 +169,161 @@ func TestSecretIsWrittenButItsValueNeverKept(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestSecretIsWornInAQueryParameter(t *testing.T) {
+	fake := fakeapi.New(t)
+
+	resource.UnitTest(t, resource.TestCase{
+		TerraformVersionChecks:   acctest.WriteOnly,
+		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
+		Steps: []resource.TestStep{
+			{
+				Config:      secretBuiltIn("GOOGLE_MAPS_KEY", "maps_first", 1, `{ host = "maps.googleapis.com", carrier = "query" }`),
+				ExpectError: regexp.MustCompile(`(?s)A query parameter must be named`),
+			},
+			{
+				Config:      secretBuiltIn("GOOGLE_MAPS_KEY", "maps_first", 1, `{ host = "maps.googleapis.com", carrier = "cookie", name = "key" }`),
+				ExpectError: regexp.MustCompile(`(?s)value must be one of`),
+			},
+			{
+				Config: secretBuiltIn("GOOGLE_MAPS_KEY", "maps_first", 1, secretMaps),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("bindings").AtSliceIndex(0).AtMapKey("carrier"), knownvalue.StringExact("query")),
+					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("bindings").AtSliceIndex(0).AtMapKey("name"), knownvalue.StringExact("key")),
+					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("bindings").AtSliceIndex(0).AtMapKey("prefix"), knownvalue.StringExact("")),
+				},
+			},
+			{
+				Config:           secretBuiltIn("GOOGLE_MAPS_KEY", "maps_first", 1, secretMaps),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}},
+			},
+			{
+				ResourceName:      secretAddress,
+				ImportState:       true,
+				ImportStateIdFunc: secretImportIDOf("GOOGLE_MAPS_KEY"),
+				ImportStateVerify: true,
+			},
+			{
+				Config: secretBuiltIn("GOOGLE_MAPS_KEY", "maps_first", 1, `{ host = "maps.googleapis.com" }`),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction(secretAddress, plancheck.ResourceActionUpdate),
+					plancheck.ExpectKnownValue(secretAddress, tfjsonpath.New("bindings").AtSliceIndex(0).AtMapKey("name"), knownvalue.StringExact("authorization")),
+				}},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("bindings").AtSliceIndex(0).AtMapKey("carrier"), knownvalue.StringExact("header")),
+				},
+			},
+			{
+				Config:           secretBuiltIn("GOOGLE_MAPS_KEY", "maps_first", 1, `{ host = "maps.googleapis.com" }`),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}},
+			},
+		},
+	})
+}
+
+const secretMixedCaseHeader = `{ host = "api.example.com", name = "X-Api-Key" }`
+
+func TestSecretKeepsAHeaderNameAsWritten(t *testing.T) {
+	fake := fakeapi.New(t)
+
+	resource.UnitTest(t, resource.TestCase{
+		TerraformVersionChecks:   acctest.WriteOnly,
+		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
+		Steps: []resource.TestStep{
+			{
+				Config: secretBuiltIn("EXAMPLE_API_KEY", "ex_first", 1, secretMixedCaseHeader),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("bindings").AtSliceIndex(0).AtMapKey("name"), knownvalue.StringExact("X-Api-Key")),
+				},
+			},
+			{
+				Config:           secretBuiltIn("EXAMPLE_API_KEY", "ex_first", 1, secretMixedCaseHeader),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}},
+			},
+			{
+				ResourceName:      secretAddress,
+				ImportState:       true,
+				ImportStateIdFunc: secretImportIDOf("EXAMPLE_API_KEY"),
+				ImportStateCheck: func(states []*terraform.InstanceState) error {
+					if got := states[0].Attributes["bindings.0.name"]; got != "x-api-key" {
+						return fmt.Errorf("Spotlight holds the header as %q, want x-api-key", got)
+					}
+
+					return nil
+				},
+			},
+		},
+	})
+}
+
+const secretBindingsNotYetKnown = `
+resource "terraform_data" "carrier" {
+  input = "query"
+}
+
+resource "terraform_data" "parameter" {
+  input = "key"
+}
+
+resource "spotlight_secret" "linear_api_key" {
+  workspace_id     = spotlight_workspace.acme.id
+  name             = "GOOGLE_MAPS_KEY"
+  bindings         = [{ host = "maps.googleapis.com", carrier = terraform_data.carrier.output, name = "key" }, { host = "api.example.com", carrier = "query", name = terraform_data.parameter.output }]
+  value_wo         = "maps_first"
+  value_wo_version = 1
+}
+`
+
+func TestSecretBindingsNotYetKnownAreLeftForThePlan(t *testing.T) {
+	fake := fakeapi.New(t)
+
+	resource.UnitTest(t, resource.TestCase{
+		TerraformVersionChecks:   acctest.WriteOnly,
+		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
+		Steps: []resource.TestStep{
+			{
+				Config: acctest.Workspace + secretBindingsNotYetKnown,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("bindings"), knownvalue.ListSizeExact(2)),
+					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("bindings").AtSliceIndex(1).AtMapKey("name"), knownvalue.StringExact("key")),
+				},
+			},
+		},
+	})
+}
+
+func TestSecretValidatesABindingNotYetKnown(t *testing.T) {
+	ctx := context.Background()
+	secret := &provider.SecretResource{}
+
+	var described fwresource.SchemaResponse
+	secret.Schema(ctx, fwresource.SchemaRequest{}, &described)
+
+	whole, ok := described.Schema.Type().TerraformType(ctx).(tftypes.Object)
+	if !ok {
+		t.Fatal("the secret's schema is not an object")
+	}
+	bindings, ok := whole.AttributeTypes["bindings"].(tftypes.List)
+	if !ok {
+		t.Fatal("bindings is not a list")
+	}
+	binding := bindings.ElementType
+	values := map[string]tftypes.Value{}
+	for name, typ := range whole.AttributeTypes {
+		values[name] = tftypes.NewValue(typ, nil)
+	}
+	values["bindings"] = tftypes.NewValue(tftypes.List{ElementType: binding}, []tftypes.Value{tftypes.NewValue(binding, tftypes.UnknownValue)})
+
+	var validated fwresource.ValidateConfigResponse
+	secret.ValidateConfig(ctx, fwresource.ValidateConfigRequest{Config: tfsdk.Config{
+		Schema: described.Schema,
+		Raw:    tftypes.NewValue(whole, values),
+	}}, &validated)
+
+	if validated.Diagnostics.HasError() {
+		t.Fatalf("a binding not yet known was refused: %v", validated.Diagnostics)
+	}
 }
 
 const secretFromAWS = `
@@ -265,7 +434,7 @@ func TestAccSecret(t *testing.T) {
 	first, second := acctest.RandomToken(), acctest.RandomToken()
 	id := cp.Workspace.ID
 	linear := `{ host = "api.linear.app", prefix = "Bearer " }`
-	both := linear + `, { host = "api.github.com", header = "x-api-key" }`
+	both := linear + `, { host = "api.github.com", name = "x-api-key" }`
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks:   acctest.WriteOnly,
@@ -278,7 +447,8 @@ func TestAccSecret(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("spotlight_secret.kept", "address", k.Secret),
 					resource.TestCheckResourceAttr("spotlight_secret.kept", "source.kind", "built-in"),
-					resource.TestCheckResourceAttr("spotlight_secret.kept", "bindings.0.header", "authorization"),
+					resource.TestCheckResourceAttr("spotlight_secret.kept", "bindings.0.carrier", "header"),
+					resource.TestCheckResourceAttr("spotlight_secret.kept", "bindings.0.name", "authorization"),
 					resource.TestCheckResourceAttr("spotlight_secret.kept", "value_wo_version", "1"),
 					resource.TestCheckNoResourceAttr("spotlight_secret.kept", "value_wo"),
 					resource.TestCheckResourceAttr("spotlight_secret.aws", "source.secret_id", "tf-acc/"+k.AWSSecret),

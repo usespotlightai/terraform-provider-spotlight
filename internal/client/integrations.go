@@ -15,6 +15,21 @@ func integrationOf(dto apigen.IntegrationResourceResponseDto) Integration {
 		Source:     dto.Source,
 		Definition: dto.Definition,
 		Tools:      dto.Tools,
+		Described:  describedOf(dto.Described),
+	}
+}
+
+func describedOf(dto *apigen.DescribedSourceResponseDto) *Described {
+	if dto == nil {
+		return nil
+	}
+
+	return &Described{
+		Kind:    string(dto.Kind),
+		Hash:    dto.Hash,
+		ReadAt:  dto.ReadAt,
+		Problem: dto.Problem,
+		Tools:   int64(dto.Tools),
 	}
 }
 

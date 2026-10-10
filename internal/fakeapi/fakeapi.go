@@ -853,6 +853,7 @@ func (s *Server) bodyOf(held *resource) map[string]any {
 
 	if held.kind == "integration" {
 		body["tools"] = offered(held.fields)
+		body["described"] = described(held.fields)
 	}
 
 	return body

@@ -60,10 +60,12 @@ const (
 	integrationSoundThread = `$${{ ask.body }}`
 )
 
-func integrationImportID(state *terraform.State) (string, error) {
-	workspace := state.RootModule().Resources["spotlight_workspace.acme"].Primary.ID
+func integrationImportID(address string) resource.ImportStateIdFunc {
+	return func(state *terraform.State) (string, error) {
+		workspace := state.RootModule().Resources["spotlight_workspace.acme"].Primary.ID
 
-	return workspace + "/core/linear", nil
+		return workspace + "/" + address, nil
+	}
 }
 
 func TestIntegrationLifecycle(t *testing.T) {
@@ -90,7 +92,7 @@ func TestIntegrationLifecycle(t *testing.T) {
 			{
 				ResourceName:            integrationAddress,
 				ImportState:             true,
-				ImportStateIdFunc:       integrationImportID,
+				ImportStateIdFunc:       integrationImportID("core/linear"),
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"definition"},
 			},
@@ -161,7 +163,58 @@ func TestIntegrationImportedAsExportedHasNoDiff(t *testing.T) {
 			{
 				ResourceName:      integrationAddress,
 				ImportState:       true,
-				ImportStateIdFunc: integrationImportID,
+				ImportStateIdFunc: integrationImportID("core/linear"),
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+const integrationActingAsEachPerson = `
+resource "spotlight_integration" "core_linear" {
+  team_id = spotlight_team.core.id
+  definition = {
+    integration = "linear"
+    connection = {
+      holder = "requester"
+      oauth2 = {
+        authorize    = "https://linear.app/oauth/authorize"
+        token        = "https://api.linear.app/oauth/token"
+        registration = "https://api.linear.app/oauth/register"
+        resource     = "https://mcp.linear.app/mcp"
+        scopes       = ["read", "write"]
+      }
+    }
+  }
+}
+`
+
+func TestIntegrationActingAsEachPersonRoundTrips(t *testing.T) {
+	fake := fakeapi.New(t)
+	oauth2 := func(key string) tfjsonpath.Path {
+		return tfjsonpath.New("definition").AtMapKey("connection").AtMapKey("oauth2").AtMapKey(key)
+	}
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
+		Steps: []resource.TestStep{
+			{
+				Config: acctest.Workspace + integrationActingAsEachPerson,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(integrationAddress,
+						tfjsonpath.New("definition").AtMapKey("connection").AtMapKey("holder"),
+						knownvalue.StringExact("requester")),
+					statecheck.ExpectKnownValue(integrationAddress, oauth2("registration"),
+						knownvalue.StringExact("https://api.linear.app/oauth/register")),
+					statecheck.ExpectKnownValue(integrationAddress, oauth2("resource"),
+						knownvalue.StringExact("https://mcp.linear.app/mcp")),
+				},
+			},
+			{Config: acctest.Workspace + integrationActingAsEachPerson, PlanOnly: true},
+			{
+				ResourceName:      integrationAddress,
+				ImportState:       true,
+				ImportStateIdFunc: integrationImportID("core/linear"),
 				ImportStateVerify: true,
 			},
 		},
@@ -251,4 +304,183 @@ func TestIntegrationImportsByIdentity(t *testing.T) {
 			acctest.ImportedByIdentity(integrationAddress),
 		},
 	})
+}
+
+const integrationPetstoreAddress = "spotlight_integration.core_petstore"
+
+func integrationPetstoreConfig(description string) string {
+	return acctest.Workspace + fmt.Sprintf(`
+resource "spotlight_integration" "core_petstore" {
+  team_id = spotlight_team.core.id
+  definition = {
+    integration = "petstore"
+    %s
+    tools = {
+      adopt = { does = "adopt", description = "Adopt a pet." }
+    }
+  }
+}
+`, description)
+}
+
+func TestIntegrationToolsFromAnAPIDescriptionAreKnownAfterApply(t *testing.T) {
+	fake := fakeapi.New(t)
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
+		CheckDestroy:             acctest.NoneLeft(fake, "integration", "team", "workspace"),
+		Steps: []resource.TestStep{
+			{
+				Config: integrationPetstoreConfig(`openapi = { url = "https://petstore3.swagger.io/api/v3/openapi.json" }`),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectUnknownValue(integrationPetstoreAddress, tfjsonpath.New("tools")),
+						plancheck.ExpectUnknownValue(integrationPetstoreAddress, tfjsonpath.New("described")),
+					},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("tools"), knownvalue.MapExact(map[string]knownvalue.Check{
+						"adopt":     knownvalue.StringExact("petstore.adopt"),
+						"find-pets": knownvalue.StringExact("petstore.find-pets"),
+						"add-pet":   knownvalue.StringExact("petstore.add-pet"),
+					})),
+					statecheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("described").AtMapKey("kind"), knownvalue.StringExact("openapi")),
+					statecheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("described").AtMapKey("tools"), knownvalue.Int64Exact(2)),
+					statecheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("described").AtMapKey("problem"), knownvalue.Null()),
+				},
+			},
+			{
+				Config:   integrationPetstoreConfig(`openapi = { url = "https://petstore3.swagger.io/api/v3/openapi.json" }`),
+				PlanOnly: true,
+			},
+			{
+				ResourceName:            integrationPetstoreAddress,
+				ImportState:             true,
+				ImportStateIdFunc:       integrationImportID("core/petstore"),
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"definition"},
+			},
+			{
+				Config: integrationPetstoreConfig(""),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("tools"), knownvalue.MapExact(map[string]knownvalue.Check{
+							"adopt": knownvalue.StringExact("petstore.adopt"),
+						})),
+						plancheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("described"), knownvalue.Null()),
+					},
+				},
+			},
+		},
+	})
+}
+
+func TestIntegrationToolsWithoutAnAPIDescriptionAreKnownAtPlan(t *testing.T) {
+	fake := fakeapi.New(t)
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
+		Steps: []resource.TestStep{
+			{
+				Config: integrationPetstoreConfig(""),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("tools"), knownvalue.MapExact(map[string]knownvalue.Check{
+							"adopt": knownvalue.StringExact("petstore.adopt"),
+						})),
+						plancheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("described"), knownvalue.Null()),
+					},
+				},
+			},
+			{
+				Config: integrationPetstoreConfig(`graphql = { url = "https://petstore.example.com/graphql" }`),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(integrationPetstoreAddress, plancheck.ResourceActionUpdate),
+						plancheck.ExpectUnknownValue(integrationPetstoreAddress, tfjsonpath.New("tools")),
+					},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("described").AtMapKey("kind"), knownvalue.StringExact("graphql")),
+				},
+			},
+		},
+	})
+}
+
+func TestIntegrationToolsFromAnMCPServerAreKnownAfterApply(t *testing.T) {
+	fake := fakeapi.New(t)
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
+		CheckDestroy:             acctest.NoneLeft(fake, "integration", "team", "workspace"),
+		Steps: []resource.TestStep{
+			{
+				Config: integrationPetstoreConfig(`mcp = { url = "https://mcp.petstore.example/mcp" }`),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectUnknownValue(integrationPetstoreAddress, tfjsonpath.New("tools")),
+						plancheck.ExpectUnknownValue(integrationPetstoreAddress, tfjsonpath.New("described")),
+					},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("tools"), knownvalue.MapExact(map[string]knownvalue.Check{
+						"adopt":         knownvalue.StringExact("petstore.adopt"),
+						"search-issues": knownvalue.StringExact("petstore.search-issues"),
+						"delete-issue":  knownvalue.StringExact("petstore.delete-issue"),
+					})),
+					statecheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("described").AtMapKey("kind"), knownvalue.StringExact("mcp")),
+				},
+			},
+			{
+				Config:   integrationPetstoreConfig(`mcp = { url = "https://mcp.petstore.example/mcp" }`),
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
+func TestIntegrationToolsOfADefinitionNotKnownYetAreUnknown(t *testing.T) {
+	for name, definition := range map[string]string{
+		"whole": `spotlight_team.core.id == "" ? local.petstore : local.petstore`,
+		"description": `merge(local.petstore, {
+    openapi = { url = "https://petstore.example.com/${spotlight_team.core.id}/openapi.json" }
+  })`,
+	} {
+		t.Run(name, func(t *testing.T) {
+			fake := fakeapi.New(t)
+
+			resource.UnitTest(t, resource.TestCase{
+				ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
+				Steps: []resource.TestStep{
+					{
+						Config: acctest.Workspace + fmt.Sprintf(`
+locals {
+  petstore = {
+    integration = "petstore"
+    openapi     = { url = "https://petstore3.swagger.io/api/v3/openapi.json" }
+  }
+}
+
+resource "spotlight_integration" "core_petstore" {
+  team_id    = spotlight_team.core.id
+  definition = %s
+}
+`, definition),
+						ConfigPlanChecks: resource.ConfigPlanChecks{
+							PreApply: []plancheck.PlanCheck{
+								plancheck.ExpectUnknownValue(integrationPetstoreAddress, tfjsonpath.New("tools")),
+							},
+						},
+						ConfigStateChecks: []statecheck.StateCheck{
+							statecheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("tools"), knownvalue.MapExact(map[string]knownvalue.Check{
+								"find-pets": knownvalue.StringExact("petstore.find-pets"),
+								"add-pet":   knownvalue.StringExact("petstore.add-pet"),
+							})),
+						},
+					},
+				},
+			})
+		})
+	}
 }
