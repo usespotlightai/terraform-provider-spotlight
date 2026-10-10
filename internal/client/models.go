@@ -175,9 +175,10 @@ const (
 
 // SecretBinding is a host a secret may be sent to, and how it is worn there.
 type SecretBinding struct {
-	Host   string `json:"host"`
-	Header string `json:"header"`
-	Prefix string `json:"prefix"`
+	Host    string `json:"host"`
+	Carrier string `json:"carrier"`
+	Name    string `json:"name,omitempty"`
+	Prefix  string `json:"prefix"`
 }
 
 // SecretInput is what a secret is written from. Value is sent only when
