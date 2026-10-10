@@ -22,6 +22,7 @@ var (
 	awsSecret  = regexp.MustCompile(`^[A-Za-z0-9/_+=.@:-]+$`)
 	hostShape  = regexp.MustCompile(`^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$`)
 	headerName = regexp.MustCompile("^[!#$%&'*+.^_`|~0-9a-z-]{1,128}$")
+	queryName  = regexp.MustCompile(`^[A-Za-z0-9._~-]{1,128}$`)
 	prefixText = regexp.MustCompile(`^[\x20-\x7e]{0,64}$`)
 	neverWorn  = []string{"host", "content-length", "content-type", "transfer-encoding", "connection", "upgrade", "te", "trailer"}
 	harnesses  = map[string]string{"claude-code": "json", "cursor": "json", "codex": "toml"}
@@ -107,19 +108,32 @@ func secret(body map[string]any) (map[string]any, []fieldError) {
 		binding, _ := each.(map[string]any)
 		host, _ := binding["host"].(string)
 		host = strings.ToLower(strings.TrimSpace(host))
-		header, ok := binding["header"].(string)
+		carrier, ok := binding["carrier"].(string)
 		if !ok {
-			header = "authorization"
+			carrier = "header"
 		}
+		name, named := binding["name"].(string)
 		prefix, _ := binding["prefix"].(string)
-
-		header = strings.ToLower(strings.TrimSpace(header))
 
 		if !hostShape.MatchString(host) || len(host) > 253 {
 			errs = append(errs, fieldError{fmt.Sprintf("bindings[%d].host", at), "is the one host the secret may be sent to, as in api.linear.app, with no scheme, port or path"})
 		}
-		if !headerName.MatchString(header) || slices.Contains(neverWorn, header) {
-			errs = append(errs, fieldError{fmt.Sprintf("bindings[%d].header", at), "is the request header the secret is worn in, as in authorization or x-api-key"})
+		switch carrier {
+		case "header":
+			if !named {
+				name = "authorization"
+			}
+			name = strings.ToLower(strings.TrimSpace(name))
+			if !headerName.MatchString(name) || slices.Contains(neverWorn, name) {
+				errs = append(errs, fieldError{fmt.Sprintf("bindings[%d].name", at), "is the request header the secret is worn in, as in authorization or x-api-key"})
+			}
+		case "query":
+			name = strings.TrimSpace(name)
+			if !queryName.MatchString(name) {
+				errs = append(errs, fieldError{fmt.Sprintf("bindings[%d].name", at), "is the query parameter the secret is worn in, as in key or api_key"})
+			}
+		default:
+			errs = append(errs, fieldError{fmt.Sprintf("bindings[%d].carrier", at), "is where the secret is worn: header or query"})
 		}
 		if !prefixText.MatchString(prefix) {
 			errs = append(errs, fieldError{fmt.Sprintf("bindings[%d].prefix", at), `is up to 64 printable characters written before the value, as in "Bearer "`})
@@ -129,7 +143,7 @@ func secret(body map[string]any) (map[string]any, []fieldError) {
 		}
 		hosts[host] = true
 
-		bindings = append(bindings, map[string]any{"host": host, "header": header, "prefix": prefix})
+		bindings = append(bindings, map[string]any{"host": host, "carrier": carrier, "name": name, "prefix": prefix})
 	}
 
 	var version any

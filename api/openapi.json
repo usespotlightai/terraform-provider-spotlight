@@ -2799,12 +2799,23 @@
             }
           },
           {
-            "name": "since",
+            "name": "range",
             "required": false,
             "in": "query",
-            "description": "Only runs started at or after this. Defaults to 30 days.",
+            "description": "How far back from now to look, counting runs started since; 30d unless asked",
             "schema": {
-              "example": "2026-08-02T12:00:00.000Z"
+              "enum": [
+                "30m",
+                "1h",
+                "6h",
+                "1d",
+                "3d",
+                "7d",
+                "14d",
+                "30d",
+                "90d"
+              ],
+              "type": "string"
             }
           }
         ],
@@ -2814,16 +2825,16 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/TeamTraceResponseDto"
-                  }
+                  "$ref": "#/components/schemas/TeamTracesResponseDto"
                 }
               }
             }
           },
           "401": {
             "description": "No valid session"
+          },
+          "422": {
+            "description": "No such range"
           }
         },
         "summary": "Every task the team has worked, as one trace each",
@@ -7348,6 +7359,47 @@
         ]
       }
     },
+    "/workspaces/{slug}/members": {
+      "get": {
+        "operationId": "listWorkspaceMembers",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "acme-inc",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WorkspaceMemberResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session"
+          },
+          "404": {
+            "description": "No such workspace for this caller"
+          }
+        },
+        "summary": "List everyone in the workspace, with their role, their teams, and what may be set",
+        "tags": [
+          "workspaces"
+        ]
+      }
+    },
     "/workspaces/{slug}/members/{userId}": {
       "patch": {
         "description": "Roles are given downwards: an owner may set anyone’s, an admin only those of people they outrank, and nobody may hand out a rank they do not hold. The last owner keeps the workspace.",
@@ -7504,18 +7556,62 @@
         "tags": [
           "teams"
         ]
-      }
-    },
-    "/teams/{teamId}/invites": {
-      "get": {
-        "operationId": "listInvites",
+      },
+      "post": {
+        "operationId": "addTeamMember",
         "parameters": [
           {
             "name": "teamId",
             "required": true,
             "in": "path",
             "schema": {
-              "example": "team_1",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddTeamMemberRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "They are on the team now"
+          },
+          "401": {
+            "description": "No valid session"
+          },
+          "404": {
+            "description": "No such team, or not yours to add people to"
+          },
+          "409": {
+            "description": "They are already on the team"
+          },
+          "422": {
+            "description": "They are not in the workspace"
+          }
+        },
+        "summary": "Put somebody already in the workspace on this team",
+        "tags": [
+          "teams"
+        ]
+      }
+    },
+    "/workspaces/{slug}/invites": {
+      "get": {
+        "operationId": "listWorkspaceInvites",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "acme",
               "type": "string"
             }
           }
@@ -7528,7 +7624,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/InviteResponseDto"
+                    "$ref": "#/components/schemas/WorkspaceInviteResponseDto"
                   }
                 }
               }
@@ -7538,23 +7634,24 @@
             "description": "No valid session"
           },
           "404": {
-            "description": "No such team for this caller"
+            "description": "No such workspace, or not yours to invite to"
           }
         },
-        "summary": "List the invitations this team is still waiting on",
+        "summary": "List the invitations this workspace is still waiting on",
         "tags": [
           "invites"
         ]
       },
       "post": {
-        "operationId": "inviteToTeam",
+        "description": "One invitation per address. An address with an open or run-out invitation is sent it again with a fresh link, and an address already in the workspace is reported and sent nothing.",
+        "operationId": "inviteToWorkspace",
         "parameters": [
           {
-            "name": "teamId",
+            "name": "slug",
             "required": true,
             "in": "path",
             "schema": {
-              "example": "team_1",
+              "example": "acme",
               "type": "string"
             }
           }
@@ -7564,18 +7661,73 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/InviteToTeamRequestDto"
+                "$ref": "#/components/schemas/InviteToWorkspaceRequestDto"
               }
             }
           }
         },
         "responses": {
-          "201": {
+          "200": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/InviteResponseDto"
+                  "$ref": "#/components/schemas/InviteOutcomesResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session"
+          },
+          "403": {
+            "description": "Not a role yours to give"
+          },
+          "404": {
+            "description": "No such workspace, or not yours to invite to"
+          },
+          "409": {
+            "description": "Another invitation was just sent"
+          },
+          "422": {
+            "description": "An address, role or team that does not hold"
+          }
+        },
+        "summary": "Invite people to this workspace by email, with a role and teams",
+        "tags": [
+          "invites"
+        ]
+      }
+    },
+    "/workspaces/{slug}/invites/{inviteId}/resend": {
+      "post": {
+        "operationId": "resendInvite",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "acme",
+              "type": "string"
+            }
+          },
+          {
+            "name": "inviteId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceInviteResponseDto"
                 }
               }
             }
@@ -7584,28 +7736,28 @@
             "description": "No valid session"
           },
           "404": {
-            "description": "No such team, or not yours to invite to"
+            "description": "No such invitation for this caller"
           },
           "409": {
-            "description": "They are already on this team"
+            "description": "Already accepted or revoked"
           }
         },
-        "summary": "Invite somebody onto this team by email",
+        "summary": "Send an invitation again, with a fresh link and two more weeks",
         "tags": [
           "invites"
         ]
       }
     },
-    "/teams/{teamId}/invites/{inviteId}": {
+    "/workspaces/{slug}/invites/{inviteId}": {
       "delete": {
         "operationId": "revokeInvite",
         "parameters": [
           {
-            "name": "teamId",
+            "name": "slug",
             "required": true,
             "in": "path",
             "schema": {
-              "example": "team_1",
+              "example": "acme",
               "type": "string"
             }
           },
@@ -7627,6 +7779,9 @@
           },
           "404": {
             "description": "No such invitation for this caller"
+          },
+          "409": {
+            "description": "Already accepted"
           }
         },
         "summary": "Take an invitation back, so its link stops working",
@@ -7688,7 +7843,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JoinedTeamResponseDto"
+                  "$ref": "#/components/schemas/JoinedWorkspaceResponseDto"
                 }
               }
             }
@@ -7706,7 +7861,7 @@
             "description": "Already accepted, revoked or run out"
           }
         },
-        "summary": "Take up an invitation, joining the team it was sent for",
+        "summary": "Take up an invitation, joining the workspace and the teams it was sent for",
         "tags": [
           "invites"
         ]
@@ -7807,9 +7962,18 @@
                           "type": "string",
                           "example": "api.linear.app"
                         },
-                        "header": {
+                        "carrier": {
                           "type": "string",
-                          "default": "authorization"
+                          "enum": [
+                            "header",
+                            "query"
+                          ],
+                          "default": "header"
+                        },
+                        "name": {
+                          "type": "string",
+                          "description": "The header or query parameter it is worn in; authorization when a header is not named",
+                          "example": "authorization"
                         },
                         "prefix": {
                           "type": "string",
@@ -8228,9 +8392,18 @@
                           "type": "string",
                           "example": "api.linear.app"
                         },
-                        "header": {
+                        "carrier": {
                           "type": "string",
-                          "default": "authorization"
+                          "enum": [
+                            "header",
+                            "query"
+                          ],
+                          "default": "header"
+                        },
+                        "name": {
+                          "type": "string",
+                          "description": "The header or query parameter it is worn in; authorization when a header is not named",
+                          "example": "authorization"
                         },
                         "prefix": {
                           "type": "string",
@@ -9030,7 +9203,7 @@
             }
           },
           "401": {
-            "description": "Missing, rotated or unknown pool token, or a workload the trust does not admit"
+            "description": "Pool token is missing, rotated or unknown, or no trust admits this workload."
           },
           "409": {
             "description": "The host id serves another pool or trust"
@@ -9073,7 +9246,7 @@
             "description": "Gone"
           },
           "401": {
-            "description": "Missing, rotated or unknown pool token, or a workload the trust does not admit"
+            "description": "Pool token is missing, rotated or unknown, or no trust admits this workload."
           }
         },
         "security": [
@@ -14331,6 +14504,16 @@
             }
           }
         ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnectIntegrationRequestDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "",
@@ -14342,6 +14525,9 @@
               }
             }
           },
+          "400": {
+            "description": "It asks to connect for someone other than the team or me"
+          },
           "401": {
             "description": "No valid session"
           },
@@ -14349,7 +14535,148 @@
             "description": "No such team, not yours to link, or the host does not link so"
           }
         },
-        "summary": "Begin linking this team to a host over OAuth2",
+        "summary": "Begin connecting the team, or the caller, to a host over OAuth2",
+        "tags": [
+          "integrations"
+        ]
+      }
+    },
+    "/teams/{teamId}/connections": {
+      "get": {
+        "operationId": "listConnections",
+        "parameters": [
+          {
+            "name": "teamId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "team_1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HostConnectionsResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session"
+          },
+          "404": {
+            "description": "No such team for this caller"
+          }
+        },
+        "summary": "List the connections the caller made in this team, and for admins who else has connected what",
+        "tags": [
+          "integrations"
+        ]
+      }
+    },
+    "/teams/{teamId}/integrations/{source}/connections/mine": {
+      "delete": {
+        "operationId": "disconnectMine",
+        "parameters": [
+          {
+            "name": "teamId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "team_1",
+              "type": "string"
+            }
+          },
+          {
+            "name": "source",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "linear",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The caller’s connection is gone"
+          },
+          "401": {
+            "description": "No valid session"
+          },
+          "404": {
+            "description": "No such team for this caller"
+          }
+        },
+        "summary": "Remove the connection the caller made to this integration",
+        "tags": [
+          "integrations"
+        ]
+      }
+    },
+    "/teams/{teamId}/integrations/{source}/connections/mine/tools/{tool}": {
+      "put": {
+        "description": "The stricter of the team’s rule and the caller’s wins, so this can ask first or block where the team allows, but never lets through a call the team asks about.",
+        "operationId": "setMyToolRule",
+        "parameters": [
+          {
+            "name": "teamId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "team_1",
+              "type": "string"
+            }
+          },
+          {
+            "name": "source",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "linear",
+              "type": "string"
+            }
+          },
+          {
+            "name": "tool",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "linear.comment",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetToolRuleRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "The rule is set"
+          },
+          "401": {
+            "description": "No valid session"
+          },
+          "404": {
+            "description": "No such team for this caller, or the integration offers no such tool"
+          },
+          "422": {
+            "description": "No such rule"
+          }
+        },
+        "summary": "Set what the caller asks of calls a tool makes with their own connection: allowed, needs-approval or blocked",
         "tags": [
           "integrations"
         ]
@@ -16988,7 +17315,7 @@
             "name": "last",
             "required": false,
             "in": "query",
-            "description": "How many of the latest runs to look at: 50 unless asked, 200 at most",
+            "description": "How many of the latest-started runs to look at: 50 unless asked, 200 at most",
             "schema": {
               "type": "number"
             }
@@ -17838,6 +18165,65 @@
           }
         ],
         "summary": "How much of what the team merges Spotlight made or touched, week by week, how Spotlight’s pull requests fare against people’s, and what kinds it ships",
+        "tags": [
+          "insights"
+        ]
+      }
+    },
+    "/teams/{teamId}/insights/shipping": {
+      "get": {
+        "operationId": "readInsightsShipping",
+        "parameters": [
+          {
+            "name": "teamId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "period",
+            "required": false,
+            "in": "query",
+            "description": "How many whole UTC days, up to and including today, to look at; 30d unless asked. Every answer also covers the period before, as long",
+            "schema": {
+              "enum": [
+                "7d",
+                "30d",
+                "90d"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InsightsShippingResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session or token"
+          },
+          "404": {
+            "description": "No such team for this caller"
+          },
+          "422": {
+            "description": "No such period, or a filter it does not take: more tasks or repositories than it takes, a value longer than it takes, an unknown value, a value repeated where it takes one, a day outside the period, or a page past the last"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "How fast what Spotlight makes ships against what people make alone: time to merge by day and kind, review depth by week, time to first review, review bots, and how long merged pull requests spent at each stage",
         "tags": [
           "insights"
         ]
@@ -22981,7 +23367,7 @@
           },
           "detail": {
             "type": "string",
-            "example": "The integration is at version 4; read it again and send that version as If-Match"
+            "example": "The integration changed since you read it. Please send the current version as If-Match. Current version: 4"
           },
           "errors": {
             "description": "Each field that is wrong, when the request was invalid",
@@ -24461,6 +24847,37 @@
           "events"
         ]
       },
+      "ToolActingAsResponseDto": {
+        "type": "object",
+        "properties": {
+          "holder": {
+            "type": "string",
+            "description": "Whose connection the call used: the team’s, or the person’s who started the task",
+            "enum": [
+              "team",
+              "person"
+            ],
+            "example": "person"
+          },
+          "personId": {
+            "type": "string",
+            "description": "The person whose connection it was, where it was a person’s",
+            "example": "user_1",
+            "nullable": true
+          },
+          "handle": {
+            "type": "string",
+            "description": "What the host calls whoever the call acted as, where it says",
+            "example": "@alice",
+            "nullable": true
+          }
+        },
+        "required": [
+          "holder",
+          "personId",
+          "handle"
+        ]
+      },
       "ToolAnswerResponseDto": {
         "type": "object",
         "properties": {
@@ -24486,10 +24903,21 @@
                 "items": {}
               }
             ]
+          },
+          "actingAs": {
+            "nullable": true,
+            "description": "Whose connection the call acted with, where its integration connects",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ToolActingAsResponseDto"
+              }
+            ]
           }
         },
         "required": [
-          "output"
+          "output",
+          "actingAs"
         ]
       },
       "AskPermissionRequestDto": {
@@ -25033,9 +25461,19 @@
             "example": "mcp.linear.app",
             "description": "The one host egress wears it toward"
           },
-          "header": {
+          "carrier": {
             "type": "string",
-            "example": "authorization"
+            "enum": [
+              "header",
+              "query"
+            ],
+            "example": "header",
+            "description": "Whether egress wears it in a request header or a query parameter"
+          },
+          "name": {
+            "type": "string",
+            "example": "authorization",
+            "description": "The header or query parameter that holds its stand-in"
           },
           "prefix": {
             "type": "string",
@@ -25060,7 +25498,8 @@
         "required": [
           "secret",
           "host",
-          "header",
+          "carrier",
+          "name",
           "prefix",
           "sealed",
           "readInNetwork"
@@ -25390,6 +25829,23 @@
           "value"
         ]
       },
+      "InboxApprovalAskedOfResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "user_1"
+          },
+          "name": {
+            "type": "string",
+            "example": "Alice Martin"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
       "InboxApprovalResponseDto": {
         "type": "object",
         "properties": {
@@ -25441,6 +25897,16 @@
             "nullable": true,
             "example": "post the drain summary on ENG-412, publicly under the team’s name",
             "description": "What the agent said it wants to do, completing “Spotlight would like to …”; absent where it said nothing, as a harness asking permission never does"
+          },
+          "askedOf": {
+            "nullable": true,
+            "description": "The one person who can approve it, where it asks first because of their own rule for their connection; anyone can still dismiss it",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InboxApprovalAskedOfResponseDto"
+              }
+            ]
           }
         },
         "required": [
@@ -25450,7 +25916,41 @@
           "inputs",
           "standing",
           "edited",
-          "intent"
+          "intent",
+          "askedOf"
+        ]
+      },
+      "InboxConnectionResponseDto": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "example": "linear"
+          },
+          "integration": {
+            "type": "string",
+            "example": "Linear"
+          },
+          "personId": {
+            "type": "string",
+            "example": "user_1",
+            "description": "The person asked to connect, whose connection the tool acts with"
+          },
+          "personName": {
+            "type": "string",
+            "example": "Alice Martin"
+          },
+          "met": {
+            "type": "boolean",
+            "description": "Whether they have connected since"
+          }
+        },
+        "required": [
+          "source",
+          "integration",
+          "personId",
+          "personName",
+          "met"
         ]
       },
       "InboxMessageResponseDto": {
@@ -25478,7 +25978,8 @@
               "setup",
               "settled",
               "approval",
-              "failure"
+              "failure",
+              "connection"
             ],
             "description": "What it shows, which is not what it did"
           },
@@ -25554,6 +26055,16 @@
                 "$ref": "#/components/schemas/InboxFailureResponseDto"
               }
             ]
+          },
+          "connection": {
+            "nullable": true,
+            "description": "The connection this asks a person to make, where a tool acts as them and they have not connected",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InboxConnectionResponseDto"
+              }
+            ]
           }
         },
         "required": [
@@ -25570,7 +26081,8 @@
           "at",
           "author",
           "approval",
-          "failure"
+          "failure",
+          "connection"
         ]
       },
       "InboxItemResponseDto": {
@@ -26077,7 +26589,7 @@
           },
           "body": {
             "type": "string",
-            "example": "The run was given up on after 3 attempts."
+            "example": "No runner finished the run after 3 attempts."
           }
         },
         "required": [
@@ -26343,6 +26855,37 @@
           "taskDescription"
         ]
       },
+      "TraceVolumeBucketResponseDto": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "example": "2026-08-29T12:00:00.000Z",
+            "description": "When the bar starts"
+          },
+          "to": {
+            "type": "string",
+            "example": "2026-08-29T13:00:00.000Z",
+            "description": "When the bar ends, not included"
+          },
+          "count": {
+            "type": "number",
+            "example": 4,
+            "description": "How many traces started in it"
+          },
+          "faults": {
+            "type": "number",
+            "example": 1,
+            "description": "Every fault the traces that started in it came to"
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "count",
+          "faults"
+        ]
+      },
       "TraceStationResponseDto": {
         "type": "object",
         "properties": {
@@ -26474,6 +27017,57 @@
           "faults",
           "cost",
           "currency"
+        ]
+      },
+      "TeamTracesResponseDto": {
+        "type": "object",
+        "properties": {
+          "range": {
+            "type": "string",
+            "example": "7d",
+            "enum": [
+              "30m",
+              "1h",
+              "6h",
+              "1d",
+              "3d",
+              "7d",
+              "14d",
+              "30d",
+              "90d"
+            ]
+          },
+          "from": {
+            "type": "string",
+            "example": "2026-08-22T12:00:00.000Z",
+            "description": "Where the range starts"
+          },
+          "to": {
+            "type": "string",
+            "example": "2026-08-29T12:00:00.000Z",
+            "description": "Where the range ends: when it was asked"
+          },
+          "volume": {
+            "description": "Every trace in the range, counted into evenly long bars from start to end, empty bars kept",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TraceVolumeBucketResponseDto"
+            }
+          },
+          "traces": {
+            "description": "Every trace in the range, latest first",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TeamTraceResponseDto"
+            }
+          }
+        },
+        "required": [
+          "range",
+          "from",
+          "to",
+          "volume",
+          "traces"
         ]
       },
       "ConfigChangeResponseDto": {
@@ -27444,6 +28038,18 @@
             "nullable": true,
             "example": "#edc12b"
           },
+          "stationPosition": {
+            "type": "number",
+            "nullable": true,
+            "example": 2,
+            "description": "Where the station stands on its line, from 0"
+          },
+          "stationCount": {
+            "type": "number",
+            "nullable": true,
+            "example": 5,
+            "description": "How many stations its line has"
+          },
           "title": {
             "type": "string",
             "example": "Back off retries exponentially"
@@ -27474,6 +28080,8 @@
           "stationId",
           "stationName",
           "stationColor",
+          "stationPosition",
+          "stationCount",
           "title",
           "description",
           "state",
@@ -28285,6 +28893,92 @@
           "role"
         ]
       },
+      "TeamReferenceResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "team_1"
+          },
+          "name": {
+            "type": "string",
+            "example": "Platform"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "WorkspaceMemberResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "a17c4e02-9b3d-4f61-8e5a-0c2d7b9f4a13"
+          },
+          "name": {
+            "type": "string",
+            "example": "Ada Lovelace"
+          },
+          "image": {
+            "type": "string",
+            "nullable": true
+          },
+          "role": {
+            "type": "string",
+            "description": "What they are in the workspace this team belongs to.",
+            "example": "member",
+            "enum": [
+              "owner",
+              "admin",
+              "member"
+            ]
+          },
+          "mayBeSetTo": {
+            "type": "array",
+            "description": "What the caller may set them to, which is empty where that is not theirs to do. Worked out by the same rule the workspace enforces.",
+            "example": [
+              "admin",
+              "member"
+            ],
+            "items": {
+              "type": "string",
+              "enum": [
+                "owner",
+                "admin",
+                "member"
+              ]
+            }
+          },
+          "email": {
+            "type": "string",
+            "example": "ada@example.com"
+          },
+          "teams": {
+            "description": "The teams of this workspace they are on.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TeamReferenceResponseDto"
+            }
+          },
+          "joinedAt": {
+            "type": "string",
+            "description": "When they joined the workspace.",
+            "example": "2026-09-12T09:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "image",
+          "role",
+          "mayBeSetTo",
+          "email",
+          "teams",
+          "joinedAt"
+        ]
+      },
       "ChangeMemberRoleRequestDto": {
         "type": "object",
         "properties": {
@@ -28471,7 +29165,42 @@
           "mayBeSetTo"
         ]
       },
-      "InviteResponseDto": {
+      "AddTeamMemberRequestDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "Somebody already in the workspace this team belongs to.",
+            "example": "a17c4e02-9b3d-4f61-8e5a-0c2d7b9f4a13"
+          }
+        },
+        "required": [
+          "userId"
+        ]
+      },
+      "InviterResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "a17c4e02-9b3d-4f61-8e5a-0c2d7b9f4a13"
+          },
+          "name": {
+            "type": "string",
+            "example": "Leon Liang"
+          },
+          "image": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "image"
+        ]
+      },
+      "WorkspaceInviteResponseDto": {
         "type": "object",
         "properties": {
           "id": {
@@ -28482,10 +29211,31 @@
             "type": "string",
             "example": "ada@example.com"
           },
-          "invitedBy": {
+          "role": {
             "type": "string",
-            "description": "Who asked them.",
-            "example": "Leon Liang"
+            "description": "What they will be in the workspace once they accept.",
+            "enum": [
+              "admin",
+              "member"
+            ],
+            "example": "member"
+          },
+          "teams": {
+            "description": "The teams they join on accepting.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TeamReferenceResponseDto"
+            }
+          },
+          "invitedBy": {
+            "description": "Who asked them, or null once their account is deleted.",
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InviterResponseDto"
+              }
+            ]
           },
           "invitedAt": {
             "type": "string",
@@ -28499,22 +29249,92 @@
         "required": [
           "id",
           "email",
+          "role",
+          "teams",
           "invitedBy",
           "invitedAt",
           "expiresAt"
         ]
       },
-      "InviteToTeamRequestDto": {
+      "InviteToWorkspaceRequestDto": {
+        "type": "object",
+        "properties": {
+          "emails": {
+            "description": "Where each invitation is sent, and who may accept it. One invitation per address.",
+            "example": [
+              "ada@example.com",
+              "grace@example.com"
+            ],
+            "minItems": 1,
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "role": {
+            "type": "string",
+            "description": "What they will be in the workspace once they accept. Nobody is invited as an owner, nor above the inviter.",
+            "enum": [
+              "admin",
+              "member"
+            ],
+            "example": "member"
+          },
+          "teamIds": {
+            "description": "The teams of this workspace they join on accepting.",
+            "example": [
+              "team_1"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "emails",
+          "role",
+          "teamIds"
+        ]
+      },
+      "InviteOutcomeResponseDto": {
         "type": "object",
         "properties": {
           "email": {
             "type": "string",
-            "description": "Where the invitation is sent, and who may accept it.",
             "example": "ada@example.com"
+          },
+          "outcome": {
+            "type": "string",
+            "description": "What came of the address: a new invitation, an open one sent again with a fresh link, nothing, since they are already in the workspace, or an invitation kept whose email could not be sent, which sending again may still deliver.",
+            "enum": [
+              "invited",
+              "sent-again",
+              "already-a-member",
+              "not-sent"
+            ],
+            "example": "invited"
           }
         },
         "required": [
-          "email"
+          "email",
+          "outcome"
+        ]
+      },
+      "InviteOutcomesResponseDto": {
+        "type": "object",
+        "properties": {
+          "outcomes": {
+            "description": "One outcome per address asked, in the order asked.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InviteOutcomeResponseDto"
+            }
+          }
+        },
+        "required": [
+          "outcomes"
         ]
       },
       "InviteOfferResponseDto": {
@@ -28525,17 +29345,34 @@
             "description": "The address it was sent to, which is who may accept it.",
             "example": "ada@example.com"
           },
-          "teamName": {
-            "type": "string",
-            "example": "Platform"
-          },
           "workspaceName": {
             "type": "string",
             "example": "Acme"
           },
           "invitedBy": {
             "type": "string",
+            "description": "Who asked them, or null once their account is deleted.",
+            "nullable": true,
             "example": "Leon Liang"
+          },
+          "role": {
+            "type": "string",
+            "description": "What they will be in the workspace once they accept.",
+            "enum": [
+              "admin",
+              "member"
+            ],
+            "example": "member"
+          },
+          "teamNames": {
+            "description": "The teams they join on accepting.",
+            "example": [
+              "Platform"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "standing": {
             "type": "string",
@@ -28551,32 +29388,24 @@
         },
         "required": [
           "email",
-          "teamName",
           "workspaceName",
           "invitedBy",
+          "role",
+          "teamNames",
           "standing"
         ]
       },
-      "JoinedTeamResponseDto": {
+      "JoinedWorkspaceResponseDto": {
         "type": "object",
         "properties": {
           "workspaceSlug": {
             "type": "string",
+            "description": "Where they land.",
             "example": "acme"
-          },
-          "teamId": {
-            "type": "string",
-            "example": "team_1"
-          },
-          "teamName": {
-            "type": "string",
-            "example": "Platform"
           }
         },
         "required": [
-          "workspaceSlug",
-          "teamId",
-          "teamName"
+          "workspaceSlug"
         ]
       },
       "SecretSourceResponseDto": {
@@ -28618,20 +29447,30 @@
             "example": "api.linear.app",
             "description": "A host the secret may be sent to, over HTTPS only"
           },
-          "header": {
+          "carrier": {
+            "type": "string",
+            "enum": [
+              "header",
+              "query"
+            ],
+            "example": "header",
+            "description": "Whether it is worn in a request header or a query parameter"
+          },
+          "name": {
             "type": "string",
             "example": "authorization",
-            "description": "The request header it is worn in"
+            "description": "The header or query parameter it is worn in"
           },
           "prefix": {
             "type": "string",
             "example": "Bearer ",
-            "description": "Written before the value in that header"
+            "description": "Written before the value it is worn with"
           }
         },
         "required": [
           "host",
-          "header",
+          "carrier",
+          "name",
           "prefix"
         ]
       },
@@ -29499,10 +30338,11 @@
             "type": "string",
             "enum": [
               "openapi",
-              "graphql"
+              "graphql",
+              "mcp"
             ],
             "example": "openapi",
-            "description": "The kind of API description its tools are generated from"
+            "description": "The kind of API description, or the MCP server, its tools are generated from"
           },
           "tools": {
             "type": "integer",
@@ -29555,6 +30395,15 @@
             ],
             "example": "linked"
           },
+          "holding": {
+            "type": "string",
+            "description": "Whose connection its tools act with: the team’s, or that of the person who started the task",
+            "enum": [
+              "team",
+              "requester"
+            ],
+            "example": "team"
+          },
           "handle": {
             "type": "string",
             "description": "What the host calls the team once linked, where it says",
@@ -29577,6 +30426,7 @@
           "name",
           "path",
           "standing",
+          "holding",
           "handle",
           "described"
         ]
@@ -30969,6 +31819,25 @@
           "verdict"
         ]
       },
+      "ConnectIntegrationRequestDto": {
+        "type": "object",
+        "properties": {
+          "for": {
+            "type": "string",
+            "description": "Whose connection to make: the team’s, which only an admin makes, or the caller’s own",
+            "enum": [
+              "team",
+              "me"
+            ],
+            "default": "team"
+          },
+          "back": {
+            "type": "string",
+            "description": "Where in the app to land once connected, as a path in a workspace’s inbox or settings; anything else lands on the team’s integrations",
+            "example": "/w/acme/inbox/task_1"
+          }
+        }
+      },
       "OAuth2StartResponseDto": {
         "type": "object",
         "properties": {
@@ -30982,6 +31851,137 @@
           "url"
         ]
       },
+      "ConnectionToolRuleResponseDto": {
+        "type": "object",
+        "properties": {
+          "tool": {
+            "type": "string",
+            "example": "linear.comment"
+          },
+          "rule": {
+            "type": "string",
+            "enum": [
+              "allowed",
+              "needs-approval",
+              "blocked"
+            ],
+            "example": "needs-approval",
+            "description": "What the caller asks of calls made with their connection: allowed follows the team, needs-approval asks them first, blocked never sends"
+          }
+        },
+        "required": [
+          "tool",
+          "rule"
+        ]
+      },
+      "MyConnectionResponseDto": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "example": "linear"
+          },
+          "handle": {
+            "type": "string",
+            "description": "What the host calls the person, where it says",
+            "example": "@alice",
+            "nullable": true
+          },
+          "connectedAt": {
+            "type": "string",
+            "example": "2026-10-05T10:00:00.000Z"
+          },
+          "tools": {
+            "description": "Each tool the integration offers, with the caller’s rule for calls made with this connection",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConnectionToolRuleResponseDto"
+            }
+          }
+        },
+        "required": [
+          "source",
+          "handle",
+          "connectedAt",
+          "tools"
+        ]
+      },
+      "PersonConnectionResponseDto": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "example": "linear"
+          },
+          "handle": {
+            "type": "string",
+            "description": "What the host calls the person, where it says",
+            "example": "@alice",
+            "nullable": true
+          },
+          "connectedAt": {
+            "type": "string",
+            "example": "2026-10-05T10:00:00.000Z"
+          },
+          "personId": {
+            "type": "string",
+            "example": "user_1"
+          },
+          "name": {
+            "type": "string",
+            "example": "Alice Martin"
+          }
+        },
+        "required": [
+          "source",
+          "handle",
+          "connectedAt",
+          "personId",
+          "name"
+        ]
+      },
+      "HostConnectionsResponseDto": {
+        "type": "object",
+        "properties": {
+          "mine": {
+            "description": "The connections the caller made themselves",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MyConnectionResponseDto"
+            }
+          },
+          "people": {
+            "nullable": true,
+            "description": "Who in the team has connected what, shown to admins only; it never holds a token",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PersonConnectionResponseDto"
+            }
+          }
+        },
+        "required": [
+          "mine",
+          "people"
+        ]
+      },
+      "SetToolRuleRequestDto": {
+        "type": "object",
+        "properties": {
+          "rule": {
+            "type": "string",
+            "enum": [
+              "allowed",
+              "needs-approval",
+              "blocked"
+            ],
+            "description": "What to ask of calls made with the caller’s connection; it can only make the team’s rule stricter",
+            "example": "needs-approval"
+          }
+        },
+        "required": [
+          "rule"
+        ]
+      },
       "DescribedSourceResponseDto": {
         "type": "object",
         "properties": {
@@ -30989,10 +31989,11 @@
             "type": "string",
             "enum": [
               "openapi",
-              "graphql"
+              "graphql",
+              "mcp"
             ],
             "example": "openapi",
-            "description": "The kind of API description its tools are generated from"
+            "description": "The kind of API description, or the MCP server, its tools are generated from"
           },
           "hash": {
             "type": "string",
@@ -31010,7 +32011,7 @@
             "type": "string",
             "nullable": true,
             "example": null,
-            "description": "Why the description could not be read when it was last asked for, or null when it was; Spotlight reads it again when its url, document, baseUrl, revision or depth changes, on any update after a failed read, and when the integration is connected"
+            "description": "Why the description could not be read when it was last asked for, or null when it was; Spotlight reads it again when its url, document, baseUrl, revision or depth changes, on any update after a failed read, and when the integration is connected, and lists an MCP server’s tools again every MCP_RELIST_SECONDS"
           },
           "tools": {
             "type": "integer",
@@ -32814,6 +33815,19 @@
           "body"
         ]
       },
+      "StationConfigPullRequestResponseDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "example": "https://github.com/acme/platform/pull/42",
+            "description": "The pull request’s page on GitHub"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
       "NextActResponseDto": {
         "type": "object",
         "properties": {
@@ -32992,6 +34006,12 @@
             "type": "number",
             "example": 2
           },
+          "failedShare": {
+            "type": "number",
+            "nullable": true,
+            "example": 0.17,
+            "description": "Failed runs as a share of the runs; none where none ran"
+          },
           "stopped": {
             "type": "number",
             "example": 1,
@@ -33062,6 +34082,7 @@
           "runs",
           "withdrawn",
           "failed",
+          "failedShare",
           "stopped",
           "checksPassed",
           "checksFailed",
@@ -33076,14 +34097,51 @@
           "p90Ms"
         ]
       },
+      "TallySharesResponseDto": {
+        "type": "object",
+        "properties": {
+          "checksPassed": {
+            "type": "number",
+            "nullable": true,
+            "example": 0.89,
+            "description": "Runs whose checks passed as a share of the runs checked; none where none were"
+          },
+          "accepted": {
+            "type": "number",
+            "nullable": true,
+            "example": 0.5,
+            "description": "Runs a person accepted as a share of the runs that ran"
+          },
+          "merged": {
+            "type": "number",
+            "nullable": true,
+            "example": 0.33,
+            "description": "Merged tasks as a share of the runs that ran"
+          }
+        },
+        "required": [
+          "checksPassed",
+          "accepted",
+          "merged"
+        ]
+      },
       "FingerprintGroupResponseDto": {
         "type": "object",
         "properties": {
+          "firstRunId": {
+            "type": "string",
+            "example": "run_8f2c",
+            "description": "The group’s oldest listed run: the run that started its config, or for a group carrying on the config of a run from before the listing, a group with no config, or a group of a config that never ran, its oldest run"
+          },
           "fingerprint": {
             "type": "string",
             "nullable": true,
             "example": "a3f9…",
-            "description": "The station config these runs ran with; none for runs from before configs were fingerprinted"
+            "description": "The station config in force when these runs started, or for a group that never ran its config, the config its runs were meant to run; none only for runs from before the station first ran a config"
+          },
+          "ran": {
+            "type": "boolean",
+            "description": "Whether the group’s config is one the station ran: false for runs meant for a config other than the one in force that never ran it (never started, failed to provision or withdrawn), which are kept apart from the group in force"
           },
           "config": {
             "nullable": true,
@@ -33095,14 +34153,24 @@
             ]
           },
           "changes": {
-            "description": "How the config differs from the one before it",
+            "description": "How the config differs from the last one the station ran before the group, listed or not, groups that never ran their config passed over; none where either config is not on record, or for a group carrying on the config in force",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ConfigChangeResponseDto"
             }
           },
+          "pullRequest": {
+            "nullable": true,
+            "description": "The pull request Spotlight opened that proposes the group’s config, the latest opened where it opened more than one; none where Spotlight opened none, or for a group with no config",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StationConfigPullRequestResponseDto"
+              }
+            ]
+          },
           "runs": {
-            "description": "Its runs, the newest first",
+            "description": "Its runs that ended, the latest-started first, so the groups’ runs read in turn are the station’s latest-started runs",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/StationRunOutcomeResponseDto"
@@ -33110,13 +34178,50 @@
           },
           "tally": {
             "$ref": "#/components/schemas/RunTallyResponseDto"
+          },
+          "shares": {
+            "$ref": "#/components/schemas/TallySharesResponseDto"
+          },
+          "firstDay": {
+            "type": "string",
+            "nullable": true,
+            "example": "2026-09-28",
+            "description": "The day its earliest-ended run ended; none where none ended"
+          },
+          "lastDay": {
+            "type": "string",
+            "nullable": true,
+            "example": "2026-09-30",
+            "description": "The day its latest-ended run ended; none where none ended"
           }
         },
         "required": [
+          "firstRunId",
           "fingerprint",
+          "ran",
           "config",
           "changes",
+          "pullRequest",
           "runs",
+          "tally",
+          "shares",
+          "firstDay",
+          "lastDay"
+        ]
+      },
+      "ConfigInForceResponseDto": {
+        "type": "object",
+        "properties": {
+          "tally": {
+            "description": "One tally over the listed runs of the config the station last ran, as of the listed runs, back to its last change to another config it ran; runs meant for a config that never ran them, between, leave the stretch whole and are not counted",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RunTallyResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
           "tally"
         ]
       },
@@ -33128,16 +34233,27 @@
             "example": "d41f0a2c-8b7e-4f19-9d3a-6c5e2b1a4f80"
           },
           "groups": {
-            "description": "The station’s latest runs, in runs of the same config, the newest first",
+            "description": "The station’s latest-started runs in groups, the newest first, in the order the runs started: a new group starts at every run that ran a config other than the station’s run before it that ran one, listed or not; a run meant for another config than the one in force that never ran it (never started, failed to provision or withdrawn) starts or joins a group of that config that never ran, and the group in force starts again after it; a run with no config joins the group in force",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FingerprintGroupResponseDto"
             }
+          },
+          "inForce": {
+            "nullable": true,
+            "description": "The config the station last ran, as of the listed runs, with its tally; there under a config carried on from before the listing even when no listed run ran a config, and none when the station had run no config by the newest listed run",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConfigInForceResponseDto"
+              }
+            ]
           }
         },
         "required": [
           "stationId",
-          "groups"
+          "groups",
+          "inForce"
         ]
       },
       "StationJudgeSettingsResponseDto": {
@@ -33246,6 +34362,55 @@
           "hiddenBecause"
         ]
       },
+      "AgreementReadingsResponseDto": {
+        "type": "object",
+        "properties": {
+          "kappa": {
+            "type": "string",
+            "enum": [
+              "almost-perfect",
+              "substantial",
+              "moderate",
+              "fair-to-slight",
+              "poor",
+              null
+            ],
+            "nullable": true,
+            "description": "How strong the kappa is: almost perfect from 0.81, substantial from 0.61, moderate from 0.41, fair to slight from 0, poor below; none without a kappa"
+          },
+          "pearson": {
+            "type": "string",
+            "enum": [
+              "very-strong",
+              "strong",
+              "moderate",
+              "weak",
+              "inverse",
+              null
+            ],
+            "nullable": true,
+            "description": "How strong Pearson’s correlation is: very strong from 0.9, strong from 0.7, moderate from 0.5, weak from 0, inverse below; none without one"
+          },
+          "spearman": {
+            "type": "string",
+            "enum": [
+              "very-strong",
+              "strong",
+              "moderate",
+              "weak",
+              "inverse",
+              null
+            ],
+            "nullable": true,
+            "description": "How strong Spearman’s correlation is: very strong from 0.9, strong from 0.7, moderate from 0.5, weak from 0, inverse below; none without one"
+          }
+        },
+        "required": [
+          "kappa",
+          "pearson",
+          "spearman"
+        ]
+      },
       "ClaimAgreementResponseDto": {
         "type": "object",
         "properties": {
@@ -33268,13 +34433,27 @@
             "type": "number",
             "nullable": true,
             "example": 0.74
+          },
+          "reading": {
+            "type": "string",
+            "enum": [
+              "almost-perfect",
+              "substantial",
+              "moderate",
+              "fair-to-slight",
+              "poor",
+              null
+            ],
+            "nullable": true,
+            "description": "How strong the kappa is: almost perfect from 0.81, substantial from 0.61, moderate from 0.41, fair to slight from 0, poor below; none without a kappa"
           }
         },
         "required": [
           "index",
           "pairs",
           "observed",
-          "kappa"
+          "kappa",
+          "reading"
         ]
       },
       "AgreementResponseDto": {
@@ -33300,11 +34479,32 @@
             "nullable": true,
             "example": 0.58
           },
+          "pearson": {
+            "type": "number",
+            "nullable": true,
+            "example": 0.61,
+            "description": "Pearson’s correlation between the two scores, for a judge of numbers; none otherwise or where either side never changes"
+          },
           "mae": {
             "type": "number",
             "nullable": true,
             "example": 0.7,
             "description": "The mean absolute difference between the two scores"
+          },
+          "rmse": {
+            "type": "number",
+            "nullable": true,
+            "example": 0.9,
+            "description": "The root mean square difference between the two scores, for a judge of numbers"
+          },
+          "f1": {
+            "type": "number",
+            "nullable": true,
+            "example": 0.8,
+            "description": "The F1 score of the judge’s yes, or met, against people’s, for a judge of yes or no or of claims; none where neither said yes"
+          },
+          "readings": {
+            "$ref": "#/components/schemas/AgreementReadingsResponseDto"
           },
           "claims": {
             "description": "For a judge of claims, how often it agrees with people on each claim; the figures above pool every claim. Empty otherwise",
@@ -33319,7 +34519,11 @@
           "observed",
           "kappa",
           "spearman",
+          "pearson",
           "mae",
+          "rmse",
+          "f1",
+          "readings",
           "claims"
         ]
       },
@@ -33360,6 +34564,30 @@
         "required": [
           "labels",
           "cells"
+        ]
+      },
+      "ScoreCountResponseDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "example": "yes"
+          },
+          "judge": {
+            "type": "number",
+            "example": 18,
+            "description": "Runs the judge gave this score, among runs with both scores"
+          },
+          "people": {
+            "type": "number",
+            "example": 15,
+            "description": "Runs people gave this score, among runs with both scores"
+          }
+        },
+        "required": [
+          "label",
+          "judge",
+          "people"
         ]
       },
       "TrendPointResponseDto": {
@@ -33426,6 +34654,13 @@
           "confusion": {
             "$ref": "#/components/schemas/ConfusionResponseDto"
           },
+          "distribution": {
+            "description": "How often each score was given, in the confusion’s order",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScoreCountResponseDto"
+            }
+          },
           "trend": {
             "type": "array",
             "items": {
@@ -33448,9 +34683,41 @@
           "judged",
           "agreement",
           "confusion",
+          "distribution",
           "trend",
           "firstAt",
           "lastAt"
+        ]
+      },
+      "JudgeCoverageSharesResponseDto": {
+        "type": "object",
+        "properties": {
+          "both": {
+            "type": "number",
+            "nullable": true,
+            "example": 0.24
+          },
+          "judgeOnly": {
+            "type": "number",
+            "nullable": true,
+            "example": 0.12
+          },
+          "peopleOnly": {
+            "type": "number",
+            "nullable": true,
+            "example": 0.4
+          },
+          "neither": {
+            "type": "number",
+            "nullable": true,
+            "example": 0.24
+          }
+        },
+        "required": [
+          "both",
+          "judgeOnly",
+          "peopleOnly",
+          "neither"
         ]
       },
       "JudgeCoverageResponseDto": {
@@ -33476,6 +34743,14 @@
           "neither": {
             "type": "number",
             "example": 12
+          },
+          "shares": {
+            "description": "Each count as a share of the runs",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/JudgeCoverageSharesResponseDto"
+              }
+            ]
           }
         },
         "required": [
@@ -33483,7 +34758,8 @@
           "both",
           "judgeOnly",
           "peopleOnly",
-          "neither"
+          "neither",
+          "shares"
         ]
       },
       "StationJudgeAgreementResponseDto": {
@@ -34066,6 +35342,181 @@
           "peopleIds"
         ]
       },
+      "ChangeResponseDto": {
+        "type": "object",
+        "properties": {
+          "unit": {
+            "type": "string",
+            "enum": [
+              "percent",
+              "points"
+            ],
+            "example": "percent",
+            "description": "percent: moved by a share of what it was; points: a rate or share that moved by percentage points"
+          },
+          "by": {
+            "type": "number",
+            "nullable": true,
+            "example": 0.2,
+            "description": "How far it moved, as a fraction: 0.2 is 20% for percent and 20 points for points; none when it rose from 0"
+          },
+          "fromZero": {
+            "type": "boolean",
+            "example": false,
+            "description": "Whether it rose from 0, so no percent can be given"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "up",
+              "down",
+              "same"
+            ],
+            "example": "up"
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "good",
+              "bad",
+              "flat"
+            ],
+            "example": "good",
+            "description": "Whether the move is good or bad for the team; flat where neither way is better or nothing moved"
+          }
+        },
+        "required": [
+          "unit",
+          "by",
+          "fromZero",
+          "direction",
+          "tone"
+        ]
+      },
+      "HeadlineChangesResponseDto": {
+        "type": "object",
+        "properties": {
+          "spend": {
+            "nullable": true,
+            "description": "Spend against the period before, where both were in one currency",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeResponseDto"
+              }
+            ]
+          },
+          "mergedPullRequests": {
+            "nullable": true,
+            "description": "Pull requests merged against the period before",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeResponseDto"
+              }
+            ]
+          },
+          "mergeRate": {
+            "nullable": true,
+            "description": "The merge rate against the period before, in points",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeResponseDto"
+              }
+            ]
+          },
+          "costPerMerge": {
+            "nullable": true,
+            "description": "Cost per merged pull request against the period before, where both were in one currency",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeResponseDto"
+              }
+            ]
+          },
+          "taskToMerge": {
+            "nullable": true,
+            "description": "The median task to merge against the period before",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeResponseDto"
+              }
+            ]
+          },
+          "touchesPerTask": {
+            "nullable": true,
+            "description": "Human touches per task against the period before",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeResponseDto"
+              }
+            ]
+          },
+          "activePeople": {
+            "nullable": true,
+            "description": "Active people against the period before",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "spend",
+          "mergedPullRequests",
+          "mergeRate",
+          "costPerMerge",
+          "taskToMerge",
+          "touchesPerTask",
+          "activePeople"
+        ]
+      },
+      "ConfigMarkerResponseDto": {
+        "type": "object",
+        "properties": {
+          "lineId": {
+            "type": "string",
+            "example": "b0c7e1f4-1a2b-4c3d-9e8f-7a6b5c4d3e2f"
+          },
+          "stationId": {
+            "type": "string",
+            "example": "d41f0a2c-8b7e-4f19-9d3a-6c5e2b1a4f80"
+          },
+          "fingerprint": {
+            "type": "string",
+            "example": "a3f9…",
+            "description": "The station config the station changed to"
+          },
+          "previousFingerprint": {
+            "type": "string",
+            "example": "9b1d…",
+            "description": "The config the station’s previous run that ran a config ran with; a change back to an earlier config is a change too"
+          },
+          "firstRunAt": {
+            "type": "string",
+            "example": "2026-09-21T09:00:00.000Z",
+            "description": "When the first run with it started, or ended where it never started"
+          },
+          "runId": {
+            "type": "string",
+            "example": "4e1e84a2-0c39-406d-bbbb-559f29e450be"
+          }
+        },
+        "required": [
+          "lineId",
+          "stationId",
+          "fingerprint",
+          "previousFingerprint",
+          "firstRunAt",
+          "runId"
+        ]
+      },
       "DayOutputResponseDto": {
         "type": "object",
         "properties": {
@@ -34108,6 +35559,13 @@
             "items": {
               "type": "string"
             }
+          },
+          "changes": {
+            "description": "Each time a station ran with a new config whose first run started that UTC day",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConfigMarkerResponseDto"
+            }
           }
         },
         "required": [
@@ -34117,41 +35575,8 @@
           "unpriced",
           "mixedCurrencies",
           "merged",
-          "mergedTaskIds"
-        ]
-      },
-      "ConfigMarkerResponseDto": {
-        "type": "object",
-        "properties": {
-          "lineId": {
-            "type": "string",
-            "example": "b0c7e1f4-1a2b-4c3d-9e8f-7a6b5c4d3e2f"
-          },
-          "stationId": {
-            "type": "string",
-            "example": "d41f0a2c-8b7e-4f19-9d3a-6c5e2b1a4f80"
-          },
-          "fingerprint": {
-            "type": "string",
-            "example": "a3f9…",
-            "description": "The station config the station changed to"
-          },
-          "firstRunAt": {
-            "type": "string",
-            "example": "2026-09-21T09:00:00.000Z",
-            "description": "When the first run with it started, or ended where it never started"
-          },
-          "runId": {
-            "type": "string",
-            "example": "4e1e84a2-0c39-406d-bbbb-559f29e450be"
-          }
-        },
-        "required": [
-          "lineId",
-          "stationId",
-          "fingerprint",
-          "firstRunAt",
-          "runId"
+          "mergedTaskIds",
+          "changes"
         ]
       },
       "SignalReadingResponseDto": {
@@ -34193,6 +35618,11 @@
             "type": "boolean",
             "description": "It trails the team"
           },
+          "flaggedAbove": {
+            "type": "number",
+            "example": 0.15,
+            "description": "The line it crossed to be flagged: the lower of the period before and the team, each made 25% worse and, for a share, at least 5 points worse"
+          },
           "currency": {
             "type": "string",
             "nullable": true,
@@ -34207,6 +35637,7 @@
           "team",
           "rose",
           "trails",
+          "flaggedAbove",
           "currency"
         ]
       },
@@ -34291,16 +35722,16 @@
               }
             ]
           },
-          "before": {
-            "description": "The period before, as long",
+          "changes": {
+            "description": "How the headline moved against the period before, as long",
             "allOf": [
               {
-                "$ref": "#/components/schemas/HeadlineResponseDto"
+                "$ref": "#/components/schemas/HeadlineChangesResponseDto"
               }
             ]
           },
           "output": {
-            "description": "Spend and merged pull requests per day, oldest first",
+            "description": "Spend, merged pull requests and config changes per day, oldest first",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/DayOutputResponseDto"
@@ -34316,13 +35747,6 @@
             "type": "boolean",
             "example": false,
             "description": "Whether the period’s prices came in more than one currency"
-          },
-          "configChanges": {
-            "description": "Each time a station ran with a new config this period",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ConfigMarkerResponseDto"
-            }
           },
           "worthImproving": {
             "description": "Stations with at least three runs whose signals rose against the period before or trail the team, the most signals first",
@@ -34342,11 +35766,10 @@
           "period",
           "truncated",
           "headline",
-          "before",
+          "changes",
           "output",
           "outputCurrency",
           "outputMixedCurrencies",
-          "configChanges",
           "worthImproving",
           "people"
         ]
@@ -34366,6 +35789,21 @@
             "type": "number",
             "example": 8,
             "description": "Tasks it ran for"
+          },
+          "tasksBefore": {
+            "type": "number",
+            "example": 6,
+            "description": "Tasks it ran for the period before; 0 where it ran none"
+          },
+          "tasksChange": {
+            "nullable": true,
+            "description": "Its tasks against the period before",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeResponseDto"
+              }
+            ]
           },
           "taskIds": {
             "type": "array",
@@ -34417,6 +35855,8 @@
           "lineId",
           "stationId",
           "tasks",
+          "tasksBefore",
+          "tasksChange",
           "taskIds",
           "runs",
           "queued",
@@ -34424,6 +35864,46 @@
           "inbox",
           "asks",
           "unanswered"
+        ]
+      },
+      "DeliveryChangesResponseDto": {
+        "type": "object",
+        "properties": {
+          "opened": {
+            "nullable": true,
+            "description": "Pull requests opened against the period before",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeResponseDto"
+              }
+            ]
+          },
+          "reviewed": {
+            "nullable": true,
+            "description": "First reviews against the period before",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeResponseDto"
+              }
+            ]
+          },
+          "merged": {
+            "nullable": true,
+            "description": "Pull requests merged against the period before",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "opened",
+          "reviewed",
+          "merged"
         ]
       },
       "DeliveryFlowResponseDto": {
@@ -34483,6 +35963,14 @@
             "items": {
               "type": "string"
             }
+          },
+          "changes": {
+            "description": "How each count moved against the period before, as long",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DeliveryChangesResponseDto"
+              }
+            ]
           }
         },
         "required": [
@@ -34494,7 +35982,8 @@
           "merged",
           "openedTaskIds",
           "reviewedTaskIds",
-          "mergedTaskIds"
+          "mergedTaskIds",
+          "changes"
         ]
       },
       "FlowResponseDto": {
@@ -34539,21 +36028,173 @@
                 "$ref": "#/components/schemas/FlowResponseDto"
               }
             ]
-          },
-          "before": {
-            "description": "The period before, as long",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/FlowResponseDto"
-              }
-            ]
           }
         },
         "required": [
           "period",
           "truncated",
-          "flow",
-          "before"
+          "flow"
+        ]
+      },
+      "TallyChangesResponseDto": {
+        "type": "object",
+        "properties": {
+          "runs": {
+            "nullable": true,
+            "description": "Runs against the period before",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeResponseDto"
+              }
+            ]
+          },
+          "failed": {
+            "nullable": true,
+            "description": "Failed runs against the period before",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeResponseDto"
+              }
+            ]
+          },
+          "accepted": {
+            "nullable": true,
+            "description": "Accepted runs against the period before",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeResponseDto"
+              }
+            ]
+          },
+          "sentBack": {
+            "nullable": true,
+            "description": "Runs sent back against the period before",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeResponseDto"
+              }
+            ]
+          },
+          "merged": {
+            "nullable": true,
+            "description": "Merged tasks against the period before",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeResponseDto"
+              }
+            ]
+          },
+          "cost": {
+            "nullable": true,
+            "description": "Cost against the period before, where both were in one currency",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeResponseDto"
+              }
+            ]
+          },
+          "median": {
+            "nullable": true,
+            "description": "The median run time against the period before",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "runs",
+          "failed",
+          "accepted",
+          "sentBack",
+          "merged",
+          "cost",
+          "median"
+        ]
+      },
+      "TallySeenResponseDto": {
+        "type": "object",
+        "properties": {
+          "accepted": {
+            "type": "boolean",
+            "example": true,
+            "description": "Whether any run was accepted this period or the period before"
+          },
+          "sentBack": {
+            "type": "boolean",
+            "example": false,
+            "description": "Whether any run was sent back this period or the period before"
+          },
+          "merged": {
+            "type": "boolean",
+            "example": true,
+            "description": "Whether any task merged this period or the period before"
+          }
+        },
+        "required": [
+          "accepted",
+          "sentBack",
+          "merged"
+        ]
+      },
+      "TallyCountedResponseDto": {
+        "type": "object",
+        "properties": {
+          "failed": {
+            "type": "boolean",
+            "example": true
+          },
+          "stopped": {
+            "type": "boolean",
+            "example": false
+          },
+          "checksPassed": {
+            "type": "boolean",
+            "example": true
+          },
+          "checksFailed": {
+            "type": "boolean",
+            "example": true
+          },
+          "accepted": {
+            "type": "boolean",
+            "example": true
+          },
+          "sentBack": {
+            "type": "boolean",
+            "example": true
+          },
+          "handedOn": {
+            "type": "boolean",
+            "example": false
+          },
+          "merged": {
+            "type": "boolean",
+            "example": true
+          },
+          "withdrawn": {
+            "type": "boolean",
+            "example": false
+          }
+        },
+        "required": [
+          "failed",
+          "stopped",
+          "checksPassed",
+          "checksFailed",
+          "accepted",
+          "sentBack",
+          "handedOn",
+          "merged",
+          "withdrawn"
         ]
       },
       "DayTallyResponseDto": {
@@ -34656,11 +36297,19 @@
               }
             ]
           },
-          "before": {
-            "description": "How its runs went the period before",
+          "changes": {
+            "description": "How its runs moved against the period before",
             "allOf": [
               {
-                "$ref": "#/components/schemas/RunTallyResponseDto"
+                "$ref": "#/components/schemas/TallyChangesResponseDto"
+              }
+            ]
+          },
+          "seen": {
+            "description": "Which of its counts were above zero in either period",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TallySeenResponseDto"
               }
             ]
           },
@@ -34690,7 +36339,8 @@
           "lineId",
           "stationId",
           "tally",
-          "before",
+          "changes",
+          "seen",
           "trend",
           "taskFailures",
           "runFailures"
@@ -34715,13 +36365,36 @@
               }
             ]
           },
-          "teamBefore": {
-            "description": "The whole team, the period before",
+          "teamChanges": {
+            "description": "How the whole team’s runs moved against the period before",
             "allOf": [
               {
-                "$ref": "#/components/schemas/RunTallyResponseDto"
+                "$ref": "#/components/schemas/TallyChangesResponseDto"
               }
             ]
+          },
+          "teamSeen": {
+            "description": "Which of the whole team’s counts were above zero in either period",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TallySeenResponseDto"
+              }
+            ]
+          },
+          "teamCounted": {
+            "description": "Which of the whole team’s counts are above zero this period, so some station counted one",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TallyCountedResponseDto"
+              }
+            ]
+          },
+          "teamTrend": {
+            "description": "The whole team’s tally per UTC day, oldest first",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DayTallyResponseDto"
+            }
           },
           "stations": {
             "type": "array",
@@ -34734,7 +36407,10 @@
           "period",
           "truncated",
           "team",
-          "teamBefore",
+          "teamChanges",
+          "teamSeen",
+          "teamCounted",
+          "teamTrend",
           "stations"
         ]
       },
@@ -34809,6 +36485,57 @@
           "refusedTaskIds"
         ]
       },
+      "HumanLoadChangesResponseDto": {
+        "type": "object",
+        "properties": {
+          "asksPerTask": {
+            "nullable": true,
+            "description": "Inbox asks per task against the period before",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeResponseDto"
+              }
+            ]
+          },
+          "toAnswer": {
+            "nullable": true,
+            "description": "The median time to answer against the period before",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeResponseDto"
+              }
+            ]
+          },
+          "sentBackRate": {
+            "nullable": true,
+            "description": "The sent-back rate against the period before, in points",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeResponseDto"
+              }
+            ]
+          },
+          "refused": {
+            "nullable": true,
+            "description": "Refused approvals against the period before",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "asksPerTask",
+          "toAnswer",
+          "sentBackRate",
+          "refused"
+        ]
+      },
       "PersonUseResponseDto": {
         "type": "object",
         "properties": {
@@ -34863,40 +36590,35 @@
       "AdoptionResponseDto": {
         "type": "object",
         "properties": {
-          "active": {
-            "description": "People active this period",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+          "activeCount": {
+            "type": "number",
+            "example": 5,
+            "description": "People active this period"
           },
-          "activeBefore": {
-            "description": "People active the period before",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+          "activeChange": {
+            "nullable": true,
+            "description": "Active people against the period before",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeResponseDto"
+              }
+            ]
           },
-          "newAdopters": {
-            "description": "People whose first activity on the team was this period",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+          "newAdopterCount": {
+            "type": "number",
+            "example": 2,
+            "description": "People whose first activity on the team was this period"
           },
-          "weekly": {
-            "description": "People active in the last 7 days",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+          "weeklyCount": {
+            "type": "number",
+            "example": 3,
+            "description": "People active in the last 7 days"
           },
-          "monthly": {
-            "description": "People active in the last 30 days",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+          "monthlyCount": {
+            "type": "number",
+            "example": 5,
+            "description": "People active in the last 30 days"
           },
           "stickiness": {
             "type": "number",
@@ -34913,11 +36635,11 @@
           }
         },
         "required": [
-          "active",
-          "activeBefore",
-          "newAdopters",
-          "weekly",
-          "monthly",
+          "activeCount",
+          "activeChange",
+          "newAdopterCount",
+          "weeklyCount",
+          "monthlyCount",
           "stickiness",
           "people"
         ]
@@ -34941,32 +36663,24 @@
               }
             ]
           },
-          "loadBefore": {
-            "description": "The period before, as long",
+          "loadChanges": {
+            "description": "How the load moved against the period before, as long",
             "allOf": [
               {
-                "$ref": "#/components/schemas/HumanLoadResponseDto"
+                "$ref": "#/components/schemas/HumanLoadChangesResponseDto"
               }
             ]
           },
           "adoption": {
             "$ref": "#/components/schemas/AdoptionResponseDto"
-          },
-          "people": {
-            "description": "The name of everyone named by id above",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PersonNameResponseDto"
-            }
           }
         },
         "required": [
           "period",
           "truncated",
           "load",
-          "loadBefore",
-          "adoption",
-          "people"
+          "loadChanges",
+          "adoption"
         ]
       },
       "CostSliceResponseDto": {
@@ -35226,28 +36940,22 @@
           "cost": {
             "$ref": "#/components/schemas/CostBreakdownResponseDto"
           },
-          "spendBefore": {
+          "spendChange": {
             "nullable": true,
-            "description": "Spend the period before",
+            "description": "Spend against the period before, where both periods were priced in one currency",
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/SpendResponseDto"
+                "$ref": "#/components/schemas/ChangeResponseDto"
               }
             ]
-          },
-          "mixedCurrenciesBefore": {
-            "type": "boolean",
-            "example": false,
-            "description": "Whether the priced runs the period before came in more than one currency, so nothing was summed"
           }
         },
         "required": [
           "period",
           "truncated",
           "cost",
-          "spendBefore",
-          "mixedCurrenciesBefore"
+          "spendChange"
         ]
       },
       "TrendRuleResponseDto": {
@@ -35297,13 +37005,20 @@
             "type": "number",
             "example": 6,
             "description": "Of those, the runs that read it"
+          },
+          "usedShare": {
+            "type": "number",
+            "nullable": true,
+            "example": 0.43,
+            "description": "The share of that week’s runs that read it; none where no run ended that week"
           }
         },
         "required": [
           "week",
           "runs",
           "given",
-          "used"
+          "used",
+          "usedShare"
         ]
       },
       "SkillAtStationResponseDto": {
@@ -35630,6 +37345,16 @@
               "insufficient"
             ],
             "description": "Whether the runs compared did better, worse or the same; insufficient below 5 settled runs on either side, or where the costs are in different currencies"
+          },
+          "change": {
+            "nullable": true,
+            "description": "How far the measure moved: a share in points, a cost per run in percent; none where either side is unknown or the costs are in different currencies",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeResponseDto"
+              }
+            ]
           }
         },
         "required": [
@@ -35639,7 +37364,8 @@
           "settledBefore",
           "settledAfter",
           "currency",
-          "verdict"
+          "verdict",
+          "change"
         ]
       },
       "JudgeShareResponseDto": {
@@ -35680,8 +37406,8 @@
           },
           "previousFingerprint": {
             "type": "string",
-            "nullable": true,
-            "description": "The config the station ran with just before"
+            "example": "9b1d…",
+            "description": "The config the station’s previous run that ran a config ran with; a change back to an earlier config is a change too"
           },
           "firstRunAt": {
             "type": "string",
@@ -35694,7 +37420,7 @@
             "description": "That first run"
           },
           "before": {
-            "description": "The station’s runs with the config before that started since its config before last changed, up to this change",
+            "description": "The station’s runs with the config before, from its config before last changing up to this change, a run that never started placed where it ended; one that failed provisioning counts as a failed run",
             "allOf": [
               {
                 "$ref": "#/components/schemas/RunTallyResponseDto"
@@ -35702,7 +37428,7 @@
             ]
           },
           "after": {
-            "description": "The station’s runs with this config that started from this change up to the next one",
+            "description": "The station’s runs with this config from this change up to the next one, and its runs meant to run this config that never ran it since the change before, even those that ended before this change; one that failed provisioning counts as a failed run",
             "allOf": [
               {
                 "$ref": "#/components/schemas/RunTallyResponseDto"
@@ -35736,6 +37462,16 @@
               }
             ]
           },
+          "judgeChange": {
+            "nullable": true,
+            "description": "The judge’s mean score after against before, in points; none where either side went unjudged",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeResponseDto"
+              }
+            ]
+          },
           "changes": {
             "description": "How the new config differs from the one before it",
             "type": "array",
@@ -35756,6 +37492,7 @@
           "verdicts",
           "judgeBefore",
           "judgeAfter",
+          "judgeChange",
           "changes"
         ]
       },
@@ -35972,6 +37709,10 @@
             "nullable": true,
             "example": "USD"
           },
+          "priced": {
+            "type": "boolean",
+            "description": "Whether it has a cost per run in the currency the comparison is drawn in, so it can go on the chart"
+          },
           "outcomes": {
             "$ref": "#/components/schemas/SetupOutcomesResponseDto"
           },
@@ -36009,6 +37750,7 @@
           "tally",
           "costPerRun",
           "currency",
+          "priced",
           "outcomes",
           "judge",
           "frontier"
@@ -36366,6 +38108,16 @@
             "example": 0.2,
             "description": "The measure over the runs before them, for a threshold that watches a rise or fall"
           },
+          "change": {
+            "nullable": true,
+            "description": "The measure against the baseline: points for a rate, percent for cost per run; none without a baseline",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeResponseDto"
+              }
+            ]
+          },
           "runId": {
             "type": "string",
             "example": "run_1",
@@ -36378,6 +38130,16 @@
           "raisedAt": {
             "type": "string",
             "example": "2026-09-30T10:00:00.000Z"
+          },
+          "insightsPeriod": {
+            "type": "string",
+            "enum": [
+              "7d",
+              "30d",
+              "90d"
+            ],
+            "example": "7d",
+            "description": "The shortest Insights period whose days hold the moment the alert went off"
           },
           "recoveredAt": {
             "type": "string",
@@ -36405,9 +38167,11 @@
           "threshold",
           "value",
           "baseline",
+          "change",
           "runId",
           "taskId",
           "raisedAt",
+          "insightsPeriod",
           "recoveredAt",
           "currency",
           "series"
@@ -36436,6 +38200,16 @@
             "example": 2,
             "description": "Of those, ones people or bots wrote that a Spotlight review task was opened on"
           },
+          "spotlight": {
+            "type": "number",
+            "example": 7,
+            "description": "Of those, the ones Spotlight made or reviewed"
+          },
+          "people": {
+            "type": "number",
+            "example": 2,
+            "description": "Of those, ones people wrote with no Spotlight review task"
+          },
           "bots": {
             "type": "number",
             "example": 3,
@@ -36453,6 +38227,8 @@
           "merged",
           "made",
           "touched",
+          "spotlight",
+          "people",
           "bots",
           "share"
         ]
@@ -36810,6 +38586,848 @@
           "comparison",
           "types",
           "depth"
+        ]
+      },
+      "PercentilesResponseDto": {
+        "type": "object",
+        "properties": {
+          "p50Ms": {
+            "type": "number",
+            "nullable": true,
+            "example": 3600000,
+            "description": "The median, in milliseconds; none when nothing was measured"
+          },
+          "p75Ms": {
+            "type": "number",
+            "nullable": true,
+            "example": 7200000,
+            "description": "What three in four stayed within, in milliseconds"
+          },
+          "p90Ms": {
+            "type": "number",
+            "nullable": true,
+            "example": 14400000,
+            "description": "What nine in ten stayed within, in milliseconds"
+          },
+          "p95Ms": {
+            "type": "number",
+            "nullable": true,
+            "example": 21600000,
+            "description": "What nineteen in twenty stayed within, in milliseconds"
+          },
+          "count": {
+            "type": "number",
+            "example": 14,
+            "description": "How many were measured"
+          }
+        },
+        "required": [
+          "p50Ms",
+          "p75Ms",
+          "p90Ms",
+          "p95Ms",
+          "count"
+        ]
+      },
+      "ByAuthorResponseDto": {
+        "type": "object",
+        "properties": {
+          "spotlight": {
+            "description": "Pull requests Spotlight made",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PercentilesResponseDto"
+              }
+            ]
+          },
+          "people": {
+            "description": "Pull requests people made alone, in the repositories Spotlight merged into",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PercentilesResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "spotlight",
+          "people"
+        ]
+      },
+      "PercentileChangesResponseDto": {
+        "type": "object",
+        "properties": {
+          "p50": {
+            "nullable": true,
+            "description": "The median against the period before",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeResponseDto"
+              }
+            ]
+          },
+          "p75": {
+            "nullable": true,
+            "description": "The 75th percentile against the period before",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeResponseDto"
+              }
+            ]
+          },
+          "p90": {
+            "nullable": true,
+            "description": "The 90th percentile against the period before",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeResponseDto"
+              }
+            ]
+          },
+          "p95": {
+            "nullable": true,
+            "description": "The 95th percentile against the period before",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangeResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "p50",
+          "p75",
+          "p90",
+          "p95"
+        ]
+      },
+      "ByAuthorChangesResponseDto": {
+        "type": "object",
+        "properties": {
+          "spotlight": {
+            "description": "Pull requests Spotlight made",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PercentileChangesResponseDto"
+              }
+            ]
+          },
+          "people": {
+            "description": "Pull requests people made alone, in the repositories Spotlight merged into",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PercentileChangesResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "spotlight",
+          "people"
+        ]
+      },
+      "MergeDayResponseDto": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": "string",
+            "example": "2026-10-01",
+            "description": "The UTC day"
+          },
+          "daily": {
+            "description": "Opened to merged, for pull requests merged that day",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ByAuthorResponseDto"
+              }
+            ]
+          },
+          "rolling": {
+            "description": "Opened to merged, for pull requests merged in the 7 days ending that day",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ByAuthorResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "day",
+          "daily",
+          "rolling"
+        ]
+      },
+      "TypeMergeResponseDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "feature",
+              "fix",
+              "refactor",
+              "tests",
+              "chore",
+              "other"
+            ],
+            "example": "feature"
+          },
+          "merged": {
+            "type": "number",
+            "example": 31,
+            "description": "Merged in the period, Spotlight’s and people’s alone"
+          },
+          "toMerge": {
+            "description": "Opened to merged",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ByAuthorResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "type",
+          "merged",
+          "toMerge"
+        ]
+      },
+      "PercentileTypesResponseDto": {
+        "type": "object",
+        "properties": {
+          "p50": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "feature",
+                "fix",
+                "refactor",
+                "tests",
+                "chore",
+                "other"
+              ]
+            }
+          },
+          "p75": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "feature",
+                "fix",
+                "refactor",
+                "tests",
+                "chore",
+                "other"
+              ]
+            }
+          },
+          "p90": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "feature",
+                "fix",
+                "refactor",
+                "tests",
+                "chore",
+                "other"
+              ]
+            }
+          },
+          "p95": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "feature",
+                "fix",
+                "refactor",
+                "tests",
+                "chore",
+                "other"
+              ]
+            }
+          }
+        },
+        "required": [
+          "p50",
+          "p75",
+          "p90",
+          "p95"
+        ]
+      },
+      "RoundsCountResponseDto": {
+        "type": "object",
+        "properties": {
+          "rounds": {
+            "type": "string",
+            "enum": [
+              "0",
+              "1",
+              "2",
+              "3+"
+            ],
+            "example": "1"
+          },
+          "merged": {
+            "type": "number",
+            "example": 15,
+            "description": "Merged with that many rounds"
+          },
+          "share": {
+            "type": "number",
+            "nullable": true,
+            "example": 0.52,
+            "description": "Those over everything merged across the buckets, from 0 to 1; none where nothing merged"
+          }
+        },
+        "required": [
+          "rounds",
+          "merged",
+          "share"
+        ]
+      },
+      "DepthWeekResponseDto": {
+        "type": "object",
+        "properties": {
+          "week": {
+            "type": "string",
+            "example": "2026-09-28",
+            "description": "The Monday, UTC, the week starts on"
+          },
+          "merged": {
+            "type": "number",
+            "example": 29,
+            "description": "Merged that week"
+          },
+          "rounds": {
+            "description": "How many of them took each number of review rounds",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RoundsCountResponseDto"
+            }
+          }
+        },
+        "required": [
+          "week",
+          "merged",
+          "rounds"
+        ]
+      },
+      "ReviewDayResponseDto": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": "string",
+            "example": "2026-10-01",
+            "description": "The UTC day"
+          },
+          "toFirstReviewDaily": {
+            "description": "Ready for review to the first review by anyone but the author, bots’ included, for pull requests first reviewed that day",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PercentilesResponseDto"
+              }
+            ]
+          },
+          "toFirstReviewRolling": {
+            "description": "The same over the 7 days ending that day",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PercentilesResponseDto"
+              }
+            ]
+          },
+          "awaiting": {
+            "type": "number",
+            "example": 6,
+            "description": "Pull requests ready and not yet reviewed at the end of the day"
+          },
+          "humanReviews": {
+            "type": "number",
+            "example": 11,
+            "description": "Reviews people submitted that day"
+          }
+        },
+        "required": [
+          "day",
+          "toFirstReviewDaily",
+          "toFirstReviewRolling",
+          "awaiting",
+          "humanReviews"
+        ]
+      },
+      "ReviewBotResponseDto": {
+        "type": "object",
+        "properties": {
+          "login": {
+            "type": "string",
+            "example": "coderabbitai[bot]"
+          },
+          "comments": {
+            "type": "number",
+            "example": 120,
+            "description": "Comments it left on pull requests active in the period, inline and in the conversation"
+          },
+          "reviews": {
+            "type": "number",
+            "example": 40,
+            "description": "Reviews it submitted"
+          },
+          "resolvedShare": {
+            "type": "number",
+            "nullable": true,
+            "example": 0.42,
+            "description": "Of the review threads it started, the share now resolved, from 0 to 1; none where it started none"
+          }
+        },
+        "required": [
+          "login",
+          "comments",
+          "reviews",
+          "resolvedShare"
+        ]
+      },
+      "PipelineTypeResponseDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "feature",
+              "fix",
+              "refactor",
+              "tests",
+              "chore",
+              "other"
+            ],
+            "example": "feature"
+          },
+          "merged": {
+            "type": "number",
+            "example": 12
+          }
+        },
+        "required": [
+          "type",
+          "merged"
+        ]
+      },
+      "StagePartsResponseDto": {
+        "type": "object",
+        "properties": {
+          "queued": {
+            "$ref": "#/components/schemas/PercentilesResponseDto"
+          },
+          "running": {
+            "$ref": "#/components/schemas/PercentilesResponseDto"
+          },
+          "inbox": {
+            "$ref": "#/components/schemas/PercentilesResponseDto"
+          }
+        },
+        "required": [
+          "queued",
+          "running",
+          "inbox"
+        ]
+      },
+      "PercentileJamsResponseDto": {
+        "type": "object",
+        "properties": {
+          "p50": {
+            "type": "number",
+            "example": 0.4
+          },
+          "p75": {
+            "type": "number",
+            "example": 0.6
+          },
+          "p90": {
+            "type": "number",
+            "example": 1
+          },
+          "p95": {
+            "type": "number",
+            "example": 0.8
+          }
+        },
+        "required": [
+          "p50",
+          "p75",
+          "p90",
+          "p95"
+        ]
+      },
+      "PercentileWorstResponseDto": {
+        "type": "object",
+        "properties": {
+          "p50": {
+            "type": "boolean",
+            "example": false
+          },
+          "p75": {
+            "type": "boolean",
+            "example": true
+          },
+          "p90": {
+            "type": "boolean",
+            "example": true
+          },
+          "p95": {
+            "type": "boolean",
+            "example": false
+          }
+        },
+        "required": [
+          "p50",
+          "p75",
+          "p90",
+          "p95"
+        ]
+      },
+      "PercentilePartsResponseDto": {
+        "type": "object",
+        "properties": {
+          "p50": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "running",
+              "inbox",
+              null
+            ],
+            "nullable": true,
+            "example": "running"
+          },
+          "p75": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "running",
+              "inbox",
+              null
+            ],
+            "nullable": true,
+            "example": "running"
+          },
+          "p90": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "running",
+              "inbox",
+              null
+            ],
+            "nullable": true,
+            "example": "inbox"
+          },
+          "p95": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "running",
+              "inbox",
+              null
+            ],
+            "nullable": true,
+            "example": "inbox"
+          }
+        },
+        "required": [
+          "p50",
+          "p75",
+          "p90",
+          "p95"
+        ]
+      },
+      "StageTimesResponseDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "$ref": "#/components/schemas/PercentilesResponseDto"
+          },
+          "parts": {
+            "nullable": true,
+            "description": "At a station, the time queued, running and in the inbox",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StagePartsResponseDto"
+              }
+            ]
+          },
+          "jam": {
+            "description": "At each percentile, the stage’s time over the longest stage’s in the same layout and for the same kind of pull request, from 0 to 1",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PercentileJamsResponseDto"
+              }
+            ]
+          },
+          "worst": {
+            "description": "At each percentile, whether this is the longest stage in the layout for the same kind of pull request; the first one on a tie",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PercentileWorstResponseDto"
+              }
+            ]
+          },
+          "longestPart": {
+            "nullable": true,
+            "description": "At a station, the part that took longest at each percentile; queued first on a tie, none where no part took any time",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PercentilePartsResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "total",
+          "parts",
+          "jam",
+          "worst",
+          "longestPart"
+        ]
+      },
+      "TypedStageTimesResponseDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "feature",
+              "fix",
+              "refactor",
+              "tests",
+              "chore",
+              "other"
+            ],
+            "example": "fix"
+          },
+          "times": {
+            "$ref": "#/components/schemas/StageTimesResponseDto"
+          }
+        },
+        "required": [
+          "type",
+          "times"
+        ]
+      },
+      "ByTypeResponseDto": {
+        "type": "object",
+        "properties": {
+          "all": {
+            "$ref": "#/components/schemas/StageTimesResponseDto"
+          },
+          "types": {
+            "description": "The same, for each kind of pull request that went through it",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TypedStageTimesResponseDto"
+            }
+          }
+        },
+        "required": [
+          "all",
+          "types"
+        ]
+      },
+      "FlowStageResponseDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "coding",
+              "station",
+              "awaitingReview",
+              "inReview",
+              "awaitingMerge"
+            ],
+            "example": "station",
+            "description": "Coding: task opened to pull request opened. Station: time the task spent at one station. Awaiting review: ready for review to the first review by anyone but the author, bots’ included. In review: first review to approval, or to merge where none approved. Awaiting merge: approval to merge"
+          },
+          "lineId": {
+            "type": "string",
+            "nullable": true,
+            "example": "line_delivery",
+            "description": "The station’s line; none for other stages"
+          },
+          "stationId": {
+            "type": "string",
+            "nullable": true,
+            "example": "station_implementation",
+            "description": "The station; none for other stages"
+          },
+          "times": {
+            "$ref": "#/components/schemas/ByTypeResponseDto"
+          }
+        },
+        "required": [
+          "kind",
+          "lineId",
+          "stationId",
+          "times"
+        ]
+      },
+      "FlowLayoutsResponseDto": {
+        "type": "object",
+        "properties": {
+          "stations": {
+            "description": "Coding as each station the tasks went through, in order of first use, then the review stages",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FlowStageResponseDto"
+            }
+          },
+          "stages": {
+            "description": "Coding as one stage, then the review stages",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FlowStageResponseDto"
+            }
+          }
+        },
+        "required": [
+          "stations",
+          "stages"
+        ]
+      },
+      "PipelineFlowResponseDto": {
+        "type": "object",
+        "properties": {
+          "merged": {
+            "type": "number",
+            "example": 95,
+            "description": "Spotlight’s pull requests merged in the period"
+          },
+          "types": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PipelineTypeResponseDto"
+            }
+          },
+          "layouts": {
+            "description": "The stages in order, with coding shown by station or as one stage",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FlowLayoutsResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "merged",
+          "types",
+          "layouts"
+        ]
+      },
+      "InsightsShippingResponseDto": {
+        "type": "object",
+        "properties": {
+          "period": {
+            "$ref": "#/components/schemas/InsightsPeriodResponseDto"
+          },
+          "truncated": {
+            "type": "boolean",
+            "example": false,
+            "description": "Whether only the latest pull requests or runs were counted"
+          },
+          "toMerge": {
+            "description": "Opened to merged, for pull requests merged in the period",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ByAuthorResponseDto"
+              }
+            ]
+          },
+          "toMergeChanges": {
+            "description": "Opened to merged at each percentile against the period before, as long",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ByAuthorChangesResponseDto"
+              }
+            ]
+          },
+          "mergeDays": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MergeDayResponseDto"
+            }
+          },
+          "types": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TypeMergeResponseDto"
+            }
+          },
+          "slowestFirst": {
+            "description": "At each percentile, the kinds in types by Spotlight’s opened to merged, slowest first; unmeasured last",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PercentileTypesResponseDto"
+              }
+            ]
+          },
+          "depth": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DepthWeekResponseDto"
+            }
+          },
+          "depthTotals": {
+            "description": "The weeks in depth summed, for each number of review rounds",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RoundsCountResponseDto"
+            }
+          },
+          "reviewDays": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewDayResponseDto"
+            }
+          },
+          "bots": {
+            "description": "The most comments first",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewBotResponseDto"
+            }
+          },
+          "pipeline": {
+            "$ref": "#/components/schemas/PipelineFlowResponseDto"
+          },
+          "shippedAny": {
+            "type": "boolean",
+            "example": true,
+            "description": "Whether anything merged, waited on a review or was reviewed by a person over the period"
+          }
+        },
+        "required": [
+          "period",
+          "truncated",
+          "toMerge",
+          "toMergeChanges",
+          "mergeDays",
+          "types",
+          "slowestFirst",
+          "depth",
+          "depthTotals",
+          "reviewDays",
+          "bots",
+          "pipeline",
+          "shippedAny"
         ]
       },
       "InsightsPullRequestResponseDto": {
@@ -37516,6 +40134,10 @@
           },
           "measuredAt": {
             "type": "string"
+          },
+          "noisyInOneCopy": {
+            "type": "boolean",
+            "description": "Whether the spread is too wide for a single copy of each run to tell a gain of the line’s min_gain from chance, by the same rule the search warnings use"
           }
         },
         "required": [
@@ -37525,7 +40147,8 @@
           "perRepeat",
           "spread",
           "flippedTasks",
-          "measuredAt"
+          "measuredAt",
+          "noisyInOneCopy"
         ]
       },
       "RateIntervalResponseDto": {
@@ -42340,6 +44963,17 @@
           "endedAt": {
             "type": "string",
             "nullable": true
+          },
+          "charted": {
+            "type": "string",
+            "enum": [
+              "priced",
+              "unpriced",
+              "other-currency",
+              "unscored",
+              "unfinished"
+            ],
+            "description": "Where it goes on the set’s cost and success chart: priced when finished, scored and costed in the chart currency; unfinished, unscored, unpriced or other-currency say why it is left off"
           }
         },
         "required": [
@@ -42351,7 +44985,8 @@
           "interval",
           "costPerRun",
           "currency",
-          "endedAt"
+          "endedAt",
+          "charted"
         ]
       },
       "ReplayedHeldOutResponseDto": {
@@ -42467,13 +45102,25 @@
           "scored": {
             "type": "number",
             "description": "How many searched runs it was scored on"
+          },
+          "charted": {
+            "type": "string",
+            "enum": [
+              "priced",
+              "unpriced",
+              "other-currency",
+              "unscored",
+              "unfinished"
+            ],
+            "description": "Where it goes on the set’s cost and success chart: priced when finished, scored and costed in the chart currency; unfinished, unscored, unpriced or other-currency say why it is left off"
           }
         },
         "required": [
           "successRate",
           "interval",
           "costPerRun",
-          "scored"
+          "scored",
+          "charted"
         ]
       },
       "ReplayedSearchResponseDto": {
@@ -42519,6 +45166,71 @@
           "objective",
           "startedAt",
           "seed"
+        ]
+      },
+      "ReplayedShownResponseDto": {
+        "type": "object",
+        "properties": {
+          "basis": {
+            "type": "string",
+            "enum": [
+              "compared",
+              "overall"
+            ],
+            "description": "compared when the baseline replayed some of its runs too, so it is set beside live on those runs only; overall otherwise, with nothing from live"
+          },
+          "costBasis": {
+            "type": "string",
+            "enum": [
+              "compared",
+              "overall"
+            ],
+            "description": "compared when the cost per run covers the compared runs; overall when it covers all its scored runs, because live is in another currency or there is no compared basis"
+          },
+          "successRate": {
+            "type": "number",
+            "nullable": true,
+            "description": "A success rate, 0 to 1, of the past runs it was scored on, each a replay of one past run; a task worked twice counts twice"
+          },
+          "interval": {
+            "nullable": true,
+            "description": "The success rate with its 95% interval over the tasks",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RateIntervalResponseDto"
+              }
+            ]
+          },
+          "liveSuccessRate": {
+            "type": "number",
+            "nullable": true,
+            "description": "The live config’s success rate on the same runs; null on the overall basis"
+          },
+          "runs": {
+            "type": "number",
+            "description": "How many runs the success rates cover"
+          },
+          "costPerRun": {
+            "type": "number",
+            "nullable": true,
+            "description": "What it spent per run, in its own currency: on the compared runs when live is in the same currency, else over all its scored runs"
+          },
+          "liveCostPerRun": {
+            "type": "number",
+            "nullable": true,
+            "description": "What the live config spent per run on the compared runs, in the candidate’s currency; null on the overall basis or when live is in another currency"
+          }
+        },
+        "required": [
+          "basis",
+          "costBasis",
+          "successRate",
+          "interval",
+          "liveSuccessRate",
+          "runs",
+          "costPerRun",
+          "liveCostPerRun"
         ]
       },
       "ReplayedCandidateResponseDto": {
@@ -42696,6 +45408,25 @@
                 "$ref": "#/components/schemas/CandidatePullRequestResponseDto"
               }
             ]
+          },
+          "charted": {
+            "type": "string",
+            "enum": [
+              "priced",
+              "unpriced",
+              "other-currency",
+              "unscored",
+              "unfinished"
+            ],
+            "description": "Where it goes on the set’s cost and success chart: priced when finished, scored and costed in the chart currency; unfinished, unscored, unpriced or other-currency say why it is left off"
+          },
+          "shown": {
+            "description": "The success and cost to set beside live: on the compared runs when there are any, else overall",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReplayedShownResponseDto"
+              }
+            ]
           }
         },
         "required": [
@@ -42725,7 +45456,9 @@
           "againstLive",
           "onFrontier",
           "search",
-          "pullRequest"
+          "pullRequest",
+          "charted",
+          "shown"
         ]
       },
       "ReplayedSetResponseDto": {
@@ -42764,8 +45497,14 @@
               }
             ]
           },
+          "chartCurrency": {
+            "type": "string",
+            "nullable": true,
+            "example": "USD",
+            "description": "The currency its chart is drawn in: the baseline’s, else the newest candidate’s"
+          },
           "candidates": {
-            "description": "Candidates replayed over it in the period, newest first: searched ones whose search started in it, proposed ones whose replay did",
+            "description": "Candidates replayed over it in the period, the largest gain against live first and those without one last, newest first among equals: searched ones whose search started in it, proposed ones whose replay did",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ReplayedCandidateResponseDto"
@@ -42779,6 +45518,7 @@
           "guardsChanges",
           "health",
           "baseline",
+          "chartCurrency",
           "candidates"
         ]
       },
