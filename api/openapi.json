@@ -3625,7 +3625,7 @@
             }
           },
           "400": {
-            "description": "A model or effort that is not text"
+            "description": "A model or effort that is not text, or a setup without a repository and a folder"
           },
           "401": {
             "description": "No valid session"
@@ -3634,7 +3634,7 @@
             "description": "No such team for this caller"
           },
           "422": {
-            "description": "An unknown harness, model, effort or repository"
+            "description": "An unknown harness, model, effort or repository, or a setup the GitHub App cannot reach or no host can run"
           }
         },
         "summary": "Start planning with the team’s agent",
@@ -28415,82 +28415,25 @@
         "properties": {
           "id": {
             "type": "string",
-            "description": "The team’s setup chat"
+            "nullable": true,
+            "description": "The team’s setup chat, when the caller started it. Chats are seen only by whoever started them"
           },
           "pullRequest": {
             "type": "string",
             "nullable": true,
             "example": "https://github.com/acme/infra/pull/12",
             "description": "The pull request it opened with the configuration"
+          },
+          "startedBy": {
+            "type": "string",
+            "example": "Ada Lovelace",
+            "description": "Who started it, empty when they have left the workspace"
           }
         },
         "required": [
           "id",
-          "pullRequest"
-        ]
-      },
-      "SetupConnectionLinkResponseDto": {
-        "type": "object",
-        "properties": {
-          "label": {
-            "type": "string",
-            "example": "Open pull requests"
-          },
-          "url": {
-            "type": "string",
-            "example": "https://github.com/acme/api/pulls"
-          }
-        },
-        "required": [
-          "label",
-          "url"
-        ]
-      },
-      "SetupConnectionResponseDto": {
-        "type": "object",
-        "properties": {
-          "source": {
-            "type": "string",
-            "description": "The integration a task can be opened from",
-            "example": "github"
-          },
-          "name": {
-            "type": "string",
-            "example": "GitHub"
-          },
-          "tryIt": {
-            "type": "string",
-            "description": "What to do there to open a first task",
-            "example": "Add the spotlight label to a pull request, or mention @spotlight on one."
-          },
-          "heard": {
-            "type": "string",
-            "description": "What a first task from this source means",
-            "example": "Review asked for"
-          },
-          "link": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SetupConnectionLinkResponseDto"
-              }
-            ]
-          },
-          "firstOpenedAt": {
-            "type": "string",
-            "description": "When this source first opened a task for the team",
-            "format": "date-time",
-            "nullable": true
-          }
-        },
-        "required": [
-          "source",
-          "name",
-          "tryIt",
-          "heard",
-          "link",
-          "firstOpenedAt"
+          "pullRequest",
+          "startedBy"
         ]
       },
       "OnboardingResponseDto": {
@@ -28503,6 +28446,10 @@
               "$ref": "#/components/schemas/SetupStepResponseDto"
             }
           },
+          "canSetUp": {
+            "type": "boolean",
+            "description": "Whether a setup chat can start: the GitHub App is installed and a host runs sandboxes"
+          },
           "setupChat": {
             "nullable": true,
             "description": "The chat setting up the team’s configuration as code, the one with a pull request first",
@@ -28512,19 +28459,12 @@
                 "$ref": "#/components/schemas/SetupChatResponseDto"
               }
             ]
-          },
-          "connections": {
-            "description": "Each source that can open a task, and when it first did, GitHub first",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SetupConnectionResponseDto"
-            }
           }
         },
         "required": [
           "steps",
-          "setupChat",
-          "connections"
+          "canSetUp",
+          "setupChat"
         ]
       },
       "WorkspaceResourceResponseDto": {
