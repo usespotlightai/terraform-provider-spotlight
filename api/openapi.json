@@ -3625,7 +3625,7 @@
             }
           },
           "400": {
-            "description": "A model or effort that is not text"
+            "description": "A model or effort that is not text, or a setup without a repository and a folder"
           },
           "401": {
             "description": "No valid session"
@@ -3634,7 +3634,7 @@
             "description": "No such team for this caller"
           },
           "422": {
-            "description": "An unknown harness, model, effort or repository"
+            "description": "An unknown harness, model, effort or repository, or a setup the GitHub App cannot reach or no host can run"
           }
         },
         "summary": "Start planning with the team’s agent",
@@ -25522,6 +25522,18 @@
           "reason"
         ]
       },
+      "SpotlightApiResponseDto": {
+        "type": "object",
+        "properties": {
+          "sealed": {
+            "type": "string",
+            "description": "A read and plan token for this run alone, sealed to the recipient; egress wears it toward the control plane as a bearer token"
+          }
+        },
+        "required": [
+          "sealed"
+        ]
+      },
       "EgressRedemptionResponseDto": {
         "type": "object",
         "properties": {
@@ -25553,13 +25565,24 @@
             "items": {
               "$ref": "#/components/schemas/WithheldSecretResponseDto"
             }
+          },
+          "spotlightApi": {
+            "nullable": true,
+            "description": "Where the run reaches Spotlight’s own API, the token it reaches it with",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SpotlightApiResponseDto"
+              }
+            ]
           }
         },
         "required": [
           "runId",
           "reaches",
           "secrets",
-          "withheld"
+          "withheld",
+          "spotlightApi"
         ]
       },
       "HeldRunResponseDto": {
@@ -27865,6 +27888,30 @@
           "stationName"
         ]
       },
+      "ChatSetupResponseDto": {
+        "type": "object",
+        "properties": {
+          "repository": {
+            "type": "string",
+            "example": "acme/infra"
+          },
+          "folder": {
+            "type": "string",
+            "example": "spotlight"
+          },
+          "pullRequest": {
+            "type": "string",
+            "nullable": true,
+            "example": "https://github.com/acme/infra/pull/12",
+            "description": "The pull request the chat opened with the configuration"
+          }
+        },
+        "required": [
+          "repository",
+          "folder",
+          "pullRequest"
+        ]
+      },
       "ChatSummaryResponseDto": {
         "type": "object",
         "properties": {
@@ -27909,6 +27956,16 @@
               }
             ]
           },
+          "setup": {
+            "nullable": true,
+            "description": "Where the chat sets up the team’s configuration as code, for a setup chat",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChatSetupResponseDto"
+              }
+            ]
+          },
           "createdAt": {
             "type": "string",
             "example": "2026-09-14T09:00:00.000Z"
@@ -27931,9 +27988,29 @@
           "effort",
           "repositories",
           "improving",
+          "setup",
           "createdAt",
           "updatedAt",
           "working"
+        ]
+      },
+      "ChatSetupRequestDto": {
+        "type": "object",
+        "properties": {
+          "repository": {
+            "type": "string",
+            "example": "acme/infra",
+            "description": "The repository the team’s configuration lives in"
+          },
+          "folder": {
+            "type": "string",
+            "example": "spotlight",
+            "description": "The folder in it, from the repository root"
+          }
+        },
+        "required": [
+          "repository",
+          "folder"
         ]
       },
       "StartChatRequestDto": {
@@ -27988,6 +28065,14 @@
           "improving": {
             "type": "string",
             "description": "A station the chat is about improving, by its id; the agent is briefed to study its recent runs"
+          },
+          "setup": {
+            "description": "Makes this the team’s setup chat: the agent surveys the team’s tools and opens a pull request with its configuration as code there",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChatSetupRequestDto"
+              }
+            ]
           }
         },
         "required": [
@@ -28204,6 +28289,16 @@
               }
             ]
           },
+          "setup": {
+            "nullable": true,
+            "description": "Where the chat sets up the team’s configuration as code, for a setup chat",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChatSetupResponseDto"
+              }
+            ]
+          },
           "createdAt": {
             "type": "string",
             "example": "2026-09-14T09:00:00.000Z"
@@ -28237,6 +28332,7 @@
           "effort",
           "repositories",
           "improving",
+          "setup",
           "createdAt",
           "updatedAt",
           "working",
@@ -28291,7 +28387,8 @@
             "description": "Which step this is",
             "enum": [
               "github",
-              "harness"
+              "harness",
+              "configuration"
             ],
             "example": "github"
           },
@@ -28313,6 +28410,32 @@
           "done"
         ]
       },
+      "SetupChatResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true,
+            "description": "The team’s setup chat, when the caller started it. Chats are seen only by whoever started them"
+          },
+          "pullRequest": {
+            "type": "string",
+            "nullable": true,
+            "example": "https://github.com/acme/infra/pull/12",
+            "description": "The pull request it opened with the configuration"
+          },
+          "startedBy": {
+            "type": "string",
+            "example": "Ada Lovelace",
+            "description": "Who started it, empty when they have left the workspace"
+          }
+        },
+        "required": [
+          "id",
+          "pullRequest",
+          "startedBy"
+        ]
+      },
       "OnboardingResponseDto": {
         "type": "object",
         "properties": {
@@ -28322,10 +28445,26 @@
             "items": {
               "$ref": "#/components/schemas/SetupStepResponseDto"
             }
+          },
+          "canSetUp": {
+            "type": "boolean",
+            "description": "Whether a setup chat can start: the GitHub App is installed and a host runs sandboxes"
+          },
+          "setupChat": {
+            "nullable": true,
+            "description": "The chat setting up the team’s configuration as code, the one with a pull request first",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SetupChatResponseDto"
+              }
+            ]
           }
         },
         "required": [
-          "steps"
+          "steps",
+          "canSetUp",
+          "setupChat"
         ]
       },
       "WorkspaceResourceResponseDto": {

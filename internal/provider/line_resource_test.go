@@ -133,6 +133,7 @@ resource "spotlight_line" "core_delivery" {
   reviews {
     start   = "opened"
     mention = "@spotlight"
+    label   = "spotlight"
 
     skip {
       spotlight = true
@@ -348,6 +349,7 @@ func TestLineFillsWhatItLeavesOutWithoutDrift(t *testing.T) {
 					statecheck.ExpectKnownValue(lineAddress, lineStation(2, "runners"), knownvalue.SetSizeExact(0)),
 					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("runners"), knownvalue.SetSizeExact(0)),
 					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("reviews").AtMapKey("skip").AtMapKey("authors"), knownvalue.SetSizeExact(2)),
+					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("reviews").AtMapKey("label"), knownvalue.StringExact("spotlight")),
 					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("replay_check"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("source"), knownvalue.Null()),
 				},

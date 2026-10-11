@@ -272,6 +272,7 @@ resource "spotlight_line" "core_delivery" {
   reviews {
     start   = "opened"
     mention = "@spotlight"
+    label   = "spotlight"
 
     skip {
       spotlight = true

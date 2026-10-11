@@ -184,6 +184,7 @@ Optional:
 
 Optional:
 
+- `label` (String) The pull request label that asks for a review, whatever `start` says. Matched without regard to case. GitHub labels are at most 50 characters.
 - `mention` (String) The handle that asks for a review.
 - `skip` (Block, Optional) Pull requests not to review. (see [below for nested schema](#nestedblock--reviews--skip))
 - `start` (String) `opened`, to review every pull request as it opens, or `mentioned`, to review one when Spotlight is mentioned on it.
