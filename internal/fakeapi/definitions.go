@@ -177,6 +177,7 @@ func line(body map[string]any) (map[string]any, []fieldError) {
 		reviews = maps.Clone(reviews)
 		orDefault(reviews, "start", "mentioned")
 		orDefault(reviews, "mention", "@spotlight")
+		orDefault(reviews, "label", "spotlight")
 		orDefault(reviews, "skip", map[string]any{})
 
 		skip := maps.Clone(objectOf(reviews["skip"]))

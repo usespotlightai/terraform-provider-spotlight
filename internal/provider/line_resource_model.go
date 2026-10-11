@@ -84,6 +84,7 @@ type lineReaction struct {
 type lineReviews struct {
 	Start   types.String `tfsdk:"start"`
 	Mention types.String `tfsdk:"mention"`
+	Label   types.String `tfsdk:"label"`
 	Skip    *lineSkip    `tfsdk:"skip"`
 }
 
@@ -237,6 +238,7 @@ func lineInput(plan LineResourceModel) (client.Definition, diag.Diagnostics) {
 		held := lineWritten{}
 		held.text("start", plan.Reviews.Start)
 		held.text("mention", plan.Reviews.Mention)
+		held.text("label", plan.Reviews.Label)
 
 		if plan.Reviews.Skip != nil {
 			skipped := lineWritten{}
@@ -389,7 +391,7 @@ func lineAnswered(answer client.Line) LineResourceModel {
 	}
 
 	if found, ok := line.object("reviews"); ok {
-		held.Reviews = &lineReviews{Start: found.text("start"), Mention: found.text("mention")}
+		held.Reviews = &lineReviews{Start: found.text("start"), Mention: found.text("mention"), Label: found.text("label")}
 
 		if skipped, ok := found.object("skip"); ok {
 			held.Reviews.Skip = &lineSkip{

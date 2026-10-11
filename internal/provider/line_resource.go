@@ -326,6 +326,13 @@ func lineSchema() schema.Schema {
 						Default:             stringdefault.StaticString("@spotlight"),
 						MarkdownDescription: "The handle that asks for a review.",
 					},
+					"label": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Default:             stringdefault.StaticString("spotlight"),
+						MarkdownDescription: "The pull request label that asks for a review, whatever `start` says. Matched without regard to case. GitHub labels are at most 50 characters.",
+						Validators:          []validator.String{stringvalidator.LengthBetween(1, 50)},
+					},
 				},
 				Blocks: map[string]schema.Block{
 					"skip": schema.SingleNestedBlock{
