@@ -1,13 +1,14 @@
 name: Generated client
 
-# Regenerates the API client from the control plane's openapi.json on develop
-# and fails when it differs from what is committed, so a schema change shows
-# up as a client diff to review. The control plane repository is private: the
-# checkout uses a token minted by the same GitHub App the infrastructure repo
-# checks it out with.
-#   APP_REPO_APP_ID       that app's id
-#   APP_REPO_PRIVATE_KEY  its private key
-# Runs without them (Dependabot and fork pull requests) skip the check.
+# This workflow regenerates the API client from the openapi.json of the
+# control plane on develop. It fails if the result is different from the
+# committed client, so that a schema change shows as a client diff to review.
+# The control plane repository is private. The checkout uses a token minted by
+# the GitHub App that the infrastructure repository also uses for its checkout.
+#   APP_REPO_APP_ID       the id of that app
+#   APP_REPO_PRIVATE_KEY  the private key of that app
+# If a run does not have these secrets (Dependabot and fork pull requests), it
+# skips the check.
 
 on:
   push:

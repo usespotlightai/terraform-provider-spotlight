@@ -42,7 +42,8 @@ func (c *Client) ReadWorkspace(ctx context.Context, id string) (Workspace, error
 	return workspaceOf(dto), err
 }
 
-// UpdateWorkspace writes the workspace over version, the one last read.
+// UpdateWorkspace writes the workspace over version, the version from the last
+// read.
 func (c *Client) UpdateWorkspace(ctx context.Context, id string, version int64, in WorkspaceInput) (Workspace, error) {
 	resp, err := c.api.UpdateWorkspaceWithResponse(ctx, id,
 		&apigen.UpdateWorkspaceParams{IfMatch: entityTag(version)},
@@ -56,7 +57,8 @@ func (c *Client) UpdateWorkspace(ctx context.Context, id string, version int64, 
 	return workspaceOf(dto), err
 }
 
-// DeleteWorkspace deletes version of the workspace, the one last read.
+// DeleteWorkspace deletes version of the workspace, the version from the last
+// read.
 func (c *Client) DeleteWorkspace(ctx context.Context, id string, version int64) error {
 	resp, err := c.api.DeleteWorkspaceWithResponse(ctx, id, &apigen.DeleteWorkspaceParams{IfMatch: entityTag(version)})
 	if err != nil {
@@ -78,7 +80,7 @@ func (c *Client) ImportWorkspace(ctx context.Context, slug string) (Workspace, e
 	return workspaceOf(dto), err
 }
 
-// ListWorkspaces lists every workspace the caller may read.
+// ListWorkspaces lists every workspace that the caller can read.
 func (c *Client) ListWorkspaces(ctx context.Context) ([]Workspace, error) {
 	resp, err := c.api.ListWorkspacesWithResponse(ctx, &apigen.ListWorkspacesParams{})
 	if err != nil {

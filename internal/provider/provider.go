@@ -1,5 +1,6 @@
-// Package provider is the Spotlight Terraform provider: its configuration,
-// and the resources, data sources and list resources it serves.
+// Package provider is the Spotlight Terraform provider. It contains the
+// provider configuration and the resources, data sources and list resources
+// that the provider serves.
 package provider
 
 import (
@@ -19,7 +20,7 @@ import (
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/expressions"
 )
 
-// Environment variables the provider reads its configuration from.
+// Environment variables that the provider reads its configuration from.
 const (
 	URLEnv          = "SPOTLIGHT_URL"
 	TokenEnv        = "SPOTLIGHT_API_TOKEN"
@@ -28,8 +29,8 @@ const (
 	OIDCTokenEnv    = "SPOTLIGHT_OIDC_TOKEN"
 )
 
-// Environment variables GitHub Actions sets in a job granted
-// id-token: write, for it to request OIDC tokens with.
+// Environment variables that GitHub Actions sets in a job with the
+// id-token: write permission. The job uses them to request OIDC tokens.
 const (
 	GitHubTokenRequestURLEnv   = "ACTIONS_ID_TOKEN_REQUEST_URL"
 	GitHubTokenRequestTokenEnv = "ACTIONS_ID_TOKEN_REQUEST_TOKEN"
@@ -60,7 +61,7 @@ type OIDCModel struct {
 	Token    types.String `tfsdk:"token"`
 }
 
-// Option adjusts how the provider reaches the control plane.
+// Option changes how the provider connects to the control plane.
 type Option func(*client.Config)
 
 // New returns a factory for the provider at a version.
@@ -70,13 +71,13 @@ func New(version string, options ...Option) func() provider.Provider {
 	}
 }
 
-// Metadata names the provider spotlight.
+// Metadata gives the provider the name spotlight.
 func (p *SpotlightProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
 	resp.TypeName = "spotlight"
 	resp.Version = p.version
 }
 
-// Schema answers the provider block's schema.
+// Schema returns the schema of the provider block.
 func (p *SpotlightProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Configure a Spotlight workspace as code: its teams, lines, skills, integrations and harness profiles, its secrets, and its runner pools and trusts. " +
@@ -118,7 +119,7 @@ func (p *SpotlightProvider) Schema(_ context.Context, _ provider.SchemaRequest, 
 	}
 }
 
-// Configure connects to the control plane the configuration names.
+// Configure connects to the control plane that the configuration identifies.
 func (p *SpotlightProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
 	var config SpotlightProviderModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
@@ -230,8 +231,8 @@ func (p *SpotlightProvider) DataSources(_ context.Context) []func() datasource.D
 	}
 }
 
-// ListResources lists the list resources the provider serves, which
-// terraform query reads.
+// ListResources lists the list resources that the provider serves.
+// terraform query reads them.
 func (p *SpotlightProvider) ListResources(_ context.Context) []func() list.ListResource {
 	return []func() list.ListResource{
 		NewWorkspaceListResource,

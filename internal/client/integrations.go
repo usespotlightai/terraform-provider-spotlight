@@ -33,7 +33,7 @@ func describedOf(dto *apigen.DescribedSourceResponseDto) *Described {
 	}
 }
 
-// CreateIntegration creates a integration in a team.
+// CreateIntegration creates an integration in a team.
 func (c *Client) CreateIntegration(ctx context.Context, teamID string, in Definition) (Integration, error) {
 	resp, err := c.api.CreateIntegrationWithResponse(ctx, teamID,
 		&apigen.CreateIntegrationParams{IdempotencyKey: uuid.NewString()},
@@ -59,7 +59,8 @@ func (c *Client) ReadIntegration(ctx context.Context, id string) (Integration, e
 	return integrationOf(dto), err
 }
 
-// UpdateIntegration writes the integration over version, the one last read.
+// UpdateIntegration writes the integration over version, the version from the
+// last read.
 func (c *Client) UpdateIntegration(ctx context.Context, id string, version int64, in Definition) (Integration, error) {
 	resp, err := c.api.UpdateIntegrationWithResponse(ctx, id,
 		&apigen.UpdateIntegrationParams{IfMatch: entityTag(version)},
@@ -73,7 +74,8 @@ func (c *Client) UpdateIntegration(ctx context.Context, id string, version int64
 	return integrationOf(dto), err
 }
 
-// DeleteIntegration deletes version of the integration, the one last read.
+// DeleteIntegration deletes version of the integration, the version from the
+// last read.
 func (c *Client) DeleteIntegration(ctx context.Context, id string, version int64) error {
 	resp, err := c.api.DeleteIntegrationWithResponse(ctx, id, &apigen.DeleteIntegrationParams{IfMatch: entityTag(version)})
 	if err != nil {

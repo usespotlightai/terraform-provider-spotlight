@@ -69,7 +69,7 @@ func (c *Client) ReadSecret(ctx context.Context, id string) (Secret, error) {
 	return secretOf(dto), err
 }
 
-// UpdateSecret writes the secret over version, the one last read.
+// UpdateSecret writes the secret over version, the version from the last read.
 func (c *Client) UpdateSecret(ctx context.Context, id string, version int64, in SecretInput) (Secret, error) {
 	body, err := jsonBody(in)
 	if err != nil {
@@ -87,7 +87,7 @@ func (c *Client) UpdateSecret(ctx context.Context, id string, version int64, in 
 	return secretOf(dto), err
 }
 
-// DeleteSecret deletes version of the secret, the one last read.
+// DeleteSecret deletes version of the secret, the version from the last read.
 func (c *Client) DeleteSecret(ctx context.Context, id string, version int64) error {
 	resp, err := c.api.DeleteSecretWithResponse(ctx, id, &apigen.DeleteSecretParams{IfMatch: entityTag(version)})
 	if err != nil {

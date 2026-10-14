@@ -17,14 +17,14 @@ import (
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/fakeapi"
 )
 
-// Listed is one resource a list resource found: the id its identity names
-// and the name it is displayed by.
+// Listed is one resource that a list resource found. It contains the id in
+// its identity and its display name.
 type Listed struct {
 	ID          string
 	DisplayName string
 }
 
-// ListedAs is how a list resource finds the resource meta describes.
+// ListedAs is the Listed value for the resource that meta describes.
 func ListedAs(meta client.Meta) Listed {
 	return Listed{ID: meta.ID, DisplayName: meta.Address}
 }
@@ -45,14 +45,14 @@ func ExpectListed(address string, listed ...Listed) []querycheck.QueryResultChec
 	return checks
 }
 
-// QueryConfig is a .tfquery.hcl file of these list blocks, each served by
-// the provider.
+// QueryConfig is a .tfquery.hcl file of these list blocks. The provider
+// serves each block.
 func QueryConfig(blocks ...string) string {
 	return "provider \"spotlight\" {}\n" + strings.Join(blocks, "")
 }
 
-// ListBlock is a list block of the list resource kind, named name, with
-// config as its config block.
+// ListBlock is a list block of the list resource kind, with the name name
+// and with config as its config block.
 func ListBlock(kind, name string, config map[string]string) string {
 	var block strings.Builder
 	fmt.Fprintf(&block, "\nlist %q %q {\n  provider = spotlight\n", kind, name)
@@ -70,10 +70,10 @@ func ListBlock(kind, name string, config map[string]string) string {
 	return block.String()
 }
 
-// List asks the provider, configured against fake, what the list resource
-// kind finds with config, as terraform query would with include_resource,
-// and fails the test if it reports an error or answers a resource that is
-// not the one its identity names.
+// List asks the provider, configured against fake, which resources the list
+// resource kind finds with config. It does the same query as terraform query
+// with include_resource. It fails the test if the provider reports an error
+// or returns a resource that is not the resource in its identity.
 func List(t *testing.T, fake *fakeapi.Server, kind string, config map[string]string) []Listed {
 	t.Helper()
 
@@ -85,9 +85,9 @@ func List(t *testing.T, fake *fakeapi.Server, kind string, config map[string]str
 	return listed
 }
 
-// ListFails asks the provider what the list resource kind finds with
-// config, and answers the errors it reports, failing the test if there are
-// none.
+// ListFails asks the provider which resources the list resource kind finds
+// with config, and returns the errors that it reports. It fails the test if
+// there are no errors.
 func ListFails(t *testing.T, fake *fakeapi.Server, kind string, config map[string]string) string {
 	t.Helper()
 
@@ -167,8 +167,8 @@ func list(t *testing.T, fake *fakeapi.Server, kind string, config map[string]str
 	return listed, problems
 }
 
-// ConfiguredServer serves the provider configured against fake, as
-// Terraform would after configuring it, and answers its schemas.
+// ConfiguredServer serves the provider configured against fake, as Terraform
+// serves it after configuration, and returns its schemas.
 func ConfiguredServer(t *testing.T, fake *fakeapi.Server) (tfprotov6.ProviderServer, *tfprotov6.GetProviderSchemaResponse) {
 	t.Helper()
 

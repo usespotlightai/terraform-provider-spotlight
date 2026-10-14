@@ -11,30 +11,32 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
-// Located is the Terraform attribute an API path names, as far as the
-// schema can address it, and how Terraform users write that address.
+// Located is the Terraform attribute that an API path identifies, as far as
+// the schema can address it. It also contains the address as Terraform users
+// write it.
 type Located struct {
 	Path    path.Path
 	Written string
 }
 
-// IsRoot reports whether the path names the whole resource.
+// IsRoot reports if the path identifies the whole resource.
 func (l Located) IsRoot() bool { return len(l.Path.Steps()) == 0 }
 
-// Locator finds the Terraform attribute an API path names. Names are
-// snake_cased unless Renames says otherwise, as for a list of blocks
-// (stations becomes station). Under is prepended to every API path, for
-// resources whose API body is one Terraform attribute. Inside a dynamic
-// attribute names are kept verbatim. A step the schema cannot address,
-// such as an element of a set, stops the path at its parent.
+// Locator finds the Terraform attribute that an API path identifies. It
+// changes names to snake_case, but Renames can give a different name, for
+// example for a list of blocks (stations becomes station). Locator puts Under
+// before each API path, for resources whose API body is one Terraform
+// attribute. In a dynamic attribute, Locator does not change the names. A
+// step that the schema cannot address, for example an element of a set,
+// stops the path at its parent.
 type Locator struct {
 	Schema  attr.Type
 	Renames map[string]string
 	Under   Path
 }
 
-// Locate finds the attribute written, falling back to the resource itself
-// when the path cannot be read.
+// Locate finds the attribute that the path in written identifies. If it
+// cannot parse written, it returns the whole resource.
 func (l Locator) Locate(written string) Located {
 	parsed, err := Parse(written)
 	if err != nil {
@@ -44,7 +46,7 @@ func (l Locator) Locate(written string) Located {
 	return l.LocatePath(parsed)
 }
 
-// LocatePath finds the attribute an already parsed path names.
+// LocatePath finds the attribute that a parsed path identifies.
 func (l Locator) LocatePath(api Path) Located {
 	at := path.Empty()
 	var written strings.Builder

@@ -51,7 +51,7 @@ func (c *Client) ReadSkill(ctx context.Context, id string) (Skill, error) {
 	return skillOf(dto), err
 }
 
-// UpdateSkill writes the skill over version, the one last read.
+// UpdateSkill writes the skill over version, the version from the last read.
 func (c *Client) UpdateSkill(ctx context.Context, id string, version int64, in SkillInput) (Skill, error) {
 	resp, err := c.api.UpdateSkillWithResponse(ctx, id,
 		&apigen.UpdateSkillParams{IfMatch: entityTag(version)},
@@ -65,7 +65,7 @@ func (c *Client) UpdateSkill(ctx context.Context, id string, version int64, in S
 	return skillOf(dto), err
 }
 
-// DeleteSkill deletes version of the skill, the one last read.
+// DeleteSkill deletes version of the skill, the version from the last read.
 func (c *Client) DeleteSkill(ctx context.Context, id string, version int64) error {
 	resp, err := c.api.DeleteSkillWithResponse(ctx, id, &apigen.DeleteSkillParams{IfMatch: entityTag(version)})
 	if err != nil {

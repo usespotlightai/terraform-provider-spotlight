@@ -25,9 +25,9 @@ variable "secret_google_maps_key" {
   sensitive   = true
 }
 
-# Spotlight keeps the value. It is write-only: sent when the secret is
-# created and whenever value_wo_version changes, never stored in the plan or
-# the state.
+# Spotlight keeps the value. The value is write-only. Terraform sends it when
+# it creates the secret and when value_wo_version changes. The plan and the
+# state never store it.
 resource "spotlight_secret" "linear_api_key" {
   workspace_id = spotlight_workspace.acme.id
   name         = "LINEAR_API_KEY"
@@ -38,7 +38,8 @@ resource "spotlight_secret" "linear_api_key" {
   value_wo_version = 1
 }
 
-# Worn in the key query parameter, for an API that takes its key in the URL.
+# Spotlight puts this secret in the key query parameter. Use this for an API
+# that takes its key in the URL.
 resource "spotlight_secret" "google_maps_key" {
   workspace_id = spotlight_workspace.acme.id
   name         = "GOOGLE_MAPS_KEY"
@@ -49,7 +50,8 @@ resource "spotlight_secret" "google_maps_key" {
   value_wo_version = 1
 }
 
-# Read from AWS Secrets Manager whenever it is used, so it takes no value.
+# This secret has no value because Spotlight reads it from AWS Secrets Manager
+# each time it uses it.
 resource "spotlight_secret" "linear_signing" {
   workspace_id = spotlight_workspace.acme.id
   name         = "LINEAR_SIGNING"
@@ -145,6 +147,6 @@ import {
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-# A secret is imported by its workspace's id and its name.
+# Import a secret with the id of its workspace and its name.
 terraform import spotlight_secret.linear_api_key 5b1e9d2c-7a43-4f8e-b6c0-3d9a8e1f2b57/LINEAR_API_KEY
 ```

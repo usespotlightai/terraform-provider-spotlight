@@ -78,9 +78,10 @@ func advised[K comparable](table map[K]string, key K) string {
 	return unexplained
 }
 
-// addAPIError adds the diagnostics for a failed call: each field error of a
-// problem on the attribute it names, anything else on the resource. needs
-// is the scope the call takes, named when the token is refused it.
+// addAPIError adds the diagnostics for a failed call. It adds each field
+// error of a problem on the attribute that the error identifies, and all
+// other errors on the resource. needs is the scope that the call must have.
+// The error tells this scope when the token does not have it.
 func addAPIError(diags *diag.Diagnostics, doing string, err error, at fieldpath.Locator, needs client.Scope) {
 	problem, ok := client.ProblemOf(err)
 	if !ok {
@@ -118,8 +119,8 @@ func addAPIError(diags *diag.Diagnostics, doing string, err error, at fieldpath.
 	}
 }
 
-// addAPIWarnings adds the warnings a resource was answered with, each on
-// the attribute it names.
+// addAPIWarnings adds the warnings in the answer for a resource. It adds each
+// warning on the attribute that the warning identifies.
 func addAPIWarnings(diags *diag.Diagnostics, kind string, warnings []client.FieldError, at fieldpath.Locator) {
 	for _, each := range warnings {
 		located := at.Locate(each.Path)

@@ -35,17 +35,18 @@ func setIdentity(ctx context.Context, identity *tfsdk.ResourceIdentity, id strin
 	return identity.Set(ctx, resourceIdentityModel{ID: types.StringValue(id)})
 }
 
-// removed drops a resource deleted outside Terraform from the state. Its
-// identity is still answered: Terraform before 1.12 keeps none, and the
-// framework refuses a read that answers no identity.
+// removed removes from the state a resource that someone deleted outside
+// Terraform. It still returns the identity of the resource. Terraform before
+// 1.12 keeps no identity, and the framework refuses a read without identity.
 func removed(ctx context.Context, resp *resource.ReadResponse, id string) {
 	resp.Diagnostics.Append(setIdentity(ctx, resp.Identity, id)...)
 	resp.State.RemoveResource(ctx)
 }
 
-// importTarget is what an import names: an id, when it is imported by its
-// identity, or else the workspace it is in and its address there. The
-// workspace is empty for a workspace, which is imported by its slug.
+// importTarget is the target of an import. For an import by identity, it is
+// an id. For other imports, it is the workspace of the resource and its
+// address in that workspace. The workspace is empty for a workspace, because
+// the import of a workspace uses its slug.
 type importTarget struct {
 	id          string
 	workspaceID string

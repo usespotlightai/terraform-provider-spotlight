@@ -12,8 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 )
 
-// Module is a Terraform module a workspace export answered: each file's
-// content by its path within the module.
+// Module is a Terraform module that a workspace export returned. It maps the
+// path of each file in the module to the content of the file.
 type Module map[string]string
 
 // ModuleIn reads the module in dir.
@@ -54,9 +54,9 @@ func (m Module) WriteTo(dir string) error {
 	return nil
 }
 
-// Config joins the module's .tf files into one configuration, with each
-// file() it reads resolved against dir, where the module was written,
-// since the test harness copies no directories.
+// Config joins the .tf files of the module into one configuration. It
+// resolves each file() call against dir, where the module is, because the
+// test harness does not copy directories.
 func (m Module) Config(dir string) string {
 	var joined strings.Builder
 
@@ -101,8 +101,8 @@ func Imports(config string) map[string]string {
 	return out
 }
 
-// WithoutImports drops the import blocks of the addresses given, so those
-// resources are created from scratch.
+// WithoutImports removes the import blocks of the given addresses. Then
+// Terraform creates those resources as new resources.
 func WithoutImports(config string, addresses ...string) string {
 	return imported.ReplaceAllStringFunc(config, func(block string) string {
 		if slices.Contains(addresses, imported.FindStringSubmatch(block)[1]) {
@@ -113,9 +113,9 @@ func WithoutImports(config string, addresses ...string) string {
 	})
 }
 
-// Protected adds prevent_destroy to the resource at address, so that no
-// destroy of the configuration, as a failed test runs, can delete it or
-// anything else it holds.
+// Protected adds prevent_destroy to the resource at address. Then a destroy
+// of the configuration, for example after a failed test, cannot delete the
+// resource or the resources that it holds.
 func Protected(config, address string) string {
 	kind, name, _ := strings.Cut(address, ".")
 	opening := fmt.Sprintf("resource %q %q {\n", kind, name)
@@ -135,8 +135,8 @@ func Protected(config, address string) string {
 	return config[:end] + "\n  lifecycle {\n    prevent_destroy = true\n  }\n" + config[end:]
 }
 
-// Released is configuration that forgets every address without destroying
-// what it names.
+// Released is configuration that removes every address from the state but
+// does not destroy the resources.
 func Released(addresses []string) string {
 	var out strings.Builder
 	for _, address := range addresses {
@@ -146,14 +146,14 @@ func Released(addresses []string) string {
 	return out.String()
 }
 
-// Adopts is a plan check that the plan creates the addresses given and
-// otherwise does nothing but import: nothing else is created, changed,
-// replaced or destroyed.
+// Adopts is a plan check that the plan creates the given addresses and does
+// only imports for all other resources. The plan must not create, change,
+// replace or destroy other resources.
 type Adopts struct {
 	Creating []string
 }
 
-// CheckPlan fails when any other resource is planned to change.
+// CheckPlan fails when the plan changes a different resource.
 func (a Adopts) CheckPlan(_ context.Context, req plancheck.CheckPlanRequest, resp *plancheck.CheckPlanResponse) {
 	var changed []string
 

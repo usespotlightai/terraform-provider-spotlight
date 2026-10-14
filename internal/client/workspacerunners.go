@@ -49,7 +49,8 @@ func (c *Client) ReadWorkspaceRunners(ctx context.Context, id string) (Workspace
 	return workspaceRunnersOf(dto), err
 }
 
-// UpdateWorkspaceRunners writes the runner declaration over version, the one last read.
+// UpdateWorkspaceRunners writes the runner declaration over version, the
+// version from the last read.
 func (c *Client) UpdateWorkspaceRunners(ctx context.Context, id string, version int64, in WorkspaceRunnersInput) (WorkspaceRunners, error) {
 	body, err := jsonBody(in)
 	if err != nil {
@@ -67,7 +68,8 @@ func (c *Client) UpdateWorkspaceRunners(ctx context.Context, id string, version 
 	return workspaceRunnersOf(dto), err
 }
 
-// DeleteWorkspaceRunners deletes version of the runner declaration, the one last read.
+// DeleteWorkspaceRunners deletes version of the runner declaration, the
+// version from the last read.
 func (c *Client) DeleteWorkspaceRunners(ctx context.Context, id string, version int64) error {
 	resp, err := c.api.DeleteWorkspaceRunnersWithResponse(ctx, id, &apigen.DeleteWorkspaceRunnersParams{IfMatch: entityTag(version)})
 	if err != nil {
@@ -89,7 +91,8 @@ func (c *Client) ImportWorkspaceRunners(ctx context.Context, workspaceID, addres
 	return workspaceRunnersOf(dto), err
 }
 
-// ListWorkspaceRunners lists a workspace's runner declaration, one or none.
+// ListWorkspaceRunners lists the runner declaration of a workspace, if it has
+// one.
 func (c *Client) ListWorkspaceRunners(ctx context.Context, workspaceID string) ([]WorkspaceRunners, error) {
 	resp, err := c.api.ListWorkspaceRunnersWithResponse(ctx, workspaceID, &apigen.ListWorkspaceRunnersParams{})
 	if err != nil {

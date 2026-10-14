@@ -8,9 +8,9 @@ import (
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/client/apigen"
 )
 
-// hookAnswer is a hook as the API answers it, with each step read as the
-// JSON it is: a request's body is any JSON, not only the object the
-// schema names.
+// hookAnswer is a hook as the API returns it, with each step read as raw
+// JSON. The body of a request can be any JSON, not only the object that the
+// schema identifies.
 type hookAnswer struct {
 	apigen.HookResourceResponseDto
 	Steps []any `json:"steps"`
@@ -80,7 +80,7 @@ func (c *Client) ReadHook(ctx context.Context, id string) (Hook, error) {
 	return hookOf(dto), err
 }
 
-// UpdateHook writes the hook over version, the one last read.
+// UpdateHook writes the hook over version, the version from the last read.
 func (c *Client) UpdateHook(ctx context.Context, id string, version int64, in HookInput) (Hook, error) {
 	body, err := jsonBody(in)
 	if err != nil {
@@ -93,7 +93,7 @@ func (c *Client) UpdateHook(ctx context.Context, id string, version int64, in Ho
 	return hookOf(dto), err
 }
 
-// DeleteHook deletes version of the hook, the one last read.
+// DeleteHook deletes version of the hook, the version from the last read.
 func (c *Client) DeleteHook(ctx context.Context, id string, version int64) error {
 	resp, err := c.api.DeleteHookWithResponse(ctx, id, &apigen.DeleteHookParams{IfMatch: entityTag(version)})
 	if err != nil {

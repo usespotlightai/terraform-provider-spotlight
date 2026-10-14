@@ -92,6 +92,6 @@ import {
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used too:
 
 ```shell
-# A workspace is imported by its slug.
+# Import a workspace with its slug.
 terraform import spotlight_workspace.acme acme
 ```

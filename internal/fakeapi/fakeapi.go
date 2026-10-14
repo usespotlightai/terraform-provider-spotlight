@@ -1,10 +1,13 @@
 // Package fakeapi is an in-memory Spotlight control plane for tests. It
-// follows the resource conventions the provider relies on: bearer tokens and
-// their scopes, idempotent creates, If-Match versions, problem answers that
-// name fields, reads that fill in defaults, imports by address, lists in
-// address order, write-only values that are never answered, the
-// expression check, and the exchange of a workload's OIDC token for a
-// minted one.
+// follows the resource conventions that the provider uses:
+//   - Bearer tokens and their scopes.
+//   - Idempotent creates and If-Match versions.
+//   - Problem answers that identify fields.
+//   - Reads that add default values.
+//   - Imports by address and lists in address order.
+//   - Write-only values that the fake never returns.
+//   - The expression check.
+//   - The exchange of the OIDC token of a workload for a minted token.
 package fakeapi
 
 import (
@@ -24,16 +27,17 @@ import (
 // Token is the API token the fake accepts.
 const Token = "test-token"
 
-// WorkloadToken is the only OIDC token the fake's workspace token trusts
-// admit.
+// WorkloadToken is the only OIDC token that the workspace token trusts of
+// the fake accept.
 const WorkloadToken = "test-workload-token"
 
-// Admin is who the fake says defined every workspace token trust.
+// Admin is the person who defined each workspace token trust in the fake.
 const Admin = "test-admin"
 
 const apiVersion = "2026-09-23"
 
-// PoolTokenHeader is where the fake answers a token it issued a pull pool.
+// PoolTokenHeader is the header where the fake returns a token that it
+// issued to a pull pool.
 const PoolTokenHeader = "Spotlight-Pool-Token"
 
 // Request is a request the fake received.
@@ -69,8 +73,8 @@ type resource struct {
 	fields  map[string]any
 }
 
-// New starts a fake control plane whose token is granted every scope; it
-// stops when the test ends.
+// New starts a fake control plane whose token has all scopes. The fake stops
+// when the test ends.
 func New(t interface{ Cleanup(func()) }) *Server {
 	s := &Server{
 		held:       map[string]*resource{},
@@ -107,7 +111,7 @@ func New(t interface{ Cleanup(func()) }) *Server {
 	return s
 }
 
-// Grant makes the token carry exactly these scopes from now on.
+// Grant gives the token only these scopes for all later calls.
 func (s *Server) Grant(scopes ...string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -118,7 +122,8 @@ func (s *Server) Grant(scopes ...string) {
 	}
 }
 
-// MintFor makes the tokens the fake mints from now on expire after d.
+// MintFor makes the tokens that the fake mints after this call expire after
+// d.
 func (s *Server) MintFor(d time.Duration) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -126,7 +131,7 @@ func (s *Server) MintFor(d time.Duration) {
 	s.mintedFor = d
 }
 
-// Requests lists every request received so far.
+// Requests lists each request that the fake received.
 func (s *Server) Requests() []Request {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -134,7 +139,8 @@ func (s *Server) Requests() []Request {
 	return append([]Request(nil), s.requests...)
 }
 
-// FailNext answers the next requests with these statuses before serving any.
+// FailNext returns these statuses to the next requests before it serves
+// requests again.
 func (s *Server) FailNext(statuses ...int) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -142,7 +148,7 @@ func (s *Server) FailNext(statuses ...int) {
 	s.failNext = append(s.failNext, statuses...)
 }
 
-// Count reports how many resources of a kind the fake holds.
+// Count reports the number of resources of a kind that the fake holds.
 func (s *Server) Count(kind string) int {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -171,9 +177,11 @@ func (s *Server) IDOf(kind, address string) string {
 	return ""
 }
 
-// Kept answers the write-only value the fake keeps for a resource: a
-// secret's value, a pull pool's token, a push pool's provision secret, or
-// the secret a hook signs with.
+// Kept returns the write-only value that the fake keeps for a resource:
+//   - The value of a secret.
+//   - The token of a pull pool.
+//   - The provision secret of a push pool.
+//   - The secret that a hook signs with.
 func (s *Server) Kept(id string) string {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -181,8 +189,8 @@ func (s *Server) Kept(id string) string {
 	return s.kept[id]
 }
 
-// Change changes a resource behind Terraform's back, as another client
-// would, and bumps its version.
+// Change changes a resource without Terraform, as a different client does,
+// and increases its version.
 func (s *Server) Change(id string, change func(fields map[string]any)) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -192,7 +200,7 @@ func (s *Server) Change(id string, change func(fields map[string]any)) {
 	held.version++
 }
 
-// Forget removes a resource behind Terraform's back.
+// Forget removes a resource without Terraform.
 func (s *Server) Forget(id string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()

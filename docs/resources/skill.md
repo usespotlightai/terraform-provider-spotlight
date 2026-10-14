@@ -83,6 +83,6 @@ import {
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-# A skill is imported by its workspace's id and its address, <team key>/<key>.
+# Import a skill with the id of its workspace and its address, <team key>/<key>.
 terraform import spotlight_skill.core_grafana 5b1e9d2c-7a43-4f8e-b6c0-3d9a8e1f2b57/core/grafana
 ```

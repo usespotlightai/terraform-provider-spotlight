@@ -20,7 +20,7 @@ resource "spotlight_integration" "core_linear" {
       verify = { hmac = { secret = "secret.LINEAR_SIGNING" } }
       events = [
         {
-          # $${{ }} keeps the expression from Terraform; plan type-checks it.
+          # Terraform does not interpolate an expression in $${{ }}. The plan type-checks it.
           when = "$${{ body.type == \"Issue\" && body.action == \"update\" }}"
           raise = {
             happening = "linear.issue.completed"
@@ -163,6 +163,6 @@ import {
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-# An integration is imported by its workspace's id and its address, <team key>/<source>.
+# Import an integration with the id of its workspace and its address, <team key>/<source>.
 terraform import spotlight_integration.core_linear 5b1e9d2c-7a43-4f8e-b6c0-3d9a8e1f2b57/core/linear
 ```

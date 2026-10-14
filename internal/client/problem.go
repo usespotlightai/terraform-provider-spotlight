@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// Problem types the API answers, stable and safe to branch on.
+// Problem types that the API returns. They are stable and safe to branch on.
 const (
 	ProblemInvalid       = "urn:spotlight:problem:invalid"
 	ProblemMovedOn       = "urn:spotlight:problem:moved-on"
@@ -17,8 +17,9 @@ const (
 	ProblemForbidden     = "urn:spotlight:problem:forbidden"
 )
 
-// Problem is an RFC 9457 problem the API answered. Permission is what a
-// 403 says the caller lacked, empty when it does not say.
+// Problem is an RFC 9457 problem that the API returned. Permission is the
+// permission that a 403 says the caller does not have. It is empty if the
+// 403 does not identify a permission.
 type Problem struct {
 	Status         int
 	Type           string
@@ -29,7 +30,7 @@ type Problem struct {
 	Permission     Permission
 }
 
-// Error writes the problem with each field error it names.
+// Error writes the problem with each field error that it contains.
 func (p *Problem) Error() string {
 	parts := []string{fmt.Sprintf("%d %s", p.Status, p.Title)}
 
@@ -48,21 +49,21 @@ func (p *Problem) Error() string {
 	return strings.Join(parts, "\n")
 }
 
-// ProblemOf returns the Problem err carries, if any.
+// ProblemOf returns the Problem in err, if err contains one.
 func ProblemOf(err error) (*Problem, bool) {
 	var problem *Problem
 
 	return problem, errors.As(err, &problem)
 }
 
-// IsNotFound reports whether err says the resource is not there.
+// IsNotFound reports if err says that the resource is not there.
 func IsNotFound(err error) bool {
 	problem, ok := ProblemOf(err)
 
 	return ok && (problem.Status == http.StatusNotFound || problem.Type == ProblemNotFound)
 }
 
-// IsForbidden reports whether err says the caller may not do this.
+// IsForbidden reports if err says that the caller cannot do this operation.
 func IsForbidden(err error) bool {
 	problem, ok := ProblemOf(err)
 

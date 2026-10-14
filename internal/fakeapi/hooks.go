@@ -114,7 +114,7 @@ func hookSteps(listed []any, errs *[]fieldError) []any {
 
 		switch {
 		case calls == requests:
-			*errs = append(*errs, fieldError{at, "either calls a tool or makes a request, so it names exactly one of call and request"})
+			*errs = append(*errs, fieldError{at, "names exactly one of call and request. A step either calls a tool or makes a request"})
 		case calls:
 			if !toolName.MatchString(textOf(step["call"])) {
 				*errs = append(*errs, fieldError{at + ".call", "names a tool as the integration and the tool, as in slack.post-message"})
@@ -122,7 +122,7 @@ func hookSteps(listed []any, errs *[]fieldError) []any {
 			orDefault(step, "with", map[string]any{})
 		default:
 			if _, given := step["with"]; given {
-				*errs = append(*errs, fieldError{at + ".with", "gives inputs to a tool, so it goes with call"})
+				*errs = append(*errs, fieldError{at + ".with", "gives inputs to a tool. It goes only with call"})
 			}
 			step["request"] = hookRequest(request, at+".request", errs)
 		}

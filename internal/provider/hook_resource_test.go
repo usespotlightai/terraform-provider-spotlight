@@ -348,7 +348,7 @@ resource "spotlight_hook" "grafana_reads" {
 			},
 			{
 				Config:      hook(`{ oidc = { audience = "https://audit.acme.dev" } }`, `[{ name = "audit", call = "slack.post-message", request = { url = "https://audit.acme.dev" } }]`),
-				ExpectError: regexp.MustCompile(`(?s)steps\[0\]: either calls a tool or makes a request`),
+				ExpectError: regexp.MustCompile(`(?s)steps\[0\]: names exactly one of call and\s+request`),
 			},
 		},
 	})

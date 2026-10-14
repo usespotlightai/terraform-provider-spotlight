@@ -43,7 +43,7 @@ func (c *Client) ReadTeam(ctx context.Context, id string) (Team, error) {
 	return teamOf(dto), err
 }
 
-// UpdateTeam writes the team over version, the one last read.
+// UpdateTeam writes the team over version, the version from the last read.
 func (c *Client) UpdateTeam(ctx context.Context, id string, version int64, in TeamInput) (Team, error) {
 	resp, err := c.api.UpdateTeamWithResponse(ctx, id,
 		&apigen.UpdateTeamParams{IfMatch: entityTag(version)},
@@ -57,7 +57,7 @@ func (c *Client) UpdateTeam(ctx context.Context, id string, version int64, in Te
 	return teamOf(dto), err
 }
 
-// DeleteTeam deletes version of the team, the one last read.
+// DeleteTeam deletes version of the team, the version from the last read.
 func (c *Client) DeleteTeam(ctx context.Context, id string, version int64) error {
 	resp, err := c.api.DeleteTeamWithResponse(ctx, id, &apigen.DeleteTeamParams{IfMatch: entityTag(version)})
 	if err != nil {

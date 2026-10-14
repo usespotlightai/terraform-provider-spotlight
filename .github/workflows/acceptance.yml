@@ -1,12 +1,12 @@
 name: Acceptance
 
-# Runs the TF_ACC tests against a dev control plane, inside the token's own
-# workspace. Each run imports the workspace, creates every kind of resource
-# under random keys, round-trips an export, destroys what it created, and
-# leaves the workspace as it found it.
-#   SPOTLIGHT_ACC_URL        the dev control plane, as in https://dev.spotlight.example.com
-#   SPOTLIGHT_ACC_TOKEN      a workspace API token there with configure, secrets and runners
-#   SPOTLIGHT_ACC_WORKSPACE  the slug of that token's workspace
+# This workflow runs the TF_ACC tests against a dev control plane, in the
+# workspace of the token. Each run imports the workspace and creates each kind
+# of resource under random keys. It does a round trip of an export, destroys
+# the resources that it created, and does not change the workspace.
+#   SPOTLIGHT_ACC_URL        the dev control plane, for example https://dev.spotlight.example.com
+#   SPOTLIGHT_ACC_TOKEN      a workspace API token on that control plane with configure, secrets and runners
+#   SPOTLIGHT_ACC_WORKSPACE  the slug of the workspace of that token
 
 on:
   workflow_dispatch:

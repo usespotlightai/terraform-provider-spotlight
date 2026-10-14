@@ -20,8 +20,8 @@ func NewWorkspaceListResource() list.ListResource {
 	return &WorkspaceListResource{}
 }
 
-// WorkspaceListResource lists the workspaces the caller may read: for an
-// API token, its own.
+// WorkspaceListResource lists the workspaces that the caller can read. For an
+// API token, this is the workspace of the token.
 type WorkspaceListResource struct {
 	client *client.Client
 }

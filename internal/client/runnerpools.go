@@ -8,9 +8,10 @@ import (
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/client/apigen"
 )
 
-// PoolTokenHeader is where Spotlight answers the token it issues a pull
-// pool created without one: that once and never again, not even to a
-// retry. The client drops it unread.
+// PoolTokenHeader is the header where Spotlight returns the token that it
+// issues to a pull pool created without a token. Spotlight returns it one
+// time only and does not return it again to a retry. The client does not
+// read it.
 const PoolTokenHeader = "Spotlight-Pool-Token"
 
 func wholeOrNone(held *int) *int64 {
@@ -81,7 +82,8 @@ func (c *Client) ReadRunnerPool(ctx context.Context, id string) (RunnerPool, err
 	return runnerPoolOf(dto), err
 }
 
-// UpdateRunnerPool writes the runner pool over version, the one last read.
+// UpdateRunnerPool writes the runner pool over version, the version from the
+// last read.
 func (c *Client) UpdateRunnerPool(ctx context.Context, id string, version int64, in RunnerPoolInput) (RunnerPool, error) {
 	body, err := jsonBody(in)
 	if err != nil {
@@ -99,7 +101,8 @@ func (c *Client) UpdateRunnerPool(ctx context.Context, id string, version int64,
 	return runnerPoolOf(dto), err
 }
 
-// DeleteRunnerPool deletes version of the runner pool, the one last read.
+// DeleteRunnerPool deletes version of the runner pool, the version from the
+// last read.
 func (c *Client) DeleteRunnerPool(ctx context.Context, id string, version int64) error {
 	resp, err := c.api.DeleteRunnerPoolWithResponse(ctx, id, &apigen.DeleteRunnerPoolParams{IfMatch: entityTag(version)})
 	if err != nil {

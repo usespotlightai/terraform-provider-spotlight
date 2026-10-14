@@ -1,6 +1,6 @@
-// Package fieldpath reads the attribute paths the Spotlight API writes, as in
-// stations[2].passesTo or on["task.opened"].to.thread, and finds the
-// Terraform attribute each one names.
+// Package fieldpath reads the attribute paths that the Spotlight API writes,
+// for example stations[2].passesTo or on["task.opened"].to.thread. It finds
+// the Terraform attribute that each path identifies.
 package fieldpath
 
 import (
@@ -32,13 +32,13 @@ func Key(key string) Segment { return Segment{kind: named, Key: key} }
 // Index is a step to a list element.
 func Index(index int) Segment { return Segment{kind: indexed, Index: index} }
 
-// Any is the [*] step of a pattern, matching any one step.
+// Any is the [*] step of a pattern. It matches any one step.
 func Any() Segment { return Segment{kind: anything} }
 
-// IsIndex reports whether the step is a list index.
+// IsIndex reports if the step is a list index.
 func (s Segment) IsIndex() bool { return s.kind == indexed }
 
-// IsAny reports whether the step is [*].
+// IsAny reports if the step is [*].
 func (s Segment) IsAny() bool { return s.kind == anything }
 
 // Path is a sequence of steps from the root of a resource.
@@ -50,7 +50,7 @@ var (
 	next       = regexp.MustCompile(`^(?:\.([A-Za-z_][A-Za-z0-9_-]*)|\[(\d+)\]|\[(\*)\]|\[("(?:[^"\\]|\\.)*")\])`)
 )
 
-// IsIdentifier reports whether a key is written bare rather than quoted.
+// IsIdentifier reports if a key is bare and not in quotes.
 func IsIdentifier(key string) bool { return identifier.MatchString(key) }
 
 // Parse reads a path as the API writes it. The empty path is the root.
@@ -130,8 +130,8 @@ func (p Path) Then(more ...Segment) Path {
 	return append(append(out, p...), more...)
 }
 
-// Within reports whether the path is at or inside what pattern names, [*]
-// matching any one step.
+// Within reports if the path is at or in the path that pattern identifies.
+// A [*] in pattern matches any one step.
 func (p Path) Within(pattern Path) bool {
 	if len(p) < len(pattern) {
 		return false

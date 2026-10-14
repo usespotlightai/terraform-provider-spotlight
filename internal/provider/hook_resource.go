@@ -208,8 +208,8 @@ func (r *HookResource) Configure(_ context.Context, req resource.ConfigureReques
 }
 
 // ValidateConfig checks how the hook signs, that its steps are a list, and
-// that a hook sending requests signs them, then type-checks its expressions once the provider is configured, as it
-// is during a plan.
+// that a hook that sends requests signs them. When the provider is
+// configured, as during a plan, it also type-checks the expressions.
 func (r *HookResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
 	var config HookResourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
@@ -447,8 +447,8 @@ func hookInput(plan HookResourceModel) (client.HookInput, diag.Diagnostics) {
 	return in, diags
 }
 
-// knownOnly reads what a model holds that is known, remembering whether it
-// left anything out.
+// knownOnly reads the known values of a model. It records if it left out a
+// value.
 type knownOnly struct {
 	left bool
 }
@@ -479,8 +479,9 @@ func (k *knownOnly) texts(held attr.Value) []string {
 	return out
 }
 
-// hookDefinition writes the hook a model holds as the API takes it,
-// leaving out what is not known yet; complete says nothing was.
+// hookDefinition writes the hook in a model in the API format, without the
+// values that are not known yet. The second result is true if it left out
+// no value.
 func hookDefinition(model HookResourceModel) (client.HookInput, bool) {
 	known := &knownOnly{}
 
@@ -653,9 +654,9 @@ func hookSigningValue(signing *client.HookSigning) types.Object {
 	})
 }
 
-// stepsWithoutNulls leaves out of each step, and its request, what is
-// null, as a step written in a list of objects holds each attribute it
-// does not set.
+// stepsWithoutNulls removes the null values from each step and from its
+// request. In a list of objects, each step holds the attributes that it does
+// not set as null.
 func stepsWithoutNulls(steps []any) []any {
 	out := make([]any, 0, len(steps))
 
@@ -688,8 +689,8 @@ func withoutNulls(held map[string]any) map[string]any {
 	return out
 }
 
-// stepsAsWritten leaves out of each step what Spotlight fills in when it
-// is left out, so an imported hook reads as it is written.
+// stepsAsWritten removes from each step the default values that Spotlight
+// adds. Then an imported hook reads the same as its configuration.
 func stepsAsWritten(steps []any) []any {
 	out := make([]any, 0, len(steps))
 

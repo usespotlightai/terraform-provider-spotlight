@@ -1,5 +1,6 @@
 // Package dynamic converts between JSON documents and the values of a
-// Terraform dynamic attribute, as an integration's definition is held.
+// Terraform dynamic attribute. The definition of an integration is a dynamic
+// attribute.
 package dynamic
 
 import (
@@ -15,11 +16,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
-// ErrUnknown says a value is not known yet, as during a plan.
+// ErrUnknown says that a value is not known yet, for example during a plan.
 var ErrUnknown = errors.New("the value is not known yet")
 
-// FromJSON builds the value Terraform would hold for a JSON document written
-// as an HCL literal: objects as objects, arrays as tuples.
+// FromJSON builds the value that Terraform holds for a JSON document written
+// as an HCL literal. Objects become objects and arrays become tuples.
 func FromJSON(held any) types.Dynamic {
 	return types.DynamicValue(valueOf(held))
 }
@@ -77,8 +78,8 @@ func ToJSON(value attr.Value) (any, error) {
 	return toJSON(value, func() (any, error) { return nil, ErrUnknown })
 }
 
-// ToJSONKnown writes a value as a JSON document, leaving out every part not
-// known yet; complete says whether nothing was left out.
+// ToJSONKnown writes a value as a JSON document without the parts that are
+// not known yet. complete is true if the document contains all parts.
 func ToJSONKnown(value attr.Value) (held any, complete bool) {
 	complete = true
 	held, _ = toJSON(value, func() (any, error) {
@@ -187,8 +188,8 @@ func arrayOf(held []attr.Value, unknown func() (any, error)) (any, error) {
 	return out, nil
 }
 
-// Canonical writes a JSON document so two equal documents are written the
-// same, whatever their key order or number representation.
+// Canonical writes a JSON document so that two equal documents have the same
+// text. Key order and number format do not change the text.
 func Canonical(held any) ([]byte, error) {
 	raw, err := json.Marshal(held)
 	if err != nil {

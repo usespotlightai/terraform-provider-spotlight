@@ -43,7 +43,7 @@ func (c *Client) ReadLine(ctx context.Context, id string) (Line, error) {
 	return lineOf(dto), err
 }
 
-// UpdateLine writes the line over version, the one last read.
+// UpdateLine writes the line over version, the version from the last read.
 func (c *Client) UpdateLine(ctx context.Context, id string, version int64, in Definition) (Line, error) {
 	resp, err := c.api.UpdateLineWithResponse(ctx, id,
 		&apigen.UpdateLineParams{IfMatch: entityTag(version)},
@@ -57,7 +57,7 @@ func (c *Client) UpdateLine(ctx context.Context, id string, version int64, in De
 	return lineOf(dto), err
 }
 
-// DeleteLine deletes version of the line, the one last read.
+// DeleteLine deletes version of the line, the version from the last read.
 func (c *Client) DeleteLine(ctx context.Context, id string, version int64) error {
 	resp, err := c.api.DeleteLineWithResponse(ctx, id, &apigen.DeleteLineParams{IfMatch: entityTag(version)})
 	if err != nil {

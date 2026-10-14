@@ -18,8 +18,9 @@ type privateState interface {
 	SetKey(ctx context.Context, key string, value []byte) diag.Diagnostics
 }
 
-// rememberAnswer keeps a fingerprint of what the API answered after a
-// write, so a later read can tell whether anything changed it since.
+// rememberAnswer keeps a fingerprint of the API answer after a write. A
+// later read uses it to find if something changed the resource after the
+// write.
 func rememberAnswer(ctx context.Context, private privateState, answer any) diag.Diagnostics {
 	fingerprint, err := fingerprintOf(answer)
 	if err != nil {
@@ -32,10 +33,11 @@ func rememberAnswer(ctx context.Context, private privateState, answer any) diag.
 	return private.SetKey(ctx, answerKey, fingerprint)
 }
 
-// answerUnchanged reports whether the API answers what it answered when
-// last remembered. Each resource's model then keeps what the configuration
-// sets from what Terraform already holds; otherwise everything comes from
-// the answer, so a change made elsewhere is planned back.
+// answerUnchanged reports if the API answer is the same as the answer that
+// rememberAnswer kept last. If it is, the model of each resource takes the
+// configured attributes from the values that Terraform holds. If not, all
+// values come from the answer, so that the plan removes a change made
+// outside Terraform.
 func answerUnchanged(ctx context.Context, private privateState, answer any) bool {
 	held, diags := private.GetKey(ctx, answerKey)
 	if diags.HasError() || len(held) == 0 {

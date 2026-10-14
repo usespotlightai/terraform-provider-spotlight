@@ -6,7 +6,8 @@ import (
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/client/apigen"
 )
 
-// ExpressionPositions lists where expressions are written in a definition.
+// ExpressionPositions lists the positions in a definition that can contain
+// expressions.
 func (c *Client) ExpressionPositions(ctx context.Context) ([]Position, error) {
 	resp, err := c.api.ListExpressionPositionsWithResponse(ctx, &apigen.ListExpressionPositionsParams{})
 	if err != nil {
@@ -30,7 +31,7 @@ func (c *Client) ExpressionPositions(ctx context.Context) ([]Position, error) {
 	return positions, nil
 }
 
-// CheckExpression type-checks an expression where it is written in a definition.
+// CheckExpression type-checks an expression at its position in a definition.
 func (c *Client) CheckExpression(ctx context.Context, position, expression string, definition Definition) (ExpressionCheck, error) {
 	resp, err := c.api.CheckExpressionWithResponse(ctx, &apigen.CheckExpressionParams{}, apigen.CheckExpressionJSONRequestBody{
 		Position:   position,

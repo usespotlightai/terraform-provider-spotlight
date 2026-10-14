@@ -70,7 +70,8 @@ func (c *Client) ReadHarnessProfile(ctx context.Context, id string) (HarnessProf
 	return harnessProfileOf(dto), err
 }
 
-// UpdateHarnessProfile writes the harness profile over version, the one last read.
+// UpdateHarnessProfile writes the harness profile over version, the version
+// from the last read.
 func (c *Client) UpdateHarnessProfile(ctx context.Context, id string, version int64, in HarnessProfileInput) (HarnessProfile, error) {
 	body, err := jsonBody(in)
 	if err != nil {
@@ -88,7 +89,8 @@ func (c *Client) UpdateHarnessProfile(ctx context.Context, id string, version in
 	return harnessProfileOf(dto), err
 }
 
-// DeleteHarnessProfile deletes version of the harness profile, the one last read.
+// DeleteHarnessProfile deletes version of the harness profile, the version
+// from the last read.
 func (c *Client) DeleteHarnessProfile(ctx context.Context, id string, version int64) error {
 	resp, err := c.api.DeleteHarnessProfileWithResponse(ctx, id, &apigen.DeleteHarnessProfileParams{IfMatch: entityTag(version)})
 	if err != nil {

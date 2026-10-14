@@ -42,7 +42,8 @@ type LineResource struct {
 	client *client.Client
 }
 
-// lineBlocks are the API's lists of objects Terraform writes as repeated blocks.
+// lineBlocks are the lists of objects in the API that Terraform writes as
+// repeated blocks.
 var lineBlocks = map[string]string{
 	"repositories": "repository",
 	"stations":     "station",

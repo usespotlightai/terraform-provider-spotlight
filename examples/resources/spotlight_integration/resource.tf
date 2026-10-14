@@ -6,7 +6,7 @@ resource "spotlight_integration" "core_linear" {
       verify = { hmac = { secret = "secret.LINEAR_SIGNING" } }
       events = [
         {
-          # $${{ }} keeps the expression from Terraform; plan type-checks it.
+          # Terraform does not interpolate an expression in $${{ }}. The plan type-checks it.
           when = "$${{ body.type == \"Issue\" && body.action == \"update\" }}"
           raise = {
             happening = "linear.issue.completed"

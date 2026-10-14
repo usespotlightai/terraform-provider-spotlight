@@ -1,6 +1,7 @@
-// Package client is the Spotlight control plane's API client: the resources
-// the provider manages, the problems the API answers, and the calls it makes
-// through the client generated from the API's OpenAPI schema.
+// Package client is the API client for the Spotlight control plane. It
+// contains the resources that the provider manages and the problems that the
+// API returns. It makes its calls through a client generated from the
+// OpenAPI schema of the API.
 package client
 
 import (
@@ -23,13 +24,14 @@ const (
 	clientHeader     = "Spotlight-Client"
 )
 
-// DefaultBackoff is how long the first retry waits; each after waits twice
-// as long.
+// DefaultBackoff is the time that the first retry waits. Each retry after
+// the first waits two times as long as the retry before it.
 const DefaultBackoff = 500 * time.Millisecond
 
-// Config says where the control plane is and who is calling it: a stored
-// Token, or OIDC to exchange a CI workload's tokens for short-lived ones.
-// Now tells the time, time.Now when nil.
+// Config tells where the control plane is and who calls it. The caller is a
+// stored Token, or OIDC that exchanges the tokens of a CI workload for
+// short-lived tokens. Now tells the time. If Now is nil, the client uses
+// time.Now.
 type Config struct {
 	URL             string
 	Token           string
@@ -81,7 +83,7 @@ func New(cfg Config) (*Client, error) {
 	return &Client{api: generated}, nil
 }
 
-// ClientName is what the provider calls itself in Spotlight-Client.
+// ClientName is the name of the provider in the Spotlight-Client header.
 func ClientName(version string) string {
 	if version == "" {
 		version = "dev"

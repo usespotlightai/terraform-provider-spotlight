@@ -9,8 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
-// Resolve returns what was planned with each part that was unknown filled in
-// from the same place in the answer, keeping every known part as planned.
+// Resolve returns the planned value. It fills each unknown part from the same
+// place in the answer, and keeps each known part as planned.
 func Resolve(planned types.Dynamic, answer any) types.Dynamic {
 	if planned.IsUnknown() || planned.IsUnderlyingValueUnknown() {
 		return FromJSON(answer)

@@ -66,7 +66,7 @@ func (c *Client) ReadWorkspaceTokenTrust(ctx context.Context, id string) (Worksp
 }
 
 // UpdateWorkspaceTokenTrust writes the workspace token trust over version,
-// the one last read.
+// the version from the last read.
 func (c *Client) UpdateWorkspaceTokenTrust(ctx context.Context, id string, version int64, in WorkspaceTokenTrustInput) (WorkspaceTokenTrust, error) {
 	body, err := jsonBody(in)
 	if err != nil {
@@ -85,7 +85,7 @@ func (c *Client) UpdateWorkspaceTokenTrust(ctx context.Context, id string, versi
 }
 
 // DeleteWorkspaceTokenTrust deletes version of the workspace token trust,
-// the one last read.
+// the version from the last read.
 func (c *Client) DeleteWorkspaceTokenTrust(ctx context.Context, id string, version int64) error {
 	resp, err := c.api.DeleteWorkspaceTokenTrustWithResponse(ctx, id, &apigen.DeleteWorkspaceTokenTrustParams{IfMatch: entityTag(version)})
 	if err != nil {
