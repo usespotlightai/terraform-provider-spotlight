@@ -29,8 +29,8 @@ func answered[T any](resp *http.Response, body []byte, value *T) (T, error) {
 	return *value, nil
 }
 
-// readAnswer reads what a call answered as a T, for an answer the
-// generated client cannot read for itself.
+// readAnswer reads the answer of a call as a T. Use it for an answer that
+// the generated client cannot read.
 func readAnswer[T any](resp *http.Response, err error) (T, error) {
 	var zero T
 

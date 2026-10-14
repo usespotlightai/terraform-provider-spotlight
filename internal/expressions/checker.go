@@ -1,7 +1,7 @@
-// Package expressions type-checks the CEL expressions written in an
-// integration's definition or a hook during a plan, with the control
-// plane's check endpoint, and attaches what it finds to the attribute that
-// holds each one.
+// Package expressions type-checks the CEL expressions in the definition of
+// an integration or in a hook during a plan. It uses the check endpoint of
+// the control plane. It attaches each result to the attribute that holds the
+// expression.
 package expressions
 
 import (
@@ -23,7 +23,8 @@ import (
 
 const integration = "integration"
 
-// Attribute is the Terraform attribute an integration's definition is held in.
+// Attribute is the Terraform attribute that holds the definition of an
+// integration.
 const Attribute = "definition"
 
 // API is the part of the control plane that checks expressions.
@@ -32,8 +33,8 @@ type API interface {
 	CheckExpression(ctx context.Context, position, expression string, definition client.Definition) (client.ExpressionCheck, error)
 }
 
-// Checker checks the expressions in definitions, remembering the positions
-// expressions are written at once it has read them.
+// Checker checks the expressions in definitions. After it reads the
+// positions that can contain expressions, it keeps them.
 type Checker struct {
 	api       API
 	mu        sync.Mutex
@@ -47,10 +48,12 @@ func NewChecker(api API) *Checker {
 
 var inDefinition = fieldpath.Locator{Under: fieldpath.Path{fieldpath.Key(Attribute)}}
 
-// Subject is a definition whose expressions are checked: the Resource its
-// positions are named under, the Fields locating the attribute each path in
-// it names, the Definition sent beside each expression, with what is not
-// known yet left out unless it is Complete, and the expressions Written in it.
+// Subject is a definition with expressions to check. It contains:
+//   - Resource, the resource name of its positions.
+//   - Fields, which finds the attribute of each path in the definition.
+//   - Definition, which the checker sends with each expression. If the
+//     definition is not Complete, it does not contain the unknown parts.
+//   - Written, the expressions in the definition.
 type Subject struct {
 	Resource   string
 	Fields     fieldpath.Locator
@@ -59,16 +62,16 @@ type Subject struct {
 	Written    []Written
 }
 
-// Written is the expressions a string holds, and where it is in its
-// definition.
+// Written is the expressions in a string, and the position of the string in
+// its definition.
 type Written struct {
 	At          fieldpath.Path
 	Expressions []string
 }
 
-// Check type-checks every expression in an integration's definition that
-// is known, and answers an error or warning on the attribute of each one
-// that needs it.
+// Check type-checks each known expression in the definition of an
+// integration. It returns an error or a warning on the attribute of each
+// expression that has a problem.
 func (c *Checker) Check(ctx context.Context, definition types.Dynamic) diag.Diagnostics {
 	if definition.IsNull() || definition.IsUnknown() || definition.IsUnderlyingValueUnknown() {
 		return nil
@@ -89,9 +92,9 @@ func (c *Checker) Check(ctx context.Context, definition types.Dynamic) diag.Diag
 	})
 }
 
-// CheckSubject type-checks each expression written in subject at a
-// position expressions are written at, and answers an error or warning on
-// the attribute of each one that needs it.
+// CheckSubject type-checks each expression in subject that is at a position
+// for expressions. It returns an error or a warning on the attribute of each
+// expression that has a problem.
 func (c *Checker) CheckSubject(ctx context.Context, subject Subject) diag.Diagnostics {
 	var diags diag.Diagnostics
 
@@ -219,8 +222,8 @@ func (c *Checker) known(ctx context.Context) ([]fieldpath.Path, error) {
 	return positions, nil
 }
 
-// TemplatesIn lists the ${{ }} expressions each known string in value
-// holds, at its path under at.
+// TemplatesIn lists the ${{ }} expressions in each known string in value,
+// with the path of the string under at.
 func TemplatesIn(value attr.Value, at fieldpath.Path) []Written {
 	var found []Written
 

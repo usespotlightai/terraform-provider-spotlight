@@ -178,9 +178,10 @@ func (r *SecretResource) Configure(_ context.Context, req resource.ConfigureRequ
 	r.client = clientOf(req.ProviderData, &resp.Diagnostics)
 }
 
-// ValidateConfig refuses a value for a secret read from AWS Secrets
-// Manager, which keeps it there, and a binding worn in a query parameter
-// with no name. Values not yet known are left for the plan.
+// ValidateConfig refuses a value for a secret that Spotlight reads from AWS
+// Secrets Manager, because AWS Secrets Manager keeps the value. It also refuses
+// a binding in a query parameter without a name. The plan checks values that
+// are not known yet.
 func (r *SecretResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
 	var kept, value types.String
 	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("source").AtName("kind"), &kept)...)

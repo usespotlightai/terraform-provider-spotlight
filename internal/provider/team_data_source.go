@@ -21,7 +21,7 @@ func NewTeamDataSource() datasource.DataSource {
 	return &TeamDataSource{}
 }
 
-// TeamDataSource reads a team by its key, without managing it.
+// TeamDataSource reads a team by its key, but does not manage it.
 type TeamDataSource struct {
 	client *client.Client
 }

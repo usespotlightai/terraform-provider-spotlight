@@ -21,7 +21,7 @@ func NewWorkspaceDataSource() datasource.DataSource {
 	return &WorkspaceDataSource{}
 }
 
-// WorkspaceDataSource reads a workspace by its slug, without managing it.
+// WorkspaceDataSource reads a workspace by its slug, but does not manage it.
 type WorkspaceDataSource struct {
 	client *client.Client
 }

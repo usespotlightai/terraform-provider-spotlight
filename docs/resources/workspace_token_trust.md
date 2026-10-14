@@ -84,6 +84,6 @@ import {
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-# A workspace token trust is imported by its workspace's id and its key.
+# Import a workspace token trust with the id of its workspace and its key.
 terraform import spotlight_workspace_token_trust.github_main 5b1e9d2c-7a43-4f8e-b6c0-3d9a8e1f2b57/github-main
 ```

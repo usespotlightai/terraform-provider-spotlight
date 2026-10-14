@@ -11,30 +11,30 @@ import (
 	"strings"
 )
 
-// WorkloadTokens answers the OIDC tokens a CI platform issues the job it
-// runs.
+// WorkloadTokens gives the OIDC tokens that a CI platform issues to the job
+// that it runs.
 type WorkloadTokens interface {
 	WorkloadToken(ctx context.Context, audience string) (string, error)
 }
 
-// GivenWorkloadToken is an OIDC token handed to the provider, as other CI
-// platforms than GitHub Actions do through the environment.
+// GivenWorkloadToken is an OIDC token that the provider receives from the
+// environment. CI platforms other than GitHub Actions give tokens this way.
 type GivenWorkloadToken string
 
-// WorkloadToken answers the token, whatever audience is asked for.
+// WorkloadToken returns the same token for each audience.
 func (t GivenWorkloadToken) WorkloadToken(context.Context, string) (string, error) {
 	return string(t), nil
 }
 
-// GitHubActions asks GitHub Actions for an OIDC token issued to the job,
-// as a job granted id-token: write may.
+// GitHubActions asks GitHub Actions for an OIDC token issued to the job.
+// The job must have the id-token: write permission.
 type GitHubActions struct {
 	RequestURL   string
 	RequestToken string
 	HTTPClient   *http.Client
 }
 
-// WorkloadToken requests a fresh OIDC token for audience.
+// WorkloadToken requests a new OIDC token for audience.
 func (g GitHubActions) WorkloadToken(ctx context.Context, audience string) (string, error) {
 	asked, err := url.Parse(g.RequestURL)
 	if err != nil {

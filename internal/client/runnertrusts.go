@@ -52,7 +52,8 @@ func (c *Client) ReadRunnerTrust(ctx context.Context, id string) (RunnerTrust, e
 	return runnerTrustOf(dto), err
 }
 
-// UpdateRunnerTrust writes the runner trust over version, the one last read.
+// UpdateRunnerTrust writes the runner trust over version, the version from the
+// last read.
 func (c *Client) UpdateRunnerTrust(ctx context.Context, id string, version int64, in RunnerTrustInput) (RunnerTrust, error) {
 	body, err := jsonBody(in)
 	if err != nil {
@@ -70,7 +71,8 @@ func (c *Client) UpdateRunnerTrust(ctx context.Context, id string, version int64
 	return runnerTrustOf(dto), err
 }
 
-// DeleteRunnerTrust deletes version of the runner trust, the one last read.
+// DeleteRunnerTrust deletes version of the runner trust, the version from the
+// last read.
 func (c *Client) DeleteRunnerTrust(ctx context.Context, id string, version int64) error {
 	resp, err := c.api.DeleteRunnerTrustWithResponse(ctx, id, &apigen.DeleteRunnerTrustParams{IfMatch: entityTag(version)})
 	if err != nil {

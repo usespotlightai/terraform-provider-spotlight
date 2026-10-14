@@ -123,8 +123,8 @@ func (r *RunnerPoolResource) Configure(_ context.Context, req resource.Configure
 	r.client = clientOf(req.ProviderData, &resp.Diagnostics)
 }
 
-// ValidateConfig refuses a token for a pool that provisions, which is
-// called instead.
+// ValidateConfig refuses a token for a push pool, because Spotlight calls the
+// provision URL of a push pool.
 func (r *RunnerPoolResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
 	var provision types.Object
 	var token types.String

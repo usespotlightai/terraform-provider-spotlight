@@ -146,8 +146,8 @@ func (r *IntegrationResource) Configure(_ context.Context, req resource.Configur
 	r.expressions = data.expressions
 }
 
-// ValidateConfig type-checks the definition's expressions once the provider
-// is configured, as it is during a plan.
+// ValidateConfig type-checks the expressions in the definition when the
+// provider is configured, as during a plan.
 func (r *IntegrationResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
 	if r.expressions == nil {
 		return
@@ -162,9 +162,9 @@ func (r *IntegrationResource) ValidateConfig(ctx context.Context, req resource.V
 	resp.Diagnostics.Append(r.expressions.Check(ctx, definition)...)
 }
 
-// ModifyPlan plans the source and tools from the definition, and replaces
-// the integration when the definition names another host. Tools generated
-// from an API description are left to the apply.
+// ModifyPlan plans the source and tools from the definition. It replaces the
+// integration when the definition identifies a different host. The apply sets
+// the tools that come from an API description.
 func (r *IntegrationResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	if req.Plan.Raw.IsNull() {
 		return

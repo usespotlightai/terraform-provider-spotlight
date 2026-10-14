@@ -20,21 +20,21 @@ import (
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/provider"
 )
 
-// WorkspaceEnv names the workspace the acceptance tests work in, by its
-// slug.
+// WorkspaceEnv identifies the workspace of the acceptance tests by its slug.
 const WorkspaceEnv = "SPOTLIGHT_ACC_WORKSPACE"
 
-// The prefixes of everything the acceptance tests create, which the
-// sweepers delete: KeyPrefix starts the keys and names of teams, runners,
-// runner trusts, runner pools and workspace token trusts, and so the
-// address of everything a team holds;
-// SecretPrefix starts the names of secrets.
+// The prefixes of all the resources that the acceptance tests create. The
+// sweepers delete these resources.
+//   - KeyPrefix starts the keys and names of teams, runners, runner trusts,
+//     runner pools and workspace token trusts. An address in a team starts
+//     with the team key, so KeyPrefix also starts each of these addresses.
+//   - SecretPrefix starts the names of secrets.
 const (
 	KeyPrefix    = "tf-acc-"
 	SecretPrefix = "TF_ACC_"
 )
 
-// ProtoV6ProviderFactories serves the provider as Terraform would run it,
+// ProtoV6ProviderFactories serves the provider as Terraform runs it,
 // configured from the environment.
 func ProtoV6ProviderFactories() map[string]func() (tfprotov6.ProviderServer, error) {
 	return map[string]func() (tfprotov6.ProviderServer, error){
@@ -42,17 +42,17 @@ func ProtoV6ProviderFactories() map[string]func() (tfprotov6.ProviderServer, err
 	}
 }
 
-// ControlPlane is a real control plane the acceptance tests work against,
-// and the workspace they work in there.
+// ControlPlane is a real control plane for the acceptance tests, and the
+// workspace of the tests on that control plane.
 type ControlPlane struct {
 	Client    *client.Client
 	Workspace client.Workspace
 }
 
-// PreCheck skips the test unless TF_ACC is set and the environment names a
-// control plane, a token there and the workspace to work in, and answers
-// that control plane. The token is granted configure, secrets, runners and
-// trusts, which together write everything the tests do.
+// PreCheck skips the test if TF_ACC is not set, or if the environment does
+// not identify a control plane, a token for it and a workspace. If the test
+// continues, PreCheck returns that control plane. The token must have configure, secrets,
+// runners and trusts, because the tests write all these resources.
 func PreCheck(t *testing.T) ControlPlane {
 	t.Helper()
 
@@ -74,8 +74,8 @@ func PreCheck(t *testing.T) ControlPlane {
 	return cp
 }
 
-// ControlPlaneAt connects to the control plane the environment names, to
-// work in the workspace at slug.
+// ControlPlaneAt connects to the control plane that the environment
+// identifies, for the workspace at slug.
 func ControlPlaneAt(ctx context.Context, slug string) (ControlPlane, error) {
 	api, err := client.New(client.Config{
 		URL:             os.Getenv(provider.URLEnv),
@@ -96,8 +96,8 @@ func ControlPlaneAt(ctx context.Context, slug string) (ControlPlane, error) {
 	return ControlPlane{Client: api, Workspace: workspace}, nil
 }
 
-// Keys are the keys and names of what one acceptance test creates, random
-// so that tests can run side by side.
+// Keys are the keys and names of the resources that one acceptance test
+// creates. They are random, so that tests can run at the same time.
 type Keys struct {
 	Team, Line, Skill, Integration, Profile string
 	Hook                                    string
@@ -106,7 +106,7 @@ type Keys struct {
 	TokenTrust                              string
 }
 
-// RandomKeys answers keys no other test uses.
+// RandomKeys returns keys that no other test uses.
 func RandomKeys() Keys {
 	suffix := strings.ToLower(acctest.RandStringFromCharSet(10, acctest.CharSetAlpha))
 	upper := strings.ToUpper(suffix)
@@ -127,20 +127,20 @@ func RandomKeys() Keys {
 	}
 }
 
-// RandomToken answers a random value long enough for a secret or a pull
-// pool's token.
+// RandomToken returns a random value that is long enough for a secret or for
+// the token of a pull pool.
 func RandomToken() string {
 	return "tfacc" + acctest.RandStringFromCharSet(40, acctest.CharSetAlphaNum)
 }
 
-// RandomSigningSecret answers a random secret a push pool signs its
-// provision calls with, as Standard Webhooks write one.
+// RandomSigningSecret returns a random secret in the Standard Webhooks
+// format. A push pool signs its provision calls with it.
 func RandomSigningSecret() string {
 	return "whsec_" + base64.StdEncoding.EncodeToString([]byte(acctest.RandStringFromCharSet(32, acctest.CharSetAlphaNum)))
 }
 
 // AdoptedWorkspace is configuration that imports the workspace and
-// protects it from destroy, with local.workspace_id naming it.
+// protects it from destroy. local.workspace_id identifies the workspace.
 func AdoptedWorkspace(workspace client.Workspace) string {
 	return fmt.Sprintf(`
 import {
@@ -163,9 +163,9 @@ locals {
 `, workspace.Name, workspace.Slug)
 }
 
-// ReleasedWorkspace is configuration that forgets the workspace
-// AdoptedWorkspace imported without destroying it, with local.workspace_id
-// still naming it.
+// ReleasedWorkspace is configuration that removes the workspace that
+// AdoptedWorkspace imported from the state, but does not destroy it.
+// local.workspace_id continues to identify the workspace.
 func ReleasedWorkspace(workspace client.Workspace) string {
 	return fmt.Sprintf(`
 removed {
@@ -182,14 +182,14 @@ locals {
 `, workspace.ID)
 }
 
-// ImportID is the id a resource is imported by: its workspace and its
-// address there.
+// ImportID is the import id of a resource. It contains the workspace of the
+// resource and its address in that workspace.
 func ImportID(workspaceID, address string) string {
 	return workspaceID + "/" + address
 }
 
-// ExpectForgotten is a plan check that the plan forgets the resource at
-// address without destroying it.
+// ExpectForgotten is a plan check that the plan removes the resource at
+// address from the state but does not destroy it.
 func ExpectForgotten(address string) plancheck.PlanCheck {
 	return forgotten(address)
 }
@@ -249,8 +249,8 @@ func (cp ControlPlane) created(k Keys) []held {
 	}
 }
 
-// RemoveCreated deletes whatever the test with these keys created that is
-// still there.
+// RemoveCreated deletes all the resources that the test with these keys
+// created and that are still there.
 func (cp ControlPlane) RemoveCreated(ctx context.Context, k Keys) error {
 	var failed []error
 
@@ -270,8 +270,8 @@ func (cp ControlPlane) RemoveCreated(ctx context.Context, k Keys) error {
 	return errors.Join(failed...)
 }
 
-// Sweep deletes whatever the test with these keys created once it ends,
-// however it ends.
+// Sweep deletes all the resources that the test with these keys created,
+// after the test ends. It does this also if the test fails.
 func (cp ControlPlane) Sweep(t *testing.T, k Keys) {
 	t.Logf("working in workspace %s under team %s", cp.Workspace.Slug, k.Team)
 
@@ -282,8 +282,9 @@ func (cp ControlPlane) Sweep(t *testing.T, k Keys) {
 	})
 }
 
-// NothingLeftButTheWorkspace checks that destroying the configuration left
-// the workspace as it was and removed everything the test created.
+// NothingLeftButTheWorkspace checks that the destroy of the configuration
+// did not change the workspace and removed all the resources that the test
+// created.
 func (cp ControlPlane) NothingLeftButTheWorkspace(k Keys) resource.TestCheckFunc {
 	return func(*terraform.State) error {
 		ctx := context.Background()
@@ -308,13 +309,13 @@ func (cp ControlPlane) NothingLeftButTheWorkspace(k Keys) resource.TestCheckFunc
 	}
 }
 
-// DeclaredRunners reads the workspace's declaration of its runners.
+// DeclaredRunners reads the declaration of the runners of the workspace.
 func (cp ControlPlane) DeclaredRunners(ctx context.Context) (client.WorkspaceRunners, error) {
 	return cp.Client.ImportWorkspaceRunners(ctx, cp.Workspace.ID, cp.Workspace.Slug)
 }
 
-// Undeclare deletes the workspace's declaration of its runners, if it has
-// one.
+// Undeclare deletes the declaration of the runners of the workspace, if it
+// has one.
 func (cp ControlPlane) Undeclare(ctx context.Context) error {
 	declared, err := cp.DeclaredRunners(ctx)
 	if client.IsNotFound(err) {

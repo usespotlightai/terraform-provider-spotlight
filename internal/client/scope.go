@@ -1,11 +1,11 @@
 package client
 
-// Scope is what an API token is granted. Read, plan and configure are a
-// ladder, each allowing what the one before does; secrets, runners and
-// trusts are granted beside one of them.
+// Scope is a grant of an API token. Read, plan and configure are a ladder.
+// Each scope lets the token do what the scope before it lets. Secrets,
+// runners and trusts are granted in addition to one of them.
 type Scope string
 
-// The scopes a token may carry.
+// The scopes that a token can have.
 const (
 	ScopeRead      Scope = "read"
 	ScopePlan      Scope = "plan"
@@ -15,10 +15,11 @@ const (
 	ScopeTrusts    Scope = "trusts"
 )
 
-// Permission is what a refused caller lacked, as a 403 problem names it.
+// Permission is the permission that a refused caller did not have, as a 403
+// problem identifies it.
 type Permission string
 
-// The permissions a 403 problem may name.
+// The permissions that a 403 problem can identify.
 const (
 	PermissionRead           Permission = "read"
 	PermissionPlan           Permission = "plan"
@@ -39,8 +40,8 @@ var grantedBy = map[Permission]Scope{
 	PermissionManageTrusts:  ScopeTrusts,
 }
 
-// Scope answers the token scope that grants the permission, and false for
-// one no token is ever granted.
+// Scope returns the token scope that grants the permission. It returns false
+// for a permission that no token can have.
 func (p Permission) Scope() (Scope, bool) {
 	scope, ok := grantedBy[p]
 

@@ -1,6 +1,6 @@
-// Package acctest serves the provider to Terraform's test harness, pointed
-// at a fake control plane or at a real one, and holds the checks and
-// configuration the provider's tests share.
+// Package acctest serves the provider to the Terraform test harness, against
+// a fake control plane or a real control plane. It also holds the checks and
+// the configuration that the tests of the provider share.
 package acctest
 
 import (
@@ -20,14 +20,16 @@ import (
 // Version is the provider version the tests serve.
 const Version = "test"
 
-// WriteOnly skips a test on a Terraform too old for write-only attributes.
+// WriteOnly skips a test on a Terraform version that is too old for
+// write-only attributes.
 var WriteOnly = []tfversion.TerraformVersionCheck{tfversion.SkipBelow(tfversion.Version1_11_0)}
 
-// Identity skips a test on a Terraform too old to import by resource
-// identity.
+// Identity skips a test on a Terraform version that is too old to import by
+// resource identity.
 var Identity = []tfversion.TerraformVersionCheck{tfversion.SkipBelow(tfversion.Version1_12_0)}
 
-// Query skips a test on a Terraform too old for terraform query.
+// Query skips a test on a Terraform version that is too old for terraform
+// query.
 var Query = []tfversion.TerraformVersionCheck{tfversion.SkipBelow(tfversion.Version1_14_0)}
 
 // FakeProviderFactories serves the provider configured against fake.
@@ -41,8 +43,8 @@ func FakeProviderFactories(fake *fakeapi.Server) map[string]func() (tfprotov6.Pr
 	}
 }
 
-// NoneLeft checks the fake holds nothing of these kinds once Terraform has
-// destroyed everything.
+// NoneLeft checks that the fake holds no resource of these kinds after
+// Terraform destroyed all resources.
 func NoneLeft(fake *fakeapi.Server, kinds ...string) func(*terraform.State) error {
 	return func(*terraform.State) error {
 		for _, kind := range kinds {
@@ -55,8 +57,8 @@ func NoneLeft(fake *fakeapi.Server, kinds ...string) func(*terraform.State) erro
 	}
 }
 
-// NothingHolds checks that no attribute of anything in the state holds any
-// of these values, as a write-only value must never be kept.
+// NothingHolds checks that no attribute in the state holds one of these
+// values, because the state must never keep a write-only value.
 func NothingHolds(values ...func() string) func(*terraform.State) error {
 	return func(state *terraform.State) error {
 		for _, module := range state.Modules {
@@ -80,8 +82,8 @@ func Value(value string) func() string {
 	return func() string { return value }
 }
 
-// Workspace is configuration for a workspace and a team in it, for the
-// resources a team holds.
+// Workspace is configuration for a workspace and a team in it. Tests of the
+// resources that a team holds use it.
 const Workspace = `
 resource "spotlight_workspace" "acme" {
   name = "Acme"

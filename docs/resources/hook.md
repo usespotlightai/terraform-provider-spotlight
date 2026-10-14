@@ -18,16 +18,16 @@ resource "random_password" "hook" {
   special = false
 }
 
-# Whenever an agent searches Grafana, tell the team in Slack and keep an audit trail.
+# Each time an agent searches Grafana, tell the team in Slack and keep an audit trail.
 resource "spotlight_hook" "grafana_reads" {
   team_id = spotlight_team.core.id
   key     = "grafana-reads"
   on      = "tool.used"
   match = {
-    # A tool renamed or removed in the integration fails the plan here.
+    # If the integration renames or removes the tool, the plan fails here.
     tools = [spotlight_integration.grafana.tools["search"]]
   }
-  # when is bare CEL; plan type-checks it.
+  # when is bare CEL. The plan type-checks it.
   when = "event.inputs.query != ''"
   steps = [
     {
@@ -35,7 +35,7 @@ resource "spotlight_hook" "grafana_reads" {
       call = spotlight_integration.slack.tools["post-message"]
       with = {
         channel = "C024BE91L"
-        # $${{ }} keeps the expression from Terraform; plan type-checks it.
+        # Terraform does not interpolate an expression in $${{ }}. The plan type-checks it.
         text = "Agent searched Grafana: $${{ event.inputs.query }}"
       }
     },
@@ -52,7 +52,7 @@ resource "spotlight_hook" "grafana_reads" {
   }
 }
 
-# Hold back a pull request that touches the migrations until a DBA's endpoint lets it open.
+# Hold a pull request that changes the migrations until the endpoint of a DBA lets it open.
 resource "spotlight_hook" "migrations" {
   team_id = spotlight_team.core.id
   key     = "migrations-need-a-dba"
@@ -165,6 +165,6 @@ import {
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-# A hook is imported by its workspace's id and its address, <team key>/<key>.
+# Import a hook with the id of its workspace and its address, <team key>/<key>.
 terraform import spotlight_hook.migrations 5b1e9d2c-7a43-4f8e-b6c0-3d9a8e1f2b57/core/migrations-need-a-dba
 ```

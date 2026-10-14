@@ -7,7 +7,8 @@ import (
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/fakeapi"
 )
 
-// FakeClient calls fake, for a test to set up what Terraform finds there.
+// FakeClient calls fake. A test uses it to prepare the resources that
+// Terraform finds there.
 func FakeClient(t *testing.T, fake *fakeapi.Server) *client.Client {
 	t.Helper()
 
@@ -19,9 +20,9 @@ func FakeClient(t *testing.T, fake *fakeapi.Server) *client.Client {
 	return api
 }
 
-// Seeded is what Seed set up without Terraform: the workspace acme with the
-// teams core and platform, and another workspace, globex, with its own team
-// core.
+// Seeded contains the resources that Seed made without Terraform:
+//   - The workspace acme with the teams core and platform.
+//   - A different workspace, globex, with its own team core.
 type Seeded struct {
 	Client    *client.Client
 	Workspace client.Workspace
@@ -31,15 +32,15 @@ type Seeded struct {
 	OtherCore client.Team
 }
 
-// SeededConfig is configuration that reads the seeded workspace, for the
-// step that sets Terraform up before terraform query.
+// SeededConfig is configuration that reads the seeded workspace. It is for
+// the step that prepares Terraform before terraform query.
 const SeededConfig = `
 data "spotlight_workspace" "acme" {
   slug = "acme"
 }
 `
 
-// Seed sets up Seeded in fake.
+// Seed makes Seeded in fake.
 func Seed(t *testing.T, fake *fakeapi.Server) Seeded {
 	t.Helper()
 
@@ -60,7 +61,7 @@ func Seed(t *testing.T, fake *fakeapi.Server) Seeded {
 	return Seeded{Client: api, Workspace: workspace, Core: core, Platform: platform, Other: other, OtherCore: otherCore}
 }
 
-// Must fails the test if a call it needed failed.
+// Must fails the test if a necessary call failed.
 func Must(t *testing.T, err error) {
 	t.Helper()
 

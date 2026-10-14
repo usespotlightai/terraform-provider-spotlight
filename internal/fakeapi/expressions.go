@@ -10,7 +10,7 @@ import (
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/fieldpath"
 )
 
-// Positions are the positions the fake says expressions are written at.
+// Positions are the positions that can contain expressions in the fake.
 var Positions = []string{
 	"integration.webhook.events[*].when",
 	"integration.webhook.events[*].raise.marks[*].value",
@@ -83,7 +83,7 @@ func (s *Server) check(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !holdsText(body.Definition, at[1:]) {
-		problem(w, http.StatusUnprocessableEntity, "invalid", "The request is not valid", "", []fieldError{{"position", "holds no expression in the definition, so nothing is written there to check"}})
+		problem(w, http.StatusUnprocessableEntity, "invalid", "The request is not valid", "", []fieldError{{"position", "holds no expression in the definition. Nothing is written there to check"}})
 		return
 	}
 

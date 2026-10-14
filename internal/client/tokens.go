@@ -12,25 +12,25 @@ import (
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/client/apigen"
 )
 
-// RenewBefore is how long before a minted token expires the client mints
-// the next one; a token minted for less than twice as long is renewed
-// halfway through its life.
+// RenewBefore is the time before a minted token expires when the client
+// mints the next token. If a token is minted for less than two times this
+// duration, the client renews it after half of its life.
 const RenewBefore = time.Minute
 
-// TokenSource answers the bearer token each call is made with.
+// TokenSource gives the bearer token for each call.
 type TokenSource interface {
-	// Token answers the token to call with now.
+	// Token returns the token for the current call.
 	Token(ctx context.Context) (string, error)
-	// Refused is told that the control plane answered token 401, and
-	// reports whether Token may now answer a different one.
+	// Refused tells the source that the control plane returned 401 for token.
+	// It reports if Token can now return a different token.
 	Refused(token string) bool
 }
 
-// StaticToken is a token source that always answers the one token, as a
-// stored workspace token is.
+// StaticToken is a token source that always returns the same token. A
+// stored workspace token is a StaticToken.
 type StaticToken string
 
-// Token answers the token.
+// Token returns the token.
 func (t StaticToken) Token(context.Context) (string, error) {
 	if t == "" {
 		return "", errors.New("a Spotlight API token is needed")
@@ -39,7 +39,7 @@ func (t StaticToken) Token(context.Context) (string, error) {
 	return string(t), nil
 }
 
-// Refused reports false: there is no other token to try.
+// Refused reports false because there is no other token to try.
 func (t StaticToken) Refused(string) bool {
 	return false
 }
@@ -53,8 +53,8 @@ type OIDC struct {
 	Workload WorkloadTokens
 }
 
-// DefaultAudience is the audience a workload token is issued for unless a
-// trust names another.
+// DefaultAudience is the audience of a workload token if the trust does not
+// identify a different audience.
 const DefaultAudience = "spotlight"
 
 type minted struct {
