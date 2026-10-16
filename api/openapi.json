@@ -23,6 +23,28 @@
         ]
       }
     },
+    "/error-reporting": {
+      "get": {
+        "operationId": "getErrorReporting",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorReportingResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Where the web app reports its errors, if anywhere",
+        "tags": [
+          "error-reporting"
+        ]
+      }
+    },
     "/teams/{teamId}/lines": {
       "get": {
         "operationId": "listTeamLines",
@@ -22717,6 +22739,31 @@
           "status"
         ]
       },
+      "ErrorReportingResponseDto": {
+        "type": "object",
+        "properties": {
+          "dsn": {
+            "type": "string",
+            "nullable": true,
+            "description": "The Sentry DSN of the web app. Null when errors are not reported."
+          },
+          "environment": {
+            "type": "string",
+            "nullable": true,
+            "example": "production"
+          },
+          "release": {
+            "type": "string",
+            "nullable": true,
+            "example": "v1.4.0"
+          }
+        },
+        "required": [
+          "dsn",
+          "environment",
+          "release"
+        ]
+      },
       "StationJudgeResponseDto": {
         "type": "object",
         "properties": {
@@ -28183,6 +28230,16 @@
       "OnboardingResponseDto": {
         "type": "object",
         "properties": {
+          "provisioning": {
+            "type": "string",
+            "description": "Whether Spotlight has opened the first lines and the setup task of the team. The value is failed after Spotlight stopped its attempts.",
+            "enum": [
+              "pending",
+              "done",
+              "failed"
+            ],
+            "example": "done"
+          },
           "steps": {
             "description": "The list itself, in the order it is worked through",
             "type": "array",
@@ -28206,6 +28263,7 @@
           }
         },
         "required": [
+          "provisioning",
           "steps",
           "canSetUp",
           "setupChat"
@@ -28766,6 +28824,16 @@
               "admin",
               "member"
             ]
+          },
+          "provisioning": {
+            "type": "string",
+            "description": "Whether Spotlight has opened the first team of the workspace. The value is failed after Spotlight stopped its attempts.",
+            "enum": [
+              "pending",
+              "done",
+              "failed"
+            ],
+            "example": "done"
           }
         },
         "required": [
@@ -28773,7 +28841,8 @@
           "name",
           "slug",
           "teams",
-          "role"
+          "role",
+          "provisioning"
         ]
       },
       "TeamReferenceResponseDto": {
@@ -35592,11 +35661,6 @@
           "period": {
             "$ref": "#/components/schemas/InsightsPeriodResponseDto"
           },
-          "truncated": {
-            "type": "boolean",
-            "example": false,
-            "description": "Whether the team ran more than 20,000 runs over the period and the one before, so only the latest 20,000 were counted"
-          },
           "headline": {
             "description": "This period",
             "allOf": [
@@ -35647,7 +35711,6 @@
         },
         "required": [
           "period",
-          "truncated",
           "headline",
           "changes",
           "output",
@@ -35899,11 +35962,6 @@
           "period": {
             "$ref": "#/components/schemas/InsightsPeriodResponseDto"
           },
-          "truncated": {
-            "type": "boolean",
-            "example": false,
-            "description": "Whether the team ran more than 20,000 runs over the period and the one before, so only the latest 20,000 were counted"
-          },
           "flow": {
             "description": "This period",
             "allOf": [
@@ -35915,7 +35973,6 @@
         },
         "required": [
           "period",
-          "truncated",
           "flow"
         ]
       },
@@ -36235,11 +36292,6 @@
           "period": {
             "$ref": "#/components/schemas/InsightsPeriodResponseDto"
           },
-          "truncated": {
-            "type": "boolean",
-            "example": false,
-            "description": "Whether the team ran more than 20,000 runs over the period and the one before, so only the latest 20,000 were counted"
-          },
           "team": {
             "description": "The whole team",
             "allOf": [
@@ -36288,7 +36340,6 @@
         },
         "required": [
           "period",
-          "truncated",
           "team",
           "teamChanges",
           "teamSeen",
@@ -36533,11 +36584,6 @@
           "period": {
             "$ref": "#/components/schemas/InsightsPeriodResponseDto"
           },
-          "truncated": {
-            "type": "boolean",
-            "example": false,
-            "description": "Whether the team ran more than 20,000 runs over the period and the one before, so only the latest 20,000 were counted"
-          },
           "load": {
             "description": "This period",
             "allOf": [
@@ -36560,7 +36606,6 @@
         },
         "required": [
           "period",
-          "truncated",
           "load",
           "loadChanges",
           "adoption"
@@ -36815,11 +36860,6 @@
           "period": {
             "$ref": "#/components/schemas/InsightsPeriodResponseDto"
           },
-          "truncated": {
-            "type": "boolean",
-            "example": false,
-            "description": "Whether the team ran more than 20,000 runs over the period and the one before, so only the latest 20,000 were counted"
-          },
           "cost": {
             "$ref": "#/components/schemas/CostBreakdownResponseDto"
           },
@@ -36836,7 +36876,6 @@
         },
         "required": [
           "period",
-          "truncated",
           "cost",
           "spendChange"
         ]
@@ -37109,11 +37148,6 @@
           "period": {
             "$ref": "#/components/schemas/InsightsPeriodResponseDto"
           },
-          "truncated": {
-            "type": "boolean",
-            "example": false,
-            "description": "Whether the team had more than 20,000 runs in the period, so only the newest 20,000 were counted"
-          },
           "weeks": {
             "example": [
               "2026-09-21",
@@ -37167,7 +37201,6 @@
         },
         "required": [
           "period",
-          "truncated",
           "weeks",
           "runs",
           "trendRule",
@@ -37450,11 +37483,6 @@
           "period": {
             "$ref": "#/components/schemas/InsightsPeriodResponseDto"
           },
-          "truncated": {
-            "type": "boolean",
-            "example": false,
-            "description": "Whether the team ran more than 20,000 runs over the period and the one before, so only the latest 20,000 were counted"
-          },
           "markers": {
             "description": "Every station config change in the period, the oldest first, with the station’s tally before and after it",
             "type": "array",
@@ -37472,7 +37500,6 @@
         },
         "required": [
           "period",
-          "truncated",
           "markers",
           "judges"
         ]
@@ -37645,11 +37672,6 @@
           "period": {
             "$ref": "#/components/schemas/InsightsPeriodResponseDto"
           },
-          "truncated": {
-            "type": "boolean",
-            "example": false,
-            "description": "Whether the team ran more than 20,000 runs over the period and the one before, so only the latest 20,000 were counted"
-          },
           "stationId": {
             "type": "string",
             "nullable": true,
@@ -37710,7 +37732,6 @@
         },
         "required": [
           "period",
-          "truncated",
           "stationId",
           "size",
           "sizes",
@@ -37802,11 +37823,6 @@
           "period": {
             "$ref": "#/components/schemas/InsightsPeriodResponseDto"
           },
-          "truncated": {
-            "type": "boolean",
-            "example": false,
-            "description": "Whether the team ran more than 20,000 runs over the period and the one before, so only the latest 20,000 were counted"
-          },
           "standing": {
             "type": "number",
             "example": 14,
@@ -37875,7 +37891,6 @@
         },
         "required": [
           "period",
-          "truncated",
           "standing",
           "memoriesBriefed",
           "memoriesRecalled",
@@ -38396,11 +38411,6 @@
           "period": {
             "$ref": "#/components/schemas/InsightsPeriodResponseDto"
           },
-          "truncated": {
-            "type": "boolean",
-            "example": false,
-            "description": "Whether the team had more than 20,000 pull requests in the period, so only the newest 20,000 were counted"
-          },
           "total": {
             "type": "number",
             "example": 64,
@@ -38461,7 +38471,6 @@
         },
         "required": [
           "period",
-          "truncated",
           "total",
           "repositories",
           "weeks",
@@ -39221,11 +39230,6 @@
           "period": {
             "$ref": "#/components/schemas/InsightsPeriodResponseDto"
           },
-          "truncated": {
-            "type": "boolean",
-            "example": false,
-            "description": "Whether only the latest pull requests or runs were counted"
-          },
           "toMerge": {
             "description": "Opened to merged, for pull requests merged in the period",
             "allOf": [
@@ -39299,7 +39303,6 @@
         },
         "required": [
           "period",
-          "truncated",
           "toMerge",
           "toMergeChanges",
           "mergeDays",
@@ -39502,10 +39505,6 @@
           "period": {
             "$ref": "#/components/schemas/InsightsPeriodResponseDto"
           },
-          "truncated": {
-            "type": "boolean",
-            "example": false
-          },
           "total": {
             "type": "number",
             "example": 52,
@@ -39529,7 +39528,6 @@
         },
         "required": [
           "period",
-          "truncated",
           "total",
           "page",
           "size",
@@ -41033,6 +41031,35 @@
           "medianMs"
         ]
       },
+      "ReplayCounterpartResponseDto": {
+        "type": "object",
+        "properties": {
+          "replayId": {
+            "type": "string",
+            "description": "The replay compared with: pairedWith where set, else for a replay with the answer the live replay it was handed the answer against, else the set’s baseline"
+          },
+          "successRate": {
+            "type": "number",
+            "nullable": true,
+            "description": "Its success rate on the tasks the gain pairs, the tasks both replays scored: per task, the share of its scored copies that succeeded, averaged over those tasks; null with no such task"
+          },
+          "interval": {
+            "nullable": true,
+            "description": "Its success rate on the tasks both replays scored, with its 95% interval over those tasks; null with no such task",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RateIntervalResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "replayId",
+          "successRate",
+          "interval"
+        ]
+      },
       "PairTallyResponseDto": {
         "type": "object",
         "properties": {
@@ -41863,11 +41890,21 @@
           },
           "againstBaseline": {
             "nullable": true,
-            "description": "Its gain in success over the replay it is compared with (pairedWith where set, else the set’s baseline), with whether it is within noise; null with none",
+            "description": "Its gain in success over the replay in comparedWith, with whether it is within noise; null with none",
             "type": "object",
             "allOf": [
               {
                 "$ref": "#/components/schemas/GainReadingResponseDto"
+              }
+            ]
+          },
+          "comparedWith": {
+            "nullable": true,
+            "description": "The replay its gain, comparison rows and deltas are against, with its success rate; null for the baseline itself or with none",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReplayCounterpartResponseDto"
               }
             ]
           },
@@ -41909,6 +41946,7 @@
           "endedAt",
           "totals",
           "againstBaseline",
+          "comparedWith",
           "pairedWith",
           "pairsAgainstBaseline",
           "entries"
@@ -42204,11 +42242,21 @@
           },
           "againstBaseline": {
             "nullable": true,
-            "description": "Its gain in success over the replay it is compared with (pairedWith where set, else the set’s baseline), with whether it is within noise; null with none",
+            "description": "Its gain in success over the replay in comparedWith, with whether it is within noise; null with none",
             "type": "object",
             "allOf": [
               {
                 "$ref": "#/components/schemas/GainReadingResponseDto"
+              }
+            ]
+          },
+          "comparedWith": {
+            "nullable": true,
+            "description": "The replay its gain, comparison rows and deltas are against, with its success rate; null for the baseline itself or with none",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReplayCounterpartResponseDto"
               }
             ]
           },
@@ -42237,11 +42285,6 @@
             "type": "string",
             "nullable": true
           },
-          "comparedWithReplayId": {
-            "type": "string",
-            "nullable": true,
-            "description": "The replay its comparison rows, gain and deltas are against: pairedWith where set, else the set’s baseline; null for the baseline itself or with none"
-          },
           "search": {
             "nullable": true,
             "description": "The search it belongs to, when a search started it",
@@ -42253,7 +42296,7 @@
             ]
           },
           "comparison": {
-            "description": "Per task against the set’s baseline, regressions first",
+            "description": "Per task against the replay it is compared with (comparedWith), regressions first",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/EntryComparisonResponseDto"
@@ -42276,11 +42319,11 @@
           "endedAt",
           "totals",
           "againstBaseline",
+          "comparedWith",
           "pairedWith",
           "pairsAgainstBaseline",
           "entries",
           "baselineReplayId",
-          "comparedWithReplayId",
           "search",
           "comparison"
         ]
