@@ -34,6 +34,9 @@ var Value = Field{Name: "value_wo", Version: "value_wo_version"}
 // Token is the token that the hosts of a pull pool use to claim work.
 var Token = Field{Name: "token", Version: "token_version"}
 
+// EgressToken is the token that an egress calls Spotlight with.
+var EgressToken = Field{Name: "token", Version: "token_version"}
+
 // ProvisionSecret is the secret that a push pool signs its provision calls
 // with.
 var ProvisionSecret = Field{Within: "provision", Name: "secret", Version: "secret_version", Required: true}

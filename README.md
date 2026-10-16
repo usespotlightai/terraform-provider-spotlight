@@ -16,6 +16,7 @@ Manages a Spotlight workspace as code. Full reference: [`docs/`](docs/index.md).
 | `spotlight_secret` | `secrets` | `<workspace id>/<name>` |
 | `spotlight_runner_trust` | `runners` | `<workspace id>/<key>` |
 | `spotlight_runner_pool` | `runners` | `<workspace id>/<key>` |
+| `spotlight_egress` | `runners` | `<workspace id>/<key>` |
 | `spotlight_workspace_runners` | `runners` | `<workspace id>/<slug>` |
 
 - **Import by identity:** every resource can also be imported by its identity, `{ id = "<id>" }` (Terraform 1.12+).
@@ -51,7 +52,7 @@ resource "spotlight_workspace" "acme" {
 - **Scopes:** one token with `configure`, `secrets`, `runners` and `trusts` manages everything.
 - **CI without a stored token:** `oidc { trust = "<trust id>" }`, or `SPOTLIGHT_OIDC_TRUST`, exchanges the CI job's OIDC token for a short-lived one through a `spotlight_workspace_token_trust`.
 - **Adopting an existing workspace:** **Download as Terraform** in the web app's workspace menu, or `terraform query -generate-config-out=…`, writes the configuration and import blocks for you.
-- **Terraform versions:** Terraform 1.11+ is needed for the write-only `value_wo` (secrets), `token` (runner pools), `provision.secret` (runner pools) and `signing.secret_wo` (hooks).
+- **Terraform versions:** Terraform 1.11+ is needed for the write-only `value_wo` (secrets), `token` (runner pools and egresses), `provision.secret` (runner pools) and `signing.secret_wo` (hooks).
 
 ## Behaviour
 

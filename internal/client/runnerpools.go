@@ -41,6 +41,7 @@ func runnerPoolOf(dto apigen.RunnerPoolResourceResponseDto) RunnerPool {
 		pool.Provision = &PoolProvision{
 			URL:           dto.Provision.Url,
 			SecretVersion: wholeOrNone(dto.Provision.SecretVersion),
+			Egress:        dto.Provision.Egress,
 		}
 	}
 

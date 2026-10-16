@@ -256,11 +256,34 @@ type RunnerPoolInput struct {
 }
 
 // PoolProvision is the URL that Spotlight calls to start a runner for each
-// run of a push pool, and the secret that signs those calls.
+// run of a push pool, the secret that signs those calls, and the egress that
+// the runners send their traffic through.
 type PoolProvision struct {
-	URL           string `json:"url"`
-	Secret        string `json:"secret,omitempty"`
-	SecretVersion *int64 `json:"secretVersion,omitempty"`
+	URL           string  `json:"url"`
+	Secret        string  `json:"secret,omitempty"`
+	SecretVersion *int64  `json:"secretVersion,omitempty"`
+	Egress        *string `json:"egress,omitempty"`
+}
+
+// PlatformEgress names the egress that Spotlight operates, in place of the id
+// of an egress in the workspace.
+const PlatformEgress = "spotlight"
+
+// Egress is a service that the runners of push pools send their traffic
+// through. It calls Spotlight with its token.
+type Egress struct {
+	Meta
+	WorkspaceID string
+	EgressInput
+}
+
+// EgressInput is the input to write an egress. The client sends Token only
+// when the egress must use a new value. The API never returns it.
+type EgressInput struct {
+	Key          string `json:"key"`
+	URL          string `json:"url"`
+	Token        string `json:"token,omitempty"`
+	TokenVersion *int64 `json:"tokenVersion,omitempty"`
 }
 
 // WorkspaceRunners is the one declaration of a workspace that tells which

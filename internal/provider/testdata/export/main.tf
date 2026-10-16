@@ -103,6 +103,19 @@ resource "spotlight_runner_trust" "production-cluster" {
 }
 
 import {
+  to = spotlight_egress.shared
+  id = "00000000-0000-4000-8000-00000000a0a0/shared"
+}
+
+resource "spotlight_egress" "shared" {
+  workspace_id  = spotlight_workspace.acme.id
+  key           = "shared"
+  url           = "https://egress.acme.dev"
+  token         = var.egress_shared_token
+  token_version = 2
+}
+
+import {
   to = spotlight_runner_pool.burst
   id = "00000000-0000-4000-8000-00000000a0a0/burst"
 }
@@ -129,6 +142,7 @@ resource "spotlight_runner_pool" "k8s-jobs" {
     url            = "https://provisioner.acme.dev/runs"
     secret         = var.runner_pool_k8s-jobs_provision_secret
     secret_version = 1
+    egress         = spotlight_egress.shared.id
   }
 }
 

@@ -40,6 +40,14 @@ const apiVersion = "2026-09-23"
 // issued to a pull pool.
 const PoolTokenHeader = "Spotlight-Pool-Token"
 
+// EgressTokenHeader is the header where the fake returns a token that it
+// issued to an egress.
+const EgressTokenHeader = "Spotlight-Egress-Token"
+
+// PlatformEgress names the egress that Spotlight operates. The fake always
+// has it.
+const PlatformEgress = "spotlight"
+
 // Request is a request the fake received.
 type Request struct {
 	Method  string
@@ -60,7 +68,7 @@ type Server struct {
 	failNext   []int
 	scopes     map[string]bool
 	kept       map[string]string
-	given      map[string]struct{}
+	given      map[givenToken]struct{}
 	minted     map[string]string
 	mintedFor  time.Duration
 }
@@ -80,7 +88,7 @@ func New(t interface{ Cleanup(func()) }) *Server {
 		held:       map[string]*resource{},
 		idempotent: map[string]string{},
 		kept:       map[string]string{},
-		given:      map[string]struct{}{},
+		given:      map[givenToken]struct{}{},
 		minted:     map[string]string{},
 		mintedFor:  15 * time.Minute,
 	}
@@ -180,6 +188,7 @@ func (s *Server) IDOf(kind, address string) string {
 // Kept returns the write-only value that the fake keeps for a resource:
 //   - The value of a secret.
 //   - The token of a pull pool.
+//   - The token of an egress.
 //   - The provision secret of a push pool.
 //   - The secret that a hook signs with.
 func (s *Server) Kept(id string) string {
@@ -316,6 +325,7 @@ var kinds = map[string]string{
 	"secrets":           "secret",
 	"runner-trusts":     "runner-trust",
 	"runner-pools":      "runner-pool",
+	"egresses":          "egress",
 	"workspace-runners": "workspace-runners",
 	"token-trusts":      "workspace-token-trust",
 	"hooks":             "hook",
@@ -334,6 +344,7 @@ var grants = map[string]string{
 	"secret":            "secrets",
 	"runner-trust":      "runners",
 	"runner-pool":       "runners",
+	"egress":            "runners",
 	"workspace-runners": "runners",
 }
 
@@ -479,10 +490,11 @@ func (s *Server) create(kind string) http.HandlerFunc {
 		}
 
 		fields, errs := normalized(kind, body)
+		errs = append(errs, s.unknownEgress(kind, owner, fields)...)
 		value, more := written(kind, nil, fields, body)
 		errs = append(errs, more...)
 		if len(errs) == 0 {
-			errs = s.refusedPoolToken(kind, "", value)
+			errs = s.refusedToken(kind, "", value)
 		}
 		if len(errs) > 0 {
 			invalid(w, kind, errs)
@@ -503,7 +515,7 @@ func (s *Server) create(kind string) http.HandlerFunc {
 			}
 		}
 
-		if value == "" && givesPoolToken(kind, fields) {
+		if value == "" && givesToken(kind, fields) {
 			value = issue(w, held)
 		}
 
@@ -549,10 +561,11 @@ func (s *Server) update(kind string) http.HandlerFunc {
 			}
 		}
 
+		errs = append(errs, s.unknownEgress(kind, held.owner, fields)...)
 		value, more := written(kind, held, fields, body)
 		errs = append(errs, more...)
 		if len(errs) == 0 {
-			errs = s.refusedPoolToken(kind, held.id, value)
+			errs = s.refusedToken(kind, held.id, value)
 		}
 
 		if len(errs) == 0 && kind == "workspace-token-trust" && !s.grants(w, held.fields["scopes"], fields["scopes"]) {
@@ -594,6 +607,12 @@ func (s *Server) remove(kind string) http.HandlerFunc {
 			}
 		}
 
+		if naming := s.poolsNaming(held); len(naming) > 0 {
+			problem(w, http.StatusConflict, "in-use", "The "+kind+" is still in use",
+				fmt.Sprintf("Egress %s is in use. Runner pools that name it: %s. Please remove provision.egress from these pools first.", textOf(held.fields["key"]), strings.Join(naming, ", ")), nil)
+			return
+		}
+
 		delete(s.held, held.id)
 		delete(s.kept, held.id)
 		s.lapse(held.id)
@@ -607,31 +626,66 @@ func (s *Server) keep(held *resource, value string) {
 	}
 
 	s.kept[held.id] = value
-	if givesPoolToken(held.kind, held.fields) {
-		s.given[value] = struct{}{}
+	if givesToken(held.kind, held.fields) {
+		s.given[givenToken{held.kind, value}] = struct{}{}
 	}
 }
 
-func (s *Server) refusedPoolToken(kind, claimant, value string) []fieldError {
-	if kind != "runner-pool" || value == "" {
+type givenToken struct{ kind, token string }
+
+func (s *Server) refusedToken(kind, claimant, value string) []fieldError {
+	if (kind != "runner-pool" && kind != "egress") || value == "" {
 		return nil
 	}
 
-	if _, ever := s.given[value]; !ever {
+	if _, ever := s.given[givenToken{kind, value}]; !ever {
 		return nil
 	}
 
 	for id, kept := range s.kept {
-		if held := s.held[id]; kept == value && held != nil && givesPoolToken(held.kind, held.fields) {
+		if held := s.held[id]; kept == value && held != nil && held.kind == kind && givesToken(held.kind, held.fields) {
 			if id == claimant {
 				return nil
 			}
 
-			return []fieldError{{"token", poolTokenTaken}}
+			return []fieldError{{"token", tokenTaken[kind]}}
 		}
 	}
 
-	return []fieldError{{"token", poolTokenSpent}}
+	return []fieldError{{"token", tokenSpent[kind]}}
+}
+
+func (s *Server) unknownEgress(kind, workspace string, fields map[string]any) []fieldError {
+	if kind != "runner-pool" {
+		return nil
+	}
+
+	named, ok := objectOf(fields["provision"])["egress"].(string)
+	if !ok || named == PlatformEgress {
+		return nil
+	}
+
+	if held, found := s.held[named]; found && held.kind == "egress" && held.owner == workspace {
+		return nil
+	}
+
+	return []fieldError{{"provision.egress", fmt.Sprintf("names %s. Egress %s doesn't exist in this workspace", named, named)}}
+}
+
+func (s *Server) poolsNaming(held *resource) []string {
+	if held.kind != "egress" {
+		return nil
+	}
+
+	var naming []string
+	for _, each := range s.held {
+		if each.kind == "runner-pool" && objectOf(each.fields["provision"])["egress"] == held.id {
+			naming = append(naming, textOf(each.fields["key"]))
+		}
+	}
+	slices.Sort(naming)
+
+	return naming
 }
 
 func (s *Server) importWorkspace(w http.ResponseWriter, r *http.Request) {
@@ -768,17 +822,22 @@ var fixedFields = map[string][]string{
 	"secret":                {"name"},
 	"runner-trust":          {"key"},
 	"runner-pool":           {"key"},
+	"egress":                {"key"},
 	"workspace-token-trust": {"key"},
 	"hook":                  {"key"},
 }
 
-func givesPoolToken(kind string, fields map[string]any) bool {
-	return kind == "runner-pool" && fields["mode"] == "pull"
+func givesToken(kind string, fields map[string]any) bool {
+	return kind == "egress" || (kind == "runner-pool" && fields["mode"] == "pull")
 }
 
 func issue(w http.ResponseWriter, held *resource) string {
 	issued := fmt.Sprintf("issued-%s-%s", held.id, strings.Repeat("x", 32))
-	w.Header().Set(PoolTokenHeader, issued)
+	header := PoolTokenHeader
+	if held.kind == "egress" {
+		header = EgressTokenHeader
+	}
+	w.Header().Set(header, issued)
 
 	return issued
 }
@@ -787,7 +846,7 @@ func (s *Server) addressOf(held *resource) string {
 	switch held.kind {
 	case "workspace":
 		return textOf(held.fields["slug"])
-	case "team", "runner-trust", "runner-pool", "workspace-token-trust":
+	case "team", "runner-trust", "runner-pool", "egress", "workspace-token-trust":
 		return textOf(held.fields["key"])
 	case "secret":
 		return textOf(held.fields["name"])
@@ -857,6 +916,10 @@ func (s *Server) bodyOf(held *resource) map[string]any {
 
 	if held.kind == "workspace-token-trust" {
 		body["definedBy"] = Admin
+	}
+
+	if held.kind == "egress" && strings.HasPrefix(textOf(held.fields["url"]), "http:") {
+		body["warnings"] = []any{warned("url", "is not https. Runners send their proxy credential to it. A production deployment refuses to provision runners that use it")}
 	}
 
 	if held.kind == "integration" {

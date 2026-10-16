@@ -160,6 +160,8 @@ func written(kind string, held *resource, fields, body map[string]any) (string, 
 		return secretValue(held, fields, body)
 	case "runner-pool":
 		return poolAccess(held, fields, body)
+	case "egress":
+		return egressToken(held, fields, body)
 	case "hook":
 		return hookSecret(held, fields, body)
 	default:
@@ -205,9 +207,15 @@ func rotatedAt(held *resource) any {
 	return held.fields["rotatedAt"]
 }
 
-const (
-	poolTokenTaken = "is already another pool’s token; give each pool its own"
-	poolTokenSpent = "was given to a pool before, and a pool token is given once, ever: one rotated away, or held by a pool since deleted or replaced, never works again; give a new one"
+var (
+	tokenTaken = map[string]string{
+		"runner-pool": "is already another pool’s token; give each pool its own",
+		"egress":      "belongs to another egress. Please give each egress its own",
+	}
+	tokenSpent = map[string]string{
+		"runner-pool": "was given to a pool before, and a pool token is given once, ever: one rotated away, or held by a pool since deleted or replaced, never works again; give a new one",
+		"egress":      "was used before. Egress tokens work once only",
+	}
 )
 
 const pullOnly = "is only for a pool that is pulled from; a pool that provisions is called instead, and has no token"
@@ -256,9 +264,51 @@ func runnerPool(body map[string]any) (map[string]any, []fieldError) {
 	}
 
 	fields["mode"] = "push"
-	fields["provision"] = map[string]any{"url": written, "secretVersion": versionOf(given["secretVersion"])}
+	fields["provision"] = map[string]any{"url": written, "secretVersion": versionOf(given["secretVersion"]), "egress": nil}
+	if named, ok := given["egress"].(string); ok && strings.TrimSpace(named) != "" {
+		objectOf(fields["provision"])["egress"] = strings.TrimSpace(named)
+	}
 
 	return fields, errs
+}
+
+func egress(body map[string]any) (map[string]any, []fieldError) {
+	var errs []fieldError
+
+	key, _ := body["key"].(string)
+	key = strings.TrimSpace(key)
+	if why := wordsLike("shared")(key); why != "" {
+		errs = append(errs, fieldError{"key", why})
+	}
+
+	written, _ := body["url"].(string)
+	written = strings.TrimSpace(written)
+	sent, err := url.Parse(written)
+	switch {
+	case err != nil || !sent.IsAbs() || sent.Host == "":
+		errs = append(errs, fieldError{"url", "must be an absolute https URL, as in https://egress.example.com"})
+	case sent.Scheme != "https" && sent.Scheme != "http":
+		errs = append(errs, fieldError{"url", "must be an http or https URL"})
+	case sent.User != nil:
+		errs = append(errs, fieldError{"url", "must carry no credentials. Runners give their proxy credential"})
+	case sent.RawQuery != "" || sent.Fragment != "" || len(written) > 2048:
+		errs = append(errs, fieldError{"url", "must be at most 2048 characters, with no query and no fragment"})
+	}
+
+	return map[string]any{"key": key, "url": written, "tokenVersion": versionOf(body["tokenVersion"])}, errs
+}
+
+func egressToken(held *resource, fields, body map[string]any) (string, []fieldError) {
+	token, _ := body["token"].(string)
+
+	switch {
+	case token != "" && !runnerKey.MatchString(token):
+		return "", []fieldError{{"token", "must be 32 to 255 URL-safe characters"}}
+	case token == "" && held != nil && held.fields["tokenVersion"] != fields["tokenVersion"]:
+		return "", []fieldError{{"token", "is required whenever tokenVersion changes"}}
+	default:
+		return token, nil
+	}
 }
 
 func versionOf(held any) any {

@@ -218,6 +218,7 @@ func (p *SpotlightProvider) Resources(_ context.Context) []func() resource.Resou
 		NewSecretResource,
 		NewWorkspaceTokenTrustResource,
 		NewRunnerTrustResource,
+		NewEgressResource,
 		NewRunnerPoolResource,
 		NewWorkspaceRunnersResource,
 	}
@@ -245,6 +246,7 @@ func (p *SpotlightProvider) ListResources(_ context.Context) []func() list.ListR
 		NewSecretListResource,
 		NewWorkspaceTokenTrustListResource,
 		NewRunnerTrustListResource,
+		NewEgressListResource,
 		NewRunnerPoolListResource,
 		NewWorkspaceRunnersListResource,
 	}

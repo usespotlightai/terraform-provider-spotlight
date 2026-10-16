@@ -26,7 +26,7 @@ const WorkspaceEnv = "SPOTLIGHT_ACC_WORKSPACE"
 // The prefixes of all the resources that the acceptance tests create. The
 // sweepers delete these resources.
 //   - KeyPrefix starts the keys and names of teams, runners, runner trusts,
-//     runner pools and workspace token trusts. An address in a team starts
+//     runner pools, egresses and workspace token trusts. An address in a team starts
 //     with the team key, so KeyPrefix also starts each of these addresses.
 //   - SecretPrefix starts the names of secrets.
 const (
@@ -103,6 +103,7 @@ type Keys struct {
 	Hook                                    string
 	Secret, AWSSecret                       string
 	Trust, Pool, PushPool                   string
+	Egress                                  string
 	TokenTrust                              string
 }
 
@@ -123,12 +124,13 @@ func RandomKeys() Keys {
 		Trust:       KeyPrefix + "cluster-" + suffix,
 		Pool:        KeyPrefix + "pool-" + suffix,
 		PushPool:    KeyPrefix + "push-" + suffix,
+		Egress:      KeyPrefix + "egress-" + suffix,
 		TokenTrust:  KeyPrefix + "github-" + suffix,
 	}
 }
 
-// RandomToken returns a random value that is long enough for a secret or for
-// the token of a pull pool.
+// RandomToken returns a random value that is long enough for a secret, for
+// the token of a pull pool or for the token of an egress.
 func RandomToken() string {
 	return "tfacc" + acctest.RandStringFromCharSet(40, acctest.CharSetAlphaNum)
 }
@@ -245,6 +247,7 @@ func (cp ControlPlane) created(k Keys) []held {
 		holding("runner trust", api.ImportRunnerTrust, func(t client.RunnerTrust) client.Meta { return t.Meta }, api.DeleteRunnerTrust, id, k.Trust),
 		holding("runner pool", api.ImportRunnerPool, func(p client.RunnerPool) client.Meta { return p.Meta }, api.DeleteRunnerPool, id, k.Pool),
 		holding("runner pool", api.ImportRunnerPool, func(p client.RunnerPool) client.Meta { return p.Meta }, api.DeleteRunnerPool, id, k.PushPool),
+		holding("egress", api.ImportEgress, func(e client.Egress) client.Meta { return e.Meta }, api.DeleteEgress, id, k.Egress),
 		holding("workspace token trust", api.ImportWorkspaceTokenTrust, func(t client.WorkspaceTokenTrust) client.Meta { return t.Meta }, api.DeleteWorkspaceTokenTrust, id, k.TokenTrust),
 	}
 }

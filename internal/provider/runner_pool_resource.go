@@ -59,6 +59,7 @@ type runnerPoolProvision struct {
 	URL           types.String `tfsdk:"url"`
 	Secret        types.String `tfsdk:"secret"`
 	SecretVersion types.Int64  `tfsdk:"secret_version"`
+	Egress        types.String `tfsdk:"egress"`
 }
 
 var runnerPoolFields = fieldpath.Locator{Schema: runnerPoolSchema().Type()}
@@ -92,6 +93,12 @@ func runnerPoolSchema() schema.Schema {
 	provision["url"] = schema.StringAttribute{
 		Required:            true,
 		MarkdownDescription: "Where Spotlight calls, over https, with each run the pool is to serve, as in `https://provision.example.com/runs`.",
+	}
+	provision["egress"] = schema.StringAttribute{
+		Optional: true,
+		MarkdownDescription: "The egress the pool's runners send their traffic through: `" + client.PlatformEgress + "` for the egress that Spotlight operates, " +
+			"or the `id` of a `spotlight_egress` in the workspace. Left out, the runners have no egress, and Spotlight does not send to the pool a run that uses secrets or the Spotlight API. " +
+			"Changing it updates the pool in place.",
 	}
 	attributes["provision"] = schema.SingleNestedAttribute{
 		Optional: true,
@@ -283,6 +290,7 @@ func runnerPoolInput(plan RunnerPoolResourceModel) (client.RunnerPoolInput, diag
 		in.Provision = &client.PoolProvision{
 			URL:           plan.Provision.URL.ValueString(),
 			SecretVersion: plan.Provision.SecretVersion.ValueInt64Pointer(),
+			Egress:        plan.Provision.Egress.ValueStringPointer(),
 		}
 	}
 
@@ -350,6 +358,7 @@ func runnerPoolModel(pool client.RunnerPool, kept *RunnerPoolResourceModel) Runn
 			URL:           types.StringValue(pool.Provision.URL),
 			Secret:        types.StringNull(),
 			SecretVersion: types.Int64PointerValue(pool.Provision.SecretVersion),
+			Egress:        types.StringPointerValue(pool.Provision.Egress),
 		}
 	}
 
@@ -362,6 +371,7 @@ func runnerPoolModel(pool client.RunnerPool, kept *RunnerPoolResourceModel) Runn
 		if model.Provision != nil && kept.Provision != nil {
 			model.Provision.URL = kept.Provision.URL
 			model.Provision.SecretVersion = kept.Provision.SecretVersion
+			model.Provision.Egress = kept.Provision.Egress
 		}
 	}
 

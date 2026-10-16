@@ -50,6 +50,7 @@ resource "spotlight_runner_pool" "k8s_jobs" {
     url            = "https://provision.example.com/runs"
     secret         = "whsec_${base64encode(random_password.provision.result)}"
     secret_version = 1
+    egress         = spotlight_egress.shared.id
   }
 }
 ```
@@ -88,6 +89,7 @@ Required:
 
 Optional:
 
+- `egress` (String) The egress the pool's runners send their traffic through: `spotlight` for the egress that Spotlight operates, or the `id` of a `spotlight_egress` in the workspace. Left out, the runners have no egress, and Spotlight does not send to the pool a run that uses secrets or the Spotlight API. Changing it updates the pool in place.
 - `secret_version` (Number) Any number; change it whenever `secret` changes, so Terraform sends the new value.
 
 ## Import
