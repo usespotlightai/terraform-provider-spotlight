@@ -157,7 +157,7 @@ func TestAConflictSaysWhatToDo(t *testing.T) {
 
 	version := int64(4)
 	addAPIError(&diags, "Could not update the line", &client.Problem{
-		Status: 409, Type: client.ProblemMovedOn, Title: "The line changed since it was read",
+		Status: 409, Type: client.ProblemVersionConflict, Title: "The line changed since it was read",
 		Detail: "The line is at version 4", CurrentVersion: &version,
 	}, diagnosedLineFields, client.ScopeConfigure)
 

@@ -138,7 +138,7 @@ func addAPIWarnings(diags *diag.Diagnostics, kind string, warnings []client.Fiel
 
 func explainedProblem(problem *client.Problem) string {
 	switch problem.Type {
-	case client.ProblemMovedOn:
+	case client.ProblemVersionConflict:
 		return withDetail(problem, "Something changed it since Terraform last read it. Run terraform plan again to see the change, then apply.")
 	case client.ProblemAlreadyExists:
 		return withDetail(problem, "Import it with an import block or terraform import to manage it from here.")
