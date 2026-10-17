@@ -45,7 +45,7 @@ output "apply_trust" {
 }
 ```
 
-`subject` is matched against the `sub` claim of the job's OIDC token, which GitHub writes as `repo:<owner>/<repository>:pull_request` for a pull request, `repo:<owner>/<repository>:ref:refs/heads/<branch>` for a push, and `repo:<owner>/<repository>:environment:<name>` for a job that deploys to an environment. A job with `environment: production` could use `subject = "repo:acme/platform:environment:production"` instead, so that the environment's protection rules gate every apply. A `*` in `subject` stands for any run of characters, colons included, but a subject with one must name its owner before the first, so `repo:acme/*` is accepted and `repo:*` is refused. `claims` narrows the trust further by any other claim in the token, as in `claims = { repository_owner = "acme" }`.
+`subject` is matched against the `sub` claim of the job's OIDC token, which GitHub writes as `repo:<owner>/<repository>:pull_request` for a pull request, `repo:<owner>/<repository>:ref:refs/heads/<branch>` for a push, and `repo:<owner>/<repository>:environment:<name>` for a job that deploys to an environment. A job with `environment: production` could use `subject = "repo:acme/platform:environment:production"` instead, so that the environment's protection rules gate every apply. A `*` in `subject` matches any run of characters, colons included, but a subject with one must name its owner before the first, so `repo:acme/*` is accepted and `repo:*` is refused. `claims` narrows the trust further by any other claim in the token, as in `claims = { repository_owner = "acme" }`.
 
 ### Bootstrap once, then store nothing
 

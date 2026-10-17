@@ -378,7 +378,7 @@
             "bearer": []
           }
         ],
-        "summary": "Read a line as it stands",
+        "summary": "Read the current form of a line",
         "tags": [
           "lines"
         ],
@@ -701,7 +701,7 @@
             "bearer": []
           }
         ],
-        "summary": "Delete a line no task stands on",
+        "summary": "Delete a line that has no tasks",
         "tags": [
           "lines"
         ],
@@ -907,7 +907,7 @@
             "bearer": []
           }
         ],
-        "summary": "List every line in a workspace, across its teams, each as it stands",
+        "summary": "List every line in a workspace, across its teams, each in its current form",
         "tags": [
           "lines"
         ],
@@ -2361,7 +2361,7 @@
     },
     "/egress/connections": {
       "post": {
-        "description": "Called by a shared egress with its egress token. Spotlight keeps each record with its run for 30 days. It keeps a record only when the run still names the runner of the proxy credential, and that runner stands or ended at most 2 minutes before.",
+        "description": "Called by a shared egress with its egress token. Spotlight keeps each record with its run for 30 days. It keeps a record only when the run still names the runner of the proxy credential, and that runner is active, or ended at most 2 minutes before.",
         "operationId": "recordEgressConnections",
         "parameters": [],
         "requestBody": {
@@ -2888,7 +2888,7 @@
             "description": "No such team for this caller"
           }
         },
-        "summary": "List the tasks standing at a team’s stations, oldest first",
+        "summary": "List the tasks at a team’s stations, oldest first",
         "tags": [
           "tasks"
         ]
@@ -3162,7 +3162,7 @@
         },
         "responses": {
           "204": {
-            "description": "It joined the task’s trail, and starts the station again if the task stood idle there"
+            "description": "It joined the task’s trail, and starts the station again if the task was idle there"
           },
           "401": {
             "description": "No valid session"
@@ -9288,7 +9288,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GitHubStandingResponseDto"
+                  "$ref": "#/components/schemas/GitHubConnectionStatusResponseDto"
                 }
               }
             }
@@ -9390,7 +9390,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HostStandingResponseDto"
+                  "$ref": "#/components/schemas/HostHeartbeatResponseDto"
                 }
               }
             }
@@ -15097,7 +15097,7 @@
     },
     "/workspaces/{slug}/decisions": {
       "get": {
-        "operationId": "listStandingDecisions",
+        "operationId": "listMergedDecisions",
         "parameters": [
           {
             "name": "slug",
@@ -15153,7 +15153,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/StandingDecisionListResponseDto"
+                  "$ref": "#/components/schemas/MergedDecisionListResponseDto"
                 }
               }
             }
@@ -17696,7 +17696,7 @@
             "description": "No memories named, one named twice, an edit too long, or one from outside the team approved with others"
           }
         },
-        "summary": "Let proposed memories stand, as proposed or as edited, keeping what they rest on",
+        "summary": "Make proposed memories active, as proposed or as edited, and keep what they rest on",
         "tags": [
           "memories"
         ]
@@ -17820,12 +17820,12 @@
             }
           },
           {
-            "name": "standing",
+            "name": "status",
             "required": false,
             "in": "query",
             "schema": {
               "enum": [
-                "stands",
+                "active",
                 "retired"
               ],
               "type": "string"
@@ -17853,7 +17853,7 @@
             "description": "No such team for this caller"
           },
           "422": {
-            "description": "A standing or kind no memory has"
+            "description": "A status or kind that no memory has"
           }
         },
         "summary": "What the team remembers, narrowed by where it applies and its kind",
@@ -17904,7 +17904,7 @@
             "description": "An unknown kind, a body too long, or a line, station or repository the team does not have"
           }
         },
-        "summary": "Tell the team something to remember; it stands at once",
+        "summary": "Tell the team something to remember. It is active at once",
         "tags": [
           "memories"
         ]
@@ -18318,7 +18318,7 @@
             "description": "No such run leased by this runner"
           }
         },
-        "summary": "Every standing memory that applies to the run, as files to lay in its workspace",
+        "summary": "Every active memory that applies to the run, as files to lay in its workspace",
         "tags": [
           "runners"
         ]
@@ -19093,7 +19093,7 @@
             "bearer": []
           }
         ],
-        "summary": "The team’s standing memories, how many runs were briefed or read them, which were flagged wrong, and how runs with memories went against runs without",
+        "summary": "The team’s active memories, how many runs were briefed or read them, which were flagged wrong, and how runs with memories went against runs without",
         "tags": [
           "insights"
         ]
@@ -19503,7 +19503,7 @@
             "name": "delivery",
             "required": false,
             "in": "query",
-            "description": "Only runs of tasks whose pull request stands this way",
+            "description": "Only runs of tasks whose pull request has this status",
             "schema": {
               "enum": [
                 "open",
@@ -24000,7 +24000,7 @@
             "type": "string",
             "example": null,
             "nullable": true,
-            "description": "Where the task must stand for this to count. Null is wherever it is."
+            "description": "The station where the task must be for this to count. Null means any station."
           },
           "to": {
             "type": "string",
@@ -24251,7 +24251,7 @@
           "definition": {
             "type": "object",
             "additionalProperties": true,
-            "description": "The line as it stands now, stations in order, with every field a definition may leave out filled in",
+            "description": "The current line, stations in order, with every field a definition may leave out filled in",
             "example": {
               "key": "delivery",
               "name": "Delivery",
@@ -24613,7 +24613,7 @@
           },
           "before": {
             "type": "string",
-            "description": "The file as it stood"
+            "description": "The file before the agent changed it"
           },
           "after": {
             "type": "string",
@@ -25454,7 +25454,7 @@
           },
           "cost": {
             "nullable": true,
-            "description": "What the replay cost; a replay run has no outcome of its own, so its cost stands beside the run",
+            "description": "What the replay cost; a replay run has no outcome of its own, so the response gives its cost beside the run",
             "type": "object",
             "allOf": [
               {
@@ -25898,7 +25898,7 @@
           "next": {
             "type": "string",
             "example": "code-review",
-            "description": "The key of the station to pass the task to, as in code-review; \"review\" to ask a person; or \"done\" to close the task where it stands. Anything this line does not know is treated as a question for a person."
+            "description": "The key of the station to pass the task to, as in code-review; \"review\" to ask a person; or \"done\" to close the task at its current station. Anything this line does not know is treated as a question for a person."
           },
           "note": {
             "type": "string",
@@ -26092,7 +26092,7 @@
           "running": {
             "type": "integer",
             "example": 1,
-            "description": "The pool’s runners standing now: with a lease on a run or check, or started and yet to claim"
+            "description": "The pool’s runners that are active now: with a lease on a run or check, or started and yet to claim"
           },
           "capacity": {
             "type": "integer",
@@ -26978,13 +26978,13 @@
             "description": "Why it cannot go ahead until a person says so"
           },
           "inputs": {
-            "description": "What it would go ahead with, exactly as it stands",
+            "description": "What it would go ahead with, exactly as it is now",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/InboxApprovalInputResponseDto"
             }
           },
-          "standing": {
+          "status": {
             "type": "string",
             "example": "asked",
             "enum": [
@@ -27023,7 +27023,7 @@
           "name",
           "because",
           "inputs",
-          "standing",
+          "status",
           "edited",
           "intent",
           "askedOf"
@@ -27258,8 +27258,8 @@
               }
             ]
           },
-          "standsAt": {
-            "description": "Where the task stands now, which is where it ended up",
+          "currentStation": {
+            "description": "Where the task is now, which is where it ended up",
             "allOf": [
               {
                 "$ref": "#/components/schemas/InboxStationResponseDto"
@@ -27339,7 +27339,7 @@
           "stationPosition",
           "stationCount",
           "raisedAt",
-          "standsAt",
+          "currentStation",
           "createdAt",
           "askedAt",
           "resolved",
@@ -27751,7 +27751,7 @@
           },
           "awaitingReview": {
             "nullable": true,
-            "description": "Where a standing question is answered, or null for none",
+            "description": "Where an open question is answered, or null for none",
             "type": "object",
             "allOf": [
               {
@@ -29333,7 +29333,7 @@
             "type": "number",
             "nullable": true,
             "example": 2,
-            "description": "Where the station stands on its line, from 0"
+            "description": "The position of the station on its line, from 0"
           },
           "stationCount": {
             "type": "number",
@@ -29962,7 +29962,7 @@
           "subject": {
             "type": "string",
             "example": "repo:acme/platform:ref:refs/heads/main",
-            "description": "The subject the workload’s token must carry; * stands for any run of characters"
+            "description": "The subject the workload’s token must carry; * matches any run of characters"
           },
           "claims": {
             "type": "object",
@@ -30742,7 +30742,7 @@
               "type": "string"
             }
           },
-          "standing": {
+          "status": {
             "type": "string",
             "description": "Whether it is still worth following.",
             "enum": [
@@ -30760,7 +30760,7 @@
           "invitedBy",
           "role",
           "teamNames",
-          "standing"
+          "status"
         ]
       },
       "JoinedWorkspaceResponseDto": {
@@ -31044,7 +31044,7 @@
           "fullName"
         ]
       },
-      "GitHubStandingResponseDto": {
+      "GitHubConnectionStatusResponseDto": {
         "type": "object",
         "properties": {
           "connected": {
@@ -31133,7 +31133,7 @@
           "capacity"
         ]
       },
-      "HostStandingResponseDto": {
+      "HostHeartbeatResponseDto": {
         "type": "object",
         "properties": {
           "workspace": {
@@ -31843,7 +31843,7 @@
             "description": "Where the integration is defined",
             "example": "integrations/linear"
           },
-          "standing": {
+          "connectionStatus": {
             "type": "string",
             "description": "Whether the team is linked to the host: it only listens, it links by authorizing and has not, or it has",
             "enum": [
@@ -31883,7 +31883,7 @@
           "source",
           "name",
           "path",
-          "standing",
+          "connectionStatus",
           "holderRule",
           "handle",
           "described"
@@ -32801,16 +32801,16 @@
             "type": "boolean",
             "description": "Whether a later run’s decisions are being drafted"
           },
-          "standing": {
+          "status": {
             "type": "string",
             "enum": [
               "proposed",
-              "stands"
+              "merged"
             ]
           },
           "merge": {
             "nullable": true,
-            "description": "The merge the decisions stood in, once the pull request merged",
+            "description": "The merge that contains the decisions, after the pull request merges",
             "type": "object",
             "allOf": [
               {
@@ -32829,7 +32829,7 @@
         "required": [
           "runId",
           "drafting",
-          "standing",
+          "status",
           "merge",
           "decisions"
         ]
@@ -32853,7 +32853,7 @@
           "path"
         ]
       },
-      "StandingDecisionsResponseDto": {
+      "MergedDecisionsResponseDto": {
         "type": "object",
         "properties": {
           "taskId": {
@@ -32892,14 +32892,14 @@
           "decisions"
         ]
       },
-      "StandingDecisionListResponseDto": {
+      "MergedDecisionListResponseDto": {
         "type": "object",
         "properties": {
           "merges": {
             "description": "Newest merge first, at most fifty",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/StandingDecisionsResponseDto"
+              "$ref": "#/components/schemas/MergedDecisionsResponseDto"
             }
           }
         },
@@ -32922,7 +32922,7 @@
           "base": {
             "type": "object",
             "nullable": true,
-            "description": "The commit the checkout stood at when the run began"
+            "description": "The commit of the checkout when the run began"
           }
         },
         "required": [
@@ -34299,7 +34299,7 @@
           "index": {
             "type": "number",
             "example": 12,
-            "description": "Where the step stands in its run"
+            "description": "The position of the step in its run"
           },
           "kind": {
             "type": "string",
@@ -34347,7 +34347,7 @@
           "position": {
             "type": "number",
             "example": 4,
-            "description": "Where the note stands on its task"
+            "description": "The position of the note on its task"
           },
           "by": {
             "type": "string",
@@ -34454,7 +34454,7 @@
           "supersedes": {
             "type": "string",
             "nullable": true,
-            "description": "The standing memory it replaces once approved"
+            "description": "The active memory it replaces after approval"
           },
           "decision": {
             "nullable": true,
@@ -34538,7 +34538,7 @@
           "body": {
             "type": "string",
             "example": "Never retry an upload the bucket refused with a 403 or 404.",
-            "description": "The memory as it should stand, where it was edited"
+            "description": "The memory as it should be, where it was edited"
           }
         },
         "required": [
@@ -34648,13 +34648,13 @@
             ],
             "example": "person"
           },
-          "standing": {
+          "status": {
             "type": "string",
             "enum": [
-              "stands",
+              "active",
               "retired"
             ],
-            "example": "stands"
+            "example": "active"
           },
           "reach": {
             "type": "string",
@@ -34732,7 +34732,7 @@
           "kind",
           "body",
           "source",
-          "standing",
+          "status",
           "reach",
           "lineId",
           "stationId",
@@ -34851,13 +34851,13 @@
             ],
             "example": "person"
           },
-          "standing": {
+          "status": {
             "type": "string",
             "enum": [
-              "stands",
+              "active",
               "retired"
             ],
-            "example": "stands"
+            "example": "active"
           },
           "reach": {
             "type": "string",
@@ -34971,7 +34971,7 @@
           "kind",
           "body",
           "source",
-          "standing",
+          "status",
           "reach",
           "lineId",
           "stationId",
@@ -35081,7 +35081,7 @@
           "supersedes": {
             "type": "string",
             "nullable": true,
-            "description": "The standing memory it replaces once approved"
+            "description": "The active memory it replaces after approval"
           },
           "decision": {
             "nullable": true,
@@ -35119,11 +35119,11 @@
             "example": "M-12",
             "description": "Its handle once approved"
           },
-          "standing": {
+          "status": {
             "type": "string",
             "nullable": true,
-            "example": "stands",
-            "description": "Once approved, whether it still stands: stands or retired"
+            "example": "active",
+            "description": "After approval, whether it is still active: active or retired"
           }
         },
         "required": [
@@ -35142,7 +35142,7 @@
           "steps",
           "notes",
           "handle",
-          "standing"
+          "status"
         ]
       },
       "RunMemoriesResponseDto": {
@@ -35247,7 +35247,7 @@
             "type": "string",
             "nullable": true,
             "example": "M-7",
-            "description": "The standing memory it corrects, by handle"
+            "description": "The active memory it corrects, by handle"
           }
         },
         "required": [
@@ -35413,7 +35413,7 @@
               null
             ],
             "nullable": true,
-            "description": "Where the task’s pull request stands, if it opened one"
+            "description": "The status of the task’s pull request, if it opened one"
           }
         },
         "required": [
@@ -35765,7 +35765,7 @@
           "trust"
         ]
       },
-      "JudgeStandingResponseDto": {
+      "JudgeCalibrationResponseDto": {
         "type": "object",
         "properties": {
           "trusted": {
@@ -36236,8 +36236,8 @@
               }
             ]
           },
-          "standing": {
-            "$ref": "#/components/schemas/JudgeStandingResponseDto"
+          "calibration": {
+            "$ref": "#/components/schemas/JudgeCalibrationResponseDto"
           },
           "versions": {
             "description": "How the judge agreed with people under each rubric, the latest first",
@@ -36253,7 +36253,7 @@
         "required": [
           "stationId",
           "judge",
-          "standing",
+          "calibration",
           "versions",
           "coverage"
         ]
@@ -36550,8 +36550,8 @@
               }
             ]
           },
-          "standing": {
-            "$ref": "#/components/schemas/JudgeStandingResponseDto"
+          "calibration": {
+            "$ref": "#/components/schemas/JudgeCalibrationResponseDto"
           },
           "grades": {
             "description": "What people graded the run, the latest first",
@@ -36570,7 +36570,7 @@
           "claims",
           "judged",
           "judge",
-          "standing",
+          "calibration",
           "grades"
         ]
       },
@@ -38918,7 +38918,7 @@
           "changes"
         ]
       },
-      "StationStandingResponseDto": {
+      "StationJudgeCalibrationResponseDto": {
         "type": "object",
         "properties": {
           "trusted": {
@@ -39000,7 +39000,7 @@
             "description": "How far each changed station’s judge is trusted, where it has one",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/StationStandingResponseDto"
+              "$ref": "#/components/schemas/StationJudgeCalibrationResponseDto"
             }
           }
         },
@@ -39232,7 +39232,7 @@
             "description": "How far the station’s judge is trusted, where one station is picked and it has a judge",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/StationStandingResponseDto"
+              "$ref": "#/components/schemas/StationJudgeCalibrationResponseDto"
             }
           }
         },
@@ -39329,7 +39329,7 @@
           "period": {
             "$ref": "#/components/schemas/InsightsPeriodResponseDto"
           },
-          "standing": {
+          "activeCount": {
             "type": "number",
             "example": 14,
             "description": "Memories the team keeps now"
@@ -39397,7 +39397,7 @@
         },
         "required": [
           "period",
-          "standing",
+          "activeCount",
           "memoriesBriefed",
           "memoriesRecalled",
           "runsBriefed",
@@ -41792,7 +41792,7 @@
               "gone",
               null
             ],
-            "description": "How the replay it is compared with stands: finished once they can be compared; stopped, over-budget or gone means they never will be"
+            "description": "The state of the replay that it is compared with: finished once they can be compared; stopped, over-budget or gone means they never will be"
           },
           "answered": {
             "type": "number",
@@ -42041,7 +42041,7 @@
             "type": "string",
             "nullable": true,
             "example": "completed",
-            "description": "How the run stands now; null where there is no such run"
+            "description": "The current state of the run; null where there is no such run"
           },
           "endedAt": {
             "type": "string",
@@ -42075,7 +42075,7 @@
               null
             ],
             "nullable": true,
-            "description": "Why the run can no longer be replayed, as it stands now; null while it can"
+            "description": "Why the run can no longer be replayed; null while it can"
           },
           "reason": {
             "type": "string",
@@ -43417,7 +43417,7 @@
           "pairedWith": {
             "type": "string",
             "nullable": true,
-            "description": "The replay its changes are set beside, judged blind: the baseline standing when it started, or its search’s seed; null for a baseline, a probe or a replay that had none"
+            "description": "The replay its changes are set beside, judged blind: the current baseline when it started, or its search’s seed; null for a baseline, a probe or a replay that had none"
           },
           "pairsAgainstBaseline": {
             "nullable": true,
@@ -43769,7 +43769,7 @@
           "pairedWith": {
             "type": "string",
             "nullable": true,
-            "description": "The replay its changes are set beside, judged blind: the baseline standing when it started, or its search’s seed; null for a baseline, a probe or a replay that had none"
+            "description": "The replay its changes are set beside, judged blind: the current baseline when it started, or its search’s seed; null for a baseline, a probe or a replay that had none"
           },
           "pairsAgainstBaseline": {
             "nullable": true,
@@ -44798,7 +44798,7 @@
       "SearchReflectionResponseDto": {
         "type": "object",
         "properties": {
-          "standing": {
+          "incumbent": {
             "type": "string",
             "nullable": true,
             "description": "The candidate whose failures it looked into: the best config before it, the seed’s id when nothing beat the live config; none until it looked"
@@ -44836,7 +44836,7 @@
           }
         },
         "required": [
-          "standing",
+          "incumbent",
           "tasks",
           "causes",
           "outcome",
@@ -45443,7 +45443,7 @@
             "type": "string",
             "nullable": true,
             "example": "acme/platform",
-            "description": "The repository the line’s source names, as it stood when it was picked; null when the line named none"
+            "description": "The repository that the line’s source named when it was picked; null when the line named none"
           },
           "path": {
             "type": "string",
@@ -46807,7 +46807,7 @@
             "description": "Whether it checks every pull request that changes its station"
           },
           "health": {
-            "description": "How the set stands now, whatever the period",
+            "description": "The current health of the set, whatever the period",
             "allOf": [
               {
                 "$ref": "#/components/schemas/ReplaySetHealthResponseDto"
@@ -46816,7 +46816,7 @@
           },
           "baseline": {
             "nullable": true,
-            "description": "The live config replayed over the set, its newest standing baseline whatever the period; null while it has none",
+            "description": "The live config replayed over the set, its newest valid baseline whatever the period; null while it has none",
             "type": "object",
             "allOf": [
               {

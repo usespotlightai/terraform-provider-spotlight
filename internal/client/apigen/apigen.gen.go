@@ -2385,7 +2385,7 @@ type LineResourceResponseDto struct {
 	// Address Names the resource within its workspace; terraform import takes it
 	Address string `json:"address"`
 
-	// Definition The line as it stands now, stations in order, with every field a definition may leave out filled in
+	// Definition The current line, stations in order, with every field a definition may leave out filled in
 	Definition map[string]interface{} `json:"definition"`
 
 	// Id Issued by Spotlight when the resource is created, and never changed
@@ -2701,7 +2701,7 @@ type StepChangeResponseDto struct {
 	// After The file as the agent left it
 	After string `json:"after"`
 
-	// Before The file as it stood
+	// Before The file before the agent changed it
 	Before string  `json:"before"`
 	Path   *string `json:"path"`
 }
@@ -2898,7 +2898,7 @@ type WorkspaceTokenTrustResourceResponseDto struct {
 	// Scopes The scopes every token it mints is given
 	Scopes []WorkspaceTokenTrustResourceResponseDtoScopes `json:"scopes"`
 
-	// Subject The subject the workload’s token must carry; * stands for any run of characters
+	// Subject The subject the workload’s token must carry; * matches any run of characters
 	Subject string `json:"subject"`
 
 	// Version Rises with every change; the ETag carries it, and a write sends it back as If-Match
