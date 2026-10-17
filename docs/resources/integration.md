@@ -2,12 +2,12 @@
 page_title: "spotlight_integration Resource - spotlight"
 subcategory: ""
 description: |-
-  An integration a team has defined: how Spotlight hears from a host, and the actions and tools it offers against it. Spotlight stores the definition whole, exactly as the integration's definition is written, with its keys verbatim; write each expression as $${{ ... }} so Terraform leaves it alone. terraform plan type-checks every expression in it where it is written. A definition may name an API description, openapi or graphql, that Spotlight generates a tool from for each operation when it reads it, or a remote MCP server, mcp, whose tools it lists; those tools are known only after apply. Import it as <workspace id>/<team key>/<source>.
+  An integration a team has created: how Spotlight hears from a host, and the actions and tools it offers against it. Spotlight stores the definition whole, exactly as the integration's definition is written, with its keys verbatim; write each expression as $${{ ... }} so Terraform leaves it alone. terraform plan type-checks every expression in it where it is written. A definition may name an API description, openapi or graphql, that Spotlight generates a tool from for each operation when it reads it, or a remote MCP server, mcp, whose tools it lists; those tools are known only after apply. Import it as <workspace id>/<team key>/<source>.
 ---
 
 # spotlight_integration (Resource)
 
-An integration a team has defined: how Spotlight hears from a host, and the actions and tools it offers against it. Spotlight stores the definition whole, exactly as the integration's definition is written, with its keys verbatim; write each expression as `$${{ ... }}` so Terraform leaves it alone. `terraform plan` type-checks every expression in it where it is written. A definition may name an API description, `openapi` or `graphql`, that Spotlight generates a tool from for each operation when it reads it, or a remote MCP server, `mcp`, whose tools it lists; those tools are known only after apply. Import it as `<workspace id>/<team key>/<source>`.
+An integration a team has created: how Spotlight hears from a host, and the actions and tools it offers against it. Spotlight stores the definition whole, exactly as the integration's definition is written, with its keys verbatim; write each expression as `$${{ ... }}` so Terraform leaves it alone. `terraform plan` type-checks every expression in it where it is written. A definition may name an API description, `openapi` or `graphql`, that Spotlight generates a tool from for each operation when it reads it, or a remote MCP server, `mcp`, whose tools it lists; those tools are known only after apply. Import it as `<workspace id>/<team key>/<source>`.
 
 ## Example Usage
 

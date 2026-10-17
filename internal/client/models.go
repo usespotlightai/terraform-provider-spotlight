@@ -218,7 +218,7 @@ type RunnerTrustInput struct {
 type WorkspaceTokenTrust struct {
 	Meta
 	WorkspaceID string
-	DefinedBy   string
+	CreatedBy   string
 	WorkspaceTokenTrustInput
 }
 

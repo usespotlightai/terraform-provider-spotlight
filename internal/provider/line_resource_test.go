@@ -446,7 +446,7 @@ func TestLineDriftIsPlannedBack(t *testing.T) {
 				},
 			},
 			{
-				PreConfig: func() { fake.Forget(fake.IDOf("line", "core/delivery")) },
+				PreConfig: func() { fake.Delete(fake.IDOf("line", "core/delivery")) },
 				Config:    acctest.Workspace + lineMinimal,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(lineAddress, plancheck.ResourceActionCreate)},

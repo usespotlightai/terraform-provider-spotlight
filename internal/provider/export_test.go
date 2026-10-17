@@ -318,7 +318,7 @@ func seedExported(t *testing.T, cp acctest.ControlPlane, k acctest.Keys) (declar
 	return true
 }
 
-func forgetSeeded(t *testing.T, cp acctest.ControlPlane, k acctest.Keys, declares bool) {
+func deleteSeeded(t *testing.T, cp acctest.ControlPlane, k acctest.Keys, declares bool) {
 	t.Helper()
 
 	if declares {
@@ -394,7 +394,7 @@ func TestAccExportAppliesAndReplansWithNoDiff(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	forgetSeeded(t, cp, k, declares)
+	deleteSeeded(t, cp, k, declares)
 
 	dir := t.TempDir()
 	if err := module.WriteTo(dir); err != nil {

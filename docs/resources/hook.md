@@ -3,12 +3,12 @@
 page_title: "spotlight_hook Resource - spotlight"
 subcategory: ""
 description: |-
-  A hook a team has defined: steps Spotlight takes whenever an event it fires on matches, each calling a tool an integration offers or sending a request. Write each expression in a step as $${{ ... }}, and when bare; terraform plan type-checks every one where it is written. Import it as <workspace id>/<team key>/<key>.
+  A hook a team has created: steps Spotlight takes whenever an event it fires on matches, each calling a tool an integration offers or sending a request. Write each expression in a step as $${{ ... }}, and when bare; terraform plan type-checks every one where it is written. Import it as <workspace id>/<team key>/<key>.
 ---
 
 # spotlight_hook (Resource)
 
-A hook a team has defined: steps Spotlight takes whenever an event it fires `on` matches, each calling a tool an integration offers or sending a request. Write each expression in a step as `$${{ ... }}`, and `when` bare; `terraform plan` type-checks every one where it is written. Import it as `<workspace id>/<team key>/<key>`.
+A hook a team has created: steps Spotlight takes whenever an event it fires `on` matches, each calling a tool an integration offers or sending a request. Write each expression in a step as `$${{ ... }}`, and `when` bare; `terraform plan` type-checks every one where it is written. Import it as `<workspace id>/<team key>/<key>`.
 
 ## Example Usage
 

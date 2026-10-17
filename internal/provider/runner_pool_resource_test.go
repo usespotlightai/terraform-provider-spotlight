@@ -184,7 +184,7 @@ func TestRunnerPoolTokenIsWrittenButNeverKept(t *testing.T) {
 	})
 }
 
-const runnerPoolMinted = `
+const runnerPoolIssued = `
 resource "spotlight_runner_pool" "ephemeral" {
   workspace_id = spotlight_workspace.acme.id
   key          = "ephemeral"
@@ -218,7 +218,7 @@ func TestAPoolTokenSpotlightIssuesIsNeverKept(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
 		Steps: []resource.TestStep{
 			{
-				Config: acctest.Workspace + runnerPoolMinted,
+				Config: acctest.Workspace + runnerPoolIssued,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(runnerPoolAddress, tfjsonpath.New("token"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(runnerPoolAddress, tfjsonpath.New("token_version"), knownvalue.Null()),
@@ -234,7 +234,7 @@ func TestAPoolTokenSpotlightIssuesIsNeverKept(t *testing.T) {
 				},
 			},
 			{
-				Config:   acctest.Workspace + runnerPoolMinted,
+				Config:   acctest.Workspace + runnerPoolIssued,
 				PlanOnly: true,
 			},
 			{
@@ -242,7 +242,7 @@ func TestAPoolTokenSpotlightIssuesIsNeverKept(t *testing.T) {
 				ExpectError: regexp.MustCompile(`(?s)token: is given whenever tokenVersion changes`),
 			},
 			{
-				Config: acctest.Workspace + runnerPoolMinted,
+				Config: acctest.Workspace + runnerPoolIssued,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
 				},
@@ -489,7 +489,7 @@ func TestRunnerPoolImportsByIdentity(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
 		Steps: []resource.TestStep{
 			{
-				Config:            acctest.Workspace + runnerPoolMinted,
+				Config:            acctest.Workspace + runnerPoolIssued,
 				ConfigStateChecks: acctest.ExpectIdentity(runnerPoolAddress),
 			},
 			acctest.ImportedByIdentity(runnerPoolAddress),

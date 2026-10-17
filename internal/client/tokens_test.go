@@ -41,7 +41,7 @@ type issuing struct {
 	lifetime     time.Duration
 	unauthorized map[string]bool
 	admit        string
-	minted       int
+	jwts         int
 }
 
 func (i *issuing) serve(w http.ResponseWriter, r *http.Request) {
@@ -56,8 +56,8 @@ func (i *issuing) serve(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
 	case "/github/token":
 		i.mu.Lock()
-		i.minted++
-		jwt := fmt.Sprintf("github-jwt-%d", i.minted)
+		i.jwts++
+		jwt := fmt.Sprintf("github-jwt-%d", i.jwts)
 		i.mu.Unlock()
 
 		reply(w, http.StatusOK, "application/json", map[string]any{"count": 1, "value": jwt})
@@ -71,11 +71,11 @@ func (i *issuing) serve(w http.ResponseWriter, r *http.Request) {
 		}
 
 		i.mu.Lock()
-		mintedToken := fmt.Sprintf("minted-%d", len(i.exchanges()))
+		issuedToken := fmt.Sprintf("issued-%d", len(i.exchanges()))
 		i.mu.Unlock()
 
 		reply(w, http.StatusOK, "application/json", map[string]any{
-			"token": mintedToken, "tokenId": "token-1", "workspaceId": "ws-1", "scopes": []any{"plan"},
+			"token": issuedToken, "tokenId": "token-1", "workspaceId": "ws-1", "scopes": []any{"plan"},
 			"expiresAt": i.clock.Now().Add(i.lifetime).UTC().Format("2006-01-02T15:04:05.000Z"),
 		})
 	default:
@@ -213,8 +213,8 @@ func TestTheWorkloadTokenIsExchangedThroughTheTrust(t *testing.T) {
 	}
 
 	read := issued.at("/api/resources/workspaces/ws-1")
-	if got := read[0].Headers.Get("Authorization"); got != "Bearer minted-1" {
-		t.Errorf("read with Authorization %q, want the minted token", got)
+	if got := read[0].Headers.Get("Authorization"); got != "Bearer issued-1" {
+		t.Errorf("read with Authorization %q, want the issued token", got)
 	}
 }
 
@@ -236,7 +236,7 @@ func TestAGivenWorkloadTokenIsExchangedAsItIs(t *testing.T) {
 	}
 }
 
-func TestAMintedTokenIsKeptUntilAMinuteBeforeItExpires(t *testing.T) {
+func TestAnIssuedTokenIsKeptUntilAMinuteBeforeItExpires(t *testing.T) {
 	api, issued := exchangingClient(t, fromGitHub)
 	ctx := context.Background()
 
@@ -269,7 +269,7 @@ func TestAMintedTokenIsKeptUntilAMinuteBeforeItExpires(t *testing.T) {
 	}
 
 	reads := issued.at("/api/resources/workspaces/ws-1")
-	if got := reads[len(reads)-1].Headers.Get("Authorization"); got != "Bearer minted-2" {
+	if got := reads[len(reads)-1].Headers.Get("Authorization"); got != "Bearer issued-2" {
 		t.Errorf("read with Authorization %q, want the renewed token", got)
 	}
 }
@@ -291,9 +291,9 @@ func TestAShortLivedTokenIsRenewedHalfwayThroughItsLife(t *testing.T) {
 	}
 }
 
-func TestAnUnauthorizedMintedTokenIsRenewedAndTheCallRepeated(t *testing.T) {
+func TestAnUnauthorizedIssuedTokenIsRenewedAndTheCallRepeated(t *testing.T) {
 	api, issued := exchangingClient(t, fromGitHub)
-	issued.unauthorize("minted-1")
+	issued.unauthorize("issued-1")
 
 	created, err := api.CreateWorkspace(context.Background(), client.WorkspaceInput{Name: "Acme", Slug: "acme"})
 	if err != nil {
@@ -309,7 +309,7 @@ func TestAnUnauthorizedMintedTokenIsRenewedAndTheCallRepeated(t *testing.T) {
 		t.Fatalf("%d attempts, want 2", len(creates))
 	}
 
-	if creates[0].Headers.Get("Authorization") != "Bearer minted-1" || creates[1].Headers.Get("Authorization") != "Bearer minted-2" {
+	if creates[0].Headers.Get("Authorization") != "Bearer issued-1" || creates[1].Headers.Get("Authorization") != "Bearer issued-2" {
 		t.Errorf("attempted with %q then %q", creates[0].Headers.Get("Authorization"), creates[1].Headers.Get("Authorization"))
 	}
 
@@ -321,7 +321,7 @@ func TestAnUnauthorizedMintedTokenIsRenewedAndTheCallRepeated(t *testing.T) {
 
 func TestATokenUnauthorizedAgainIsNotRenewedForever(t *testing.T) {
 	api, issued := exchangingClient(t, fromGitHub)
-	issued.unauthorize("minted-1", "minted-2", "minted-3")
+	issued.unauthorize("issued-1", "issued-2", "issued-3")
 
 	_, err := api.ReadWorkspace(context.Background(), "ws-1")
 

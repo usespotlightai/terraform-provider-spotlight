@@ -231,6 +231,36 @@ func (e HookResourceResponseDtoOn) Valid() bool {
 	}
 }
 
+// Defines values for IssuedTokenResponseDtoScopes.
+const (
+	IssuedTokenResponseDtoScopesConfigure IssuedTokenResponseDtoScopes = "configure"
+	IssuedTokenResponseDtoScopesPlan      IssuedTokenResponseDtoScopes = "plan"
+	IssuedTokenResponseDtoScopesRead      IssuedTokenResponseDtoScopes = "read"
+	IssuedTokenResponseDtoScopesRunners   IssuedTokenResponseDtoScopes = "runners"
+	IssuedTokenResponseDtoScopesSecrets   IssuedTokenResponseDtoScopes = "secrets"
+	IssuedTokenResponseDtoScopesTrusts    IssuedTokenResponseDtoScopes = "trusts"
+)
+
+// Valid indicates whether the value is a known member of the IssuedTokenResponseDtoScopes enum.
+func (e IssuedTokenResponseDtoScopes) Valid() bool {
+	switch e {
+	case IssuedTokenResponseDtoScopesConfigure:
+		return true
+	case IssuedTokenResponseDtoScopesPlan:
+		return true
+	case IssuedTokenResponseDtoScopesRead:
+		return true
+	case IssuedTokenResponseDtoScopesRunners:
+		return true
+	case IssuedTokenResponseDtoScopesSecrets:
+		return true
+	case IssuedTokenResponseDtoScopesTrusts:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for JournalStepResponseDtoKind.
 const (
 	Hook    JournalStepResponseDtoKind = "hook"
@@ -252,36 +282,6 @@ func (e JournalStepResponseDtoKind) Valid() bool {
 	case Thought:
 		return true
 	case Tool:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for MintedTokenResponseDtoScopes.
-const (
-	MintedTokenResponseDtoScopesConfigure MintedTokenResponseDtoScopes = "configure"
-	MintedTokenResponseDtoScopesPlan      MintedTokenResponseDtoScopes = "plan"
-	MintedTokenResponseDtoScopesRead      MintedTokenResponseDtoScopes = "read"
-	MintedTokenResponseDtoScopesRunners   MintedTokenResponseDtoScopes = "runners"
-	MintedTokenResponseDtoScopesSecrets   MintedTokenResponseDtoScopes = "secrets"
-	MintedTokenResponseDtoScopesTrusts    MintedTokenResponseDtoScopes = "trusts"
-)
-
-// Valid indicates whether the value is a known member of the MintedTokenResponseDtoScopes enum.
-func (e MintedTokenResponseDtoScopes) Valid() bool {
-	switch e {
-	case MintedTokenResponseDtoScopesConfigure:
-		return true
-	case MintedTokenResponseDtoScopesPlan:
-		return true
-	case MintedTokenResponseDtoScopesRead:
-		return true
-	case MintedTokenResponseDtoScopesRunners:
-		return true
-	case MintedTokenResponseDtoScopesSecrets:
-		return true
-	case MintedTokenResponseDtoScopesTrusts:
 		return true
 	default:
 		return false
@@ -310,10 +310,10 @@ func (e PoolProvisionResponseDtoEgressTraffic) Valid() bool {
 const (
 	ProblemResponseDtoPermissionAdminister        ProblemResponseDtoPermission = "administer"
 	ProblemResponseDtoPermissionConfigure         ProblemResponseDtoPermission = "configure"
+	ProblemResponseDtoPermissionCreateWorkspaces  ProblemResponseDtoPermission = "create-workspaces"
 	ProblemResponseDtoPermissionManageRunners     ProblemResponseDtoPermission = "manage-runners"
 	ProblemResponseDtoPermissionManageSecrets     ProblemResponseDtoPermission = "manage-secrets"
 	ProblemResponseDtoPermissionManageTokenTrusts ProblemResponseDtoPermission = "manage-token-trusts"
-	ProblemResponseDtoPermissionOpenWorkspaces    ProblemResponseDtoPermission = "open-workspaces"
 	ProblemResponseDtoPermissionPlan              ProblemResponseDtoPermission = "plan"
 )
 
@@ -324,13 +324,13 @@ func (e ProblemResponseDtoPermission) Valid() bool {
 		return true
 	case ProblemResponseDtoPermissionConfigure:
 		return true
+	case ProblemResponseDtoPermissionCreateWorkspaces:
+		return true
 	case ProblemResponseDtoPermissionManageRunners:
 		return true
 	case ProblemResponseDtoPermissionManageSecrets:
 		return true
 	case ProblemResponseDtoPermissionManageTokenTrusts:
-		return true
-	case ProblemResponseDtoPermissionOpenWorkspaces:
 		return true
 	case ProblemResponseDtoPermissionPlan:
 		return true
@@ -2344,6 +2344,21 @@ type IntegrationResourceResponseDto struct {
 	Warnings []FieldErrorResponseDto `json:"warnings"`
 }
 
+// IssuedTokenResponseDto defines model for IssuedTokenResponseDto.
+type IssuedTokenResponseDto struct {
+	// ExpiresAt After this it admits nobody
+	ExpiresAt string                         `json:"expiresAt"`
+	Scopes    []IssuedTokenResponseDtoScopes `json:"scopes"`
+
+	// Token The token to send as Authorization: Bearer until it expires; answered this once, and kept only as a hash
+	Token       string `json:"token"`
+	TokenId     string `json:"tokenId"`
+	WorkspaceId string `json:"workspaceId"`
+}
+
+// IssuedTokenResponseDtoScopes defines model for IssuedTokenResponseDto.Scopes.
+type IssuedTokenResponseDtoScopes string
+
 // JournalStepResponseDto defines model for JournalStepResponseDto.
 type JournalStepResponseDto struct {
 	Change *StepChangeResponseDto `json:"change"`
@@ -2413,21 +2428,6 @@ type McpServerResponseDto struct {
 	Env  map[string]string `json:"env"`
 	Name string            `json:"name"`
 }
-
-// MintedTokenResponseDto defines model for MintedTokenResponseDto.
-type MintedTokenResponseDto struct {
-	// ExpiresAt After this it admits nobody
-	ExpiresAt string                         `json:"expiresAt"`
-	Scopes    []MintedTokenResponseDtoScopes `json:"scopes"`
-
-	// Token The token to send as Authorization: Bearer until it expires; answered this once, and kept only as a hash
-	Token       string `json:"token"`
-	TokenId     string `json:"tokenId"`
-	WorkspaceId string `json:"workspaceId"`
-}
-
-// MintedTokenResponseDtoScopes defines model for MintedTokenResponseDto.Scopes.
-type MintedTokenResponseDtoScopes string
 
 // PermissionsResponseDto defines model for PermissionsResponseDto.
 type PermissionsResponseDto struct {
@@ -2879,8 +2879,8 @@ type WorkspaceTokenTrustResourceResponseDto struct {
 	// Claims Further claims the workload’s token must carry, each matching its pattern the way subject does
 	Claims map[string]string `json:"claims"`
 
-	// DefinedBy The person who defined the trust, or who issued the token that did; the tokens it mints act on their behalf
-	DefinedBy string `json:"definedBy"`
+	// CreatedBy The person who created the trust, or who issued the token that did; the tokens it issues act on their behalf
+	CreatedBy string `json:"createdBy"`
 
 	// Id Issued by Spotlight when the resource is created, and never changed
 	Id string `json:"id"`
@@ -2888,13 +2888,13 @@ type WorkspaceTokenTrustResourceResponseDto struct {
 	// Issuer The OIDC issuer whose signed tokens the trust accepts
 	Issuer string `json:"issuer"`
 
-	// Key Names the trust within its workspace, and every token it mints; fixed for its life
+	// Key Names the trust within its workspace, and every token it issues; fixed for its life
 	Key string `json:"key"`
 
-	// LifetimeMinutes How many minutes a token it mints admits its bearer
+	// LifetimeMinutes How many minutes a token it issues admits its bearer
 	LifetimeMinutes int `json:"lifetimeMinutes"`
 
-	// Scopes The scopes every token it mints is given
+	// Scopes The scopes every token it issues is given
 	Scopes []WorkspaceTokenTrustResourceResponseDtoScopes `json:"scopes"`
 
 	// Subject The subject the workload’s token must carry; * matches any run of characters
@@ -2906,7 +2906,7 @@ type WorkspaceTokenTrustResourceResponseDto struct {
 	// Warnings What would work better, though nothing stops it working; not settable
 	Warnings []FieldErrorResponseDto `json:"warnings"`
 
-	// WorkspaceId The workspace the tokens it mints act in
+	// WorkspaceId The workspace the tokens it issues act in
 	WorkspaceId string `json:"workspaceId"`
 }
 
@@ -15147,7 +15147,7 @@ func (r ImportWorkspaceRunnersResponse) ContentType() string {
 type ExchangeWorkloadTokenResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *MintedTokenResponseDto
+	JSON200      *IssuedTokenResponseDto
 }
 
 // Status returns HTTPResponse.Status
@@ -20714,7 +20714,7 @@ func ParseExchangeWorkloadTokenResponse(rsp *http.Response) (*ExchangeWorkloadTo
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest MintedTokenResponseDto
+		var dest IssuedTokenResponseDto
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

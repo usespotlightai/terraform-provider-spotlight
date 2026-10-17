@@ -54,7 +54,7 @@ type WorkspaceTokenTrustResourceModel struct {
 	Claims          types.Map    `tfsdk:"claims"`
 	Scopes          types.Set    `tfsdk:"scopes"`
 	LifetimeMinutes types.Int64  `tfsdk:"lifetime_minutes"`
-	DefinedBy       types.String `tfsdk:"defined_by"`
+	CreatedBy       types.String `tfsdk:"created_by"`
 }
 
 var workspaceTokenTrustFields = fieldpath.Locator{Schema: workspaceTokenTrustSchema().Type()}
@@ -71,7 +71,7 @@ func workspaceTokenTrustSchema() schema.Schema {
 	return schema.Schema{
 		MarkdownDescription: "A CI workload whose OIDC tokens are exchanged for short-lived workspace tokens, so the CI platform stores no Spotlight token: " +
 			"a job whose token the trust admits calls `POST /api/workspace-tokens/exchange`, as the provider's `oidc` block does, and is given a token with the trust's scopes for its lifetime. " +
-			"Changing or deleting the trust stops every token it minted at once. " +
+			"Changing or deleting the trust stops every token that it issued at once. " +
 			"Writing workspace token trusts needs a workspace admin, or a token granted the `trusts` scope that has every scope the trust gives. " +
 			"A token can give a trust only the scopes that it has. A token can change a trust only when it has the current scopes and the new scopes of the trust. Import it as `<workspace id>/<key>`.",
 		Attributes: map[string]schema.Attribute{
@@ -79,7 +79,7 @@ func workspaceTokenTrustSchema() schema.Schema {
 			"version":      versionAttribute("workspace token trust"),
 			"address":      addressAttribute("github-main"),
 			"workspace_id": ownerAttribute("workspace", "workspace token trust"),
-			"key":          fixedAttribute("Names the trust, and every token it mints, as in `github-main`.", "workspace token trust"),
+			"key":          fixedAttribute("Names the trust, and every token it issues, as in `github-main`.", "workspace token trust"),
 			"issuer": schema.StringAttribute{
 				Required:            true,
 				MarkdownDescription: "The https URL of the OIDC issuer whose signed tokens the trust accepts, as in `https://token.actions.githubusercontent.com`; its keys are found through OIDC discovery.",
@@ -113,19 +113,19 @@ func workspaceTokenTrustSchema() schema.Schema {
 						string(client.ScopeTrusts),
 					)),
 				},
-				MarkdownDescription: "The scopes every token the trust mints is given: one of `read`, `plan` or `configure`, which are a ladder, and `secrets`, `runners` or `trusts` beside it, as a stored token's are. " +
-					"A trust that grants `trusts` lets the workloads it admits write every trust in the workspace, their own included, and so mint tokens with any scope.",
+				MarkdownDescription: "The scopes every token the trust issues is given: one of `read`, `plan` or `configure`, which are a ladder, and `secrets`, `runners` or `trusts` beside it, as a stored token's are. " +
+					"A trust that grants `trusts` lets the workloads it admits write every trust in the workspace, their own included, and so issue tokens with any scope.",
 			},
 			"lifetime_minutes": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
 				Default:             int64default.StaticInt64(15),
 				Validators:          []validator.Int64{int64validator.Between(1, 60)},
-				MarkdownDescription: "How many minutes a token the trust mints admits its bearer, from 1 to 60.",
+				MarkdownDescription: "How many minutes a token the trust issues admits its bearer, from 1 to 60.",
 			},
-			"defined_by": schema.StringAttribute{
+			"created_by": schema.StringAttribute{
 				Computed:            true,
-				MarkdownDescription: "The admin who defined the trust; the tokens it mints act on their behalf.",
+				MarkdownDescription: "The admin who created the trust; the tokens it issues act on their behalf.",
 				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 		},
@@ -290,7 +290,7 @@ func workspaceTokenTrustModel(trust client.WorkspaceTokenTrust, kept *WorkspaceT
 		Claims:          stringMap(trust.Claims),
 		Scopes:          stringSet(trust.Scopes),
 		LifetimeMinutes: types.Int64Value(trust.LifetimeMinutes),
-		DefinedBy:       types.StringValue(trust.DefinedBy),
+		CreatedBy:       types.StringValue(trust.CreatedBy),
 	}
 
 	if kept != nil {

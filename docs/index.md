@@ -32,7 +32,7 @@ export SPOTLIGHT_OIDC_TRUST=<trust id>
 
 or `oidc { trust = "<trust id>" }` in the provider block. On other platforms, give the job's OIDC token in `SPOTLIGHT_OIDC_TOKEN` too. [GitHub Actions without a stored token](guides/github-actions-without-a-stored-token) sets up a pipeline that plans pull requests and applies `main` this way. A stored token and a trust are never used together.
 
-A token, stored or minted, acts only inside the workspace it was created in, and only as its scopes allow. `read`, `plan` and `configure` are a ladder, each allowing what the one before it does: `read` refreshes and imports, `plan` also checks expressions, and `configure` also creates, updates and deletes configuration. Three grants go beside them:
+A token, stored or issued, acts only inside the workspace it was created in, and only as its scopes allow. `read`, `plan` and `configure` are a ladder, each allowing what the one before it does: `read` refreshes and imports, `plan` also checks expressions, and `configure` also creates, updates and deletes configuration. Three grants go beside them:
 
 | Scope | Lets the token write |
 | --- | --- |
@@ -59,7 +59,7 @@ resource "spotlight_workspace" "acme" {
 }
 ```
 
-A token may not open a workspace, so creating a `spotlight_workspace` with one fails and says to import it instead.
+A token may not create a workspace, so creating a `spotlight_workspace` with one fails and says to import it instead.
 
 ## Reading and listing
 

@@ -124,7 +124,7 @@ func hookSchema() schema.Schema {
 	}
 
 	return schema.Schema{
-		MarkdownDescription: "A hook a team has defined: steps Spotlight takes whenever an event it fires `on` matches, each calling a tool an integration offers or sending a request. " +
+		MarkdownDescription: "A hook a team has created: steps Spotlight takes whenever an event it fires `on` matches, each calling a tool an integration offers or sending a request. " +
 			"Write each expression in a step as `$${{ ... }}`, and `when` bare; `terraform plan` type-checks every one where it is written. " +
 			"Import it as `<workspace id>/<team key>/<key>`.",
 		Attributes: map[string]schema.Attribute{

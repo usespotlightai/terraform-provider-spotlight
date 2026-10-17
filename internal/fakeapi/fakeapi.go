@@ -7,7 +7,7 @@
 //   - Imports by address and lists in address order.
 //   - Write-only values that the fake never returns.
 //   - The expression check.
-//   - The exchange of the OIDC token of a workload for a minted token.
+//   - The exchange of the OIDC token of a workload for an issued token.
 package fakeapi
 
 import (
@@ -31,7 +31,7 @@ const Token = "test-token"
 // the fake accept.
 const WorkloadToken = "test-workload-token"
 
-// Admin is the person who defined each workspace token trust in the fake.
+// Admin is the person who created each workspace token trust in the fake.
 const Admin = "test-admin"
 
 const apiVersion = "2026-09-23"
@@ -69,8 +69,8 @@ type Server struct {
 	scopes     map[string]bool
 	kept       map[string]string
 	used       map[usedToken]struct{}
-	minted     map[string]string
-	mintedFor  time.Duration
+	issued     map[string]string
+	issuedFor  time.Duration
 }
 
 type resource struct {
@@ -89,8 +89,8 @@ func New(t interface{ Cleanup(func()) }) *Server {
 		idempotent: map[string]string{},
 		kept:       map[string]string{},
 		used:       map[usedToken]struct{}{},
-		minted:     map[string]string{},
-		mintedFor:  15 * time.Minute,
+		issued:     map[string]string{},
+		issuedFor:  15 * time.Minute,
 	}
 	s.Grant("configure", "secrets", "runners", "trusts")
 
@@ -130,13 +130,13 @@ func (s *Server) Grant(scopes ...string) {
 	}
 }
 
-// MintFor makes the tokens that the fake mints after this call expire after
+// IssueFor makes the tokens that the fake issues after this call expire after
 // d.
-func (s *Server) MintFor(d time.Duration) {
+func (s *Server) IssueFor(d time.Duration) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	s.mintedFor = d
+	s.issuedFor = d
 }
 
 // Requests lists each request that the fake received.
@@ -209,8 +209,8 @@ func (s *Server) Change(id string, change func(fields map[string]any)) {
 	stored.version++
 }
 
-// Forget removes a resource without Terraform.
-func (s *Server) Forget(id string) {
+// Delete removes a resource without Terraform.
+func (s *Server) Delete(id string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -271,15 +271,15 @@ func (s *Server) admits(authorization string) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	_, minted := s.minted[bearer]
+	_, issued := s.issued[bearer]
 
-	return bearer == Token || minted
+	return bearer == Token || issued
 }
 
-func (s *Server) revokeMinted(trust string) {
-	for token, mintedBy := range s.minted {
-		if mintedBy == trust {
-			delete(s.minted, token)
+func (s *Server) revokeIssued(trust string) {
+	for token, issuedBy := range s.issued {
+		if issuedBy == trust {
+			delete(s.issued, token)
 		}
 	}
 }
@@ -304,15 +304,15 @@ func (s *Server) exchange(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.next++
-	token := fmt.Sprintf("minted-%04d-%s", s.next, strings.Repeat("m", 32))
-	s.minted[token] = trust.id
+	token := fmt.Sprintf("issued-%04d-%s", s.next, strings.Repeat("m", 32))
+	s.issued[token] = trust.id
 
 	writeJSON(w, http.StatusOK, "application/json", map[string]any{
 		"token":       token,
 		"tokenId":     fmt.Sprintf("token-%04d", s.next),
 		"workspaceId": trust.owner,
 		"scopes":      trust.fields["scopes"],
-		"expiresAt":   time.Now().Add(s.mintedFor).UTC().Format(time.RFC3339Nano),
+		"expiresAt":   time.Now().Add(s.issuedFor).UTC().Format(time.RFC3339Nano),
 	})
 }
 
@@ -585,7 +585,7 @@ func (s *Server) update(kind string) http.HandlerFunc {
 
 		existing.fields = fields
 		existing.version++
-		s.revokeMinted(existing.id)
+		s.revokeIssued(existing.id)
 		s.answer(w, http.StatusOK, existing)
 	}
 }
@@ -621,7 +621,7 @@ func (s *Server) remove(kind string) http.HandlerFunc {
 
 		delete(s.stored, existing.id)
 		delete(s.kept, existing.id)
-		s.revokeMinted(existing.id)
+		s.revokeIssued(existing.id)
 		w.WriteHeader(http.StatusNoContent)
 	}
 }
@@ -921,7 +921,7 @@ func (s *Server) bodyOf(stored *resource) map[string]any {
 	}
 
 	if stored.kind == "workspace-token-trust" {
-		body["definedBy"] = Admin
+		body["createdBy"] = Admin
 	}
 
 	if stored.kind == "egress" && strings.HasPrefix(textOf(stored.fields["url"]), "http:") {

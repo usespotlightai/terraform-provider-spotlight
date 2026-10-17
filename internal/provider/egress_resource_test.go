@@ -131,7 +131,7 @@ func TestEgressTokenIsWrittenButNeverKept(t *testing.T) {
 	})
 }
 
-const egressMinted = `
+const egressIssued = `
 resource "spotlight_egress" "shared" {
   workspace_id = spotlight_workspace.acme.id
   key          = "shared"
@@ -157,7 +157,7 @@ func TestAnEgressTokenSpotlightIssuesIsNeverKept(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
 		Steps: []resource.TestStep{
 			{
-				Config: acctest.Workspace + egressMinted,
+				Config: acctest.Workspace + egressIssued,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(egressAddress, tfjsonpath.New("token"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(egressAddress, tfjsonpath.New("token_version"), knownvalue.Null()),
@@ -172,7 +172,7 @@ func TestAnEgressTokenSpotlightIssuesIsNeverKept(t *testing.T) {
 				},
 			},
 			{
-				Config:   acctest.Workspace + egressMinted,
+				Config:   acctest.Workspace + egressIssued,
 				PlanOnly: true,
 			},
 			{
@@ -180,7 +180,7 @@ func TestAnEgressTokenSpotlightIssuesIsNeverKept(t *testing.T) {
 				ExpectError: regexp.MustCompile(`(?s)token: is required whenever tokenVersion changes`),
 			},
 			{
-				Config: acctest.Workspace + egressMinted,
+				Config: acctest.Workspace + egressIssued,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
 				},
@@ -318,7 +318,7 @@ removed {
 				ExpectError: regexp.MustCompile(`(?s)Egress shared is in use\. Runner pools that name it: ephemeral`),
 			},
 			{
-				PreConfig: func() { fake.Forget(fake.IDOf("runner-pool", "ephemeral")) },
+				PreConfig: func() { fake.Delete(fake.IDOf("runner-pool", "ephemeral")) },
 				Config:    acctest.Workspace,
 				Check:     acctest.NoneLeft(fake, "egress", "runner-pool"),
 			},
@@ -350,7 +350,7 @@ func TestEgressImportsByIdentity(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
 		Steps: []resource.TestStep{
 			{
-				Config:            acctest.Workspace + egressMinted,
+				Config:            acctest.Workspace + egressIssued,
 				ConfigStateChecks: acctest.ExpectIdentity(egressAddress),
 			},
 			acctest.ImportedByIdentity(egressAddress),

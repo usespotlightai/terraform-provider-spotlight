@@ -355,7 +355,7 @@ func poolAccess(existing *resource, fields, body map[string]any) (string, []fiel
 	case given:
 		return secret, nil
 	case existing == nil:
-		return "", []fieldError{{"provision.secret", "is given when a pool that provisions is defined, to sign its calls with"}}
+		return "", []fieldError{{"provision.secret", "is given when a pool that provisions is created, to sign its calls with"}}
 	case objectOf(existing.fields["provision"])["secretVersion"] != objectOf(fields["provision"])["secretVersion"]:
 		return "", []fieldError{{"provision.secret", "is given again whenever provision.secretVersion changes, since that is how it is rotated"}}
 	default:

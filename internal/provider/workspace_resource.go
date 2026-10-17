@@ -20,7 +20,7 @@ var (
 	_ resource.ResourceWithIdentity    = &WorkspaceResource{}
 )
 
-const workspaceForbiddenToCreate = "An API token acts only inside its own workspace, so it may not open a new one. " +
+const workspaceForbiddenToCreate = "An API token acts only inside its own workspace, so it may not create a new one. " +
 	"A person creates a workspace by signing up in the web app; import it rather than creating it, with an import block that names its slug:\n\n" +
 	"  import {\n    to = spotlight_workspace.<name>\n    id = \"<slug>\"\n  }"
 

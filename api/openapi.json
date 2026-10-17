@@ -275,7 +275,7 @@
             "bearer": []
           }
         ],
-        "summary": "Open a line for a team",
+        "summary": "Create a line for a team",
         "tags": [
           "lines"
         ],
@@ -2317,7 +2317,7 @@
     },
     "/egress/active-runs": {
       "post": {
-        "description": "Called by each node of a shared egress about every 30 seconds. The node forgets the secrets of every run that is not in the answer.",
+        "description": "Called by each node of a shared egress about every 30 seconds. The node evicts the secrets of every run that is not in the answer.",
         "operationId": "checkActiveRuns",
         "parameters": [],
         "requestBody": {
@@ -6292,7 +6292,7 @@
             "bearer": []
           }
         ],
-        "summary": "Describe a workspace token anew; its name, scopes and expiry stay as issued",
+        "summary": "Update a workspace token's description; its name, scopes and expiry stay as issued",
         "tags": [
           "workspace-tokens"
         ],
@@ -7165,7 +7165,7 @@
             "bearer": []
           }
         ],
-        "summary": "Change which workloads a token trust admits, or what the tokens it mints may do; tokens minted with scopes it no longer grants stop admitting their bearers",
+        "summary": "Change which workloads a token trust admits, or what the tokens it issues may do; tokens issued with scopes it no longer grants stop admitting their bearers",
         "tags": [
           "workspace-tokens"
         ],
@@ -7290,7 +7290,7 @@
             "bearer": []
           }
         ],
-        "summary": "Stop trusting a workload; every token the trust minted admits nobody from this moment",
+        "summary": "Delete a token trust; every token that the trust issued admits nobody from this moment",
         "tags": [
           "workspace-tokens"
         ],
@@ -7432,13 +7432,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MintedTokenResponseDto"
+                  "$ref": "#/components/schemas/IssuedTokenResponseDto"
                 }
               }
             }
           },
           "401": {
-            "description": "Spotlight did not accept the exchange. Possible causes: an unknown trust, a token its issuer did not sign for the trust’s audience, a workload the trust does not admit, or a closed workspace"
+            "description": "Spotlight did not accept the exchange. Possible causes: an unknown trust, a token its issuer did not sign for the trust’s audience, a workload the trust does not admit, or a deleted workspace"
           }
         },
         "summary": "Exchange the OIDC token a CI platform issued a workload for a short-lived workspace token, through a workspace token trust that admits it",
@@ -7449,7 +7449,7 @@
     },
     "/workspaces": {
       "post": {
-        "operationId": "openWorkspace",
+        "operationId": "createWorkspaceWithTeam",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -7836,7 +7836,7 @@
         ]
       },
       "post": {
-        "description": "One invitation per address. An address with an open or run-out invitation is sent it again with a fresh link, and an address already in the workspace is reported and sent nothing.",
+        "description": "One invitation per address. Spotlight resends a pending or run-out invitation with a fresh link. Spotlight reports an address that is already in the workspace and sends it nothing.",
         "operationId": "inviteToWorkspace",
         "parameters": [
           {
@@ -7935,7 +7935,7 @@
             "description": "Already accepted or revoked"
           }
         },
-        "summary": "Send an invitation again, with a fresh link and two more weeks",
+        "summary": "Resend an invitation, with a fresh link and two more weeks",
         "tags": [
           "invites"
         ]
@@ -8002,7 +8002,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/InviteOfferResponseDto"
+                  "$ref": "#/components/schemas/InvitePreviewResponseDto"
                 }
               }
             }
@@ -8011,7 +8011,7 @@
             "description": "No invitation by that link"
           }
         },
-        "summary": "Read what an invitation link offers",
+        "summary": "Read the preview of an invitation",
         "tags": [
           "invites"
         ]
@@ -8287,7 +8287,7 @@
             "bearer": []
           }
         ],
-        "summary": "Set a secret in a workspace; only workspace admins and tokens with the secrets scope may",
+        "summary": "Create a secret in a workspace; only workspace admins and tokens with the secrets scope may",
         "tags": [
           "secrets"
         ],
@@ -10223,7 +10223,7 @@
             "bearer": []
           }
         ],
-        "summary": "Stop trusting a workload, so it can claim no more work through the trust",
+        "summary": "Delete a runner trust; no workload can claim more work through it",
         "tags": [
           "runners"
         ],
@@ -10581,7 +10581,7 @@
             "bearer": []
           }
         ],
-        "summary": "Define a pool of one-run runners, pulled from with a token or pushed to through provision",
+        "summary": "Create a pool of one-run runners, pulled from with a token or pushed to through provision",
         "tags": [
           "runners"
         ],
@@ -11140,7 +11140,7 @@
             "bearer": []
           }
         ],
-        "summary": "Retire a runner pool. Runs that its runners already have a lease on continue until they end",
+        "summary": "Delete a runner pool. Runs that its runners already have a lease on continue until they end",
         "tags": [
           "runners"
         ],
@@ -11448,7 +11448,7 @@
             "bearer": []
           }
         ],
-        "summary": "Define an egress that the runners of push pools send their traffic through",
+        "summary": "Create an egress that the runners of push pools send their traffic through",
         "tags": [
           "runners"
         ],
@@ -11957,7 +11957,7 @@
             "bearer": []
           }
         ],
-        "summary": "Retire an egress that no runner pool names",
+        "summary": "Delete an egress that no runner pool names",
         "tags": [
           "runners"
         ],
@@ -12260,7 +12260,7 @@
             "bearer": []
           }
         ],
-        "summary": "Declare the pools and trusts a workspace lets work through",
+        "summary": "Create the workspace runners: the pools and trusts a workspace lets work through",
         "tags": [
           "runners"
         ],
@@ -12645,7 +12645,7 @@
             "bearer": []
           }
         ],
-        "summary": "Declare the workspace runners again",
+        "summary": "Update the workspace runners",
         "tags": [
           "runners"
         ],
@@ -12770,7 +12770,7 @@
             "bearer": []
           }
         ],
-        "summary": "Stop declaring the workspace runners, leaving every pool and trust as it is",
+        "summary": "Delete the workspace runners, leaving every pool and trust as it is",
         "tags": [
           "runners"
         ],
@@ -13139,7 +13139,7 @@
             "bearer": []
           }
         ],
-        "summary": "Define a skill for a team",
+        "summary": "Create a skill for a team",
         "tags": [
           "skills"
         ],
@@ -14002,7 +14002,7 @@
             "bearer": []
           }
         ],
-        "summary": "Define a harness profile for a team",
+        "summary": "Create a harness profile for a team",
         "tags": [
           "harness-profiles"
         ],
@@ -20155,7 +20155,7 @@
             "bearer": []
           }
         ],
-        "summary": "Withdraw a proposed candidate no replay is running; replays that ran it keep their results",
+        "summary": "Delete a proposed candidate no replay is running; replays that ran it keep their results",
         "tags": [
           "replays"
         ],
@@ -20488,7 +20488,7 @@
         ]
       },
       "post": {
-        "operationId": "openReplaySet",
+        "operationId": "createReplaySet",
         "parameters": [
           {
             "name": "Spotlight-Api-Version",
@@ -20543,7 +20543,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/OpenReplaySetRequestDto"
+                "$ref": "#/components/schemas/CreateReplaySetRequestDto"
               }
             }
           }
@@ -20554,7 +20554,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ReplaySetOpenedResponseDto"
+                  "$ref": "#/components/schemas/ReplaySetCreatedResponseDto"
                 }
               }
             }
@@ -20615,7 +20615,7 @@
             "bearer": []
           }
         ],
-        "summary": "Open an empty replay set at the station",
+        "summary": "Create an empty replay set at the station",
         "tags": [
           "replays"
         ]
@@ -23723,7 +23723,7 @@
   },
   "info": {
     "title": "Spotlight Control Plane",
-    "description": "HTTP API for the Spotlight Control Plane.\n\n## Resource conventions\n\nOperations marked `x-spotlight-resource` manage configuration resources, the ones the Terraform provider writes. They live under `/resources` and address everything by id. Every resource follows these rules, and a conformance suite checks each one against them.\n\n- **Stable ids.** Spotlight issues a resource's `id` when it is created. It never changes for the resource's life, whatever else does.\n- **Reads return every field.** A read answers the whole resource, defaults filled in, so a client comparing it with what it wrote sees any drift. A write answers exactly what a read would.\n- **Versions.** Every resource carries a `version` that rises with each change, and each answer carries it as a strong `ETag` (`\"3\"`). An update or delete must send it back as `If-Match`: without one it fails with 428, and against a version that is no longer current with 409, whose body gives the `currentVersion` and whose `ETag` names it. A write that would remove something another resource still uses fails with 409 `in-use`.\n- **Idempotent creates.** A create must carry an `Idempotency-Key`. Retrying with the same key and body within 24 hours answers the resource the first attempt created, marked `Idempotent-Replayed: true`, and creates nothing more; the same key with a different body fails with 422.\n- **Problems name fields.** Errors are `application/problem+json` (RFC 9457). `type` is stable and safe to branch on. An invalid request lists `errors`, each with the `path` of the attribute it is about, as in `stations[2].check`; a key that is not a plain name is quoted, as Terraform addresses it: `on[\"task.opened\"].to.thread`.\n- **API versions.** A client may send `Spotlight-Api-Version`; every response names the version it was answered in, currently `2026-09-23`. Changes within a version are additive only: fields and operations are added, never removed, renamed or given a new meaning.\n- **Expression checks.** `POST /expressions/check` type-checks one CEL expression at the attribute that contains it, named within the resource's whole definition (`integration.webhook.events[0].when`), as `terraform plan` needs. What the expression may read is worked out from that definition exactly as applying it would, so a plan fails where an apply would; a definition that has an error fails with 422, each error under `definition`. It answers the type and any errors, each with the span it is about and a suggestion where a declared name is near, and warnings about the definition, such as a capture shadowing a built-in name. `GET /expressions/positions` lists every position, with `[*]` for any index or key, and what an expression there sees. They follow these headers and problems, but are not resources.\n- **Credentials.** A client calls with a person's session or with a workspace token, sent as `Authorization: Bearer <token>`. A token acts only within its own workspace and only as its scopes allow. `read`, `plan` and `configure` are a ladder: `read` reads, `plan` also checks expressions, and `configure` also creates, changes and deletes configuration as a workspace admin may, except secrets, runners and token trusts. `secrets` is granted beside one of them and lets the token set, rebind, rotate and delete secrets; Terraform that manages secrets uses `[\"configure\", \"secrets\"]`. `runners` is granted the same way and lets the token create, rekey and delete runners and runner trusts and declare the workspace's runners, since a runner claims runs, checks out repositories and keeps git credentials; Terraform that manages runners uses `[\"configure\", \"runners\"]`. `trusts` is granted the same way and lets the token create, change and delete workspace token trusts, since a trust hands out tokens; a token can only define a trust granting scopes it has itself, so bootstrap the trusts once with a token that has `trusts` and every scope they grant, as in `[\"configure\", \"secrets\", \"trusts\"]`, and revoke it. No token manages members or tokens, or reads the audit.\n- **CI without a stored token.** A workspace admin, or a token granted `trusts`, defines a workspace token trust naming an OIDC issuer, audience, subject and claims, and the scopes and lifetime (at most an hour) of the tokens it mints. A CI job exchanges the OIDC token its platform issues it at `POST /api/workspace-tokens/exchange` with `{ \"trust\": <trust id>, \"token\": <OIDC token> }`, and calls with the short-lived token it gets back. Deleting the trust stops every token it minted at once, and the audit names the trust and the workload's subject beside each exchange and each change made with a minted token.\n- **Forbidden changes.** A change by someone who may read the resource but not change it, person or token, fails with 403 `forbidden`, whose `permission` names what the caller lacks, one of `configure`, `manage-secrets`, `manage-runners`, `manage-token-trusts`, `administer`, `open-workspaces`, `plan`. Anything they may not see at all answers 404.\n- **Who changed what.** A client names itself in `Spotlight-Client` (`terraform-provider/<version>` or `web`), and every configuration change is recorded with who made it, person or token, and through which client. A secret's change also records the value version it moved to and the hosts it is bound to, never its value.\n- **Import by address.** Each resource has an `address` that names it within its workspace, such as `core/linear`, and an import operation that answers the resource at that address, as `terraform import` needs. A workspace's address is its slug; a team's is its key; anything a team owns is the team's key and its own, as in `core/delivery`.",
+    "description": "HTTP API for the Spotlight Control Plane.\n\n## Resource conventions\n\nOperations marked `x-spotlight-resource` manage configuration resources, the ones the Terraform provider writes. They live under `/resources` and address everything by id. Every resource follows these rules, and a conformance suite checks each one against them.\n\n- **Stable ids.** Spotlight issues a resource's `id` when it is created. It never changes for the resource's life, whatever else does.\n- **Reads return every field.** A read answers the whole resource, defaults filled in, so a client comparing it with what it wrote sees any drift. A write answers exactly what a read would.\n- **Versions.** Every resource carries a `version` that rises with each change, and each answer carries it as a strong `ETag` (`\"3\"`). An update or delete must send it back as `If-Match`: without one it fails with 428, and against a version that is no longer current with 409, whose body gives the `currentVersion` and whose `ETag` names it. A write that would remove something another resource still uses fails with 409 `in-use`.\n- **Idempotent creates.** A create must carry an `Idempotency-Key`. Retrying with the same key and body within 24 hours answers the resource the first attempt created, marked `Idempotent-Replayed: true`, and creates nothing more; the same key with a different body fails with 422.\n- **Problems name fields.** Errors are `application/problem+json` (RFC 9457). `type` is stable and safe to branch on. An invalid request lists `errors`, each with the `path` of the attribute it is about, as in `stations[2].check`; a key that is not a plain name is quoted, as Terraform addresses it: `on[\"task.opened\"].to.thread`.\n- **API versions.** A client may send `Spotlight-Api-Version`; every response names the version it was answered in, currently `2026-09-23`. Changes within a version are additive only: fields and operations are added, never removed, renamed or given a new meaning.\n- **Expression checks.** `POST /expressions/check` type-checks one CEL expression at the attribute that contains it, named within the resource's whole definition (`integration.webhook.events[0].when`), as `terraform plan` needs. What the expression may read is worked out from that definition exactly as applying it would, so a plan fails where an apply would; a definition that has an error fails with 422, each error under `definition`. It answers the type and any errors, each with the span it is about and a suggestion where a declared name is near, and warnings about the definition, such as a capture shadowing a built-in name. `GET /expressions/positions` lists every position, with `[*]` for any index or key, and what an expression there sees. They follow these headers and problems, but are not resources.\n- **Credentials.** A client calls with a person's session or with a workspace token, sent as `Authorization: Bearer <token>`. A token acts only within its own workspace and only as its scopes allow. `read`, `plan` and `configure` are a ladder: `read` reads, `plan` also checks expressions, and `configure` also creates, updates and deletes configuration as a workspace admin may, except secrets, runners and token trusts. `secrets` is granted beside one of them and lets the token create, rebind, rotate and delete secrets; Terraform that manages secrets uses `[\"configure\", \"secrets\"]`. `runners` is granted the same way and lets the token create, rekey and delete runners and runner trusts and create, update and delete the workspace's runners, since a runner claims runs, checks out repositories and keeps git credentials; Terraform that manages runners uses `[\"configure\", \"runners\"]`. `trusts` is granted the same way and lets the token create, update and delete workspace token trusts, since a trust hands out tokens; a token can only create a trust that grants scopes it has itself, so bootstrap the trusts once with a token that has `trusts` and every scope they grant, as in `[\"configure\", \"secrets\", \"trusts\"]`, and revoke it. No token manages members or tokens, or reads the audit.\n- **CI without a stored token.** A workspace admin, or a token granted `trusts`, creates a workspace token trust naming an OIDC issuer, audience, subject and claims, and the scopes and lifetime (at most an hour) of the tokens it issues. A CI job exchanges the OIDC token its platform issues it at `POST /api/workspace-tokens/exchange` with `{ \"trust\": <trust id>, \"token\": <OIDC token> }`, and calls with the short-lived token it gets back. Deleting the trust stops every token that it issued at once, and the audit names the trust and the workload's subject beside each exchange and each change made with an issued token.\n- **Forbidden changes.** A change by someone who may read the resource but not change it, person or token, fails with 403 `forbidden`, whose `permission` names what the caller lacks, one of `configure`, `manage-secrets`, `manage-runners`, `manage-token-trusts`, `administer`, `create-workspaces`, `plan`. Anything they may not see at all answers 404.\n- **Who changed what.** A client names itself in `Spotlight-Client` (`terraform-provider/<version>` or `web`), and every configuration change is recorded with who made it, person or token, and through which client. A secret's change also records the value version it moved to and the hosts it is bound to, never its value.\n- **Import by address.** Each resource has an `address` that names it within its workspace, such as `core/linear`, and an import operation that answers the resource at that address, as `terraform import` needs. A workspace's address is its slug; a team's is its key; anything a team owns is the team's key and its own, as in `core/delivery`.",
     "version": "2026-09-23",
     "contact": {}
   },
@@ -24199,7 +24199,7 @@
               "manage-runners",
               "manage-token-trusts",
               "administer",
-              "open-workspaces",
+              "create-workspaces",
               "plan"
             ],
             "example": "manage-secrets",
@@ -25639,7 +25639,7 @@
           "stop": {
             "type": "boolean",
             "example": false,
-            "description": "Whether the runner should stop checking: the check was forgotten with its task, ended, or waited too long to be recorded"
+            "description": "Whether the runner should stop checking: the check was deleted with its task, ended, or waited too long to be recorded"
           }
         },
         "required": [
@@ -26421,7 +26421,7 @@
           },
           "reason": {
             "type": "string",
-            "example": "The workspace has no secret named LINEAR_API_KEY; define it before anything uses it"
+            "example": "The workspace has no secret named LINEAR_API_KEY; create it before anything uses it"
           }
         },
         "required": [
@@ -26575,7 +26575,7 @@
         "type": "object",
         "properties": {
           "active": {
-            "description": "The proxy credentials whose runner still leases its work, or has no work yet. Egress forgets every other run",
+            "description": "The proxy credentials whose runner still leases its work, or has no work yet. Egress evicts the secrets of every other run",
             "type": "array",
             "items": {
               "type": "string"
@@ -29652,7 +29652,7 @@
         "properties": {
           "provisioning": {
             "type": "string",
-            "description": "Whether Spotlight has opened the first lines and the setup task of the team. The value is failed after Spotlight stopped its attempts.",
+            "description": "Whether Spotlight has created the first lines and opened the setup task of the team. The value is failed after Spotlight stopped its attempts.",
             "enum": [
               "pending",
               "done",
@@ -29947,12 +29947,12 @@
           "workspaceId": {
             "type": "string",
             "example": "5b1e9d2c-7a43-4f8e-b6c0-3d9a8e1f2b57",
-            "description": "The workspace the tokens it mints act in"
+            "description": "The workspace the tokens it issues act in"
           },
           "key": {
             "type": "string",
             "example": "github-main",
-            "description": "Names the trust within its workspace, and every token it mints; fixed for its life"
+            "description": "Names the trust within its workspace, and every token it issues; fixed for its life"
           },
           "issuer": {
             "type": "string",
@@ -29986,7 +29986,7 @@
               "configure",
               "secrets"
             ],
-            "description": "The scopes every token it mints is given",
+            "description": "The scopes every token it issues is given",
             "items": {
               "type": "string",
               "enum": [
@@ -30004,12 +30004,12 @@
             "example": 15,
             "minimum": 1,
             "maximum": 60,
-            "description": "How many minutes a token it mints admits its bearer"
+            "description": "How many minutes a token it issues admits its bearer"
           },
-          "definedBy": {
+          "createdBy": {
             "type": "string",
             "example": "kR3vUzPq9sY2mB8nT1wXcA",
-            "description": "The person who defined the trust, or who issued the token that did; the tokens it mints act on their behalf"
+            "description": "The person who created the trust, or who issued the token that did; the tokens it issues act on their behalf"
           }
         },
         "required": [
@@ -30025,7 +30025,7 @@
           "claims",
           "scopes",
           "lifetimeMinutes",
-          "definedBy"
+          "createdBy"
         ]
       },
       "WorkspaceTokenTrustResourceListResponseDto": {
@@ -30062,7 +30062,7 @@
           "token"
         ]
       },
-      "MintedTokenResponseDto": {
+      "IssuedTokenResponseDto": {
         "type": "object",
         "properties": {
           "token": {
@@ -30127,7 +30127,7 @@
             "type": "string",
             "example": "Platform",
             "maxLength": 100,
-            "description": "Names the team the workspace opens with. A workspace with no team has nowhere to put work."
+            "description": "Names the team the workspace starts with. A workspace with no team has nowhere to put work."
           }
         },
         "required": [
@@ -30247,7 +30247,7 @@
           },
           "provisioning": {
             "type": "string",
-            "description": "Whether Spotlight has opened the first team of the workspace. The value is failed after Spotlight stopped its attempts.",
+            "description": "Whether Spotlight has created the first team of the workspace. The value is failed after Spotlight stopped its attempts.",
             "enum": [
               "pending",
               "done",
@@ -30393,7 +30393,7 @@
           "trust": {
             "type": "string",
             "nullable": true,
-            "description": "For a token minted through a workspace token trust, that trust; the person is then whoever defined the trust"
+            "description": "For a token issued by a workspace token trust, that trust; the person is then whoever created the trust"
           }
         },
         "required": [
@@ -30680,10 +30680,10 @@
           },
           "outcome": {
             "type": "string",
-            "description": "What came of the address: a new invitation, an open one sent again with a fresh link, nothing, since they are already in the workspace, or an invitation kept whose email could not be sent, which sending again may still deliver.",
+            "description": "What came of the address: a new invitation, a pending one resent with a fresh link, nothing, since they are already in the workspace, or an invitation kept whose email could not be sent. Resend it to try again.",
             "enum": [
               "invited",
-              "sent-again",
+              "resent",
               "already-a-member",
               "not-sent"
             ],
@@ -30710,7 +30710,7 @@
           "outcomes"
         ]
       },
-      "InviteOfferResponseDto": {
+      "InvitePreviewResponseDto": {
         "type": "object",
         "properties": {
           "email": {
@@ -30751,12 +30751,12 @@
             "type": "string",
             "description": "Whether it is still worth following.",
             "enum": [
-              "open",
+              "pending",
               "accepted",
               "revoked",
               "expired"
             ],
-            "example": "open"
+            "example": "pending"
           }
         },
         "required": [
@@ -42322,7 +42322,7 @@
           "outcome"
         ]
       },
-      "OpenReplaySetRequestDto": {
+      "CreateReplaySetRequestDto": {
         "type": "object",
         "properties": {
           "name": {
@@ -42336,7 +42336,7 @@
           "name"
         ]
       },
-      "ReplaySetOpenedResponseDto": {
+      "ReplaySetCreatedResponseDto": {
         "type": "object",
         "properties": {
           "id": {
