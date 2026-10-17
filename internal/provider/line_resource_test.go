@@ -143,10 +143,10 @@ resource "spotlight_line" "core_delivery" {
   }
 
   replay_check {
-    most_regressions = 1
-    ceiling          = 12.5
-    currency         = "USD"
-    min_gain         = 0.05
+    max_regressions = 1
+    ceiling         = 12.5
+    currency        = "USD"
+    min_gain        = 0.05
   }
 
   source {
@@ -270,12 +270,12 @@ func lineAlert(measure, threshold string, value float64, over int64) knownvalue.
 	return knownvalue.ObjectExact(checks)
 }
 
-func lineReplayCheck(mostRegressions int64, ceiling float64, currency string, minGain float64) knownvalue.Check {
+func lineReplayCheck(maxRegressions int64, ceiling float64, currency string, minGain float64) knownvalue.Check {
 	return knownvalue.ObjectExact(map[string]knownvalue.Check{
-		"most_regressions": knownvalue.Int64Exact(mostRegressions),
-		"ceiling":          knownvalue.Float64Exact(ceiling),
-		"currency":         knownvalue.StringExact(currency),
-		"min_gain":         knownvalue.Float64Exact(minGain),
+		"max_regressions": knownvalue.Int64Exact(maxRegressions),
+		"ceiling":         knownvalue.Float64Exact(ceiling),
+		"currency":        knownvalue.StringExact(currency),
+		"min_gain":        knownvalue.Float64Exact(minGain),
 	})
 }
 
@@ -1247,10 +1247,10 @@ func TestLineReplayCheckAndSource(t *testing.T) {
 `)
 	tightened := lineChecked(`
   replay_check {
-    most_regressions = 2
-    ceiling          = 0.75
-    currency         = "EUR"
-    min_gain         = 0.1
+    max_regressions = 2
+    ceiling         = 0.75
+    currency        = "EUR"
+    min_gain        = 0.1
   }
 
   source {
@@ -1337,9 +1337,9 @@ func lineCheckInvalid(t *testing.T, blocks string, want *regexp.Regexp) {
 func TestLineReplayCheckAllowsNoNegativeRegressions(t *testing.T) {
 	lineCheckInvalid(t, `
   replay_check {
-    most_regressions = -1
+    max_regressions = -1
   }
-`, regexp.MustCompile(`(?s)replay_check\.most_regressions.*at least 0`))
+`, regexp.MustCompile(`(?s)replay_check\.max_regressions.*at least 0`))
 }
 
 func TestLineReplayCheckCeilingIsAboveZeroAndAtMostAThousand(t *testing.T) {
@@ -1469,10 +1469,10 @@ func TestAccLineReplayCheckAndSource(t *testing.T) {
 `)
 	tightened := acctest.AdoptedWorkspace(cp.Workspace) + lineCheckedAccConfig(k, `
   replay_check {
-    most_regressions = 2
-    ceiling          = 12.5
-    currency         = "EUR"
-    min_gain         = 0.1
+    max_regressions = 2
+    ceiling         = 12.5
+    currency        = "EUR"
+    min_gain        = 0.1
   }
 `)
 

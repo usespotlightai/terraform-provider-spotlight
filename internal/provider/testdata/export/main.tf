@@ -296,10 +296,10 @@ resource "spotlight_line" "core_delivery" {
   }
 
   replay_check {
-    most_regressions = 1
-    ceiling          = 12.5
-    currency         = "USD"
-    min_gain         = 0.05
+    max_regressions = 1
+    ceiling         = 12.5
+    currency        = "USD"
+    min_gain        = 0.05
   }
 
   source {

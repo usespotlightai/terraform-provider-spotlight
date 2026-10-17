@@ -97,7 +97,7 @@ func TestEveryRequestSaysWhoIsCalling(t *testing.T) {
 func TestCreateCarriesOneIdempotencyKeyAcrossRetries(t *testing.T) {
 	api, recorded := serve(t, func(w http.ResponseWriter, _ *http.Request, attempt int) {
 		if attempt == 1 {
-			reply(w, http.StatusServiceUnavailable, "application/problem+json", map[string]any{"type": "urn:spotlight:problem:server-fault", "title": "Down", "status": 503, "detail": "down"})
+			reply(w, http.StatusServiceUnavailable, "application/problem+json", map[string]any{"type": "urn:spotlight:problem:internal-error", "title": "Down", "status": 503, "detail": "down"})
 			return
 		}
 
@@ -170,7 +170,7 @@ func TestUpdateIsConditionalOnTheVersionHeld(t *testing.T) {
 
 func TestAnUpdateIsNotRetried(t *testing.T) {
 	api, recorded := serve(t, func(w http.ResponseWriter, _ *http.Request, _ int) {
-		reply(w, http.StatusServiceUnavailable, "application/problem+json", map[string]any{"type": "urn:spotlight:problem:server-fault", "title": "Down", "status": 503, "detail": "down"})
+		reply(w, http.StatusServiceUnavailable, "application/problem+json", map[string]any{"type": "urn:spotlight:problem:internal-error", "title": "Down", "status": 503, "detail": "down"})
 	})
 
 	_, err := api.UpdateTeam(context.Background(), "team-1", 4, client.TeamInput{Key: "core", Name: "Core"})
