@@ -212,14 +212,14 @@ func (address forgotten) CheckPlan(_ context.Context, req plancheck.CheckPlanReq
 	resp.Error = fmt.Errorf("%s is not in the plan", address)
 }
 
-type held struct {
+type sweepable struct {
 	kind, address string
 	find          func(context.Context) (client.Meta, error)
 	remove        func(context.Context, string, int64) error
 }
 
-func holding[T any](kind string, find func(context.Context, string, string) (T, error), metaOf func(T) client.Meta, remove func(context.Context, string, int64) error, workspaceID, address string) held {
-	return held{
+func sweepableOf[T any](kind string, find func(context.Context, string, string) (T, error), metaOf func(T) client.Meta, remove func(context.Context, string, int64) error, workspaceID, address string) sweepable {
+	return sweepable{
 		kind:    kind,
 		address: address,
 		find: func(ctx context.Context) (client.Meta, error) {
@@ -231,24 +231,24 @@ func holding[T any](kind string, find func(context.Context, string, string) (T, 
 	}
 }
 
-func (cp ControlPlane) created(k Keys) []held {
+func (cp ControlPlane) created(k Keys) []sweepable {
 	api, id := cp.Client, cp.Workspace.ID
 	inTeam := func(key string) string { return k.Team + "/" + key }
 
-	return []held{
-		holding("hook", api.ImportHook, func(h client.Hook) client.Meta { return h.Meta }, api.DeleteHook, id, inTeam(k.Hook)),
-		holding("line", api.ImportLine, func(l client.Line) client.Meta { return l.Meta }, api.DeleteLine, id, inTeam(k.Line)),
-		holding("skill", api.ImportSkill, func(s client.Skill) client.Meta { return s.Meta }, api.DeleteSkill, id, inTeam(k.Skill)),
-		holding("integration", api.ImportIntegration, func(i client.Integration) client.Meta { return i.Meta }, api.DeleteIntegration, id, inTeam(k.Integration)),
-		holding("harness profile", api.ImportHarnessProfile, func(p client.HarnessProfile) client.Meta { return p.Meta }, api.DeleteHarnessProfile, id, inTeam(k.Profile)),
-		holding("team", api.ImportTeam, func(t client.Team) client.Meta { return t.Meta }, api.DeleteTeam, id, k.Team),
-		holding("secret", api.ImportSecret, func(s client.Secret) client.Meta { return s.Meta }, api.DeleteSecret, id, k.Secret),
-		holding("secret", api.ImportSecret, func(s client.Secret) client.Meta { return s.Meta }, api.DeleteSecret, id, k.AWSSecret),
-		holding("runner trust", api.ImportRunnerTrust, func(t client.RunnerTrust) client.Meta { return t.Meta }, api.DeleteRunnerTrust, id, k.Trust),
-		holding("runner pool", api.ImportRunnerPool, func(p client.RunnerPool) client.Meta { return p.Meta }, api.DeleteRunnerPool, id, k.Pool),
-		holding("runner pool", api.ImportRunnerPool, func(p client.RunnerPool) client.Meta { return p.Meta }, api.DeleteRunnerPool, id, k.PushPool),
-		holding("egress", api.ImportEgress, func(e client.Egress) client.Meta { return e.Meta }, api.DeleteEgress, id, k.Egress),
-		holding("workspace token trust", api.ImportWorkspaceTokenTrust, func(t client.WorkspaceTokenTrust) client.Meta { return t.Meta }, api.DeleteWorkspaceTokenTrust, id, k.TokenTrust),
+	return []sweepable{
+		sweepableOf("hook", api.ImportHook, func(h client.Hook) client.Meta { return h.Meta }, api.DeleteHook, id, inTeam(k.Hook)),
+		sweepableOf("line", api.ImportLine, func(l client.Line) client.Meta { return l.Meta }, api.DeleteLine, id, inTeam(k.Line)),
+		sweepableOf("skill", api.ImportSkill, func(s client.Skill) client.Meta { return s.Meta }, api.DeleteSkill, id, inTeam(k.Skill)),
+		sweepableOf("integration", api.ImportIntegration, func(i client.Integration) client.Meta { return i.Meta }, api.DeleteIntegration, id, inTeam(k.Integration)),
+		sweepableOf("harness profile", api.ImportHarnessProfile, func(p client.HarnessProfile) client.Meta { return p.Meta }, api.DeleteHarnessProfile, id, inTeam(k.Profile)),
+		sweepableOf("team", api.ImportTeam, func(t client.Team) client.Meta { return t.Meta }, api.DeleteTeam, id, k.Team),
+		sweepableOf("secret", api.ImportSecret, func(s client.Secret) client.Meta { return s.Meta }, api.DeleteSecret, id, k.Secret),
+		sweepableOf("secret", api.ImportSecret, func(s client.Secret) client.Meta { return s.Meta }, api.DeleteSecret, id, k.AWSSecret),
+		sweepableOf("runner trust", api.ImportRunnerTrust, func(t client.RunnerTrust) client.Meta { return t.Meta }, api.DeleteRunnerTrust, id, k.Trust),
+		sweepableOf("runner pool", api.ImportRunnerPool, func(p client.RunnerPool) client.Meta { return p.Meta }, api.DeleteRunnerPool, id, k.Pool),
+		sweepableOf("runner pool", api.ImportRunnerPool, func(p client.RunnerPool) client.Meta { return p.Meta }, api.DeleteRunnerPool, id, k.PushPool),
+		sweepableOf("egress", api.ImportEgress, func(e client.Egress) client.Meta { return e.Meta }, api.DeleteEgress, id, k.Egress),
+		sweepableOf("workspace token trust", api.ImportWorkspaceTokenTrust, func(t client.WorkspaceTokenTrust) client.Meta { return t.Meta }, api.DeleteWorkspaceTokenTrust, id, k.TokenTrust),
 	}
 }
 

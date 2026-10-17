@@ -32,4 +32,4 @@ list "spotlight_harness_profile" "core" {
 
 ### Optional
 
-- `team_id` (String) Lists only what this team holds; every team's when left out.
+- `team_id` (String) Lists only what this team has; every team's when left out.

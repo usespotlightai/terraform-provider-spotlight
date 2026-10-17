@@ -70,7 +70,7 @@ func runnerPoolKept(fake *fakeapi.Server) string {
 func runnerPoolKeeps(fake *fakeapi.Server, want string) resource.TestCheckFunc {
 	return func(*terraform.State) error {
 		if got := runnerPoolKept(fake); got != want {
-			return fmt.Errorf("the pool holds %q, want %q", got, want)
+			return fmt.Errorf("the pool keeps %q, want %q", got, want)
 		}
 
 		return nil
@@ -91,16 +91,16 @@ func runnerPoolSent(fake *fakeapi.Server, field func(map[string]any) (any, bool)
 }
 
 func poolToken(body map[string]any) (any, bool) {
-	held, ok := body["token"]
+	token, ok := body["token"]
 
-	return held, ok
+	return token, ok
 }
 
 func provisionSecret(body map[string]any) (any, bool) {
 	provision, _ := body["provision"].(map[string]any)
-	held, ok := provision["secret"]
+	secret, ok := provision["secret"]
 
-	return held, ok
+	return secret, ok
 }
 
 func sentTimes(fake *fakeapi.Server, field func(map[string]any) (any, bool), want int, why string) resource.TestCheckFunc {
@@ -131,7 +131,7 @@ func TestRunnerPoolTokenIsWrittenButNeverKept(t *testing.T) {
 					statecheck.ExpectKnownValue(runnerPoolAddress, tfjsonpath.New("provision"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(runnerPoolAddress, tfjsonpath.New("labels"), knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact("linux")})),
 				},
-				Check: resource.ComposeAggregateTestCheckFunc(runnerPoolKeeps(fake, tokenFirst), acctest.NothingHolds(acctest.Value(tokenFirst))),
+				Check: resource.ComposeAggregateTestCheckFunc(runnerPoolKeeps(fake, tokenFirst), acctest.NothingContains(acctest.Value(tokenFirst))),
 			},
 			{
 				Config:   pullPool("ephemeral", `"linux"`, tokenFirst, 1),
@@ -152,7 +152,7 @@ func TestRunnerPoolTokenIsWrittenButNeverKept(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					runnerPoolKeeps(fake, tokenSecond),
 					sentTimes(fake, poolToken, 2, "a new token_version sends the token again"),
-					acctest.NothingHolds(acctest.Value(tokenFirst), acctest.Value(tokenSecond)),
+					acctest.NothingContains(acctest.Value(tokenFirst), acctest.Value(tokenSecond)),
 				),
 			},
 			{
@@ -201,8 +201,8 @@ resource "spotlight_runner_pool" "ephemeral" {
 
 func runnerPoolKeepsIssued(fake *fakeapi.Server, first *string) resource.TestCheckFunc {
 	return func(*terraform.State) error {
-		if held := runnerPoolKept(fake); held != *first {
-			return fmt.Errorf("a refused rotation changed the pool's token to %q", held)
+		if kept := runnerPoolKept(fake); kept != *first {
+			return fmt.Errorf("a refused rotation changed the pool's token to %q", kept)
 		}
 
 		return nil
@@ -230,7 +230,7 @@ func TestAPoolTokenSpotlightIssuesIsNeverKept(t *testing.T) {
 						return fmt.Errorf("Spotlight issued no token")
 					}
 
-					return acctest.NothingHolds(acctest.Value(first))(state)
+					return acctest.NothingContains(acctest.Value(first))(state)
 				},
 			},
 			{
@@ -283,7 +283,7 @@ func TestAPushPoolSecretIsWrittenButNeverKept(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					runnerPoolKeeps(fake, provisionFirst),
 					sentTimes(fake, poolToken, 0, "a pool that provisions has no token"),
-					acctest.NothingHolds(acctest.Value(provisionFirst)),
+					acctest.NothingContains(acctest.Value(provisionFirst)),
 				),
 			},
 			{
@@ -305,7 +305,7 @@ func TestAPushPoolSecretIsWrittenButNeverKept(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					runnerPoolKeeps(fake, provisionSecond),
 					sentTimes(fake, provisionSecret, 2, "a new secret_version sends the secret again"),
-					acctest.NothingHolds(acctest.Value(provisionFirst), acctest.Value(provisionSecond)),
+					acctest.NothingContains(acctest.Value(provisionFirst), acctest.Value(provisionSecond)),
 				),
 			},
 			{
@@ -563,7 +563,7 @@ func TestAccRunnerPool(t *testing.T) {
 					resource.TestCheckResourceAttr("spotlight_runner_pool.push", "provision.secret_version", "1"),
 					resource.TestCheckNoResourceAttr("spotlight_runner_pool.push", "provision.secret"),
 					resource.TestCheckNoResourceAttr("spotlight_runner_pool.push", "token_version"),
-					acctest.NothingHolds(acctest.Value(firstToken), acctest.Value(firstSecret)),
+					acctest.NothingContains(acctest.Value(firstToken), acctest.Value(firstSecret)),
 				),
 			},
 			{
@@ -581,7 +581,7 @@ func TestAccRunnerPool(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("spotlight_runner_pool.pull", "labels.#", "2"),
 					resource.TestCheckResourceAttr("spotlight_runner_pool.push", "provision.secret_version", "2"),
-					acctest.NothingHolds(acctest.Value(firstToken), acctest.Value(secondToken), acctest.Value(firstSecret), acctest.Value(secondSecret)),
+					acctest.NothingContains(acctest.Value(firstToken), acctest.Value(secondToken), acctest.Value(firstSecret), acctest.Value(secondSecret)),
 				),
 			},
 			{

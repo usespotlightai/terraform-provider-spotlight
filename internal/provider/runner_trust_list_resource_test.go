@@ -14,7 +14,7 @@ import (
 func seededRunnerTrusts(t *testing.T, seeded acctest.Seeded) (first, second acctest.Listed) {
 	t.Helper()
 
-	held := func(workspace client.Workspace, key string) acctest.Listed {
+	create := func(workspace client.Workspace, key string) acctest.Listed {
 		t.Helper()
 
 		created, err := seeded.Client.CreateRunnerTrust(t.Context(), workspace.ID, client.RunnerTrustInput{
@@ -25,10 +25,10 @@ func seededRunnerTrusts(t *testing.T, seeded acctest.Seeded) (first, second acct
 		return acctest.ListedAs(created.Meta)
 	}
 
-	held(seeded.Other, "production-cluster")
-	later := held(seeded.Workspace, "staging-cluster")
+	create(seeded.Other, "production-cluster")
+	later := create(seeded.Workspace, "staging-cluster")
 
-	return held(seeded.Workspace, "production-cluster"), later
+	return create(seeded.Workspace, "production-cluster"), later
 }
 
 func TestRunnerTrustListResource(t *testing.T) {

@@ -65,7 +65,7 @@ func (r *HarnessProfileListResource) List(ctx context.Context, req list.ListRequ
 	}
 
 	stream.Results = func(push func(list.ListResult) bool) {
-		for _, harnessProfile := range limited(heldBy(harnessProfiles, config.TeamID.ValueString(), func(each client.HarnessProfile) string { return each.TeamID }), req.Limit) {
+		for _, harnessProfile := range limited(ofTeam(harnessProfiles, config.TeamID.ValueString(), func(each client.HarnessProfile) string { return each.TeamID }), req.Limit) {
 			if !push(listResult(ctx, req, harnessProfile.ID, harnessProfile.Address, harnessProfileModel(harnessProfile, nil))) {
 				return
 			}

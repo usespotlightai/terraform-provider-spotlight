@@ -1,4 +1,4 @@
-// Package writeonly holds values as Terraform 1.11 and later versions permit.
+// Package writeonly handles values as Terraform 1.11 and later versions permit.
 // The provider reads each value from configuration and sends it to Spotlight.
 // The plan and the state never keep it. A version attribute next to each
 // value tells when to send it again. Terraform cannot see a change to a value
@@ -58,7 +58,7 @@ func (f Field) at(name string) path.Path {
 }
 
 // Attributes returns the field and its version for the schema of a resource
-// that holds the field. described tells what the value is.
+// that has the field. described tells what the value is.
 func (f Field) Attributes(described string) map[string]schema.Attribute {
 	version := schema.Int64Attribute{
 		Optional:            true,

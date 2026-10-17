@@ -14,7 +14,7 @@ import (
 func seededIntegrations(t *testing.T, seeded acctest.Seeded) (core, platform acctest.Listed) {
 	t.Helper()
 
-	held := func(team client.Team, key string) acctest.Listed {
+	create := func(team client.Team, key string) acctest.Listed {
 		t.Helper()
 
 		created, err := seeded.Client.CreateIntegration(t.Context(), team.ID, client.Definition{"integration": key})
@@ -23,9 +23,9 @@ func seededIntegrations(t *testing.T, seeded acctest.Seeded) (core, platform acc
 		return acctest.ListedAs(created.Meta)
 	}
 
-	held(seeded.OtherCore, "linear")
+	create(seeded.OtherCore, "linear")
 
-	return held(seeded.Core, "linear"), held(seeded.Platform, "github")
+	return create(seeded.Core, "linear"), create(seeded.Platform, "github")
 }
 
 func TestIntegrationListResource(t *testing.T) {
@@ -38,9 +38,9 @@ func TestIntegrationListResource(t *testing.T) {
 		t.Errorf("listed %v, want %v", all, want)
 	}
 
-	held := acctest.List(t, fake, "spotlight_integration", map[string]string{"workspace_id": seeded.Workspace.ID, "team_id": seeded.Core.ID})
-	if want := []acctest.Listed{core}; !slices.Equal(held, want) {
-		t.Errorf("listed %v in the core team, want %v", held, want)
+	inCore := acctest.List(t, fake, "spotlight_integration", map[string]string{"workspace_id": seeded.Workspace.ID, "team_id": seeded.Core.ID})
+	if want := []acctest.Listed{core}; !slices.Equal(inCore, want) {
+		t.Errorf("listed %v in the core team, want %v", inCore, want)
 	}
 }
 

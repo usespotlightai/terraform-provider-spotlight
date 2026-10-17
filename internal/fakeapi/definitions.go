@@ -10,10 +10,10 @@ import (
 
 var reserved = map[string]bool{"review": true, "done": true}
 
-func placed(held map[string]any, field, at string, errs *[]fieldError) {
-	selectors := texts(held[field])
+func placed(object map[string]any, field, at string, errs *[]fieldError) {
+	selectors := texts(object[field])
 	if len(selectors) == 0 {
-		delete(held, field)
+		delete(object, field)
 		return
 	}
 
@@ -25,7 +25,7 @@ func placed(held map[string]any, field, at string, errs *[]fieldError) {
 		seen[textOf(each)] = true
 	}
 
-	held[field] = selectors
+	object[field] = selectors
 }
 
 var colors = map[string]string{
@@ -80,8 +80,8 @@ func named(body map[string]any, fields ...string) (map[string]any, []fieldError)
 	return out, errs
 }
 
-func texts(held any) []any {
-	listed, _ := held.([]any)
+func texts(value any) []any {
+	listed, _ := value.([]any)
 	out := make([]any, 0, len(listed))
 
 	for _, each := range listed {
@@ -93,9 +93,9 @@ func texts(held any) []any {
 	return out
 }
 
-func orDefault(held map[string]any, field string, fallback any) {
-	if _, ok := held[field]; !ok {
-		held[field] = fallback
+func orDefault(object map[string]any, field string, fallback any) {
+	if _, ok := object[field]; !ok {
+		object[field] = fallback
 	}
 }
 
@@ -335,7 +335,7 @@ func skill(body map[string]any) (map[string]any, []fieldError) {
 
 	manual, ok := files["SKILL.md"].(string)
 	if !ok {
-		errs = append(errs, fieldError{"files", `holds a SKILL.md`})
+		errs = append(errs, fieldError{"files", `contains a SKILL.md`})
 	}
 
 	description := ""
@@ -427,20 +427,20 @@ func described(fields map[string]any) any {
 	}
 }
 
-func textOf(held any) string {
-	text, _ := held.(string)
+func textOf(value any) string {
+	text, _ := value.(string)
 
 	return text
 }
 
-func objectOf(held any) map[string]any {
-	object, _ := held.(map[string]any)
+func objectOf(value any) map[string]any {
+	object, _ := value.(map[string]any)
 
 	return object
 }
 
-func listOf(held any) []any {
-	listed, _ := held.([]any)
+func listOf(value any) []any {
+	listed, _ := value.([]any)
 
 	return listed
 }

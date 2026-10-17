@@ -101,7 +101,7 @@ func TestIntegrationLifecycle(t *testing.T) {
 					fake.Change(fake.IDOf("integration", "core/linear"), func(fields map[string]any) {
 						definition, ok := fields["definition"].(map[string]any)
 						if !ok {
-							t.Fatalf("the fake holds no definition: %v", fields)
+							t.Fatalf("the fake stores no definition: %v", fields)
 						}
 						definition["on"] = map[string]any{}
 					})

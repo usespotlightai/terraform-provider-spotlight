@@ -14,7 +14,7 @@ import (
 func seededHooks(t *testing.T, seeded acctest.Seeded) (core, platform acctest.Listed) {
 	t.Helper()
 
-	held := func(team client.Team, key string) acctest.Listed {
+	create := func(team client.Team, key string) acctest.Listed {
 		t.Helper()
 
 		created, err := seeded.Client.CreateHook(t.Context(), team.ID, client.HookInput{
@@ -28,9 +28,9 @@ func seededHooks(t *testing.T, seeded acctest.Seeded) (core, platform acctest.Li
 		return acctest.ListedAs(created.Meta)
 	}
 
-	held(seeded.OtherCore, "audit")
+	create(seeded.OtherCore, "audit")
 
-	return held(seeded.Core, "audit"), held(seeded.Platform, "audit")
+	return create(seeded.Core, "audit"), create(seeded.Platform, "audit")
 }
 
 func TestHookListResource(t *testing.T) {
@@ -43,9 +43,9 @@ func TestHookListResource(t *testing.T) {
 		t.Errorf("listed %v, want %v", all, want)
 	}
 
-	held := acctest.List(t, fake, "spotlight_hook", map[string]string{"workspace_id": seeded.Workspace.ID, "team_id": seeded.Core.ID})
-	if want := []acctest.Listed{core}; !slices.Equal(held, want) {
-		t.Errorf("listed %v in the core team, want %v", held, want)
+	inCore := acctest.List(t, fake, "spotlight_hook", map[string]string{"workspace_id": seeded.Workspace.ID, "team_id": seeded.Core.ID})
+	if want := []acctest.Listed{core}; !slices.Equal(inCore, want) {
+		t.Errorf("listed %v in the core team, want %v", inCore, want)
 	}
 }
 

@@ -95,9 +95,9 @@ func hookKept(fake *fakeapi.Server, want string) resource.TestCheckFunc {
 
 func hookSigningSecret(body map[string]any) (any, bool) {
 	signing, _ := body["signing"].(map[string]any)
-	held, ok := signing["secret"]
+	secret, ok := signing["secret"]
 
-	return held, ok
+	return secret, ok
 }
 
 func TestHookLifecycle(t *testing.T) {
@@ -125,7 +125,7 @@ func TestHookLifecycle(t *testing.T) {
 					statecheck.ExpectKnownValue("spotlight_integration.slack", tfjsonpath.New("tools"),
 						knownvalue.MapExact(map[string]knownvalue.Check{"post-message": knownvalue.StringExact("slack.post-message")})),
 				},
-				Check: resource.ComposeAggregateTestCheckFunc(hookKept(fake, provisionFirst), acctest.NothingHolds(acctest.Value(provisionFirst))),
+				Check: resource.ComposeAggregateTestCheckFunc(hookKept(fake, provisionFirst), acctest.NothingContains(acctest.Value(provisionFirst))),
 			},
 			{
 				Config:   config,
@@ -158,7 +158,7 @@ func TestHookLifecycle(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					hookKept(fake, provisionSecond),
 					sentTimes(fake, hookSigningSecret, 2, "a new secret_wo_version sends the secret again"),
-					acctest.NothingHolds(acctest.Value(provisionFirst), acctest.Value(provisionSecond)),
+					acctest.NothingContains(acctest.Value(provisionFirst), acctest.Value(provisionSecond)),
 				),
 			},
 			{
@@ -412,7 +412,7 @@ resource "spotlight_hook" "audit" {
 					for _, each := range fake.Requests() {
 						for _, step := range stepsIn(each.Body) {
 							if hasNull(step) || hasNull(step["request"]) {
-								return fmt.Errorf("%s %s sent a step holding null: %v", each.Method, each.Path, step)
+								return fmt.Errorf("%s %s sent a step that contains null: %v", each.Method, each.Path, step)
 							}
 						}
 					}
@@ -460,8 +460,8 @@ func stepsIn(body map[string]any) []map[string]any {
 	return out
 }
 
-func listed(held any) []any {
-	out, _ := held.([]any)
+func listed(value any) []any {
+	out, _ := value.([]any)
 
 	return out
 }
@@ -472,8 +472,8 @@ func objectIn(body map[string]any, name string) map[string]any {
 	return out
 }
 
-func hasNull(held any) bool {
-	object, _ := held.(map[string]any)
+func hasNull(value any) bool {
+	object, _ := value.(map[string]any)
 	for _, value := range object {
 		if value == nil {
 			return true

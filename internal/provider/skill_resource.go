@@ -30,7 +30,7 @@ type SkillResource struct {
 	client *client.Client
 }
 
-// SkillResourceModel is a spotlight_skill as Terraform holds it.
+// SkillResourceModel is a spotlight_skill as Terraform stores it.
 type SkillResourceModel struct {
 	ID          types.String `tfsdk:"id"`
 	Version     types.Int64  `tfsdk:"version"`

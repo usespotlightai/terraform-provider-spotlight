@@ -68,7 +68,7 @@ type exchanging struct {
 	now  func() time.Time
 
 	mu      sync.Mutex
-	held    string
+	cached  string
 	renewAt time.Time
 }
 
@@ -76,8 +76,8 @@ func (e *exchanging) Token(ctx context.Context) (string, error) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
-	if e.held != "" && e.now().Before(e.renewAt) {
-		return e.held, nil
+	if e.cached != "" && e.now().Before(e.renewAt) {
+		return e.cached, nil
 	}
 
 	fresh, err := e.exchange(ctx)
@@ -85,10 +85,10 @@ func (e *exchanging) Token(ctx context.Context) (string, error) {
 		return "", err
 	}
 
-	e.held = fresh.token
+	e.cached = fresh.token
 	e.renewAt = renewalOf(fresh.expiresAt, e.now())
 
-	return e.held, nil
+	return e.cached, nil
 }
 
 func renewalOf(expiresAt, now time.Time) time.Time {
@@ -103,8 +103,8 @@ func (e *exchanging) Refused(token string) bool {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
-	if e.held == token {
-		e.held = ""
+	if e.cached == token {
+		e.cached = ""
 	}
 
 	return true

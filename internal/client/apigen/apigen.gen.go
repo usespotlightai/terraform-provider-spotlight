@@ -1955,7 +1955,7 @@ type CheckExpressionRequestDto struct {
 	// Expression The CEL expression alone, without ${{ }}; a templated attribute is checked one ${{ }} at a time
 	Expression string `json:"expression"`
 
-	// Position The attribute that holds the expression, within the definition, written as its problems would name it
+	// Position The attribute that contains the expression, within the definition, written as its problems would name it
 	Position string `json:"position"`
 }
 
@@ -2185,7 +2185,7 @@ type HookOidcDto struct {
 
 // HookRequestDto defines model for HookRequestDto.
 type HookRequestDto struct {
-	// Body The JSON body, any JSON value; strings may hold ${{ }} expressions. Left out, Spotlight sends the event, task and run
+	// Body The JSON body, any JSON value; strings may contain ${{ }} expressions. Left out, Spotlight sends the event, task and run
 	Body *HookRequestDto_Body `json:"body,omitempty"`
 
 	// From spotlight sends it from Spotlight to an allowed host; network has a host of the workspace send it from inside its network, through egress
@@ -2194,7 +2194,7 @@ type HookRequestDto struct {
 	// Headers Headers to send besides the ones Spotlight signs with
 	Headers map[string]string `json:"headers"`
 
-	// Url Where the request goes; may hold ${{ }} expressions
+	// Url Where the request goes; may contain ${{ }} expressions
 	Url string `json:"url"`
 }
 
@@ -2213,7 +2213,7 @@ type HookRequestDtoBody3 = float32
 // HookRequestDtoBody4 defines model for .
 type HookRequestDtoBody4 = bool
 
-// HookRequestDto_Body The JSON body, any JSON value; strings may hold ${{ }} expressions. Left out, Spotlight sends the event, task and run
+// HookRequestDto_Body The JSON body, any JSON value; strings may contain ${{ }} expressions. Left out, Spotlight sends the event, task and run
 type HookRequestDto_Body struct {
 	union json.RawMessage
 }
@@ -2409,7 +2409,7 @@ type McpServerResponseDto struct {
 	Args    []string `json:"args"`
 	Command string   `json:"command"`
 
-	// Env Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace holds, and the server gets only a stand-in, since egress wears the value on its requests to the hosts the secret is bound to.
+	// Env Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace has, and the server gets only a stand-in, since egress wears the value on its requests to the hosts the secret is bound to.
 	Env  map[string]string `json:"env"`
 	Name string            `json:"name"`
 }
@@ -2632,7 +2632,7 @@ type SecretResourceResponseDto struct {
 
 // SecretSourceResponseDto defines model for SecretSourceResponseDto.
 type SecretSourceResponseDto struct {
-	// Field The key to read when that secret holds JSON
+	// Field The key to read when that secret contains JSON
 	Field *string `json:"field"`
 
 	// Kind Where the value lives: kept by Spotlight, or read from AWS Secrets Manager when it is used
@@ -2726,7 +2726,7 @@ type TeamResourceResponseDto struct {
 	// Id Issued by Spotlight when the resource is created, and never changed
 	Id string `json:"id"`
 
-	// Key Names the team in the addresses of everything it holds; fixed for its life, so changing it means replacing the team
+	// Key Names the team in the addresses of everything it has; fixed for its life, so changing it means replacing the team
 	Key string `json:"key"`
 
 	// Name What the team is called
@@ -3031,7 +3031,7 @@ type UpdateHarnessProfileJSONBody struct {
 		Args    *[]string `json:"args,omitempty"`
 		Command string    `json:"command"`
 
-		// Env Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace holds, and the server gets only a stand-in, since egress wears the value on its requests to the hosts the secret is bound to.
+		// Env Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace has, and the server gets only a stand-in, since egress wears the value on its requests to the hosts the secret is bound to.
 		Env  *map[string]string `json:"env,omitempty"`
 		Name string             `json:"name"`
 	} `json:"mcpServers,omitempty"`
@@ -3492,7 +3492,7 @@ type CreateHarnessProfileJSONBody struct {
 		Args    *[]string `json:"args,omitempty"`
 		Command string    `json:"command"`
 
-		// Env Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace holds, and the server gets only a stand-in, since egress wears the value on its requests to the hosts the secret is bound to.
+		// Env Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace has, and the server gets only a stand-in, since egress wears the value on its requests to the hosts the secret is bound to.
 		Env  *map[string]string `json:"env,omitempty"`
 		Name string             `json:"name"`
 	} `json:"mcpServers,omitempty"`

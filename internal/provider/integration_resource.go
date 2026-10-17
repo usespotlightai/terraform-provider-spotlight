@@ -48,7 +48,7 @@ const (
 
 var integrationDescriptions = []string{"openapi", "graphql", "mcp"}
 
-// IntegrationResourceModel is a spotlight_integration as Terraform holds it.
+// IntegrationResourceModel is a spotlight_integration as Terraform stores it.
 type IntegrationResourceModel struct {
 	ID         types.String  `tfsdk:"id"`
 	Version    types.Int64   `tfsdk:"version"`
@@ -76,7 +76,7 @@ func (r *IntegrationResource) Schema(_ context.Context, _ resource.SchemaRequest
 func integrationSchema() schema.Schema {
 	return schema.Schema{
 		MarkdownDescription: "An integration a team has defined: how Spotlight hears from a host, and the actions and tools it offers against it. " +
-			"The definition is held whole, exactly as the integration's definition is written, with its keys verbatim; write each expression as `$${{ ... }}` so Terraform leaves it alone. " +
+			"Spotlight stores the definition whole, exactly as the integration's definition is written, with its keys verbatim; write each expression as `$${{ ... }}` so Terraform leaves it alone. " +
 			"`terraform plan` type-checks every expression in it where it is written. " +
 			"A definition may name an API description, `openapi` or `graphql`, that Spotlight generates a tool from for each operation when it reads it, or a remote MCP server, `mcp`, whose tools it lists; those tools are known only after apply. " +
 			"Import it as `<workspace id>/<team key>/<source>`.",
@@ -324,14 +324,14 @@ func integrationSettable(integration client.Integration) any {
 func integrationInput(plan IntegrationResourceModel) (client.Definition, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	held, err := dynamic.ToJSON(plan.Definition)
+	decoded, err := dynamic.ToJSON(plan.Definition)
 	if err != nil {
 		diags.AddAttributeError(path.Root(expressions.Attribute), "Definition not known", err.Error())
 
 		return nil, diags
 	}
 
-	definition, ok := held.(map[string]any)
+	definition, ok := decoded.(map[string]any)
 	if !ok {
 		diags.AddAttributeError(path.Root(expressions.Attribute), "Definition is not an object", "Write the definition as an object, as in { integration = \"linear\", ... }.")
 

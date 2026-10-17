@@ -157,8 +157,8 @@ func list(t *testing.T, fake *fakeapi.Server, kind string, config map[string]str
 		id := stringAt(t, result.Identity.IdentityData, identityType, "id")
 		if result.Resource == nil {
 			problems = append(problems, fmt.Sprintf("%s answered no resource", result.DisplayName))
-		} else if held := stringAt(t, result.Resource, resourceType, "id"); held != id {
-			problems = append(problems, fmt.Sprintf("%s answered the resource %s, but its identity names %s", result.DisplayName, held, id))
+		} else if identityID := stringAt(t, result.Resource, resourceType, "id"); identityID != id {
+			problems = append(problems, fmt.Sprintf("%s answered the resource %s, but its identity names %s", result.DisplayName, identityID, id))
 		}
 
 		listed = append(listed, Listed{ID: id, DisplayName: result.DisplayName})
@@ -208,10 +208,10 @@ func ConfiguredServer(t *testing.T, fake *fakeapi.Server) (tfprotov6.ProviderSer
 	return server, schemas
 }
 
-func stringAt(t *testing.T, held *tfprotov6.DynamicValue, kind tftypes.Type, name string) string {
+func stringAt(t *testing.T, dynamicValue *tfprotov6.DynamicValue, kind tftypes.Type, name string) string {
 	t.Helper()
 
-	value, err := held.Unmarshal(kind)
+	value, err := dynamicValue.Unmarshal(kind)
 	if err != nil {
 		t.Fatal(err)
 	}

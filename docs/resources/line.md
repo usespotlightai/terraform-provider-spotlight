@@ -205,8 +205,8 @@ Optional:
 
 Optional:
 
-- `path` (String) The Terraform file in it that holds the line, from the repository root, as in `teams/core/delivery.tf`.
-- `repository` (String) The GitHub repository that holds the line's Terraform, named `owner/name`.
+- `path` (String) The Terraform file in it that contains the line, from the repository root, as in `teams/core/delivery.tf`.
+- `repository` (String) The GitHub repository that contains the line's Terraform, named `owner/name`.
 
 
 <a id="nestedblock--station"></a>

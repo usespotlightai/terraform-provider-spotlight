@@ -97,7 +97,7 @@ Required:
 Optional:
 
 - `carrier` (String) Whether the secret is worn in a request header or a query parameter: `header` (the default) or `query`.
-- `name` (String) The header or query parameter the secret is worn in. A header defaults to `authorization`; Spotlight holds a header name in lower case. A query parameter must be named.
+- `name` (String) The header or query parameter the secret is worn in. A header defaults to `authorization`; Spotlight stores a header name in lower case. A query parameter must be named.
 - `prefix` (String) Written before the value where it is worn, as in `Bearer `.
 
 
@@ -110,7 +110,7 @@ Required:
 
 Optional:
 
-- `field` (String) The key to read when the AWS secret holds JSON.
+- `field` (String) The key to read when the AWS secret contains JSON.
 - `secret_id` (String) The name or ARN of the secret in AWS Secrets Manager.
 
 ## Import

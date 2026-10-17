@@ -19,14 +19,14 @@ import (
 // ErrUnknown says that a value is not known yet, for example during a plan.
 var ErrUnknown = errors.New("the value is not known yet")
 
-// FromJSON builds the value that Terraform holds for a JSON document written
+// FromJSON builds the value that Terraform stores for a JSON document written
 // as an HCL literal. Objects become objects and arrays become tuples.
-func FromJSON(held any) types.Dynamic {
-	return types.DynamicValue(valueOf(held))
+func FromJSON(document any) types.Dynamic {
+	return types.DynamicValue(valueOf(document))
 }
 
-func valueOf(held any) attr.Value {
-	switch typed := held.(type) {
+func valueOf(document any) attr.Value {
+	switch typed := document.(type) {
 	case nil:
 		return types.DynamicNull()
 	case string:
@@ -80,20 +80,20 @@ func ToJSON(value attr.Value) (any, error) {
 
 // ToJSONKnown writes a value as a JSON document without the parts that are
 // not known yet. complete is true if the document contains all parts.
-func ToJSONKnown(value attr.Value) (held any, complete bool) {
+func ToJSONKnown(value attr.Value) (document any, complete bool) {
 	complete = true
-	held, _ = toJSON(value, func() (any, error) {
+	document, _ = toJSON(value, func() (any, error) {
 		complete = false
 		return omitted{}, nil
 	})
 
-	return prune(held), complete
+	return prune(document), complete
 }
 
 type omitted struct{}
 
-func prune(held any) any {
-	switch typed := held.(type) {
+func prune(document any) any {
+	switch typed := document.(type) {
 	case omitted:
 		return nil
 	case []any:
@@ -111,7 +111,7 @@ func prune(held any) any {
 		}
 		return typed
 	default:
-		return held
+		return document
 	}
 }
 
@@ -160,10 +160,10 @@ func numberOf(number *big.Float) json.Number {
 	return json.Number(number.Text('g', -1))
 }
 
-func objectOf(held map[string]attr.Value, unknown func() (any, error)) (any, error) {
-	out := make(map[string]any, len(held))
+func objectOf(attributes map[string]attr.Value, unknown func() (any, error)) (any, error) {
+	out := make(map[string]any, len(attributes))
 
-	for name, each := range held {
+	for name, each := range attributes {
 		converted, err := toJSON(each, unknown)
 		if err != nil {
 			return nil, err
@@ -174,10 +174,10 @@ func objectOf(held map[string]attr.Value, unknown func() (any, error)) (any, err
 	return out, nil
 }
 
-func arrayOf(held []attr.Value, unknown func() (any, error)) (any, error) {
-	out := make([]any, 0, len(held))
+func arrayOf(elements []attr.Value, unknown func() (any, error)) (any, error) {
+	out := make([]any, 0, len(elements))
 
-	for _, each := range held {
+	for _, each := range elements {
 		converted, err := toJSON(each, unknown)
 		if err != nil {
 			return nil, err
@@ -190,8 +190,8 @@ func arrayOf(held []attr.Value, unknown func() (any, error)) (any, error) {
 
 // Canonical writes a JSON document so that two equal documents have the same
 // text. Key order and number format do not change the text.
-func Canonical(held any) ([]byte, error) {
-	raw, err := json.Marshal(held)
+func Canonical(document any) ([]byte, error) {
+	raw, err := json.Marshal(document)
 	if err != nil {
 		return nil, err
 	}
@@ -207,8 +207,8 @@ func Canonical(held any) ([]byte, error) {
 	return json.Marshal(normalized(normal))
 }
 
-func normalized(held any) any {
-	switch typed := held.(type) {
+func normalized(document any) any {
+	switch typed := document.(type) {
 	case json.Number:
 		number, _, err := big.ParseFloat(typed.String(), 10, 512, big.ToNearestEven)
 		if err != nil {
@@ -226,6 +226,6 @@ func normalized(held any) any {
 		}
 		return typed
 	default:
-		return held
+		return document
 	}
 }

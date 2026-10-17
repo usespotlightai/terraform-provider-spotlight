@@ -119,8 +119,8 @@ func (judgeRubricOrClaims) ValidateObject(_ context.Context, req validator.Objec
 		return
 	}
 
-	held := req.ConfigValue.Attributes()
-	if held["rubric"].IsNull() && held["claims"].IsNull() {
+	attributes := req.ConfigValue.Attributes()
+	if attributes["rubric"].IsNull() && attributes["claims"].IsNull() {
 		resp.Diagnostics.AddAttributeError(req.Path, "Missing Judge Criteria", "A judge sets `rubric`, `claims`, or both.")
 	}
 }
@@ -391,7 +391,7 @@ func lineSchema() schema.Schema {
 					"repository": schema.StringAttribute{
 						Optional:            true,
 						Validators:          []validator.String{stringvalidator.RegexMatches(lineSourceRepository, "must be a GitHub repository named owner/name")},
-						MarkdownDescription: "The GitHub repository that holds the line's Terraform, named `owner/name`.",
+						MarkdownDescription: "The GitHub repository that contains the line's Terraform, named `owner/name`.",
 					},
 					"path": schema.StringAttribute{
 						Optional: true,
@@ -399,7 +399,7 @@ func lineSchema() schema.Schema {
 							stringvalidator.LengthBetween(1, 1024),
 							stringvalidator.RegexMatches(lineSourcePath, "must be a Terraform file ending in .tf, from the root of the repository, with forward slashes, no leading slash and no empty, . or .. parts"),
 						},
-						MarkdownDescription: "The Terraform file in it that holds the line, from the repository root, as in `teams/core/delivery.tf`.",
+						MarkdownDescription: "The Terraform file in it that contains the line, from the repository root, as in `teams/core/delivery.tf`.",
 					},
 				},
 			},

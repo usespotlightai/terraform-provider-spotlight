@@ -14,7 +14,7 @@ import (
 func seededRunnerPools(t *testing.T, seeded acctest.Seeded) (first, second acctest.Listed) {
 	t.Helper()
 
-	held := func(workspace client.Workspace, key string, provision *client.PoolProvision) acctest.Listed {
+	create := func(workspace client.Workspace, key string, provision *client.PoolProvision) acctest.Listed {
 		t.Helper()
 
 		created, err := seeded.Client.CreateRunnerPool(t.Context(), workspace.ID, client.RunnerPoolInput{Key: key, Labels: []string{}, Provision: provision})
@@ -23,10 +23,10 @@ func seededRunnerPools(t *testing.T, seeded acctest.Seeded) (first, second accte
 		return acctest.ListedAs(created.Meta)
 	}
 
-	held(seeded.Other, "ephemeral", nil)
-	later := held(seeded.Workspace, "k8s-jobs", &client.PoolProvision{URL: "https://provision.example.com/runs", Secret: provisionFirst})
+	create(seeded.Other, "ephemeral", nil)
+	later := create(seeded.Workspace, "k8s-jobs", &client.PoolProvision{URL: "https://provision.example.com/runs", Secret: provisionFirst})
 
-	return held(seeded.Workspace, "ephemeral", nil), later
+	return create(seeded.Workspace, "ephemeral", nil), later
 }
 
 func TestRunnerPoolListResource(t *testing.T) {

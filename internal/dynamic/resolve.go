@@ -38,40 +38,40 @@ func resolve(planned attr.Value, answer any) attr.Value {
 	case basetypes.DynamicValue:
 		return types.DynamicValue(resolve(typed.UnderlyingValue(), answer))
 	case basetypes.ObjectValue:
-		held, _ := answer.(map[string]any)
+		answered, _ := answer.(map[string]any)
 		values := make(map[string]attr.Value, len(typed.Attributes()))
 		for name, each := range typed.Attributes() {
-			values[name] = resolve(each, held[name])
+			values[name] = resolve(each, answered[name])
 		}
 		return basetypes.NewObjectValueMust(typed.AttributeTypes(ctx), values)
 	case basetypes.MapValue:
-		held, _ := answer.(map[string]any)
+		answered, _ := answer.(map[string]any)
 		values := make(map[string]attr.Value, len(typed.Elements()))
 		for name, each := range typed.Elements() {
-			values[name] = resolve(each, held[name])
+			values[name] = resolve(each, answered[name])
 		}
 		return basetypes.NewMapValueMust(typed.ElementType(ctx), values)
 	case basetypes.TupleValue:
-		held, _ := answer.([]any)
+		answered, _ := answer.([]any)
 		values := make([]attr.Value, len(typed.Elements()))
 		for at, each := range typed.Elements() {
-			values[at] = resolve(each, itemAt(held, at))
+			values[at] = resolve(each, itemAt(answered, at))
 		}
 		return basetypes.NewTupleValueMust(typed.ElementTypes(ctx), values)
 	case basetypes.ListValue:
-		held, _ := answer.([]any)
+		answered, _ := answer.([]any)
 		values := make([]attr.Value, len(typed.Elements()))
 		for at, each := range typed.Elements() {
-			values[at] = resolve(each, itemAt(held, at))
+			values[at] = resolve(each, itemAt(answered, at))
 		}
 		return basetypes.NewListValueMust(typed.ElementType(ctx), values)
 	case basetypes.SetValue:
 		if _, err := ToJSON(typed); err == nil {
 			return typed
 		}
-		held, _ := answer.([]any)
-		values := make([]attr.Value, 0, len(held))
-		for _, each := range held {
+		answered, _ := answer.([]any)
+		values := make([]attr.Value, 0, len(answered))
+		for _, each := range answered {
 			values = append(values, typedAs(typed.ElementType(ctx), each))
 		}
 		return basetypes.NewSetValueMust(typed.ElementType(ctx), values)
@@ -80,35 +80,35 @@ func resolve(planned attr.Value, answer any) attr.Value {
 	}
 }
 
-func itemAt(held []any, at int) any {
-	if at < len(held) {
-		return held[at]
+func itemAt(items []any, at int) any {
+	if at < len(items) {
+		return items[at]
 	}
 
 	return nil
 }
 
-func typedAs(kind attr.Type, held any) attr.Value {
+func typedAs(kind attr.Type, value any) attr.Value {
 	switch kind.(type) {
 	case basetypes.StringType:
-		if held == nil {
+		if value == nil {
 			return types.StringNull()
 		}
-		if text, ok := held.(string); ok {
+		if text, ok := value.(string); ok {
 			return types.StringValue(text)
 		}
-		return types.StringValue(fmt.Sprint(held))
+		return types.StringValue(fmt.Sprint(value))
 	case basetypes.BoolType:
-		if flag, ok := held.(bool); ok {
+		if flag, ok := value.(bool); ok {
 			return types.BoolValue(flag)
 		}
 		return types.BoolNull()
 	case basetypes.NumberType:
-		if number, ok := valueOf(held).(basetypes.NumberValue); ok {
+		if number, ok := valueOf(value).(basetypes.NumberValue); ok {
 			return number
 		}
 		return types.NumberNull()
 	default:
-		return valueOf(held)
+		return valueOf(value)
 	}
 }

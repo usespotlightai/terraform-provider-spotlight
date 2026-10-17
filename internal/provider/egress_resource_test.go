@@ -47,7 +47,7 @@ func egressKept(fake *fakeapi.Server) string {
 func egressKeeps(fake *fakeapi.Server, want string) resource.TestCheckFunc {
 	return func(*terraform.State) error {
 		if got := egressKept(fake); got != want {
-			return fmt.Errorf("the egress holds %q, want %q", got, want)
+			return fmt.Errorf("the egress keeps %q, want %q", got, want)
 		}
 
 		return nil
@@ -59,9 +59,9 @@ func egressToken(body map[string]any) (any, bool) {
 		return nil, false
 	}
 
-	held, ok := body["token"]
+	token, ok := body["token"]
 
-	return held, ok
+	return token, ok
 }
 
 func TestEgressTokenIsWrittenButNeverKept(t *testing.T) {
@@ -84,7 +84,7 @@ func TestEgressTokenIsWrittenButNeverKept(t *testing.T) {
 					statecheck.ExpectKnownValue(egressAddress, tfjsonpath.New("token"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(egressAddress, tfjsonpath.New("token_version"), knownvalue.Int64Exact(1)),
 				},
-				Check: resource.ComposeAggregateTestCheckFunc(egressKeeps(fake, tokenFirst), acctest.NothingHolds(acctest.Value(tokenFirst))),
+				Check: resource.ComposeAggregateTestCheckFunc(egressKeeps(fake, tokenFirst), acctest.NothingContains(acctest.Value(tokenFirst))),
 			},
 			{
 				Config:   acctest.Workspace + egressShared(tokenFirst, 1),
@@ -101,7 +101,7 @@ func TestEgressTokenIsWrittenButNeverKept(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					egressKeeps(fake, tokenSecond),
 					sentTimes(fake, egressToken, 2, "a new token_version sends the token again"),
-					acctest.NothingHolds(acctest.Value(tokenFirst), acctest.Value(tokenSecond)),
+					acctest.NothingContains(acctest.Value(tokenFirst), acctest.Value(tokenSecond)),
 				),
 			},
 			{
@@ -168,7 +168,7 @@ func TestAnEgressTokenSpotlightIssuesIsNeverKept(t *testing.T) {
 						return fmt.Errorf("Spotlight issued no token")
 					}
 
-					return acctest.NothingHolds(acctest.Value(first))(state)
+					return acctest.NothingContains(acctest.Value(first))(state)
 				},
 			},
 			{
@@ -185,8 +185,8 @@ func TestAnEgressTokenSpotlightIssuesIsNeverKept(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
 				},
 				Check: func(*terraform.State) error {
-					if held := egressKept(fake); held != first {
-						return fmt.Errorf("a refused rotation changed the egress's token to %q", held)
+					if kept := egressKept(fake); kept != first {
+						return fmt.Errorf("a refused rotation changed the egress's token to %q", kept)
 					}
 
 					return nil
@@ -419,7 +419,7 @@ func TestAccEgress(t *testing.T) {
 					resource.TestCheckResourceAttr(egressAddress, "token_version", "1"),
 					resource.TestCheckNoResourceAttr(egressAddress, "token"),
 					resource.TestCheckResourceAttrPair("spotlight_runner_pool.push", "provision.egress", egressAddress, "id"),
-					acctest.NothingHolds(acctest.Value(firstToken), acctest.Value(secret)),
+					acctest.NothingContains(acctest.Value(firstToken), acctest.Value(secret)),
 				),
 			},
 			{
@@ -437,7 +437,7 @@ func TestAccEgress(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(egressAddress, "url", "https://egress.example.com/v2"),
 					resource.TestCheckResourceAttr(egressAddress, "token_version", "2"),
-					acctest.NothingHolds(acctest.Value(firstToken), acctest.Value(secondToken), acctest.Value(secret)),
+					acctest.NothingContains(acctest.Value(firstToken), acctest.Value(secondToken), acctest.Value(secret)),
 				),
 			},
 			{

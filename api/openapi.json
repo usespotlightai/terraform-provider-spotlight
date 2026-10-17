@@ -1099,7 +1099,7 @@
             "description": "Missing, spent or wrong runner token"
           },
           "404": {
-            "description": "No such run held by this runner"
+            "description": "No such run leased by this runner"
           }
         },
         "summary": "What a person has said to the agent working this run",
@@ -1310,7 +1310,7 @@
             "description": "Missing, spent or wrong runner token"
           },
           "409": {
-            "description": "The run is not held by this runner"
+            "description": "The run is not leased by this runner"
           }
         },
         "summary": "Say what the agent has been given",
@@ -1348,7 +1348,7 @@
             "description": "Missing, spent or wrong runner token"
           },
           "404": {
-            "description": "The run is no longer held by this runner: it ended, was parked, or its task let it go. The runner lets its sandbox go."
+            "description": "The run is no longer leased by this runner: it ended, was parked, or its task let it go. The runner lets its sandbox go."
           },
           "409": {
             "description": "The run kept changing while its lease was renewed; renew again on the next heartbeat."
@@ -1362,7 +1362,7 @@
     },
     "/runs/{runId}/change-stack-checks/{stackId}/lease": {
       "post": {
-        "description": "The runner holding a check renews its lease while the check runs, so a long check is not handed to a second runner. The answer carries back whether the runner should stop checking.",
+        "description": "The runner with the lease on a check renews that lease while the check runs, so a long check is not handed to a second runner. The answer carries back whether the runner should stop checking.",
         "operationId": "renewCheckLease",
         "parameters": [
           {
@@ -1406,7 +1406,7 @@
             "description": "Missing, spent or wrong runner token"
           },
           "404": {
-            "description": "No such runner, or the check this runner holds is of another run"
+            "description": "No such runner, or the check this runner leases is of another run"
           },
           "409": {
             "description": "The check kept moving on while it was renewed"
@@ -1450,7 +1450,7 @@
             "description": "Missing, spent or wrong runner token"
           },
           "409": {
-            "description": "The run is not held by this runner"
+            "description": "The run is not leased by this runner"
           }
         },
         "summary": "Say which image, by digest, the run’s sandbox started from",
@@ -1494,7 +1494,7 @@
             "description": "No such run"
           },
           "409": {
-            "description": "The run is not held by this runner on that attempt, works no task, or already started from somewhere else"
+            "description": "The run is not leased by this runner on that attempt, works no task, or already started from somewhere else"
           },
           "422": {
             "description": "An archive the run could not have restored, a commit that is not a full SHA, or checkouts other than the ones the run was given"
@@ -1537,7 +1537,7 @@
             "description": "Missing, spent or wrong runner token"
           },
           "409": {
-            "description": "The run is not held by this runner"
+            "description": "The run is not leased by this runner"
           }
         },
         "summary": "Add to the run’s journal",
@@ -1622,7 +1622,7 @@
     },
     "/runs/{runId}/permissions": {
       "post": {
-        "description": "Only for a run whose station names a harness profile. An approval the task already holds for this exact call is spent on it; otherwise a person is asked in their inbox, and the run waits for their answer once its turn ends.",
+        "description": "Only for a run whose station names a harness profile. An approval the task already has for this exact call is spent on it; otherwise a person is asked in their inbox, and the run waits for their answer once its turn ends.",
         "operationId": "askPermission",
         "parameters": [
           {
@@ -1659,7 +1659,7 @@
             "description": "Missing, spent or wrong runner token"
           },
           "409": {
-            "description": "The run is not held by this runner"
+            "description": "The run is not leased by this runner"
           }
         },
         "summary": "Ask whether the harness may do what it asked to",
@@ -1790,7 +1790,7 @@
             "description": "Missing, spent or wrong runner token"
           },
           "404": {
-            "description": "No such run held by this runner"
+            "description": "No such run leased by this runner"
           }
         },
         "summary": "Whether a turn reported like this would wait for a person",
@@ -1838,7 +1838,7 @@
             "description": "Missing, spent or wrong runner token"
           },
           "409": {
-            "description": "The run is not held by this runner"
+            "description": "The run is not leased by this runner"
           }
         },
         "summary": "Park a run whose person did not answer within the grace period",
@@ -1866,7 +1866,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HeldArchiveResponseDto"
+                  "$ref": "#/components/schemas/StoredArchiveResponseDto"
                 }
               }
             }
@@ -2254,10 +2254,10 @@
             }
           },
           "401": {
-            "description": "Missing or unknown egress token, or its runner no longer holds work"
+            "description": "Missing or unknown egress token, or its runner no longer has a lease on work"
           },
           "409": {
-            "description": "The runner of this proxy credential holds no run yet. Please redeem again after it claims one"
+            "description": "The runner of this proxy credential has no lease on a run yet. Please redeem again after it claims one"
           },
           "422": {
             "description": "The recipient is not an X25519 public key"
@@ -2268,7 +2268,7 @@
             "bearer": []
           }
         ],
-        "summary": "The secrets the run a sandbox holds may wear, for the egress beside it to inject toward their hosts",
+        "summary": "The secrets that the run in a sandbox may wear, for the egress beside it to inject toward their hosts",
         "tags": [
           "runners"
         ]
@@ -2301,7 +2301,7 @@
             }
           },
           "401": {
-            "description": "Missing or unknown egress token, or its runner no longer holds work"
+            "description": "Missing or unknown egress token, or its runner no longer has a lease on work"
           }
         },
         "security": [
@@ -2315,17 +2315,17 @@
         ]
       }
     },
-    "/egress/holds": {
+    "/egress/active-runs": {
       "post": {
         "description": "Called by each node of a shared egress about every 30 seconds. The node forgets the secrets of every run that is not in the answer.",
-        "operationId": "keepEgressHolds",
+        "operationId": "checkActiveRuns",
         "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/KeepEgressHoldsRequestDto"
+                "$ref": "#/components/schemas/CheckActiveRunsRequestDto"
               }
             }
           }
@@ -2336,16 +2336,16 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/EgressHoldsResponseDto"
+                  "$ref": "#/components/schemas/EgressActiveRunsResponseDto"
                 }
               }
             }
           },
           "401": {
-            "description": "Missing or unknown egress token, or its runner no longer holds work"
+            "description": "Missing or unknown egress token, or its runner no longer has a lease on work"
           },
           "422": {
-            "description": "The call holds more than 500 proxy credentials"
+            "description": "The request has more than 500 proxy credentials"
           }
         },
         "security": [
@@ -2353,7 +2353,7 @@
             "bearer": []
           }
         ],
-        "summary": "The runs a shared egress serves whose runner still holds its work",
+        "summary": "The runs of a shared egress that their runners still lease",
         "tags": [
           "runners"
         ]
@@ -2379,10 +2379,10 @@
             "description": "The records were taken"
           },
           "401": {
-            "description": "Missing or unknown egress token, or its runner no longer holds work"
+            "description": "Missing or unknown egress token, or its runner no longer has a lease on work"
           },
           "422": {
-            "description": "The call holds more than 2000 records"
+            "description": "The request has more than 2000 records"
           }
         },
         "security": [
@@ -2398,7 +2398,7 @@
     },
     "/workspaces/{slug}/runner-activity": {
       "get": {
-        "description": "A runner that holds no run is idle, and is not listed.",
+        "description": "A runner with no lease on a run is idle, and is not listed.",
         "operationId": "listRunnerActivity",
         "parameters": [
           {
@@ -4902,7 +4902,7 @@
             "bearer": []
           }
         ],
-        "summary": "Delete a workspace that holds no teams",
+        "summary": "Delete a workspace that has no teams",
         "tags": [
           "workspaces"
         ],
@@ -5078,7 +5078,7 @@
             "bearer": []
           }
         ],
-        "summary": "Create a team in a workspace, holding nothing yet",
+        "summary": "Create a team in a workspace, with nothing in it yet",
         "tags": [
           "teams"
         ],
@@ -5573,7 +5573,7 @@
             "bearer": []
           }
         ],
-        "summary": "Delete a team that holds no lines, skills or integrations",
+        "summary": "Delete a team that has no lines, skills or integrations",
         "tags": [
           "teams"
         ],
@@ -7595,7 +7595,7 @@
     },
     "/workspaces/{slug}/members/{userId}": {
       "patch": {
-        "description": "Roles are given downwards: an owner may set anyone’s, an admin only those of people they outrank, and nobody may hand out a rank they do not hold. The last owner keeps the workspace.",
+        "description": "Roles are given downwards: an owner may set anyone’s, an admin only those of people they outrank, and nobody may hand out a rank they do not have. The last owner keeps the workspace.",
         "operationId": "changeMemberRole",
         "parameters": [
           {
@@ -7883,7 +7883,7 @@
             "description": "Another invitation was just sent"
           },
           "422": {
-            "description": "An address, role or team that does not hold"
+            "description": "An address, role or team that is not valid"
           }
         },
         "summary": "Invite people to this workspace by email, with a role and teams",
@@ -9407,7 +9407,7 @@
             "bearer": []
           }
         ],
-        "summary": "A host says it is here, what it holds and what it runs, so the Runners page can show it",
+        "summary": "A host says it is here, what it has and what it runs, so the Runners page can show it",
         "tags": [
           "runners"
         ]
@@ -11140,7 +11140,7 @@
             "bearer": []
           }
         ],
-        "summary": "Retire a runner pool; runs its runners already hold carry on to their end",
+        "summary": "Retire a runner pool. Runs that its runners already have a lease on continue until they end",
         "tags": [
           "runners"
         ],
@@ -13888,7 +13888,7 @@
                           "additionalProperties": {
                             "type": "string"
                           },
-                          "description": "Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace holds, and the server gets only a stand-in, since egress wears the value on its requests to the hosts the secret is bound to."
+                          "description": "Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace has, and the server gets only a stand-in, since egress wears the value on its requests to the hosts the secret is bound to."
                         }
                       }
                     }
@@ -14238,7 +14238,7 @@
                           "additionalProperties": {
                             "type": "string"
                           },
-                          "description": "Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace holds, and the server gets only a stand-in, since egress wears the value on its requests to the hosts the secret is bound to."
+                          "description": "Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace has, and the server gets only a stand-in, since egress wears the value on its requests to the hosts the secret is bound to."
                         }
                       }
                     }
@@ -15269,7 +15269,7 @@
             "description": "Not a run this runner worked, or no such stack of it"
           },
           "409": {
-            "description": "This runner does not hold the check of that stack"
+            "description": "This runner does not have the lease on the check of that stack"
           },
           "422": {
             "description": "The stack was already checked, or names steps it has not"
@@ -16584,7 +16584,7 @@
             }
           },
           "422": {
-            "description": "The request is not shaped as a check, the definition holds errors, each listed under definition, or the position names no expression in it",
+            "description": "The request is not shaped as a check, the definition has errors, each listed under definition, or the position names no expression in it",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -18163,7 +18163,7 @@
             "description": "Missing, spent or wrong runner token"
           },
           "404": {
-            "description": "No such run held by this runner"
+            "description": "No such run leased by this runner"
           },
           "409": {
             "description": "The run is a search, which recalls nothing the team remembers"
@@ -18215,7 +18215,7 @@
             "description": "Missing, spent or wrong runner token"
           },
           "404": {
-            "description": "No such run held by this runner"
+            "description": "No such run leased by this runner"
           },
           "409": {
             "description": "The run is a search, which recalls nothing the team remembers"
@@ -18269,7 +18269,7 @@
             "description": "Missing, spent or wrong runner token"
           },
           "404": {
-            "description": "No such run held by this runner"
+            "description": "No such run leased by this runner"
           },
           "409": {
             "description": "The run is a replay or a search, which remembers nothing for the team"
@@ -18315,7 +18315,7 @@
             "description": "Missing, spent or wrong runner token"
           },
           "404": {
-            "description": "No such run held by this runner"
+            "description": "No such run leased by this runner"
           }
         },
         "summary": "Every standing memory that applies to the run, as files to lay in its workspace",
@@ -19815,7 +19815,7 @@
                   "station": {
                     "type": "object",
                     "additionalProperties": true,
-                    "description": "The station block to replay under, as the line resource holds a station: it keeps the station’s key, and is checked as a line with it in place would be",
+                    "description": "The station block to replay under, as the line resource stores a station: it keeps the station’s key, and is checked as a line with it in place would be",
                     "example": {
                       "key": "build",
                       "name": "Build",
@@ -20660,7 +20660,7 @@
             "name": "station",
             "required": false,
             "in": "query",
-            "description": "With line: the key of the station whose sets to list; a line or station the team does not hold is not found",
+            "description": "With line: the key of the station whose sets to list; a line or station that the team does not own is not found",
             "schema": {
               "example": "build"
             }
@@ -22579,7 +22579,7 @@
             "name": "before",
             "required": false,
             "in": "query",
-            "description": "Only searches started before this one, by its id; a search the team does not hold answers an empty page",
+            "description": "Only searches started before this one, by its id; a search that the team does not own answers an empty page",
             "schema": {
               "type": "string"
             }
@@ -23200,7 +23200,7 @@
             "name": "before",
             "required": false,
             "in": "query",
-            "description": "Only checks started before this one, by its id; a check the set does not hold answers an empty page",
+            "description": "Only checks started before this one, by its id; a check that the set does not contain answers an empty page",
             "schema": {
               "type": "string"
             }
@@ -23398,7 +23398,7 @@
             "description": "Missing, spent or wrong runner token"
           },
           "404": {
-            "description": "The search no longer holds this run, or it is no search run this runner holds",
+            "description": "This run is no longer the active run of the search, or it is not a search run that this runner leases",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -23473,7 +23473,7 @@
             "description": "Missing, spent or wrong runner token"
           },
           "404": {
-            "description": "The search no longer holds this run, it is no search run this runner holds, or the task is none the reflection looks into",
+            "description": "This run is no longer the active run of the search, it is not a search run that this runner leases, or the reflection does not look into the task",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -23723,7 +23723,7 @@
   },
   "info": {
     "title": "Spotlight Control Plane",
-    "description": "HTTP API for the Spotlight Control Plane.\n\n## Resource conventions\n\nOperations marked `x-spotlight-resource` manage configuration resources, the ones the Terraform provider writes. They live under `/resources` and address everything by id. Every resource follows these rules, and a conformance suite holds each one to them.\n\n- **Stable ids.** Spotlight issues a resource's `id` when it is created. It never changes for the resource's life, whatever else does.\n- **Reads return every field.** A read answers the whole resource, defaults filled in, so a client comparing it with what it wrote sees any drift. A write answers exactly what a read would.\n- **Versions.** Every resource carries a `version` that rises with each change, and each answer carries it as a strong `ETag` (`\"3\"`). An update or delete must send it back as `If-Match`: without one it is refused with 428, and against a version that is no longer current with 409, whose body gives the `currentVersion` and whose `ETag` names it. A write that would remove something another resource still uses is refused with 409 `in-use`.\n- **Idempotent creates.** A create must carry an `Idempotency-Key`. Retrying with the same key and body within 24 hours answers the resource the first attempt created, marked `Idempotent-Replayed: true`, and creates nothing more; the same key with a different body is refused with 422.\n- **Problems name fields.** Errors are `application/problem+json` (RFC 9457). `type` is stable and safe to branch on. An invalid request lists `errors`, each with the `path` of the attribute it is about, as in `stations[2].check`; a key that is not a plain name is quoted, as Terraform addresses it: `on[\"task.opened\"].to.thread`.\n- **API versions.** A client may send `Spotlight-Api-Version`; every response names the version it was answered in, currently `2026-09-23`. Changes within a version are additive only: fields and operations are added, never removed, renamed or given a new meaning.\n- **Expression checks.** `POST /expressions/check` type-checks one CEL expression at the attribute that holds it, named within the resource's whole definition (`integration.webhook.events[0].when`), as `terraform plan` needs. What the expression may read is worked out from that definition exactly as applying it would, so a plan fails where an apply would; a definition holding any error is refused with 422, each error under `definition`. It answers the type and any errors, each with the span it is about and a suggestion where a declared name is near, and warnings about the definition, such as a capture shadowing a built-in name. `GET /expressions/positions` lists every position, with `[*]` for any index or key, and what an expression there sees. They follow these headers and problems, but are not resources.\n- **Credentials.** A client calls with a person's session or with a workspace token, sent as `Authorization: Bearer <token>`. A token acts only within its own workspace and only as its scopes allow. `read`, `plan` and `configure` are a ladder: `read` reads, `plan` also checks expressions, and `configure` also creates, changes and deletes configuration as a workspace admin may, except secrets, runners and token trusts. `secrets` is granted beside one of them and lets the token set, rebind, rotate and delete secrets; Terraform that manages secrets uses `[\"configure\", \"secrets\"]`. `runners` is granted the same way and lets the token create, rekey and delete runners and runner trusts and declare the workspace's runners, since a runner claims runs, checks out repositories and holds git credentials; Terraform that manages runners uses `[\"configure\", \"runners\"]`. `trusts` is granted the same way and lets the token create, change and delete workspace token trusts, since a trust hands out tokens; a token can only define a trust granting scopes it holds itself, so bootstrap the trusts once with a token holding `trusts` and every scope they grant, as in `[\"configure\", \"secrets\", \"trusts\"]`, and revoke it. No token manages members or tokens, or reads the audit.\n- **CI without a stored token.** A workspace admin, or a token granted `trusts`, defines a workspace token trust naming an OIDC issuer, audience, subject and claims, and the scopes and lifetime (at most an hour) of the tokens it mints. A CI job exchanges the OIDC token its platform issues it at `POST /api/workspace-tokens/exchange` with `{ \"trust\": <trust id>, \"token\": <OIDC token> }`, and calls with the short-lived token it gets back. Deleting the trust stops every token it minted at once, and the audit names the trust and the workload's subject beside each exchange and each change made with a minted token.\n- **Refusals.** A change by someone who may read the resource but not change it, person or token, is refused with 403 `forbidden`, whose `permission` names what the caller lacks, one of `configure`, `manage-secrets`, `manage-runners`, `manage-token-trusts`, `administer`, `open-workspaces`, `plan`. Anything they may not see at all answers 404.\n- **Who changed what.** A client names itself in `Spotlight-Client` (`terraform-provider/<version>` or `web`), and every configuration change is recorded with who made it, person or token, and through which client. A secret's change also records the value version it moved to and the hosts it is bound to, never its value.\n- **Import by address.** Each resource has an `address` that names it within its workspace, such as `core/linear`, and an import operation that answers the resource at that address, as `terraform import` needs. A workspace's address is its slug; a team's is its key; anything a team holds is the team's key and its own, as in `core/delivery`.",
+    "description": "HTTP API for the Spotlight Control Plane.\n\n## Resource conventions\n\nOperations marked `x-spotlight-resource` manage configuration resources, the ones the Terraform provider writes. They live under `/resources` and address everything by id. Every resource follows these rules, and a conformance suite checks each one against them.\n\n- **Stable ids.** Spotlight issues a resource's `id` when it is created. It never changes for the resource's life, whatever else does.\n- **Reads return every field.** A read answers the whole resource, defaults filled in, so a client comparing it with what it wrote sees any drift. A write answers exactly what a read would.\n- **Versions.** Every resource carries a `version` that rises with each change, and each answer carries it as a strong `ETag` (`\"3\"`). An update or delete must send it back as `If-Match`: without one it is refused with 428, and against a version that is no longer current with 409, whose body gives the `currentVersion` and whose `ETag` names it. A write that would remove something another resource still uses is refused with 409 `in-use`.\n- **Idempotent creates.** A create must carry an `Idempotency-Key`. Retrying with the same key and body within 24 hours answers the resource the first attempt created, marked `Idempotent-Replayed: true`, and creates nothing more; the same key with a different body is refused with 422.\n- **Problems name fields.** Errors are `application/problem+json` (RFC 9457). `type` is stable and safe to branch on. An invalid request lists `errors`, each with the `path` of the attribute it is about, as in `stations[2].check`; a key that is not a plain name is quoted, as Terraform addresses it: `on[\"task.opened\"].to.thread`.\n- **API versions.** A client may send `Spotlight-Api-Version`; every response names the version it was answered in, currently `2026-09-23`. Changes within a version are additive only: fields and operations are added, never removed, renamed or given a new meaning.\n- **Expression checks.** `POST /expressions/check` type-checks one CEL expression at the attribute that contains it, named within the resource's whole definition (`integration.webhook.events[0].when`), as `terraform plan` needs. What the expression may read is worked out from that definition exactly as applying it would, so a plan fails where an apply would; a definition that has an error is refused with 422, each error under `definition`. It answers the type and any errors, each with the span it is about and a suggestion where a declared name is near, and warnings about the definition, such as a capture shadowing a built-in name. `GET /expressions/positions` lists every position, with `[*]` for any index or key, and what an expression there sees. They follow these headers and problems, but are not resources.\n- **Credentials.** A client calls with a person's session or with a workspace token, sent as `Authorization: Bearer <token>`. A token acts only within its own workspace and only as its scopes allow. `read`, `plan` and `configure` are a ladder: `read` reads, `plan` also checks expressions, and `configure` also creates, changes and deletes configuration as a workspace admin may, except secrets, runners and token trusts. `secrets` is granted beside one of them and lets the token set, rebind, rotate and delete secrets; Terraform that manages secrets uses `[\"configure\", \"secrets\"]`. `runners` is granted the same way and lets the token create, rekey and delete runners and runner trusts and declare the workspace's runners, since a runner claims runs, checks out repositories and keeps git credentials; Terraform that manages runners uses `[\"configure\", \"runners\"]`. `trusts` is granted the same way and lets the token create, change and delete workspace token trusts, since a trust hands out tokens; a token can only define a trust granting scopes it has itself, so bootstrap the trusts once with a token that has `trusts` and every scope they grant, as in `[\"configure\", \"secrets\", \"trusts\"]`, and revoke it. No token manages members or tokens, or reads the audit.\n- **CI without a stored token.** A workspace admin, or a token granted `trusts`, defines a workspace token trust naming an OIDC issuer, audience, subject and claims, and the scopes and lifetime (at most an hour) of the tokens it mints. A CI job exchanges the OIDC token its platform issues it at `POST /api/workspace-tokens/exchange` with `{ \"trust\": <trust id>, \"token\": <OIDC token> }`, and calls with the short-lived token it gets back. Deleting the trust stops every token it minted at once, and the audit names the trust and the workload's subject beside each exchange and each change made with a minted token.\n- **Refusals.** A change by someone who may read the resource but not change it, person or token, is refused with 403 `forbidden`, whose `permission` names what the caller lacks, one of `configure`, `manage-secrets`, `manage-runners`, `manage-token-trusts`, `administer`, `open-workspaces`, `plan`. Anything they may not see at all answers 404.\n- **Who changed what.** A client names itself in `Spotlight-Client` (`terraform-provider/<version>` or `web`), and every configuration change is recorded with who made it, person or token, and through which client. A secret's change also records the value version it moved to and the hosts it is bound to, never its value.\n- **Import by address.** Each resource has an `address` that names it within its workspace, such as `core/linear`, and an import operation that answers the resource at that address, as `terraform import` needs. A workspace's address is its slug; a team's is its key; anything a team owns is the team's key and its own, as in `core/delivery`.",
     "version": "2026-09-23",
     "contact": {}
   },
@@ -24019,12 +24019,12 @@
           "repository": {
             "type": "string",
             "example": "acme/platform",
-            "description": "The GitHub repository that holds the line’s Terraform"
+            "description": "The GitHub repository that contains the line’s Terraform"
           },
           "path": {
             "type": "string",
             "example": "teams/core/delivery.tf",
-            "description": "The Terraform file in it that holds the line, from the repository root"
+            "description": "The Terraform file in it that contains the line, from the repository root"
           }
         },
         "required": [
@@ -24409,7 +24409,7 @@
           "harness": {
             "type": "string",
             "example": "claude-code",
-            "description": "The harness the run needs, so a host can tell whether the image it pulled still holds it"
+            "description": "The harness the run needs, so a host can tell whether the image it pulled still contains it"
           },
           "attempt": {
             "type": "number",
@@ -25016,7 +25016,7 @@
           "settings": {
             "type": "object",
             "additionalProperties": true,
-            "description": "The permissions, MCP servers and native settings it held"
+            "description": "The permissions, MCP servers and native settings it contained"
           }
         },
         "required": [
@@ -25526,7 +25526,7 @@
           "block": {
             "type": "object",
             "additionalProperties": true,
-            "description": "The candidate’s station block, in the shape the line resource holds a station in",
+            "description": "The candidate’s station block, in the shape that the line resource uses for a station",
             "example": {
               "key": "build",
               "name": "Build",
@@ -26000,14 +26000,14 @@
           "parked": {
             "type": "boolean",
             "example": true,
-            "description": "Whether the run is parked (or, if a stop was asked for, ended) and no longer held by this runner. False when the answer arrived first: the run is working again, and the answer waits in its messages."
+            "description": "Whether the run is parked (or, if a stop was asked for, ended) and no longer leased by this runner. False when the answer arrived first: the run is working again, and the answer waits in its messages."
           }
         },
         "required": [
           "parked"
         ]
       },
-      "HeldArchiveResponseDto": {
+      "StoredArchiveResponseDto": {
         "type": "object",
         "properties": {
           "id": {
@@ -26092,7 +26092,7 @@
           "running": {
             "type": "integer",
             "example": 1,
-            "description": "The pool’s runners standing now: holding a run or check, or started and yet to claim"
+            "description": "The pool’s runners standing now: with a lease on a run or check, or started and yet to claim"
           },
           "capacity": {
             "type": "integer",
@@ -26173,7 +26173,7 @@
           "image": {
             "type": "string",
             "example": "ghcr.io/acme/api-runner:main",
-            "description": "The runner image this claim will run in, one the host reported serving; what it holds and whether it is the default come from that report"
+            "description": "The runner image this claim will run in, one the host reported serving; what it contains and whether it is the default come from that report"
           }
         },
         "required": [
@@ -26320,7 +26320,7 @@
           "recipient": {
             "type": "string",
             "example": "p8kX0q1cVJ3Q0x4yQ2a6m0dD6b8hT3n1gC9sZ7rW2Ek=",
-            "description": "The X25519 public key egress holds for this run alone, in base64; values Spotlight keeps are sealed to it"
+            "description": "The X25519 public key that egress keeps for this run alone, in base64; values Spotlight keeps are sealed to it"
           },
           "proxyCredential": {
             "type": "string",
@@ -26380,7 +26380,7 @@
           "name": {
             "type": "string",
             "example": "authorization",
-            "description": "The header or query parameter that holds its stand-in"
+            "description": "The header or query parameter that contains its stand-in"
           },
           "prefix": {
             "type": "string",
@@ -26421,7 +26421,7 @@
           },
           "reason": {
             "type": "string",
-            "example": "The workspace holds no secret named LINEAR_API_KEY; define it before anything uses it"
+            "example": "The workspace has no secret named LINEAR_API_KEY; define it before anything uses it"
           }
         },
         "required": [
@@ -26555,7 +26555,7 @@
           "reaches"
         ]
       },
-      "KeepEgressHoldsRequestDto": {
+      "CheckActiveRunsRequestDto": {
         "type": "object",
         "properties": {
           "proxyCredentials": {
@@ -26571,11 +26571,11 @@
           "proxyCredentials"
         ]
       },
-      "EgressHoldsResponseDto": {
+      "EgressActiveRunsResponseDto": {
         "type": "object",
         "properties": {
-          "held": {
-            "description": "The proxy credentials whose runner still holds its work. Egress forgets every other run",
+          "active": {
+            "description": "The proxy credentials whose runner still leases its work, or has no work yet. Egress forgets every other run",
             "type": "array",
             "items": {
               "type": "string"
@@ -26583,7 +26583,7 @@
           }
         },
         "required": [
-          "held"
+          "active"
         ]
       },
       "EgressConnectionRequestDto": {
@@ -26671,7 +26671,7 @@
           "records"
         ]
       },
-      "HeldRunResponseDto": {
+      "LeasedRunResponseDto": {
         "type": "object",
         "properties": {
           "id": {
@@ -26728,7 +26728,7 @@
             "description": "The run the runner is working on",
             "allOf": [
               {
-                "$ref": "#/components/schemas/HeldRunResponseDto"
+                "$ref": "#/components/schemas/LeasedRunResponseDto"
               }
             ]
           }
@@ -27248,7 +27248,7 @@
           "stationCount": {
             "type": "number",
             "example": 4,
-            "description": "How many stations the line holds"
+            "description": "How many stations the line has"
           },
           "raisedAt": {
             "description": "Where it was raised, which it keeps as it moves",
@@ -27311,7 +27311,7 @@
           },
           "aside": {
             "nullable": true,
-            "description": "What this item puts aside for a person to settle, where it is not a conversation; it never holds the task up",
+            "description": "What this item puts aside for a person to settle, where it is not a conversation; it never blocks the task",
             "type": "object",
             "allOf": [
               {
@@ -27518,7 +27518,7 @@
           "used": {
             "type": "number",
             "example": 12173,
-            "description": "Tokens held in context"
+            "description": "Tokens in context"
           },
           "size": {
             "type": "number",
@@ -27834,7 +27834,7 @@
           "count": {
             "type": "number",
             "example": 5,
-            "description": "How many stations the line holds"
+            "description": "How many stations the line has"
           }
         },
         "required": [
@@ -28013,7 +28013,7 @@
           "count": {
             "type": "number",
             "example": 3,
-            "description": "How many the line holds"
+            "description": "How many stations the line has"
           }
         },
         "required": [
@@ -29777,7 +29777,7 @@
           "key": {
             "type": "string",
             "example": "core",
-            "description": "Names the team in the addresses of everything it holds; fixed for its life, so changing it means replacing the team"
+            "description": "Names the team in the addresses of everything it has; fixed for its life, so changing it means replacing the team"
           },
           "name": {
             "type": "string",
@@ -30798,7 +30798,7 @@
             "type": "string",
             "nullable": true,
             "example": null,
-            "description": "The key to read when that secret holds JSON"
+            "description": "The key to read when that secret contains JSON"
           }
         },
         "required": [
@@ -31269,7 +31269,7 @@
             }
           },
           "images": {
-            "description": "The runner images it serves or refused, and what each holds",
+            "description": "The runner images it serves or refused, and what each contains",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/HostImageResponseDto"
@@ -31853,7 +31853,7 @@
             ],
             "example": "linked"
           },
-          "holding": {
+          "holder": {
             "type": "string",
             "description": "Whose connection its tools act with: the team’s, or that of the person who started the task",
             "enum": [
@@ -31884,7 +31884,7 @@
           "name",
           "path",
           "standing",
-          "holding",
+          "holder",
           "handle",
           "described"
         ]
@@ -32119,7 +32119,7 @@
             "example": {
               "LINEAR_TEAM": "core"
             },
-            "description": "Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace holds, and the server gets only a stand-in, since egress wears the value on its requests to the hosts the secret is bound to."
+            "description": "Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace has, and the server gets only a stand-in, since egress wears the value on its requests to the hosts the secret is bound to."
           }
         },
         "required": [
@@ -32601,7 +32601,7 @@
         "properties": {
           "runId": {
             "type": "string",
-            "description": "The run whose page holds the stack"
+            "description": "The run whose page shows the stack"
           },
           "repository": {
             "type": "string",
@@ -32771,7 +32771,7 @@
             }
           },
           "disputes": {
-            "description": "Who holds it wrong or out of date, and why",
+            "description": "Who says it is wrong or out of date, and why",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/DisputeResponseDto"
@@ -33410,7 +33410,7 @@
           },
           "people": {
             "nullable": true,
-            "description": "Who in the team has connected what, shown to admins only; it never holds a token",
+            "description": "Who in the team has connected what, shown to admins only; it never contains a token",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/PersonConnectionResponseDto"
@@ -33579,7 +33579,7 @@
           "position": {
             "type": "string",
             "example": "integration.webhook.events[0].when",
-            "description": "The attribute that holds the expression, within the definition, written as its problems would name it"
+            "description": "The attribute that contains the expression, within the definition, written as its problems would name it"
           },
           "expression": {
             "type": "string",
@@ -33859,7 +33859,7 @@
           "url": {
             "type": "string",
             "example": "https://dba.acme.dev/review",
-            "description": "Where the request goes; may hold ${{ }} expressions"
+            "description": "Where the request goes; may contain ${{ }} expressions"
           },
           "headers": {
             "type": "object",
@@ -33872,7 +33872,7 @@
             "description": "Headers to send besides the ones Spotlight signs with"
           },
           "body": {
-            "description": "The JSON body, any JSON value; strings may hold ${{ }} expressions. Left out, Spotlight sends the event, task and run",
+            "description": "The JSON body, any JSON value; strings may contain ${{ }} expressions. Left out, Spotlight sends the event, task and run",
             "oneOf": [
               {
                 "type": "object",
@@ -34996,7 +34996,7 @@
           "reason": {
             "type": "string",
             "example": "The retry worker was removed.",
-            "description": "Why it no longer holds"
+            "description": "Why it no longer applies"
           }
         },
         "required": [
@@ -36534,7 +36534,7 @@
               "type": "string",
               "nullable": true
             },
-            "description": "The claims the run is graded on, in order, on a claims scale, empty on any other: the ones the judge marked where it scored the run; a claim reads null only where the rubric the judge was given is no longer held"
+            "description": "The claims the run is graded on, in order, on a claims scale, empty on any other: the ones the judge marked where it scored the run; a claim reads null only where the rubric the judge was given is no longer stored"
           },
           "judged": {
             "type": "boolean",
@@ -39543,7 +39543,7 @@
               "90d"
             ],
             "example": "7d",
-            "description": "The shortest Insights period whose days hold the moment the alert went off"
+            "description": "The shortest Insights period whose days include the moment the alert went off"
           },
           "recoveredAt": {
             "type": "string",
@@ -41428,7 +41428,7 @@
           "station": {
             "type": "object",
             "additionalProperties": true,
-            "description": "The station block it replays the station under, in the shape the line resource holds a station in",
+            "description": "The station block it replays the station under, in the shape in which the line resource stores a station",
             "example": {
               "key": "build",
               "name": "Build",
@@ -42396,7 +42396,7 @@
           "station": {
             "type": "object",
             "additionalProperties": true,
-            "description": "The station block, as the line resource holds it"
+            "description": "The station block, as the line resource stores it"
           },
           "createdAt": {
             "type": "string"
@@ -44734,7 +44734,7 @@
           },
           "originalRunId": {
             "type": "string",
-            "description": "The run the set holds for the task"
+            "description": "The run the set contains for the task"
           },
           "replayRunId": {
             "type": "string",
@@ -44755,7 +44755,7 @@
           },
           "originalRunId": {
             "type": "string",
-            "description": "The run the set holds for the task"
+            "description": "The run the set contains for the task"
           },
           "replayRunId": {
             "type": "string",
@@ -45520,7 +45520,7 @@
           "station": {
             "type": "object",
             "additionalProperties": true,
-            "description": "The station block as the plan would apply it, as the line resource holds a station; its check, judge, diffs and runners are replaced by the live station’s, since a planned change is scored as, and runs where, the live station does",
+            "description": "The station block as the plan would apply it, as the line resource stores a station; its check, judge, diffs and runners are replaced by the live station’s, since a planned change is scored as, and runs where, the live station does",
             "example": {
               "key": "build",
               "name": "Build",
@@ -45535,7 +45535,7 @@
           "line": {
             "type": "object",
             "additionalProperties": true,
-            "description": "The line’s settings that change how its stations run, as the plan would apply them: its repositories, each with its image and setup, as the line resource holds them",
+            "description": "The line’s settings that change how its stations run, as the plan would apply them: its repositories, each with its image and setup, as the line resource stores them",
             "example": {
               "repositories": [
                 {
@@ -46019,7 +46019,7 @@
           },
           "station": {
             "type": "object",
-            "description": "The station block, as the line holds it, changed only where a search may change it"
+            "description": "The station block, as the line stores it, changed only where a search may change it"
           }
         },
         "required": [
@@ -46198,7 +46198,7 @@
           },
           "runs": {
             "type": "number",
-            "description": "How many past runs the set holds now"
+            "description": "How many past runs the set contains now"
           },
           "oldestRunEndedAt": {
             "type": "string",
@@ -46216,7 +46216,7 @@
             "type": "string",
             "nullable": true,
             "example": "2026-09-29T09:00:00.000Z",
-            "description": "When a task was last added to it; null while it holds none"
+            "description": "When a task was last added to it; null while it contains none"
           },
           "minGain": {
             "type": "number",

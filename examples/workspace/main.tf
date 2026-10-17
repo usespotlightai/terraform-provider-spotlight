@@ -27,7 +27,7 @@ variable "secret_linear_api_key" {
 }
 
 variable "runner_pool_ephemeral_token" {
-  description = "The token the runner pool ephemeral claims with, which a spotlight-host serving it holds; left null, Spotlight issues one Terraform does not keep"
+  description = "The token the runner pool ephemeral claims with, which a spotlight-host serving it has; left null, Spotlight issues one Terraform does not keep"
   type        = string
   sensitive   = true
   default     = null

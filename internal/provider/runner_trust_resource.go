@@ -30,7 +30,7 @@ type RunnerTrustResource struct {
 	client *client.Client
 }
 
-// RunnerTrustResourceModel is a spotlight_runner_trust as Terraform holds it.
+// RunnerTrustResourceModel is a spotlight_runner_trust as Terraform stores it.
 type RunnerTrustResourceModel struct {
 	ID          types.String `tfsdk:"id"`
 	Version     types.Int64  `tfsdk:"version"`
@@ -55,7 +55,7 @@ func (r *RunnerTrustResource) Schema(_ context.Context, _ resource.SchemaRequest
 
 func runnerTrustSchema() schema.Schema {
 	return schema.Schema{
-		MarkdownDescription: "A workload whose platform-issued tokens let a `spotlight-host` claim work, as a Kubernetes service account's do: a host there holds no Spotlight token " +
+		MarkdownDescription: "A workload whose platform-issued tokens let a `spotlight-host` claim work, as a Kubernetes service account's do: a host there has no Spotlight token " +
 			"and claims through the trust with its workload token, given `SPOTLIGHT_TRUST=<trust id>` and `SPOTLIGHT_OIDC_TOKEN_FILE=<projected token path>`. " +
 			"Writing runner trusts needs a token granted the `runners` scope. Import it as `<workspace id>/<key>`.",
 		Attributes: map[string]schema.Attribute{

@@ -92,15 +92,15 @@ func ClientName(version string) string {
 	return "terraform-provider/" + version
 }
 
-func baseURL(held string) (string, error) {
-	held = strings.TrimRight(strings.TrimSpace(held), "/")
-	if held == "" {
+func baseURL(raw string) (string, error) {
+	raw = strings.TrimRight(strings.TrimSpace(raw), "/")
+	if raw == "" {
 		return "", errors.New("no URL: set url or SPOTLIGHT_URL to the control plane's URL")
 	}
 
-	parsed, err := url.Parse(held)
+	parsed, err := url.Parse(raw)
 	if err != nil || parsed.Scheme == "" || parsed.Host == "" {
-		return "", fmt.Errorf("the url %q is not a URL, as in https://spotlight.example.com", held)
+		return "", fmt.Errorf("the url %q is not a URL, as in https://spotlight.example.com", raw)
 	}
 
 	if !strings.HasSuffix(parsed.Path, "/api") {

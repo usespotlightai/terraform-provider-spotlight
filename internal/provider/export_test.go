@@ -89,8 +89,8 @@ func TestAnExportAppliesFromScratchAndAdoptsWithNoDiff(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{acctest.Adopts{Creating: created}},
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
-					holdsOneOfEach(fake),
-					acctest.NothingHolds(acctest.Value(exportedSecretValue), acctest.Value(tokenThird), acctest.Value(provisionFirst), acctest.Value(provisionSecond)),
+					storesOneOfEach(fake),
+					acctest.NothingContains(acctest.Value(exportedSecretValue), acctest.Value(tokenThird), acctest.Value(provisionFirst), acctest.Value(provisionSecond)),
 					resource.TestCheckResourceAttr("spotlight_line.core_delivery", "station.1.profile", "careful"),
 					resource.TestCheckResourceAttr("spotlight_line.core_delivery", "station.1.alert.1.falls_by", "0.1"),
 					resource.TestCheckResourceAttr("spotlight_line.core_delivery", "station.1.alert.2.below", "0.4"),
@@ -119,7 +119,7 @@ func TestAnExportAppliesFromScratchAndAdoptsWithNoDiff(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{acctest.Adopts{}},
 				},
-				Check: holdsOneOfEach(fake),
+				Check: storesOneOfEach(fake),
 			},
 			{
 				Config:          exported,
@@ -130,14 +130,14 @@ func TestAnExportAppliesFromScratchAndAdoptsWithNoDiff(t *testing.T) {
 	})
 }
 
-func holdsOneOfEach(fake *fakeapi.Server) resource.TestCheckFunc {
+func storesOneOfEach(fake *fakeapi.Server) resource.TestCheckFunc {
 	return func(*terraform.State) error {
 		for kind, want := range map[string]int{
 			"workspace": 1, "secret": 2, "workspace-token-trust": 2, "runner-trust": 1, "egress": 1, "runner-pool": 2, "workspace-runners": 1,
 			"team": 1, "line": 1, "skill": 1, "integration": 1, "harness-profile": 1, "hook": 2,
 		} {
 			if got := fake.Count(kind); got != want {
-				return fmt.Errorf("Spotlight holds %d of %s, want %d", got, kind, want)
+				return fmt.Errorf("Spotlight stores %d of %s, want %d", got, kind, want)
 			}
 		}
 
@@ -175,18 +175,18 @@ func exportOf(ctx context.Context, cp acctest.ControlPlane) (acctest.Module, err
 		return nil, exportUnavailable{resp.StatusCode}
 	}
 
-	var held struct {
+	var exported struct {
 		Files []struct {
 			Path    string `json:"path"`
 			Content string `json:"content"`
 		} `json:"files"`
 	}
-	if err := json.NewDecoder(resp.Body).Decode(&held); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&exported); err != nil {
 		return nil, err
 	}
 
 	module := acctest.Module{}
-	for _, each := range held.Files {
+	for _, each := range exported.Files {
 		module[each.Path] = each.Content
 	}
 
@@ -431,7 +431,7 @@ func TestAccExportAppliesAndReplansWithNoDiff(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{acctest.Adopts{Creating: created}},
 				},
-				Check: acctest.NothingHolds(values...),
+				Check: acctest.NothingContains(values...),
 			},
 			{
 				Config:           exported,

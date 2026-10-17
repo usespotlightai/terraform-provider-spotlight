@@ -28,7 +28,7 @@ type TeamResource struct {
 	client *client.Client
 }
 
-// TeamResourceModel is a spotlight_team as Terraform holds it.
+// TeamResourceModel is a spotlight_team as Terraform stores it.
 type TeamResourceModel struct {
 	ID          types.String `tfsdk:"id"`
 	Version     types.Int64  `tfsdk:"version"`
@@ -50,13 +50,13 @@ func (r *TeamResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 
 func teamSchema() schema.Schema {
 	return schema.Schema{
-		MarkdownDescription: "A team in a Spotlight workspace, holding its lines, skills and integrations. Import it as `<workspace id>/<key>`.",
+		MarkdownDescription: "A team in a Spotlight workspace, with its lines, skills and integrations. Import it as `<workspace id>/<key>`.",
 		Attributes: map[string]schema.Attribute{
 			"id":           idAttribute("team"),
 			"version":      versionAttribute("team"),
 			"address":      addressAttribute("core"),
 			"workspace_id": ownerAttribute("workspace", "team"),
-			"key":          fixedAttribute("Names the team in the addresses of everything it holds.", "team"),
+			"key":          fixedAttribute("Names the team in the addresses of everything it has.", "team"),
 			"name": schema.StringAttribute{
 				Required:            true,
 				MarkdownDescription: "What the team is called.",

@@ -1,5 +1,5 @@
 // Package acctest serves the provider to the Terraform test harness, against
-// a fake control plane or a real control plane. It also holds the checks and
+// a fake control plane or a real control plane. It also contains the checks and
 // the configuration that the tests of the provider share.
 package acctest
 
@@ -43,7 +43,7 @@ func FakeProviderFactories(fake *fakeapi.Server) map[string]func() (tfprotov6.Pr
 	}
 }
 
-// NoneLeft checks that the fake holds no resource of these kinds after
+// NoneLeft checks that the fake stores no resource of these kinds after
 // Terraform destroyed all resources.
 func NoneLeft(fake *fakeapi.Server, kinds ...string) func(*terraform.State) error {
 	return func(*terraform.State) error {
@@ -57,16 +57,16 @@ func NoneLeft(fake *fakeapi.Server, kinds ...string) func(*terraform.State) erro
 	}
 }
 
-// NothingHolds checks that no attribute in the state holds one of these
+// NothingContains checks that no attribute in the state contains one of these
 // values, because the state must never keep a write-only value.
-func NothingHolds(values ...func() string) func(*terraform.State) error {
+func NothingContains(values ...func() string) func(*terraform.State) error {
 	return func(state *terraform.State) error {
 		for _, module := range state.Modules {
-			for address, held := range module.Resources {
-				for name, kept := range held.Primary.Attributes {
+			for address, stored := range module.Resources {
+				for name, kept := range stored.Primary.Attributes {
 					for _, value := range values {
 						if secret := value(); secret != "" && strings.Contains(kept, secret) {
-							return fmt.Errorf("%s.%s holds a write-only value", address, name)
+							return fmt.Errorf("%s.%s contains a write-only value", address, name)
 						}
 					}
 				}
@@ -83,7 +83,7 @@ func Value(value string) func() string {
 }
 
 // Workspace is configuration for a workspace and a team in it. Tests of the
-// resources that a team holds use it.
+// resources that a team has use it.
 const Workspace = `
 resource "spotlight_workspace" "acme" {
   name = "Acme"

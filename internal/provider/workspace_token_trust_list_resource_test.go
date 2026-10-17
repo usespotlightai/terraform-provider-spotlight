@@ -14,7 +14,7 @@ import (
 func seededWorkspaceTokenTrusts(t *testing.T, seeded acctest.Seeded) (first, second acctest.Listed) {
 	t.Helper()
 
-	held := func(workspace client.Workspace, key string) acctest.Listed {
+	create := func(workspace client.Workspace, key string) acctest.Listed {
 		t.Helper()
 
 		created, err := seeded.Client.CreateWorkspaceTokenTrust(t.Context(), workspace.ID, client.WorkspaceTokenTrustInput{
@@ -26,10 +26,10 @@ func seededWorkspaceTokenTrusts(t *testing.T, seeded acctest.Seeded) (first, sec
 		return acctest.ListedAs(created.Meta)
 	}
 
-	held(seeded.Other, "github-main")
-	later := held(seeded.Workspace, "github-pull-requests")
+	create(seeded.Other, "github-main")
+	later := create(seeded.Workspace, "github-pull-requests")
 
-	return held(seeded.Workspace, "github-main"), later
+	return create(seeded.Workspace, "github-main"), later
 }
 
 func TestWorkspaceTokenTrustListResource(t *testing.T) {

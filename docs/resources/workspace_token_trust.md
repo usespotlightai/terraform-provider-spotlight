@@ -3,12 +3,12 @@
 page_title: "spotlight_workspace_token_trust Resource - spotlight"
 subcategory: ""
 description: |-
-  A CI workload whose OIDC tokens are exchanged for short-lived workspace tokens, so the CI platform stores no Spotlight token: a job whose token the trust admits calls POST /api/workspace-tokens/exchange, as the provider's oidc block does, and is given a token with the trust's scopes for its lifetime. Changing or deleting the trust stops every token it minted at once. Writing workspace token trusts needs a workspace admin, or a token granted the trusts scope that holds every scope the trust gives: a token may give a trust only scopes it holds itself, and change one only while it holds both the trust's current scopes and its new ones. Import it as <workspace id>/<key>.
+  A CI workload whose OIDC tokens are exchanged for short-lived workspace tokens, so the CI platform stores no Spotlight token: a job whose token the trust admits calls POST /api/workspace-tokens/exchange, as the provider's oidc block does, and is given a token with the trust's scopes for its lifetime. Changing or deleting the trust stops every token it minted at once. Writing workspace token trusts needs a workspace admin, or a token granted the trusts scope that has every scope the trust gives. A token can give a trust only the scopes that it has. A token can change a trust only when it has the current scopes and the new scopes of the trust. Import it as <workspace id>/<key>.
 ---
 
 # spotlight_workspace_token_trust (Resource)
 
-A CI workload whose OIDC tokens are exchanged for short-lived workspace tokens, so the CI platform stores no Spotlight token: a job whose token the trust admits calls `POST /api/workspace-tokens/exchange`, as the provider's `oidc` block does, and is given a token with the trust's scopes for its lifetime. Changing or deleting the trust stops every token it minted at once. Writing workspace token trusts needs a workspace admin, or a token granted the `trusts` scope that holds every scope the trust gives: a token may give a trust only scopes it holds itself, and change one only while it holds both the trust's current scopes and its new ones. Import it as `<workspace id>/<key>`.
+A CI workload whose OIDC tokens are exchanged for short-lived workspace tokens, so the CI platform stores no Spotlight token: a job whose token the trust admits calls `POST /api/workspace-tokens/exchange`, as the provider's `oidc` block does, and is given a token with the trust's scopes for its lifetime. Changing or deleting the trust stops every token it minted at once. Writing workspace token trusts needs a workspace admin, or a token granted the `trusts` scope that has every scope the trust gives. A token can give a trust only the scopes that it has. A token can change a trust only when it has the current scopes and the new scopes of the trust. Import it as `<workspace id>/<key>`.
 
 ## Example Usage
 

@@ -17,12 +17,12 @@ import (
 func document(t *testing.T, written string) any {
 	t.Helper()
 
-	var held any
-	if err := json.Unmarshal([]byte(written), &held); err != nil {
+	var decoded any
+	if err := json.Unmarshal([]byte(written), &decoded); err != nil {
 		t.Fatal(err)
 	}
 
-	return held
+	return decoded
 }
 
 func TestAJSONDocumentRoundTrips(t *testing.T) {
@@ -78,9 +78,9 @@ func TestToJSONRefusesWhatIsNotKnown(t *testing.T) {
 		t.Errorf("got %v", err)
 	}
 
-	held, complete := dynamic.ToJSONKnown(value)
-	if complete || !reflect.DeepEqual(held, map[string]any{}) {
-		t.Errorf("got %v, complete %v", held, complete)
+	decoded, complete := dynamic.ToJSONKnown(value)
+	if complete || !reflect.DeepEqual(decoded, map[string]any{}) {
+		t.Errorf("got %v, complete %v", decoded, complete)
 	}
 }
 

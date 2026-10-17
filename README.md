@@ -76,7 +76,7 @@ To use a local build, add a `dev_overrides` block for `usespotlightai/spotlight`
 
 The layout follows HashiCorp's [provider scaffold](https://github.com/hashicorp/terraform-provider-scaffolding-framework):
 
-| Path | Holds |
+| Path | Contains |
 | --- | --- |
 | `internal/provider/` | The provider, plus `<name>_resource.go`, `<name>_data_source.go` and `<name>_list_resource.go` for each type, with tests beside them and sweepers in `sweep_test.go` |
 | `internal/client/` | The API client; `apigen/` is generated from `api/openapi.json` |
@@ -111,7 +111,7 @@ CI fails when the committed client differs from one generated from the control p
 
 Push a `v*` tag. GoReleaser builds the archives, a GPG-signed `SHA256SUMS` and the registry manifest, and the Terraform Registry publishes the GitHub release.
 
-| CI secret | Used by | Holds |
+| CI secret | Used by | Value |
 | --- | --- | --- |
 | `APP_REPO_APP_ID` | `generate.yml` | The CI GitHub App that reads `usespotlightai/spotlight` (the one the infrastructure repo uses) |
 | `APP_REPO_PRIVATE_KEY` | `generate.yml` | That app's private key |

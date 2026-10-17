@@ -145,7 +145,7 @@ func TestTwoCreatesUseTwoKeys(t *testing.T) {
 	}
 }
 
-func TestUpdateIsConditionalOnTheVersionHeld(t *testing.T) {
+func TestUpdateIsConditionalOnTheVersionRead(t *testing.T) {
 	api, recorded := serve(t, func(w http.ResponseWriter, _ *http.Request, _ int) {
 		reply(w, http.StatusOK, "application/json", map[string]any{
 			"id": "team-1", "version": 5, "address": "core", "warnings": []any{},

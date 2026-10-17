@@ -141,10 +141,10 @@ func (p *SpotlightProvider) Configure(ctx context.Context, req provider.Configur
 	}
 
 	for _, each := range []struct {
-		name string
-		held types.String
+		name  string
+		value types.String
 	}{{"trust", oidc.Trust}, {"audience", oidc.Audience}, {"token", oidc.Token}} {
-		if each.held.IsUnknown() {
+		if each.value.IsUnknown() {
 			resp.Diagnostics.AddAttributeError(path.Root("oidc").AtName(each.name), "OIDC "+each.name+" not known",
 				"The oidc "+each.name+" must be known when Terraform plans; set it from a variable or the environment.")
 		}
@@ -270,9 +270,9 @@ func workloadTokens(given types.String, diags *diag.Diagnostics) client.Workload
 	return nil
 }
 
-func orEnv(held types.String, env string) string {
-	if !held.IsNull() && held.ValueString() != "" {
-		return held.ValueString()
+func orEnv(value types.String, env string) string {
+	if !value.IsNull() && value.ValueString() != "" {
+		return value.ValueString()
 	}
 
 	return os.Getenv(env)

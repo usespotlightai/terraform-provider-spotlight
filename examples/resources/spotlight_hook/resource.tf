@@ -37,7 +37,7 @@ resource "spotlight_hook" "grafana_reads" {
   }
 }
 
-# Hold a pull request that changes the migrations until the endpoint of a DBA lets it open.
+# Block a pull request that changes the migrations until the endpoint of a DBA lets it open.
 resource "spotlight_hook" "migrations" {
   team_id = spotlight_team.core.id
   key     = "migrations-need-a-dba"

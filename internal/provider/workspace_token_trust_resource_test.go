@@ -119,7 +119,7 @@ func TestWorkspaceTokenTrustWritesNeedTheTrustsScope(t *testing.T) {
 	})
 }
 
-func TestATokenGivesATrustOnlyScopesItHolds(t *testing.T) {
+func TestATokenGivesATrustOnlyScopesItHas(t *testing.T) {
 	fake := fakeapi.New(t)
 
 	resource.UnitTest(t, resource.TestCase{
@@ -128,7 +128,7 @@ func TestATokenGivesATrustOnlyScopesItHolds(t *testing.T) {
 			{
 				PreConfig:   func() { fake.Grant("configure", "trusts") },
 				Config:      workspaceTokenTrustConfig("github-main", "repo:acme/platform:ref:refs/heads/main", `"configure", "secrets"`, ""),
-				ExpectError: regexp.MustCompile(`(?s)does\s+not\s+hold\s+secrets.*lacks\s+the\s+trusts\s+scope.*or\s+a\s+scope\s+the\s+trust\s+gives`),
+				ExpectError: regexp.MustCompile(`(?s)does\s+not\s+have\s+secrets.*lacks\s+the\s+trusts\s+scope.*or\s+a\s+scope\s+the\s+trust\s+gives`),
 			},
 			{
 				PreConfig: func() { fake.Grant("configure", "secrets", "trusts") },
@@ -137,7 +137,7 @@ func TestATokenGivesATrustOnlyScopesItHolds(t *testing.T) {
 			{
 				PreConfig:   func() { fake.Grant("configure", "trusts") },
 				Config:      workspaceTokenTrustConfig("github-main", "repo:acme/platform:ref:refs/heads/main", `"configure"`, ""),
-				ExpectError: regexp.MustCompile(`(?s)does\s+not\s+hold\s+secrets`),
+				ExpectError: regexp.MustCompile(`(?s)does\s+not\s+have\s+secrets`),
 			},
 			{
 				PreConfig: func() { fake.Grant("configure", "secrets", "trusts") },

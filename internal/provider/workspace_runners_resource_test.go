@@ -167,7 +167,7 @@ func TestEveryReadWarnsOfWhatNoTrustOrPoolAnswers(t *testing.T) {
 
 	kind := schemas.ResourceSchemas["spotlight_workspace_runners"].ValueType()
 	names := tftypes.Set{ElementType: tftypes.String}
-	held, err := tfprotov6.NewDynamicValue(kind, tftypes.NewValue(kind, map[string]tftypes.Value{
+	state, err := tfprotov6.NewDynamicValue(kind, tftypes.NewValue(kind, map[string]tftypes.Value{
 		"id":           tftypes.NewValue(tftypes.String, declaration.ID),
 		"version":      tftypes.NewValue(tftypes.Number, declaration.Version),
 		"address":      tftypes.NewValue(tftypes.String, "acme"),
@@ -179,7 +179,7 @@ func TestEveryReadWarnsOfWhatNoTrustOrPoolAnswers(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	read, err := server.ReadResource(ctx, &tfprotov6.ReadResourceRequest{TypeName: "spotlight_workspace_runners", CurrentState: &held})
+	read, err := server.ReadResource(ctx, &tfprotov6.ReadResourceRequest{TypeName: "spotlight_workspace_runners", CurrentState: &state})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -226,8 +226,8 @@ func TestAccWorkspaceRunners(t *testing.T) {
 	cp.Sweep(t, k)
 	t.Cleanup(func() {
 		ctx := context.Background()
-		if held, err := cp.DeclaredRunners(ctx); err == nil {
-			if err := cp.Client.DeleteWorkspaceRunners(ctx, held.ID, held.Version); err != nil {
+		if declared, err := cp.DeclaredRunners(ctx); err == nil {
+			if err := cp.Client.DeleteWorkspaceRunners(ctx, declared.ID, declared.Version); err != nil {
 				t.Errorf("the declaration of %s's runners was left behind: %v", cp.Workspace.Slug, err)
 			}
 		}

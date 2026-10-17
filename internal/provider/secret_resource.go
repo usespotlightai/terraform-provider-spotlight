@@ -40,7 +40,7 @@ type SecretResource struct {
 	client *client.Client
 }
 
-// SecretResourceModel is a spotlight_secret as Terraform holds it.
+// SecretResourceModel is a spotlight_secret as Terraform stores it.
 type SecretResourceModel struct {
 	ID           types.String    `tfsdk:"id"`
 	Version      types.Int64     `tfsdk:"version"`
@@ -120,7 +120,7 @@ func secretSchema() schema.Schema {
 			},
 			"field": schema.StringAttribute{
 				Optional:            true,
-				MarkdownDescription: "The key to read when the AWS secret holds JSON.",
+				MarkdownDescription: "The key to read when the AWS secret contains JSON.",
 			},
 		},
 	}
@@ -145,7 +145,7 @@ func secretSchema() schema.Schema {
 				"name": schema.StringAttribute{
 					Optional:            true,
 					Computed:            true,
-					MarkdownDescription: "The header or query parameter the secret is worn in. A header defaults to `authorization`; Spotlight holds a header name in lower case. A query parameter must be named.",
+					MarkdownDescription: "The header or query parameter the secret is worn in. A header defaults to `authorization`; Spotlight stores a header name in lower case. A query parameter must be named.",
 					Validators:          []validator.String{stringvalidator.LengthAtLeast(1)},
 					PlanModifiers:       []planmodifier.String{headerNamedByDefault{}},
 				},
@@ -401,8 +401,8 @@ func sendSecretValue(ctx context.Context, config tfsdk.Config, plan tfsdk.Plan, 
 	diags.Append(more...)
 
 	if !value.IsNull() && !value.IsUnknown() {
-		held := value.ValueString()
-		in.Value = &held
+		text := value.ValueString()
+		in.Value = &text
 	}
 
 	return diags

@@ -102,7 +102,7 @@ func TestSecretIsWrittenButItsValueNeverKept(t *testing.T) {
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
 					secretKeeps(fake, "lin_first"),
-					acctest.NothingHolds(acctest.Value("lin_first")),
+					acctest.NothingContains(acctest.Value("lin_first")),
 				),
 			},
 			{
@@ -120,7 +120,7 @@ func TestSecretIsWrittenButItsValueNeverKept(t *testing.T) {
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
 					secretKeeps(fake, "lin_second"),
-					acctest.NothingHolds(acctest.Value("lin_first"), acctest.Value("lin_second")),
+					acctest.NothingContains(acctest.Value("lin_first"), acctest.Value("lin_second")),
 				),
 			},
 			{
@@ -165,7 +165,7 @@ func TestSecretIsWrittenButItsValueNeverKept(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(secretAddress, plancheck.ResourceActionDestroyBeforeCreate)},
 				},
-				Check: acctest.NothingHolds(acctest.Value("lin_third")),
+				Check: acctest.NothingContains(acctest.Value("lin_third")),
 			},
 		},
 	})
@@ -247,7 +247,7 @@ func TestSecretKeepsAHeaderNameAsWritten(t *testing.T) {
 				ImportStateIdFunc: secretImportIDOf("EXAMPLE_API_KEY"),
 				ImportStateCheck: func(states []*terraform.InstanceState) error {
 					if got := states[0].Attributes["bindings.0.name"]; got != "x-api-key" {
-						return fmt.Errorf("Spotlight holds the header as %q, want x-api-key", got)
+						return fmt.Errorf("Spotlight stores the header as %q, want x-api-key", got)
 					}
 
 					return nil
@@ -452,7 +452,7 @@ func TestAccSecret(t *testing.T) {
 					resource.TestCheckResourceAttr("spotlight_secret.kept", "value_wo_version", "1"),
 					resource.TestCheckNoResourceAttr("spotlight_secret.kept", "value_wo"),
 					resource.TestCheckResourceAttr("spotlight_secret.aws", "source.secret_id", "tf-acc/"+k.AWSSecret),
-					acctest.NothingHolds(acctest.Value(first)),
+					acctest.NothingContains(acctest.Value(first)),
 				),
 			},
 			{
@@ -469,7 +469,7 @@ func TestAccSecret(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("spotlight_secret.kept", "bindings.#", "2"),
 					resource.TestCheckResourceAttr("spotlight_secret.kept", "value_wo_version", "2"),
-					acctest.NothingHolds(acctest.Value(first), acctest.Value(second)),
+					acctest.NothingContains(acctest.Value(first), acctest.Value(second)),
 				),
 			},
 			{

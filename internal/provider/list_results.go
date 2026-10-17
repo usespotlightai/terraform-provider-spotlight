@@ -22,7 +22,7 @@ func workspaceIDListAttribute() schema.StringAttribute {
 func teamIDListAttribute() schema.StringAttribute {
 	return schema.StringAttribute{
 		Optional:            true,
-		MarkdownDescription: "Lists only what this team holds; every team's when left out.",
+		MarkdownDescription: "Lists only what this team has; every team's when left out.",
 	}
 }
 
@@ -45,21 +45,21 @@ func listResult(ctx context.Context, req list.ListRequest, id, address string, m
 	return result
 }
 
-func limited[T any](held []T, limit int64) []T {
-	if limit > 0 && int64(len(held)) > limit {
-		return held[:limit]
+func limited[T any](items []T, limit int64) []T {
+	if limit > 0 && int64(len(items)) > limit {
+		return items[:limit]
 	}
 
-	return held
+	return items
 }
 
-func heldBy[T any](held []T, teamID string, team func(T) string) []T {
+func ofTeam[T any](items []T, teamID string, team func(T) string) []T {
 	if teamID == "" {
-		return held
+		return items
 	}
 
-	out := make([]T, 0, len(held))
-	for _, each := range held {
+	out := make([]T, 0, len(items))
+	for _, each := range items {
 		if team(each) == teamID {
 			out = append(out, each)
 		}

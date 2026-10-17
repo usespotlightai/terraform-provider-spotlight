@@ -115,7 +115,7 @@ func WithoutImports(config string, addresses ...string) string {
 
 // Protected adds prevent_destroy to the resource at address. Then a destroy
 // of the configuration, for example after a failed test, cannot delete the
-// resource or the resources that it holds.
+// resource or the resources that it contains.
 func Protected(config, address string) string {
 	kind, name, _ := strings.Cut(address, ".")
 	opening := fmt.Sprintf("resource %q %q {\n", kind, name)
@@ -165,6 +165,6 @@ func (a Adopts) CheckPlan(_ context.Context, req plancheck.CheckPlanRequest, res
 	}
 
 	if len(changed) > 0 {
-		resp.Error = fmt.Errorf("the export does not match what Spotlight holds:\n%s", strings.Join(changed, "\n"))
+		resp.Error = fmt.Errorf("the export does not match what Spotlight stores:\n%s", strings.Join(changed, "\n"))
 	}
 }

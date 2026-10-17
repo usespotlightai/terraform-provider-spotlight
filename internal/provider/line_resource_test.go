@@ -432,7 +432,7 @@ func TestLineDriftIsPlannedBack(t *testing.T) {
 					fake.Change(fake.IDOf("line", "core/delivery"), func(fields map[string]any) {
 						definition, ok := fields["definition"].(map[string]any)
 						if !ok {
-							t.Fatalf("the fake holds no definition: %v", fields)
+							t.Fatalf("the fake stores no definition: %v", fields)
 						}
 						definition["name"] = "Renamed in the web app"
 					})
@@ -987,7 +987,7 @@ func TestLineJudgePassShareIsAShare(t *testing.T) {
 func TestLineJudgeClaimsAreFew(t *testing.T) {
 	claims := make([]string, 21)
 	for at := range claims {
-		claims[at] = fmt.Sprintf("%q", fmt.Sprintf("Claim %d holds.", at))
+		claims[at] = fmt.Sprintf("%q", fmt.Sprintf("Claim %d is true.", at))
 	}
 
 	lineInvalid(t, `
@@ -1402,7 +1402,7 @@ func TestLineSourcePathIsATerraformFileInTheRepository(t *testing.T) {
 	}
 }
 
-func TestLineSourcePathMayHoldDots(t *testing.T) {
+func TestLineSourcePathMayContainDots(t *testing.T) {
 	fake := fakeapi.New(t)
 
 	dotted := lineChecked(`

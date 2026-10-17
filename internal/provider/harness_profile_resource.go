@@ -36,7 +36,7 @@ type HarnessProfileResource struct {
 	client *client.Client
 }
 
-// HarnessProfileResourceModel is a spotlight_harness_profile as Terraform holds it.
+// HarnessProfileResourceModel is a spotlight_harness_profile as Terraform stores it.
 type HarnessProfileResourceModel struct {
 	ID          types.String              `tfsdk:"id"`
 	Version     types.Int64               `tfsdk:"version"`
@@ -306,14 +306,14 @@ func harnessProfileInput(plan HarnessProfileResourceModel) (client.HarnessProfil
 		return in, diags
 	}
 
-	held, err := dynamic.ToJSON(plan.Native)
+	decoded, err := dynamic.ToJSON(plan.Native)
 	if err != nil {
 		diags.AddAttributeError(path.Root("native"), "Native settings not known", err.Error())
 
 		return in, diags
 	}
 
-	native, ok := held.(map[string]any)
+	native, ok := decoded.(map[string]any)
 	if !ok {
 		diags.AddAttributeError(path.Root("native"), "Native settings are not an object", "Write each harness's settings under its name, as in { claude-code = { includeCoAuthoredBy = false } }.")
 

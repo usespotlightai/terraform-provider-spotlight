@@ -44,11 +44,11 @@ func wordsLike(example string) func(string) string {
 	}
 }
 
-func onceEach(held []any, at string, wrong func(string) string, errs *[]fieldError) []any {
+func onceEach(items []any, at string, wrong func(string) string, errs *[]fieldError) []any {
 	seen := map[string]bool{}
-	out := make([]any, 0, len(held))
+	out := make([]any, 0, len(items))
 
-	for index, each := range held {
+	for index, each := range items {
 		text := strings.TrimSpace(textOf(each))
 		if why := wrong(text); why != "" {
 			*errs = append(*errs, fieldError{fmt.Sprintf("%s[%d]", at, index), why})
@@ -147,29 +147,29 @@ func secret(body map[string]any) (map[string]any, []fieldError) {
 	}
 
 	var version any
-	if held, ok := body["valueWoVersion"].(float64); ok {
-		version = held
+	if number, ok := body["valueWoVersion"].(float64); ok {
+		version = number
 	}
 
 	return map[string]any{"name": name, "source": source, "bindings": bindings, "valueWoVersion": version}, errs
 }
 
-func written(kind string, held *resource, fields, body map[string]any) (string, []fieldError) {
+func written(kind string, existing *resource, fields, body map[string]any) (string, []fieldError) {
 	switch kind {
 	case "secret":
-		return secretValue(held, fields, body)
+		return secretValue(existing, fields, body)
 	case "runner-pool":
-		return poolAccess(held, fields, body)
+		return poolAccess(existing, fields, body)
 	case "egress":
-		return egressToken(held, fields, body)
+		return egressToken(existing, fields, body)
 	case "hook":
-		return hookSecret(held, fields, body)
+		return hookSecret(existing, fields, body)
 	default:
 		return "", nil
 	}
 }
 
-func secretValue(held *resource, fields, body map[string]any) (string, []fieldError) {
+func secretValue(existing *resource, fields, body map[string]any) (string, []fieldError) {
 	value, given := body["valueWo"].(string)
 	builtIn := objectOf(fields["source"])["kind"] == "built-in"
 
@@ -177,20 +177,20 @@ func secretValue(held *resource, fields, body map[string]any) (string, []fieldEr
 	case !builtIn && given:
 		return "", []fieldError{{"valueWo", "is kept only by Spotlight; a secret read from AWS Secrets Manager is set there"}}
 	case !builtIn:
-		fields["rotatedAt"] = rotatedAt(held)
+		fields["rotatedAt"] = rotatedAt(existing)
 		return "", nil
 	}
 
-	needed := held == nil ||
-		objectOf(held.fields["source"])["kind"] != "built-in" ||
-		held.fields["valueWoVersion"] != fields["valueWoVersion"]
+	needed := existing == nil ||
+		objectOf(existing.fields["source"])["kind"] != "built-in" ||
+		existing.fields["valueWoVersion"] != fields["valueWoVersion"]
 
 	if needed && !given {
 		return "", []fieldError{{"valueWo", "is the value Spotlight keeps; it is written once and never read back"}}
 	}
 
 	if !needed {
-		fields["rotatedAt"] = rotatedAt(held)
+		fields["rotatedAt"] = rotatedAt(existing)
 		return "", nil
 	}
 
@@ -199,12 +199,12 @@ func secretValue(held *resource, fields, body map[string]any) (string, []fieldEr
 	return value, nil
 }
 
-func rotatedAt(held *resource) any {
-	if held == nil {
+func rotatedAt(existing *resource) any {
+	if existing == nil {
 		return time.Now().UTC().Format(time.RFC3339Nano)
 	}
 
-	return held.fields["rotatedAt"]
+	return existing.fields["rotatedAt"]
 }
 
 var (
@@ -213,7 +213,7 @@ var (
 		"egress":      "belongs to another egress. Please give each egress its own",
 	}
 	tokenSpent = map[string]string{
-		"runner-pool": "was given to a pool before, and a pool token is given once, ever: one rotated away, or held by a pool since deleted or replaced, never works again; give a new one",
+		"runner-pool": "was given to a pool before, and a pool token is given once, ever: a token that was rotated away, or that a deleted or replaced pool used, never works again. Give a new one",
 		"egress":      "was used before. Egress tokens work once only",
 	}
 )
@@ -238,11 +238,11 @@ func runnerPool(body map[string]any) (map[string]any, []fieldError) {
 		"provision":    nil,
 	}
 
-	if held, ok := body["maxRuns"].(float64); ok {
-		if held != float64(int64(held)) || held < 1 || held > 10000 {
+	if maxRuns, ok := body["maxRuns"].(float64); ok {
+		if maxRuns != float64(int64(maxRuns)) || maxRuns < 1 || maxRuns > 10000 {
 			errs = append(errs, fieldError{"maxRuns", "is a whole number from 1 to 10000"})
 		}
-		fields["maxRuns"] = held
+		fields["maxRuns"] = maxRuns
 	}
 
 	given, ok := body["provision"].(map[string]any)
@@ -308,30 +308,30 @@ func egress(body map[string]any) (map[string]any, []fieldError) {
 	return map[string]any{"key": key, "url": written, "tokenVersion": versionOf(body["tokenVersion"])}, errs
 }
 
-func egressToken(held *resource, fields, body map[string]any) (string, []fieldError) {
+func egressToken(existing *resource, fields, body map[string]any) (string, []fieldError) {
 	token, _ := body["token"].(string)
 
 	switch {
 	case token != "" && !runnerKey.MatchString(token):
 		return "", []fieldError{{"token", "must be 32 to 255 URL-safe characters"}}
-	case token == "" && held != nil && held.fields["tokenVersion"] != fields["tokenVersion"]:
+	case token == "" && existing != nil && existing.fields["tokenVersion"] != fields["tokenVersion"]:
 		return "", []fieldError{{"token", "is required whenever tokenVersion changes"}}
 	default:
 		return token, nil
 	}
 }
 
-func versionOf(held any) any {
-	if version, ok := held.(float64); ok {
+func versionOf(value any) any {
+	if version, ok := value.(float64); ok {
 		return version
 	}
 
 	return nil
 }
 
-func poolAccess(held *resource, fields, body map[string]any) (string, []fieldError) {
-	if held != nil && held.fields["mode"] != fields["mode"] {
-		return "", []fieldError{{"provision", fmt.Sprintf("The %s runner pool is %s for its whole life; replace it to be %s instead", textOf(fields["key"]), held.fields["mode"], fields["mode"])}}
+func poolAccess(existing *resource, fields, body map[string]any) (string, []fieldError) {
+	if existing != nil && existing.fields["mode"] != fields["mode"] {
+		return "", []fieldError{{"provision", fmt.Sprintf("The %s runner pool is %s for its whole life; replace it to be %s instead", textOf(fields["key"]), existing.fields["mode"], fields["mode"])}}
 	}
 
 	if fields["mode"] == "pull" {
@@ -339,7 +339,7 @@ func poolAccess(held *resource, fields, body map[string]any) (string, []fieldErr
 		switch {
 		case token != "" && !runnerKey.MatchString(token):
 			return "", []fieldError{{"token", "is 32 to 255 URL-safe characters, as a generated password would be"}}
-		case token == "" && held != nil && held.fields["tokenVersion"] != fields["tokenVersion"]:
+		case token == "" && existing != nil && existing.fields["tokenVersion"] != fields["tokenVersion"]:
 			return "", []fieldError{{"token", "is given whenever tokenVersion changes, since that is how it is rotated; Spotlight issues one only when a pool is created without it"}}
 		default:
 			return token, nil
@@ -354,9 +354,9 @@ func poolAccess(held *resource, fields, body map[string]any) (string, []fieldErr
 	switch {
 	case given:
 		return secret, nil
-	case held == nil:
+	case existing == nil:
 		return "", []fieldError{{"provision.secret", "is given when a pool that provisions is defined, to sign its calls with"}}
-	case objectOf(held.fields["provision"])["secretVersion"] != objectOf(fields["provision"])["secretVersion"]:
+	case objectOf(existing.fields["provision"])["secretVersion"] != objectOf(fields["provision"])["secretVersion"]:
 		return "", []fieldError{{"provision.secret", "is given again whenever provision.secretVersion changes, since that is how it is rotated"}}
 	default:
 		return "", nil
@@ -371,11 +371,11 @@ func signingSecret(secret string) bool {
 }
 
 func issuer(raw string) string {
-	held := strings.TrimSpace(raw)
-	parsed, err := url.Parse(held)
+	trimmed := strings.TrimSpace(raw)
+	parsed, err := url.Parse(trimmed)
 	loopback := err == nil && parsed.Scheme == "http" && slices.Contains([]string{"localhost", "127.0.0.1", "::1"}, parsed.Hostname())
 
-	if err != nil || parsed.Host == "" || (parsed.Scheme != "https" && !loopback) || parsed.RawQuery != "" || parsed.Fragment != "" || parsed.User != nil || len(held) > 255 {
+	if err != nil || parsed.Host == "" || (parsed.Scheme != "https" && !loopback) || parsed.RawQuery != "" || parsed.Fragment != "" || parsed.User != nil || len(trimmed) > 255 {
 		return "is the https URL the platform signs its tokens as, with no query or fragment, as in https://oidc.eks.eu-west-1.amazonaws.com/id/EXAMPLE"
 	}
 
@@ -383,12 +383,12 @@ func issuer(raw string) string {
 }
 
 func oneWord(raw, example string) (string, string) {
-	held := strings.TrimSpace(raw)
-	if held == "" || len(held) > 255 || strings.ContainsAny(held, " \t\r\n") {
-		return held, "is one word of at most 255 characters, as in " + example
+	trimmed := strings.TrimSpace(raw)
+	if trimmed == "" || len(trimmed) > 255 || strings.ContainsAny(trimmed, " \t\r\n") {
+		return trimmed, "is one word of at most 255 characters, as in " + example
 	}
 
-	return held, ""
+	return trimmed, ""
 }
 
 func runnerTrust(body map[string]any) (map[string]any, []fieldError) {
@@ -444,7 +444,7 @@ func (s *Server) unansweredOf(declared *resource) []any {
 	known, pooled := map[string]bool{}, map[string]bool{}
 	warnings := []any{}
 
-	for _, each := range s.held {
+	for _, each := range s.stored {
 		if s.workspaceOf(each) != declared.owner {
 			continue
 		}
@@ -476,9 +476,9 @@ func warned(path, message string) map[string]any {
 	return map[string]any{"path": path, "message": message, "severity": "warning"}
 }
 
-func stringsOf(held any) []string {
+func stringsOf(value any) []string {
 	out := []string{}
-	for _, each := range texts(held) {
+	for _, each := range texts(value) {
 		out = append(out, textOf(each))
 	}
 
@@ -649,8 +649,8 @@ func tokenTrust(body map[string]any) (map[string]any, []fieldError) {
 	}
 
 	lifetime := 15.0
-	if held, ok := body["lifetimeMinutes"].(float64); ok {
-		lifetime = held
+	if minutes, ok := body["lifetimeMinutes"].(float64); ok {
+		lifetime = minutes
 	}
 	if lifetime < 1 || lifetime > 60 || lifetime != float64(int(lifetime)) {
 		errs = append(errs, fieldError{"lifetimeMinutes", "is a whole number of minutes from 1 to 60"})

@@ -14,7 +14,7 @@ import (
 func seededEgresses(t *testing.T, seeded acctest.Seeded) (first, second acctest.Listed) {
 	t.Helper()
 
-	held := func(workspace client.Workspace, key, token string) acctest.Listed {
+	create := func(workspace client.Workspace, key, token string) acctest.Listed {
 		t.Helper()
 
 		created, err := seeded.Client.CreateEgress(t.Context(), workspace.ID, client.EgressInput{Key: key, URL: "https://" + key + ".example.com", Token: token})
@@ -23,10 +23,10 @@ func seededEgresses(t *testing.T, seeded acctest.Seeded) (first, second acctest.
 		return acctest.ListedAs(created.Meta)
 	}
 
-	held(seeded.Other, "shared", tokenFirst)
-	later := held(seeded.Workspace, "shared", tokenSecond)
+	create(seeded.Other, "shared", tokenFirst)
+	later := create(seeded.Workspace, "shared", tokenSecond)
 
-	return held(seeded.Workspace, "regional", tokenThird), later
+	return create(seeded.Workspace, "regional", tokenThird), later
 }
 
 func TestEgressListResource(t *testing.T) {

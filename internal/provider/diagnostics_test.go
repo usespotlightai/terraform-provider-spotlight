@@ -131,7 +131,7 @@ func TestALineReplayCheckOrSourceRefusalLandsOnItsAttribute(t *testing.T) {
 			{Path: "replayCheck.maxRegressions", Message: "is how many tasks a planned change may regress on and still pass, a whole number from 0", Severity: "error"},
 			{Path: "replayCheck", Message: "is not valid", Severity: "error"},
 			{Path: "source.path", Message: "is a Terraform file, ending in .tf", Severity: "error"},
-			{Path: "source.repository", Message: "is the GitHub repository that holds the line’s Terraform, as owner/name: is named owner/name", Severity: "error"},
+			{Path: "source.repository", Message: "is the GitHub repository that contains the line’s Terraform, as owner/name: is named owner/name", Severity: "error"},
 		},
 	}, lineFields, client.ScopeConfigure)
 

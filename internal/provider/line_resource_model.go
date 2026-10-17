@@ -10,7 +10,7 @@ import (
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/client"
 )
 
-// LineResourceModel is a spotlight_line as Terraform holds it.
+// LineResourceModel is a spotlight_line as Terraform stores it.
 type LineResourceModel struct {
 	ID           types.String     `tfsdk:"id"`
 	Version      types.Int64      `tfsdk:"version"`
@@ -141,14 +141,14 @@ func (w lineWritten) texts(name string, value interface {
 		return
 	}
 
-	held := []string{}
-	diags.Append(value.ElementsAs(context.Background(), &held, false)...)
-	w[name] = lineAnyOf(held)
+	items := []string{}
+	diags.Append(value.ElementsAs(context.Background(), &items, false)...)
+	w[name] = lineAnyOf(items)
 }
 
-func lineAnyOf(held []string) []any {
-	out := make([]any, len(held))
-	for at, each := range held {
+func lineAnyOf(items []string) []any {
+	out := make([]any, len(items))
+	for at, each := range items {
 		out[at] = each
 	}
 
@@ -166,36 +166,36 @@ func lineInput(plan LineResourceModel) (client.Definition, diag.Diagnostics) {
 
 	repositories := make([]any, 0, len(plan.Repositories))
 	for _, each := range plan.Repositories {
-		held := lineWritten{}
-		held.text("name", each.Name)
-		held.text("image", each.Image)
-		held.text("setup", each.Setup)
-		repositories = append(repositories, map[string]any(held))
+		repository := lineWritten{}
+		repository.text("name", each.Name)
+		repository.text("image", each.Image)
+		repository.text("setup", each.Setup)
+		repositories = append(repositories, map[string]any(repository))
 	}
 	line["repositories"] = repositories
 
 	stations := make([]any, 0, len(plan.Stations))
 	for _, each := range plan.Stations {
-		held := lineWritten{}
-		held.text("key", each.Key)
-		held.text("name", each.Name)
-		held.text("kind", each.Kind)
-		held.text("color", each.Color)
-		held.text("description", each.Description)
-		held.text("harness", each.Harness)
-		held.text("model", each.Model)
-		held.text("effort", each.Effort)
-		held.text("profile", each.Profile)
-		held.text("prompt", each.Prompt)
-		held.text("check", each.Check)
-		held.flag("diffs", each.Diffs)
-		held.flag("decisions", each.Decisions)
-		held.flag("memories", each.Memories)
-		held.texts("tools", each.Tools, &diags)
-		held.texts("skills", each.Skills, &diags)
-		held.texts("runners", each.Runners, &diags)
-		held.texts("passesTo", each.PassesTo, &diags)
-		held.flag("ends", each.Ends)
+		station := lineWritten{}
+		station.text("key", each.Key)
+		station.text("name", each.Name)
+		station.text("kind", each.Kind)
+		station.text("color", each.Color)
+		station.text("description", each.Description)
+		station.text("harness", each.Harness)
+		station.text("model", each.Model)
+		station.text("effort", each.Effort)
+		station.text("profile", each.Profile)
+		station.text("prompt", each.Prompt)
+		station.text("check", each.Check)
+		station.flag("diffs", each.Diffs)
+		station.flag("decisions", each.Decisions)
+		station.flag("memories", each.Memories)
+		station.texts("tools", each.Tools, &diags)
+		station.texts("skills", each.Skills, &diags)
+		station.texts("runners", each.Runners, &diags)
+		station.texts("passesTo", each.PassesTo, &diags)
+		station.flag("ends", each.Ends)
 
 		if each.Judge != nil {
 			judge := lineWritten{}
@@ -204,7 +204,7 @@ func lineInput(plan LineResourceModel) (client.Definition, diag.Diagnostics) {
 			judge.number("passShare", each.Judge.PassShare)
 			judge.number("sample", each.Judge.Sample)
 			judge.number("trust", each.Judge.Trust)
-			held["judge"] = map[string]any(judge)
+			station["judge"] = map[string]any(judge)
 		}
 
 		alerts := make([]any, 0, len(each.Alerts))
@@ -218,53 +218,53 @@ func lineInput(plan LineResourceModel) (client.Definition, diag.Diagnostics) {
 			raised.count("over", alert.Over)
 			alerts = append(alerts, map[string]any(raised))
 		}
-		held["alerts"] = alerts
+		station["alerts"] = alerts
 
-		stations = append(stations, map[string]any(held))
+		stations = append(stations, map[string]any(station))
 	}
 	line["stations"] = stations
 
 	reactions := make([]any, 0, len(plan.Reactions))
 	for _, each := range plan.Reactions {
-		held := lineWritten{}
-		held.text("happening", each.Happening)
-		held.text("from", each.From)
-		held.text("to", each.To)
-		reactions = append(reactions, map[string]any(held))
+		reaction := lineWritten{}
+		reaction.text("happening", each.Happening)
+		reaction.text("from", each.From)
+		reaction.text("to", each.To)
+		reactions = append(reactions, map[string]any(reaction))
 	}
 	line["reactions"] = reactions
 
 	if plan.Reviews != nil {
-		held := lineWritten{}
-		held.text("start", plan.Reviews.Start)
-		held.text("mention", plan.Reviews.Mention)
-		held.text("label", plan.Reviews.Label)
+		reviews := lineWritten{}
+		reviews.text("start", plan.Reviews.Start)
+		reviews.text("mention", plan.Reviews.Mention)
+		reviews.text("label", plan.Reviews.Label)
 
 		if plan.Reviews.Skip != nil {
 			skipped := lineWritten{}
 			skipped.flag("spotlight", plan.Reviews.Skip.Spotlight)
 			skipped.flag("drafts", plan.Reviews.Skip.Drafts)
 			skipped.texts("authors", plan.Reviews.Skip.Authors, &diags)
-			held["skip"] = map[string]any(skipped)
+			reviews["skip"] = map[string]any(skipped)
 		}
 
-		line["reviews"] = map[string]any(held)
+		line["reviews"] = map[string]any(reviews)
 	}
 
 	if plan.ReplayCheck != nil {
-		held := lineWritten{}
-		held.count("maxRegressions", plan.ReplayCheck.MaxRegressions)
-		held.number("ceiling", plan.ReplayCheck.Ceiling)
-		held.text("currency", plan.ReplayCheck.Currency)
-		held.number("minGain", plan.ReplayCheck.MinGain)
-		line["replayCheck"] = map[string]any(held)
+		replayCheck := lineWritten{}
+		replayCheck.count("maxRegressions", plan.ReplayCheck.MaxRegressions)
+		replayCheck.number("ceiling", plan.ReplayCheck.Ceiling)
+		replayCheck.text("currency", plan.ReplayCheck.Currency)
+		replayCheck.number("minGain", plan.ReplayCheck.MinGain)
+		line["replayCheck"] = map[string]any(replayCheck)
 	}
 
 	if plan.Source != nil {
-		held := lineWritten{}
-		held.text("repository", plan.Source.Repository)
-		held.text("path", plan.Source.Path)
-		line["source"] = map[string]any(held)
+		source := lineWritten{}
+		source.text("repository", plan.Source.Repository)
+		source.text("path", plan.Source.Path)
+		line["source"] = map[string]any(source)
 	}
 
 	return client.Definition(line), diags
@@ -273,43 +273,43 @@ func lineInput(plan LineResourceModel) (client.Definition, diag.Diagnostics) {
 type lineRead map[string]any
 
 func (r lineRead) text(name string) types.String {
-	if held, ok := r[name].(string); ok {
-		return types.StringValue(held)
+	if value, ok := r[name].(string); ok {
+		return types.StringValue(value)
 	}
 
 	return types.StringNull()
 }
 
 func (r lineRead) flag(name string) types.Bool {
-	if held, ok := r[name].(bool); ok {
-		return types.BoolValue(held)
+	if value, ok := r[name].(bool); ok {
+		return types.BoolValue(value)
 	}
 
 	return types.BoolNull()
 }
 
 func (r lineRead) number(name string) types.Float64 {
-	held, ok := r[name].(float64)
+	value, ok := r[name].(float64)
 	if !ok {
 		return types.Float64Null()
 	}
 
-	return float64AsWritten(held)
+	return float64AsWritten(value)
 }
 
 func (r lineRead) count(name string) types.Int64 {
-	if held, ok := r[name].(float64); ok {
-		return types.Int64Value(int64(held))
+	if value, ok := r[name].(float64); ok {
+		return types.Int64Value(int64(value))
 	}
 
 	return types.Int64Null()
 }
 
 func (r lineRead) texts(name string) []attr.Value {
-	held, _ := r[name].([]any)
-	out := make([]attr.Value, 0, len(held))
+	value, _ := r[name].([]any)
+	out := make([]attr.Value, 0, len(value))
 
-	for _, each := range held {
+	for _, each := range value {
 		if text, ok := each.(string); ok {
 			out = append(out, types.StringValue(text))
 		}
@@ -335,10 +335,10 @@ func (r lineRead) set(name string) types.Set {
 }
 
 func (r lineRead) each(name string) []lineRead {
-	held, _ := r[name].([]any)
-	out := make([]lineRead, 0, len(held))
+	value, _ := r[name].([]any)
+	out := make([]lineRead, 0, len(value))
 
-	for _, each := range held {
+	for _, each := range value {
 		if object, ok := each.(map[string]any); ok {
 			out = append(out, lineRead(object))
 		}
@@ -348,15 +348,15 @@ func (r lineRead) each(name string) []lineRead {
 }
 
 func (r lineRead) object(name string) (lineRead, bool) {
-	held, ok := r[name].(map[string]any)
+	value, ok := r[name].(map[string]any)
 
-	return lineRead(held), ok
+	return lineRead(value), ok
 }
 
 func lineAnswered(answer client.Line) LineResourceModel {
 	line := lineRead(answer.Definition)
 
-	held := LineResourceModel{
+	model := LineResourceModel{
 		ID:           types.StringValue(answer.ID),
 		Version:      types.Int64Value(answer.Version),
 		Address:      types.StringValue(answer.Address),
@@ -371,7 +371,7 @@ func lineAnswered(answer client.Line) LineResourceModel {
 	}
 
 	for _, each := range line.each("repositories") {
-		held.Repositories = append(held.Repositories, lineRepository{
+		model.Repositories = append(model.Repositories, lineRepository{
 			Name:  each.text("name"),
 			Image: each.text("image"),
 			Setup: each.text("setup"),
@@ -379,11 +379,11 @@ func lineAnswered(answer client.Line) LineResourceModel {
 	}
 
 	for _, each := range line.each("stations") {
-		held.Stations = append(held.Stations, lineStationOf(each))
+		model.Stations = append(model.Stations, lineStationOf(each))
 	}
 
 	for _, each := range line.each("reactions") {
-		held.Reactions = append(held.Reactions, lineReaction{
+		model.Reactions = append(model.Reactions, lineReaction{
 			Happening: each.text("happening"),
 			From:      each.text("from"),
 			To:        each.text("to"),
@@ -391,10 +391,10 @@ func lineAnswered(answer client.Line) LineResourceModel {
 	}
 
 	if found, ok := line.object("reviews"); ok {
-		held.Reviews = &lineReviews{Start: found.text("start"), Mention: found.text("mention"), Label: found.text("label")}
+		model.Reviews = &lineReviews{Start: found.text("start"), Mention: found.text("mention"), Label: found.text("label")}
 
 		if skipped, ok := found.object("skip"); ok {
-			held.Reviews.Skip = &lineSkip{
+			model.Reviews.Skip = &lineSkip{
 				Spotlight: skipped.flag("spotlight"),
 				Drafts:    skipped.flag("drafts"),
 				Authors:   skipped.set("authors"),
@@ -403,7 +403,7 @@ func lineAnswered(answer client.Line) LineResourceModel {
 	}
 
 	if found, ok := line.object("replayCheck"); ok {
-		held.ReplayCheck = &lineReplayCheck{
+		model.ReplayCheck = &lineReplayCheck{
 			MaxRegressions: found.count("maxRegressions"),
 			Ceiling:        found.number("ceiling"),
 			Currency:       found.text("currency"),
@@ -412,37 +412,37 @@ func lineAnswered(answer client.Line) LineResourceModel {
 	}
 
 	if found, ok := line.object("source"); ok {
-		held.Source = &lineSource{Repository: found.text("repository"), Path: found.text("path")}
+		model.Source = &lineSource{Repository: found.text("repository"), Path: found.text("path")}
 	}
 
-	return held
+	return model
 }
 
-func lineStationOf(held lineRead) lineStation {
+func lineStationOf(read lineRead) lineStation {
 	station := lineStation{
-		Key:         held.text("key"),
-		Name:        held.text("name"),
-		Kind:        held.text("kind"),
-		Color:       held.text("color"),
-		Description: held.text("description"),
-		Harness:     held.text("harness"),
-		Model:       held.text("model"),
-		Effort:      held.text("effort"),
-		Profile:     held.text("profile"),
-		Prompt:      held.text("prompt"),
-		Check:       held.text("check"),
-		Diffs:       held.flag("diffs"),
-		Decisions:   held.flag("decisions"),
-		Memories:    held.flag("memories"),
-		Tools:       held.list("tools"),
-		Skills:      held.list("skills"),
-		Runners:     held.set("runners"),
-		PassesTo:    held.set("passesTo"),
-		Ends:        held.flag("ends"),
+		Key:         read.text("key"),
+		Name:        read.text("name"),
+		Kind:        read.text("kind"),
+		Color:       read.text("color"),
+		Description: read.text("description"),
+		Harness:     read.text("harness"),
+		Model:       read.text("model"),
+		Effort:      read.text("effort"),
+		Profile:     read.text("profile"),
+		Prompt:      read.text("prompt"),
+		Check:       read.text("check"),
+		Diffs:       read.flag("diffs"),
+		Decisions:   read.flag("decisions"),
+		Memories:    read.flag("memories"),
+		Tools:       read.list("tools"),
+		Skills:      read.list("skills"),
+		Runners:     read.set("runners"),
+		PassesTo:    read.set("passesTo"),
+		Ends:        read.flag("ends"),
 		Alerts:      []lineAlert{},
 	}
 
-	if judge, ok := held.object("judge"); ok {
+	if judge, ok := read.object("judge"); ok {
 		station.Judge = &lineJudge{
 			Rubric:    judge.text("rubric"),
 			Claims:    judge.claims(),
@@ -452,7 +452,7 @@ func lineStationOf(held lineRead) lineStation {
 		}
 	}
 
-	for _, each := range held.each("alerts") {
+	for _, each := range read.each("alerts") {
 		station.Alerts = append(station.Alerts, lineAlert{
 			Measure: each.text("measure"),
 			RisesBy: each.number("risesBy"),
@@ -472,18 +472,18 @@ func lineModel(answer client.Line, kept *LineResourceModel) LineResourceModel {
 		return full
 	}
 
-	held := *kept
-	held.ID = full.ID
-	held.Version = full.Version
-	held.Address = full.Address
-	held.TeamID = full.TeamID
+	merged := *kept
+	merged.ID = full.ID
+	merged.Version = full.Version
+	merged.Address = full.Address
+	merged.TeamID = full.TeamID
 
 	answered := map[string]lineStation{}
 	for _, each := range full.Stations {
 		answered[each.Key.ValueString()] = each
 	}
 
-	held.Stations = make([]lineStation, len(kept.Stations))
+	merged.Stations = make([]lineStation, len(kept.Stations))
 	for at, each := range kept.Stations {
 		if found, ok := answered[each.Key.ValueString()]; ok {
 			each.Color = lineOrAnswered(each.Color, found.Color)
@@ -491,10 +491,10 @@ func lineModel(answer client.Line, kept *LineResourceModel) LineResourceModel {
 			each.Decisions = lineOrAnsweredFlag(each.Decisions, found.Decisions)
 			each.Memories = lineOrAnsweredFlag(each.Memories, found.Memories)
 		}
-		held.Stations[at] = each
+		merged.Stations[at] = each
 	}
 
-	return held
+	return merged
 }
 
 func lineOrAnswered(planned, answered types.String) types.String {

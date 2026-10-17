@@ -32,9 +32,9 @@ type EgressResource struct {
 }
 
 const egressIssuedToken = "Spotlight issued this egress a token, answered only once. Terraform keeps no secret in its state, so the token was not kept, and the egress cannot call Spotlight with it. " +
-	"Give the egress a token you hold instead: set `token` (from a sensitive variable, or a write-only ephemeral value) and change `token_version` to send it."
+	"Give the egress a token that you have instead: set `token` (from a sensitive variable, or a write-only ephemeral value) and change `token_version` to send it."
 
-// EgressResourceModel is a spotlight_egress as Terraform holds it.
+// EgressResourceModel is a spotlight_egress as Terraform stores it.
 type EgressResourceModel struct {
 	ID           types.String `tfsdk:"id"`
 	Version      types.Int64  `tfsdk:"version"`
@@ -60,7 +60,7 @@ func egressSchema() schema.Schema {
 	attributes := writeonly.EgressToken.Attributes("The token the egress calls Spotlight with: 32 to 255 URL-safe characters, as a generated password would be. " +
 		"Spotlight keeps only its hash. Left out, Spotlight issues one when it creates the egress, which Terraform does not keep; " +
 		"a change to `token_version` must come with a token. A token is given once, ever: another egress's token is refused, and one rotated away, " +
-		"or held by an egress since deleted or replaced, is spent and refused to every egress, the same one included, so rotating or replacing an egress always needs a new token.")
+		"or used by an egress that was deleted or replaced, is spent and refused to every egress, the same one included, so rotating or replacing an egress always needs a new token.")
 	attributes["id"] = idAttribute("egress")
 	attributes["version"] = versionAttribute("egress")
 	attributes["address"] = addressAttribute("shared")
