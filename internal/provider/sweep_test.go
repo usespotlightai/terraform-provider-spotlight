@@ -63,6 +63,11 @@ var sweepers = []*resource.Sweeper{
 		F:    sweeper((*client.Client).ListRunnerPools, (*client.Client).DeleteRunnerPool, func(p client.RunnerPool) client.Meta { return p.Meta }, acctest.KeyPrefix),
 	},
 	{
+		Name:         "spotlight_egress",
+		Dependencies: []string{"spotlight_runner_pool"},
+		F:            sweeper((*client.Client).ListEgresses, (*client.Client).DeleteEgress, func(e client.Egress) client.Meta { return e.Meta }, acctest.KeyPrefix),
+	},
+	{
 		Name: "spotlight_workspace_token_trust",
 		F: sweeper((*client.Client).ListWorkspaceTokenTrusts, (*client.Client).DeleteWorkspaceTokenTrust,
 			func(t client.WorkspaceTokenTrust) client.Meta { return t.Meta }, acctest.KeyPrefix),
@@ -174,9 +179,16 @@ func TestSweepersDeleteOnlyWhatAcceptanceTestsCreate(t *testing.T) {
 		acctest.Must(t, err)
 	}
 
+	var egresses []client.Egress
+	for _, key := range []string{k.Egress, "shared"} {
+		egress, err := api.CreateEgress(ctx, seeded.Workspace.ID, client.EgressInput{Key: key, URL: "https://egress.example.com", Token: acctest.RandomToken()})
+		acctest.Must(t, err)
+		egresses = append(egresses, egress)
+	}
+
 	_, err = api.CreateRunnerPool(ctx, seeded.Workspace.ID, client.RunnerPoolInput{
 		Key: k.PushPool, Labels: []string{},
-		Provision: &client.PoolProvision{URL: "https://provision.example.com/runs", Secret: acctest.RandomSigningSecret()},
+		Provision: &client.PoolProvision{URL: "https://provision.example.com/runs", Secret: acctest.RandomSigningSecret(), Egress: &egresses[0].ID},
 	})
 	acctest.Must(t, err)
 
@@ -188,7 +200,7 @@ func TestSweepersDeleteOnlyWhatAcceptanceTestsCreate(t *testing.T) {
 
 	for kind, want := range map[string]int{
 		"team": 3, "line": 1, "skill": 1, "integration": 1, "harness-profile": 1, "hook": 1,
-		"secret": 1, "runner-trust": 1, "runner-pool": 1, "workspace-token-trust": 1, "workspace": 2,
+		"secret": 1, "runner-trust": 1, "runner-pool": 1, "egress": 1, "workspace-token-trust": 1, "workspace": 2,
 	} {
 		if got := fake.Count(kind); got != want {
 			t.Errorf("%d of %s left after sweeping, want %d", got, kind, want)

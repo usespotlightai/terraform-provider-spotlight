@@ -54,6 +54,8 @@ func normalized(kind string, body map[string]any) (map[string]any, []fieldError)
 		return tokenTrust(body)
 	case "runner-pool":
 		return runnerPool(body)
+	case "egress":
+		return egress(body)
 	case "workspace-runners":
 		return workspaceRunners(body)
 	case "hook":

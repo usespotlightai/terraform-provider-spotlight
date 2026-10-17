@@ -73,6 +73,7 @@ func TestAnExportAppliesFromScratchAndAdoptsWithNoDiff(t *testing.T) {
 	released := requiredProviders + acctest.Released(acctest.Addresses(exported))
 	variables := config.Variables{
 		"secret_linear_api_key":                    config.StringVariable(exportedSecretValue),
+		"egress_shared_token":                      config.StringVariable(tokenThird),
 		"runner_pool_k8s-jobs_provision_secret":    config.StringVariable(provisionFirst),
 		"hook_core_linear-comments_signing_secret": config.StringVariable(provisionSecond),
 	}
@@ -89,7 +90,7 @@ func TestAnExportAppliesFromScratchAndAdoptsWithNoDiff(t *testing.T) {
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
 					holdsOneOfEach(fake),
-					acctest.NothingHolds(acctest.Value(exportedSecretValue), acctest.Value(provisionFirst), acctest.Value(provisionSecond)),
+					acctest.NothingHolds(acctest.Value(exportedSecretValue), acctest.Value(tokenThird), acctest.Value(provisionFirst), acctest.Value(provisionSecond)),
 					resource.TestCheckResourceAttr("spotlight_line.core_delivery", "station.1.profile", "careful"),
 					resource.TestCheckResourceAttr("spotlight_line.core_delivery", "station.1.alert.1.falls_by", "0.1"),
 					resource.TestCheckResourceAttr("spotlight_line.core_delivery", "station.1.alert.2.below", "0.4"),
@@ -98,6 +99,8 @@ func TestAnExportAppliesFromScratchAndAdoptsWithNoDiff(t *testing.T) {
 					resource.TestCheckResourceAttr("spotlight_workspace_runners.acme", "trusts.0", "production-cluster"),
 					resource.TestCheckResourceAttr("spotlight_workspace_runners.acme", "pools.#", "2"),
 					resource.TestCheckResourceAttr("spotlight_runner_pool.burst", "token_version", "2"),
+					resource.TestCheckResourceAttr("spotlight_egress.shared", "token_version", "2"),
+					resource.TestCheckResourceAttrPair("spotlight_runner_pool.k8s-jobs", "provision.egress", "spotlight_egress.shared", "id"),
 					resource.TestCheckResourceAttr("spotlight_hook.core_linear-comments", "match.tools.0", "linear.comment"),
 					resource.TestCheckResourceAttr("spotlight_hook.core_merged", "signing.oidc.audience", "https://dba.acme.dev"),
 				),
@@ -130,7 +133,7 @@ func TestAnExportAppliesFromScratchAndAdoptsWithNoDiff(t *testing.T) {
 func holdsOneOfEach(fake *fakeapi.Server) resource.TestCheckFunc {
 	return func(*terraform.State) error {
 		for kind, want := range map[string]int{
-			"workspace": 1, "secret": 2, "workspace-token-trust": 2, "runner-trust": 1, "runner-pool": 2, "workspace-runners": 1,
+			"workspace": 1, "secret": 2, "workspace-token-trust": 2, "runner-trust": 1, "egress": 1, "runner-pool": 2, "workspace-runners": 1,
 			"team": 1, "line": 1, "skill": 1, "integration": 1, "harness-profile": 1, "hook": 2,
 		} {
 			if got := fake.Count(kind); got != want {
@@ -231,9 +234,15 @@ func seedExported(t *testing.T, cp acctest.ControlPlane, k acctest.Keys) (declar
 	})
 	must(err)
 
+	egressVersion := int64(1)
+	egress, err := cp.Client.CreateEgress(ctx, cp.Workspace.ID, client.EgressInput{
+		Key: k.Egress, URL: "https://egress.example.com", Token: acctest.RandomToken(), TokenVersion: &egressVersion,
+	})
+	must(err)
+
 	_, err = cp.Client.CreateRunnerPool(ctx, cp.Workspace.ID, client.RunnerPoolInput{
 		Key: k.PushPool, Labels: []string{},
-		Provision: &client.PoolProvision{URL: "https://provision.example.com/runs", Secret: acctest.RandomSigningSecret(), SecretVersion: &secretVersion},
+		Provision: &client.PoolProvision{URL: "https://provision.example.com/runs", Secret: acctest.RandomSigningSecret(), SecretVersion: &secretVersion, Egress: &egress.ID},
 	})
 	must(err)
 
@@ -324,7 +333,7 @@ func forgetSeeded(t *testing.T, cp acctest.ControlPlane, k acctest.Keys, declare
 }
 
 func createdFromScratch(imports map[string]string, workspace client.Workspace, k acctest.Keys, declares bool) []string {
-	names := []string{k.Secret, k.AWSSecret, k.Trust, k.Pool, k.PushPool, k.Team}
+	names := []string{k.Secret, k.AWSSecret, k.Trust, k.Egress, k.Pool, k.PushPool, k.Team}
 	if declares {
 		names = append(names, workspace.Slug)
 	}

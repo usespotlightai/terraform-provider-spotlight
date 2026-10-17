@@ -3,12 +3,15 @@ package provider
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -59,6 +62,8 @@ type runnerPoolProvision struct {
 	URL           types.String `tfsdk:"url"`
 	Secret        types.String `tfsdk:"secret"`
 	SecretVersion types.Int64  `tfsdk:"secret_version"`
+	Egress        types.String `tfsdk:"egress"`
+	EgressTraffic types.String `tfsdk:"egress_traffic"`
 }
 
 var runnerPoolFields = fieldpath.Locator{Schema: runnerPoolSchema().Type()}
@@ -92,6 +97,20 @@ func runnerPoolSchema() schema.Schema {
 	provision["url"] = schema.StringAttribute{
 		Required:            true,
 		MarkdownDescription: "Where Spotlight calls, over https, with each run the pool is to serve, as in `https://provision.example.com/runs`.",
+	}
+	provision["egress"] = schema.StringAttribute{
+		Optional: true,
+		MarkdownDescription: "The egress the pool's runners send their traffic through: `" + client.PlatformEgress + "` for the egress that Spotlight operates, " +
+			"or the `id` of a `spotlight_egress` in the workspace. Left out, the runners have no egress, and Spotlight does not send to the pool a run that uses secrets or the Spotlight API. " +
+			"Changing it updates the pool in place.",
+	}
+	provision["egress_traffic"] = schema.StringAttribute{
+		Optional: true,
+		Computed: true,
+		Default:  stringdefault.StaticString(client.EgressTrafficAll),
+		MarkdownDescription: "Which traffic of a run goes through the egress: `" + client.EgressTrafficAll + "`, so egress records every connection and its allow-list applies to every host, " +
+			"or `" + client.EgressTrafficBound + "`, only the traffic to hosts that a secret of the run is bound to. Other traffic then goes directly. Only with `egress`.",
+		Validators: []validator.String{stringvalidator.OneOf(client.EgressTrafficAll, client.EgressTrafficBound)},
 	}
 	attributes["provision"] = schema.SingleNestedAttribute{
 		Optional: true,
@@ -283,6 +302,10 @@ func runnerPoolInput(plan RunnerPoolResourceModel) (client.RunnerPoolInput, diag
 		in.Provision = &client.PoolProvision{
 			URL:           plan.Provision.URL.ValueString(),
 			SecretVersion: plan.Provision.SecretVersion.ValueInt64Pointer(),
+			Egress:        plan.Provision.Egress.ValueStringPointer(),
+		}
+		if !plan.Provision.Egress.IsNull() {
+			in.Provision.EgressTraffic = plan.Provision.EgressTraffic.ValueStringPointer()
 		}
 	}
 
@@ -350,6 +373,8 @@ func runnerPoolModel(pool client.RunnerPool, kept *RunnerPoolResourceModel) Runn
 			URL:           types.StringValue(pool.Provision.URL),
 			Secret:        types.StringNull(),
 			SecretVersion: types.Int64PointerValue(pool.Provision.SecretVersion),
+			Egress:        types.StringPointerValue(pool.Provision.Egress),
+			EgressTraffic: types.StringPointerValue(pool.Provision.EgressTraffic),
 		}
 	}
 
@@ -362,6 +387,8 @@ func runnerPoolModel(pool client.RunnerPool, kept *RunnerPoolResourceModel) Runn
 		if model.Provision != nil && kept.Provision != nil {
 			model.Provision.URL = kept.Provision.URL
 			model.Provision.SecretVersion = kept.Provision.SecretVersion
+			model.Provision.Egress = kept.Provision.Egress
+			model.Provision.EgressTraffic = kept.Provision.EgressTraffic
 		}
 	}
 
