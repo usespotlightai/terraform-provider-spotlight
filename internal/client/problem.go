@@ -9,12 +9,12 @@ import (
 
 // Problem types that the API returns. They are stable and safe to branch on.
 const (
-	ProblemInvalid       = "urn:spotlight:problem:invalid"
-	ProblemMovedOn       = "urn:spotlight:problem:moved-on"
-	ProblemAlreadyExists = "urn:spotlight:problem:already-exists"
-	ProblemInUse         = "urn:spotlight:problem:in-use"
-	ProblemNotFound      = "urn:spotlight:problem:not-found"
-	ProblemForbidden     = "urn:spotlight:problem:forbidden"
+	ProblemInvalid         = "urn:spotlight:problem:invalid"
+	ProblemVersionConflict = "urn:spotlight:problem:version-conflict"
+	ProblemAlreadyExists   = "urn:spotlight:problem:already-exists"
+	ProblemInUse           = "urn:spotlight:problem:in-use"
+	ProblemNotFound        = "urn:spotlight:problem:not-found"
+	ProblemForbidden       = "urn:spotlight:problem:forbidden"
 )
 
 // Problem is an RFC 9457 problem that the API returned. Permission is the

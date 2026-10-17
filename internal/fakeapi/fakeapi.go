@@ -794,7 +794,7 @@ func (s *Server) current(w http.ResponseWriter, r *http.Request, held *resource)
 	if version != held.version {
 		w.Header().Set("ETag", fmt.Sprintf(`"%d"`, held.version))
 		writeJSON(w, http.StatusConflict, "application/problem+json", map[string]any{
-			"type":           "urn:spotlight:problem:moved-on",
+			"type":           "urn:spotlight:problem:version-conflict",
 			"title":          "The " + held.kind + " changed since it was read",
 			"status":         http.StatusConflict,
 			"detail":         fmt.Sprintf("The %s is at version %d", held.kind, held.version),

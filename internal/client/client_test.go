@@ -230,7 +230,7 @@ func TestProblemsNameTheirFields(t *testing.T) {
 func TestAConflictSaysWhereTheResourceIsNow(t *testing.T) {
 	api, _ := serve(t, func(w http.ResponseWriter, _ *http.Request, _ int) {
 		reply(w, http.StatusConflict, "application/problem+json", map[string]any{
-			"type": client.ProblemMovedOn, "title": "The skill changed since it was read", "status": 409,
+			"type": client.ProblemVersionConflict, "title": "The skill changed since it was read", "status": 409,
 			"detail": "The skill is at version 7", "currentVersion": 7,
 		})
 	})
