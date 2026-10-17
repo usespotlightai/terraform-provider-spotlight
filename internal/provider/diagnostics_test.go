@@ -192,7 +192,7 @@ func TestSplitImportID(t *testing.T) {
 func TestAForbiddenCallNamesTheScopeTheTokenLacks(t *testing.T) {
 	changing := &client.Problem{
 		Status: 403, Type: client.ProblemForbidden, Title: "Not allowed to change the secret",
-		Detail: "You may read this secret, but your role in its workspace, or your token's scopes, do not let you change it",
+		Detail: "You can read this secret but not change it. Your workspace role or token scopes do not allow it.",
 	}
 
 	for needs, says := range map[client.Scope]string{
@@ -205,7 +205,7 @@ func TestAForbiddenCallNamesTheScopeTheTokenLacks(t *testing.T) {
 		addAPIError(&diags, "Could not update the secret", changing, diagnosedLineFields, needs)
 
 		detail := diags.Errors()[0].Detail()
-		if !strings.HasPrefix(detail, "You may read this secret") || !strings.Contains(detail, says) || !strings.Contains(detail, "configure, secrets, runners and trusts") {
+		if !strings.HasPrefix(detail, "You can read this secret") || !strings.Contains(detail, says) || !strings.Contains(detail, "configure, secrets, runners and trusts") {
 			t.Errorf("%s: detail %q", needs, detail)
 		}
 	}

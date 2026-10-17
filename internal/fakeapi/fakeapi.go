@@ -358,7 +358,7 @@ func (s *Server) allowed(w http.ResponseWriter, kind string) bool {
 			return true
 		}
 
-		refuseTrust(w, "You may read this workspace-token-trust, but your role in its workspace, or your token’s scopes, do not let you change it")
+		refuseTrust(w, cannotChange("workspace-token-trust"))
 
 		return false
 	}
@@ -373,7 +373,7 @@ func (s *Server) allowed(w http.ResponseWriter, kind string) bool {
 	}
 
 	problem(w, http.StatusForbidden, "forbidden", "Not allowed to change the "+kind,
-		"You may read this "+kind+", but your role in its workspace, or your token’s scopes, do not let you change it", nil)
+		cannotChange(kind), nil)
 
 	return false
 }
@@ -398,7 +398,7 @@ func (s *Server) grants(w http.ResponseWriter, scopes ...any) bool {
 	for _, listed := range scopes {
 		for _, each := range texts(listed) {
 			if !owned[textOf(each)] {
-				refuseTrust(w, fmt.Sprintf("A token can give a trust only the scopes that it has. It does not have %s", each))
+				refuseTrust(w, cannotChange("workspace-token-trust"))
 				return false
 			}
 		}
@@ -600,11 +600,17 @@ func (s *Server) remove(kind string) http.HandlerFunc {
 			return
 		}
 
+		var dependents []string
 		for _, each := range s.stored {
 			if each.owner == existing.id {
-				problem(w, http.StatusConflict, "in-use", "The "+kind+" is still in use", "It still has a "+each.kind, nil)
-				return
+				dependents = append(dependents, dependentName(each))
 			}
+		}
+
+		if len(dependents) > 0 {
+			slices.Sort(dependents)
+			problem(w, http.StatusConflict, "in-use", "The "+kind+" is still in use", notEmpty(kind, existing)+" It still has: "+strings.Join(dependents, ", "), nil)
+			return
 		}
 
 		if naming := s.poolsNaming(existing); len(naming) > 0 {
@@ -984,4 +990,29 @@ func writeJSON(w http.ResponseWriter, status int, contentType string, body any) 
 
 func noRoute(w http.ResponseWriter, r *http.Request) {
 	problem(w, http.StatusNotFound, "not-found", "No such resource", "Cannot "+r.Method+" "+r.URL.Path, nil)
+}
+
+func notEmpty(kind string, existing *resource) string {
+	switch kind {
+	case "team":
+		return "Team " + textOf(existing.fields["key"]) + " is not empty."
+	case "workspace":
+		return "Workspace " + textOf(existing.fields["slug"]) + " is not empty."
+	default:
+		return "The " + kind + " is not empty."
+	}
+}
+
+func cannotChange(kind string) string {
+	return "You can read this " + kind + " but not change it. Your workspace role or token scopes do not allow it."
+}
+
+func dependentName(each *resource) string {
+	for _, field := range []string{"key", "slug", "name"} {
+		if named := textOf(each.fields[field]); named != "" {
+			return strings.ReplaceAll(each.kind, "-", " ") + " " + named
+		}
+	}
+
+	return strings.ReplaceAll(each.kind, "-", " ")
 }

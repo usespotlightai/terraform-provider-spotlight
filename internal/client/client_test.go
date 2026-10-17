@@ -351,7 +351,7 @@ func TestARefusalSaysWhatPermissionTheCallerLacked(t *testing.T) {
 	api, _ := serve(t, func(w http.ResponseWriter, _ *http.Request, _ int) {
 		reply(w, http.StatusForbidden, "application/problem+json", map[string]any{
 			"type": client.ProblemForbidden, "title": "Not allowed to change the secret", "status": 403,
-			"detail": "You may read this secret", "permission": "manage-secrets",
+			"detail": "You can read this secret", "permission": "manage-secrets",
 		})
 	})
 

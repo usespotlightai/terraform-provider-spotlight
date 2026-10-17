@@ -31853,7 +31853,7 @@
             ],
             "example": "linked"
           },
-          "holder": {
+          "holderRule": {
             "type": "string",
             "description": "Whose connection its tools act with: the team’s, or that of the person who started the task",
             "enum": [
@@ -31884,7 +31884,7 @@
           "name",
           "path",
           "standing",
-          "holder",
+          "holderRule",
           "handle",
           "described"
         ]
