@@ -79,8 +79,9 @@ func (r *RunnerPoolResource) Schema(_ context.Context, _ resource.SchemaRequest,
 func runnerPoolSchema() schema.Schema {
 	attributes := writeonly.Token.Attributes("The token a `spotlight-host` serving the pool claims work with: 32 to 255 URL-safe characters, as a generated password would be. " +
 		"Only for a pool without `provision`. Spotlight keeps only its hash. Left out, Spotlight issues one when it creates the pool, which Terraform does not keep; " +
-		"a change to `token_version` must come with a token. A token is given once, ever: another pool's token is not accepted, and one rotated away, or used by a pool that was deleted or replaced, " +
-		"is spent and no pool accepts it, the same one included, so rotating or replacing a pool always needs a new token.")
+		"a change to `token_version` must come with a token. Each token is single-use. Spotlight does not accept the token of another pool. " +
+		"A token that you rotated away, or that a deleted or replaced pool used, was used once, so no pool accepts it again, the same pool included. " +
+		"Thus, to rotate or replace a pool, you always need a new token.")
 	attributes["id"] = idAttribute("runner pool")
 	attributes["version"] = versionAttribute("runner pool")
 	attributes["address"] = addressAttribute("ephemeral")

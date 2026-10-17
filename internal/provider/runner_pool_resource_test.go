@@ -359,10 +359,10 @@ func pullPoolBeside(token string, version int, neighbour string, neighbourVersio
 	return pullPool("ephemeral", "", token, version) + fmt.Sprintf(runnerPoolNeighbour, neighbour, neighbourVersion)
 }
 
-func TestAPoolTokenIsGivenOnceEver(t *testing.T) {
+func TestAPoolTokenIsSingleUse(t *testing.T) {
 	fake := fakeapi.New(t)
-	spent := regexp.MustCompile(`(?s)token: was given to a pool before, and a pool token is given once, ever`)
-	taken := regexp.MustCompile(`(?s)token: is already another pool’s token`)
+	alreadyUsed := regexp.MustCompile(`(?s)token: was used before\. Each pool token is single-use`)
+	inUse := regexp.MustCompile(`(?s)token: is in use by another pool`)
 
 	resource.UnitTest(t, resource.TestCase{
 		TerraformVersionChecks:   acctest.WriteOnly,
@@ -377,15 +377,15 @@ func TestAPoolTokenIsGivenOnceEver(t *testing.T) {
 			},
 			{
 				Config:      pullPool("ephemeral", "", tokenFirst, 3),
-				ExpectError: spent,
+				ExpectError: alreadyUsed,
 			},
 			{
 				Config:      pullPoolBeside(tokenSecond, 2, tokenFirst, 1),
-				ExpectError: spent,
+				ExpectError: alreadyUsed,
 			},
 			{
 				Config:      pullPoolBeside(tokenSecond, 2, tokenSecond, 1),
-				ExpectError: taken,
+				ExpectError: inUse,
 			},
 			{
 				Config: pullPoolBeside(tokenSecond, 2, tokenThird, 1),
@@ -396,14 +396,14 @@ func TestAPoolTokenIsGivenOnceEver(t *testing.T) {
 			},
 			{
 				Config:      pullPool("ephemeral", "", tokenThird, 3),
-				ExpectError: spent,
+				ExpectError: alreadyUsed,
 			},
 			{
 				Config: pullPool("sandboxes", "", tokenSecond, 2),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(runnerPoolAddress, plancheck.ResourceActionDestroyBeforeCreate)},
 				},
-				ExpectError: spent,
+				ExpectError: alreadyUsed,
 			},
 		},
 	})

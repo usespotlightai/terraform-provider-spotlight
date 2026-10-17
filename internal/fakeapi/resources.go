@@ -208,13 +208,13 @@ func rotatedAt(existing *resource) any {
 }
 
 var (
-	tokenTaken = map[string]string{
-		"runner-pool": "is already another pool’s token; give each pool its own",
-		"egress":      "belongs to another egress. Please give each egress its own",
+	tokenInUse = map[string]string{
+		"runner-pool": "is in use by another pool. Please use a different token for each pool",
+		"egress":      "is in use by another egress. Please use a different token for each egress",
 	}
-	tokenSpent = map[string]string{
-		"runner-pool": "was given to a pool before, and a pool token is given once, ever: a token that was rotated away, or that a deleted or replaced pool used, never works again. Give a new one",
-		"egress":      "was used before. Egress tokens work once only",
+	tokenAlreadyUsed = map[string]string{
+		"runner-pool": "was used before. Each pool token is single-use. Please use a new token",
+		"egress":      "was used before. Each egress token is single-use. Please use a new token",
 	}
 )
 

@@ -1030,7 +1030,7 @@
             }
           },
           "401": {
-            "description": "Missing, spent or wrong runner token"
+            "description": "Missing, no longer valid or wrong runner token"
           }
         },
         "summary": "What to look for on this runner, so it can say what it has",
@@ -1059,7 +1059,7 @@
             "description": "Nothing queued for this pool"
           },
           "401": {
-            "description": "Missing, spent or wrong runner token"
+            "description": "Missing, no longer valid or wrong runner token"
           }
         },
         "summary": "Long-poll for work, answering empty when the queue is",
@@ -1096,7 +1096,7 @@
             }
           },
           "401": {
-            "description": "Missing, spent or wrong runner token"
+            "description": "Missing, no longer valid or wrong runner token"
           },
           "404": {
             "description": "No such run leased by this runner"
@@ -1134,7 +1134,7 @@
             "description": "The file, byte for byte"
           },
           "401": {
-            "description": "Missing, spent or wrong runner token"
+            "description": "Missing, no longer valid or wrong runner token"
           },
           "404": {
             "description": "No such file, or not this runner’s run to read it for"
@@ -1179,7 +1179,7 @@
             }
           },
           "401": {
-            "description": "Missing, spent or wrong runner token"
+            "description": "Missing, no longer valid or wrong runner token"
           },
           "404": {
             "description": "No such run or task, or not this run’s team to read"
@@ -1264,7 +1264,7 @@
             }
           },
           "401": {
-            "description": "Missing, spent or wrong runner token"
+            "description": "Missing, no longer valid or wrong runner token"
           },
           "404": {
             "description": "No such run, or no such station in its team"
@@ -1307,7 +1307,7 @@
             "description": ""
           },
           "401": {
-            "description": "Missing, spent or wrong runner token"
+            "description": "Missing, no longer valid or wrong runner token"
           },
           "409": {
             "description": "The run is not leased by this runner"
@@ -1345,10 +1345,10 @@
             }
           },
           "401": {
-            "description": "Missing, spent or wrong runner token"
+            "description": "Missing, no longer valid or wrong runner token"
           },
           "404": {
-            "description": "The run is no longer leased by this runner: it ended, was parked, or its task let it go. The runner lets its sandbox go."
+            "description": "The run is no longer leased by this runner: it ended, was suspended, or its task cancelled it. The runner releases its sandbox."
           },
           "409": {
             "description": "The run kept changing while its lease was renewed; renew again on the next heartbeat."
@@ -1362,7 +1362,7 @@
     },
     "/runs/{runId}/change-stack-checks/{stackId}/lease": {
       "post": {
-        "description": "The runner with the lease on a check renews that lease while the check runs, so a long check is not handed to a second runner. The answer carries back whether the runner should stop checking.",
+        "description": "The runner with the lease on a check renews that lease while the check runs, so a second runner does not claim a long check. The answer carries back whether the runner should stop checking.",
         "operationId": "renewCheckLease",
         "parameters": [
           {
@@ -1403,7 +1403,7 @@
             }
           },
           "401": {
-            "description": "Missing, spent or wrong runner token"
+            "description": "Missing, no longer valid or wrong runner token"
           },
           "404": {
             "description": "No such runner, or the check this runner leases is of another run"
@@ -1447,7 +1447,7 @@
             "description": ""
           },
           "401": {
-            "description": "Missing, spent or wrong runner token"
+            "description": "Missing, no longer valid or wrong runner token"
           },
           "409": {
             "description": "The run is not leased by this runner"
@@ -1488,7 +1488,7 @@
             "description": ""
           },
           "401": {
-            "description": "Missing, spent or wrong runner token"
+            "description": "Missing, no longer valid or wrong runner token"
           },
           "404": {
             "description": "No such run"
@@ -1534,7 +1534,7 @@
             "description": ""
           },
           "401": {
-            "description": "Missing, spent or wrong runner token"
+            "description": "Missing, no longer valid or wrong runner token"
           },
           "409": {
             "description": "The run is not leased by this runner"
@@ -1596,7 +1596,7 @@
             }
           },
           "401": {
-            "description": "Missing, spent or wrong runner token"
+            "description": "Missing, no longer valid or wrong runner token"
           },
           "403": {
             "description": "The run was not given this tool"
@@ -1656,7 +1656,7 @@
             }
           },
           "401": {
-            "description": "Missing, spent or wrong runner token"
+            "description": "Missing, no longer valid or wrong runner token"
           },
           "409": {
             "description": "The run is not leased by this runner"
@@ -1697,7 +1697,7 @@
             "description": ""
           },
           "401": {
-            "description": "Missing, spent or wrong runner token"
+            "description": "Missing, no longer valid or wrong runner token"
           }
         },
         "summary": "Answer something said on the pull request, and resolve it",
@@ -1742,7 +1742,7 @@
             }
           },
           "401": {
-            "description": "Missing, spent or wrong runner token"
+            "description": "Missing, no longer valid or wrong runner token"
           }
         },
         "summary": "Report how the agent’s turn ended",
@@ -1787,7 +1787,7 @@
             }
           },
           "401": {
-            "description": "Missing, spent or wrong runner token"
+            "description": "Missing, no longer valid or wrong runner token"
           },
           "404": {
             "description": "No such run leased by this runner"
@@ -1799,10 +1799,10 @@
         ]
       }
     },
-    "/runs/{runId}/parked": {
+    "/runs/{runId}/suspended": {
       "post": {
-        "description": "The runner has sealed the workspace archive and lets its sandbox go. A later answer requeues the same run, and any runner takes it up from the archive. If the answer arrived first, the run is not parked: it is working again, and the runner delivers the answer to the live session.",
-        "operationId": "parkRun",
+        "description": "The runner has sealed the workspace archive and releases its sandbox. A later answer requeues the same run, and any runner claims it and restores it from the archive. If the answer arrived first, the run is not suspended: it is working again, and the runner delivers the answer to the live session.",
+        "operationId": "suspendRun",
         "parameters": [
           {
             "name": "runId",
@@ -1818,7 +1818,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ParkRunRequestDto"
+                "$ref": "#/components/schemas/SuspendRunRequestDto"
               }
             }
           }
@@ -1829,19 +1829,19 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RunParkingResponseDto"
+                  "$ref": "#/components/schemas/RunSuspensionResponseDto"
                 }
               }
             }
           },
           "401": {
-            "description": "Missing, spent or wrong runner token"
+            "description": "Missing, no longer valid or wrong runner token"
           },
           "409": {
             "description": "The run is not leased by this runner"
           }
         },
-        "summary": "Park a run whose person did not answer within the grace period",
+        "summary": "Suspend a run whose person did not answer within the grace period",
         "tags": [
           "runners"
         ]
@@ -1875,7 +1875,7 @@
             "description": "Nothing to restore: the run starts its work afresh"
           },
           "401": {
-            "description": "Missing, spent or wrong runner token"
+            "description": "Missing, no longer valid or wrong runner token"
           },
           "404": {
             "description": "Not this runner’s run"
@@ -1920,7 +1920,7 @@
             }
           },
           "401": {
-            "description": "Missing, spent or wrong runner token"
+            "description": "Missing, no longer valid or wrong runner token"
           },
           "404": {
             "description": "Not this runner’s run"
@@ -1961,7 +1961,7 @@
             "description": ""
           },
           "401": {
-            "description": "Missing, spent or wrong runner token"
+            "description": "Missing, no longer valid or wrong runner token"
           },
           "404": {
             "description": "Not this runner’s run, or not an archive granted to it"
@@ -2107,7 +2107,7 @@
             "bearer": []
           }
         ],
-        "summary": "Long-poll for one run or check, handed over with a one-run runner’s credential for a fresh sandbox",
+        "summary": "Long-poll for one run or check, assigned with a one-run runner’s credential for a fresh sandbox",
         "tags": [
           "runners"
         ]
@@ -2115,7 +2115,7 @@
     },
     "/hosts/calls/claim": {
       "post": {
-        "description": "Hands over the oldest call waiting for this pool’s or trust’s workspace that has not lapsed. The host sends it once and answers with what came back.",
+        "description": "Assigns the oldest call waiting for this pool’s or trust’s workspace that has not expired. The host sends it once and answers with what came back.",
         "operationId": "claimHostCall",
         "parameters": [
           {
@@ -2213,7 +2213,7 @@
             "description": "No such call waits for this pool’s or trust’s workspace"
           },
           "409": {
-            "description": "The call was already answered, lapsed before it was answered, or was never claimed (`call-completed`), or another host claimed it (`not-this-hosts-call`)"
+            "description": "The call was already answered, expired before it was answered, or was never claimed (`call-completed`), or another host claimed it (`not-this-hosts-call`)"
           }
         },
         "security": [
@@ -9353,7 +9353,7 @@
     },
     "/hosts/{hostId}": {
       "put": {
-        "operationId": "reportHostPresence",
+        "operationId": "hostHeartbeat",
         "parameters": [
           {
             "name": "Spotlight-Trust",
@@ -9379,7 +9379,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/HostPresenceRequestDto"
+                "$ref": "#/components/schemas/HostHeartbeatRequestDto"
               }
             }
           }
@@ -9399,7 +9399,7 @@
             "description": "Pool token is missing, rotated or unknown, or no trust admits this workload."
           },
           "409": {
-            "description": "The host id serves another pool or trust"
+            "description": "The host id is in use by another pool or trust"
           }
         },
         "security": [
@@ -9407,13 +9407,13 @@
             "bearer": []
           }
         ],
-        "summary": "A host says it is here, what it has and what it runs, so the Runners page can show it",
+        "summary": "A host sends a heartbeat with what it has and what it runs, so the Runners page can show it",
         "tags": [
           "runners"
         ]
       },
       "delete": {
-        "operationId": "leaveAsHost",
+        "operationId": "deregisterHost",
         "parameters": [
           {
             "name": "Spotlight-Trust",
@@ -9436,7 +9436,7 @@
         ],
         "responses": {
           "204": {
-            "description": "Gone"
+            "description": "Deregistered"
           },
           "401": {
             "description": "Pool token is missing, rotated or unknown, or no trust admits this workload."
@@ -9447,7 +9447,7 @@
             "bearer": []
           }
         ],
-        "summary": "A host that is stopping says so, and leaves the Runners page",
+        "summary": "A host that stops deregisters itself, so the Runners page no longer shows it",
         "tags": [
           "runners"
         ]
@@ -9517,7 +9517,7 @@
             }
           },
           "401": {
-            "description": "Missing, spent or wrong runner token"
+            "description": "Missing, no longer valid or wrong runner token"
           }
         },
         "summary": "Announce this runner and the harnesses it found installed",
@@ -15203,7 +15203,7 @@
             "description": ""
           },
           "401": {
-            "description": "Missing, spent or wrong runner token"
+            "description": "Missing, no longer valid or wrong runner token"
           },
           "404": {
             "description": "Not a run this runner worked"
@@ -15263,7 +15263,7 @@
             "description": ""
           },
           "401": {
-            "description": "Missing, spent or wrong runner token"
+            "description": "Missing, no longer valid or wrong runner token"
           },
           "404": {
             "description": "Not a run this runner worked, or no such stack of it"
@@ -18160,7 +18160,7 @@
             }
           },
           "401": {
-            "description": "Missing, spent or wrong runner token"
+            "description": "Missing, no longer valid or wrong runner token"
           },
           "404": {
             "description": "No such run leased by this runner"
@@ -18212,7 +18212,7 @@
             }
           },
           "401": {
-            "description": "Missing, spent or wrong runner token"
+            "description": "Missing, no longer valid or wrong runner token"
           },
           "404": {
             "description": "No such run leased by this runner"
@@ -18266,7 +18266,7 @@
             }
           },
           "401": {
-            "description": "Missing, spent or wrong runner token"
+            "description": "Missing, no longer valid or wrong runner token"
           },
           "404": {
             "description": "No such run leased by this runner"
@@ -18312,7 +18312,7 @@
             }
           },
           "401": {
-            "description": "Missing, spent or wrong runner token"
+            "description": "Missing, no longer valid or wrong runner token"
           },
           "404": {
             "description": "No such run leased by this runner"
@@ -18974,7 +18974,7 @@
             "name": "size",
             "required": false,
             "in": "query",
-            "description": "Only runs of this size, told by the lines their changes took out and put in, or by their steps where they changed none",
+            "description": "Only runs of this size, told by the lines their changes removed and added, or by their steps where they changed none",
             "schema": {
               "enum": [
                 "small",
@@ -19304,7 +19304,7 @@
             "name": "rounds",
             "required": false,
             "in": "query",
-            "description": "Only pull requests that took this many review rounds",
+            "description": "Only pull requests that needed this many review rounds",
             "schema": {
               "enum": [
                 "0",
@@ -19643,7 +19643,7 @@
             "name": "model",
             "required": false,
             "in": "query",
-            "description": "Only runs with this model; ~default for runs that named none and took the harness’s own",
+            "description": "Only runs with this model; ~default for runs that named none and used the harness’s own",
             "schema": {
               "type": "string"
             }
@@ -19667,8 +19667,8 @@
                 "completed",
                 "failed",
                 "stopped",
-                "abandoned",
-                "withdrawn",
+                "exhausted",
+                "cancelled",
                 "superseded"
               ],
               "type": "string"
@@ -21171,7 +21171,7 @@
             "bearer": []
           }
         ],
-        "summary": "Delete a replay set and its replays, letting go of the archives it kept",
+        "summary": "Delete a replay set and its replays, and release the archives it kept",
         "tags": [
           "replays"
         ]
@@ -23395,7 +23395,7 @@
             }
           },
           "401": {
-            "description": "Missing, spent or wrong runner token"
+            "description": "Missing, no longer valid or wrong runner token"
           },
           "404": {
             "description": "This run is no longer the active run of the search, or it is not a search run that this runner leases",
@@ -23408,7 +23408,7 @@
             }
           },
           "409": {
-            "description": "The iteration proposed all the candidates it may, or tried too often, or another iteration took the name",
+            "description": "The iteration proposed all the candidates it may, or tried too often, or another iteration uses the name already",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -23470,7 +23470,7 @@
             }
           },
           "401": {
-            "description": "Missing, spent or wrong runner token"
+            "description": "Missing, no longer valid or wrong runner token"
           },
           "404": {
             "description": "This run is no longer the active run of the search, it is not a search run that this runner leases, or the reflection does not look into the task",
@@ -23890,7 +23890,7 @@
           "key": {
             "type": "string",
             "example": "triage",
-            "description": "What the station is called in its line definition, and what a run hands a task on to it by"
+            "description": "What the station is called in its line definition, and what a run passes a task to it by"
           },
           "name": {
             "type": "string",
@@ -24319,7 +24319,7 @@
           },
           "spec": {
             "type": "object",
-            "description": "Handed to the runner untouched: checkouts, briefing, handover and continuity. The command is filled in from the harness, so it is not given here.",
+            "description": "Sent to the runner unchanged: checkouts, briefing, handover and continuity. The command is filled in from the harness, so it is not given here.",
             "example": {
               "checkouts": [
                 {
@@ -24684,7 +24684,7 @@
           "returned": {
             "type": "string",
             "nullable": true,
-            "description": "What it handed back, unread"
+            "description": "What it returned, unread"
           },
           "change": {
             "nullable": true,
@@ -25254,8 +25254,8 @@
               "completed",
               "failed",
               "stopped",
-              "abandoned",
-              "withdrawn",
+              "exhausted",
+              "cancelled",
               "superseded"
             ]
           },
@@ -25684,7 +25684,7 @@
           "attempt": {
             "type": "number",
             "example": 1,
-            "description": "The attempt of the run the runner was handed, as the claim named it"
+            "description": "The attempt of the run assigned to the runner, as the claim named it"
           },
           "archiveId": {
             "type": "string",
@@ -25862,7 +25862,7 @@
               "asked"
             ],
             "example": "asked",
-            "description": "allow or reject answers the harness now; asked means a person was asked in their inbox, so the run should end its turn and let the task go"
+            "description": "allow or reject answers the harness now; asked means a person was asked in their inbox, so the run should end its turn and release the task"
           }
         },
         "required": [
@@ -25929,7 +25929,7 @@
           "timedOut": {
             "type": "boolean",
             "example": false,
-            "description": "With failed: its host stopped it for running past its time; the run is then treated as a runner that went silent, as Work would after its lease lapsed"
+            "description": "With failed: its host stopped it for running past its time; the run is then treated as a runner that went silent, as Work would after its lease expired"
           },
           "message": {
             "type": "string"
@@ -25964,7 +25964,7 @@
           "waiting": {
             "type": "boolean",
             "example": false,
-            "description": "Whether the turn ended by asking a person, so the run now waits for their answer instead of ending. The runner keeps its sandbox for the grace period, then parks the run."
+            "description": "Whether the turn ended by asking a person, so the run now waits for their answer instead of ending. The runner keeps its sandbox for the grace period, then suspends the run."
           }
         },
         "required": [
@@ -25984,27 +25984,27 @@
           "asks"
         ]
       },
-      "ParkRunRequestDto": {
+      "SuspendRunRequestDto": {
         "type": "object",
         "properties": {
-          "cold": {
+          "requeue": {
             "type": "boolean",
             "example": false,
             "description": "The harness has already closed, so an answer that arrived first cannot be delivered warm: the run goes back on the queue from its archive instead of staying with this runner."
           }
         }
       },
-      "RunParkingResponseDto": {
+      "RunSuspensionResponseDto": {
         "type": "object",
         "properties": {
-          "parked": {
+          "suspended": {
             "type": "boolean",
             "example": true,
-            "description": "Whether the run is parked (or, if a stop was asked for, ended) and no longer leased by this runner. False when the answer arrived first: the run is working again, and the answer waits in its messages."
+            "description": "Whether the run is suspended (or, if a stop was asked for, ended) and no longer leased by this runner. False when the answer arrived first: the run is working again, and the answer waits in its messages."
           }
         },
         "required": [
-          "parked"
+          "suspended"
         ]
       },
       "StoredArchiveResponseDto": {
@@ -26168,7 +26168,7 @@
           "host": {
             "type": "string",
             "example": "K7Q2M4ZC3VYH6N5RB8WX1TDJ9P",
-            "description": "The host claiming, as it names itself in its presence"
+            "description": "The host claiming, as it names itself in its heartbeat"
           },
           "image": {
             "type": "string",
@@ -26214,7 +26214,7 @@
           "host": {
             "type": "string",
             "example": "K7Q2M4ZC3VYH6N5RB8WX1TDJ9P",
-            "description": "The host claiming, as it names itself in its presence"
+            "description": "The host claiming, as it names itself in its heartbeat"
           }
         },
         "required": [
@@ -27880,9 +27880,10 @@
               "queued",
               "claimed",
               "waiting",
-              "parked",
+              "suspended",
               "completed",
               "failed",
+              "cancelled",
               "superseded"
             ]
           },
@@ -28061,9 +28062,10 @@
               "queued",
               "claimed",
               "waiting",
-              "parked",
+              "suspended",
               "completed",
               "failed",
+              "cancelled",
               "superseded"
             ]
           },
@@ -28084,7 +28086,7 @@
           "output": {
             "type": "string",
             "nullable": true,
-            "description": "What it said when it handed the task on"
+            "description": "What it said when it passed the task on"
           },
           "ms": {
             "type": "number",
@@ -28573,9 +28575,10 @@
               "queued",
               "claimed",
               "waiting",
-              "parked",
+              "suspended",
               "completed",
               "failed",
+              "cancelled",
               "superseded"
             ]
           },
@@ -28766,9 +28769,10 @@
               "queued",
               "claimed",
               "waiting",
-              "parked",
+              "suspended",
               "completed",
               "failed",
+              "cancelled",
               "superseded"
             ]
           },
@@ -28933,9 +28937,10 @@
               "queued",
               "claimed",
               "waiting",
-              "parked",
+              "suspended",
               "completed",
               "failed",
+              "cancelled",
               "superseded"
             ]
           },
@@ -31076,10 +31081,10 @@
           "installationId"
         ]
       },
-      "HostPresenceRequestDto": {
+      "HostHeartbeatRequestDto": {
         "type": "object",
         "properties": {
-          "session": {
+          "bootId": {
             "type": "string",
             "example": "K7Q2M4ZC3VYH6N5RB8WX1TDJ9P",
             "description": "New each time the host starts, so a restart shows as one"
@@ -31094,7 +31099,7 @@
             "example": "v1.4.0",
             "description": "The spotlight release it runs"
           },
-          "executor": {
+          "containerRuntime": {
             "type": "string",
             "example": "Docker Engine - Community 27.3.1 (linux/amd64)",
             "description": "The container runtime its sandboxes run in"
@@ -31126,10 +31131,10 @@
           }
         },
         "required": [
-          "session",
+          "bootId",
           "name",
           "release",
-          "executor",
+          "containerRuntime",
           "capacity"
         ]
       },
@@ -31200,7 +31205,7 @@
             "example": "ghcr.io/acme/api-runner@sha256:9b2f5c1e0d7a4b3c8e6f1a2d5c7b9e0f3a4d6c8b1e2f5a7c9d0b3e6f8a1c4d7e",
             "description": "The digest its sandboxes start from now"
           },
-          "usual": {
+          "isDefault": {
             "type": "boolean",
             "example": true,
             "description": "Runs every line that names no image"
@@ -31227,7 +31232,7 @@
         "required": [
           "image",
           "digest",
-          "usual",
+          "isDefault",
           "release",
           "harnesses",
           "unavailableReason"
@@ -31252,7 +31257,7 @@
             "example": "v1.4.0",
             "description": "The spotlight release"
           },
-          "executor": {
+          "containerRuntime": {
             "type": "string",
             "example": "Docker Engine - Community 27.3.1 (linux/amd64)"
           },
@@ -31275,23 +31280,23 @@
               "$ref": "#/components/schemas/HostImageResponseDto"
             }
           },
-          "firstSeenAt": {
+          "firstHeartbeatAt": {
             "type": "string",
             "example": "2026-09-25T11:00:00.000Z"
           },
-          "upSince": {
+          "onlineSince": {
             "type": "string",
             "example": "2026-09-25T11:30:00.000Z",
-            "description": "When it last came up: started, or answered again after going quiet"
+            "description": "When it last came online: it started, or sent a heartbeat again after it was offline"
           },
-          "lastSeenAt": {
+          "lastHeartbeatAt": {
             "type": "string",
             "example": "2026-09-25T12:00:00.000Z"
           },
-          "answering": {
+          "online": {
             "type": "boolean",
             "example": true,
-            "description": "Heard from recently enough to be counted on"
+            "description": "It sent a heartbeat recently enough to count as online"
           }
         },
         "required": [
@@ -31299,14 +31304,14 @@
           "name",
           "through",
           "release",
-          "executor",
+          "containerRuntime",
           "capacity",
           "running",
           "images",
-          "firstSeenAt",
-          "upSince",
-          "lastSeenAt",
-          "answering"
+          "firstHeartbeatAt",
+          "onlineSince",
+          "lastHeartbeatAt",
+          "online"
         ]
       },
       "LiveRunnerResponseDto": {
@@ -31343,7 +31348,7 @@
             "type": "string",
             "example": "2026-09-25T11:00:00.000Z"
           },
-          "lastSeenAt": {
+          "lastHeartbeatAt": {
             "type": "string",
             "nullable": true,
             "example": "2026-09-25T11:05:00.000Z"
@@ -31356,7 +31361,7 @@
           "image",
           "harnesses",
           "startedAt",
-          "lastSeenAt"
+          "lastHeartbeatAt"
         ]
       },
       "RunnerFleetResponseDto": {
@@ -35309,13 +35314,13 @@
           "at"
         ]
       },
-      "HandedOnResponseDto": {
+      "StationPassResponseDto": {
         "type": "object",
         "properties": {
           "to": {
             "type": "string",
             "example": "d41f0a2c-8b7e-4f19-9d3a-6c5e2b1a4f80",
-            "description": "The station the run moved its task on to"
+            "description": "The station the run passed its task to"
           },
           "at": {
             "type": "string",
@@ -35348,8 +35353,8 @@
               "completed",
               "failed",
               "stopped",
-              "abandoned",
-              "withdrawn",
+              "exhausted",
+              "cancelled",
               "superseded"
             ]
           },
@@ -35394,13 +35399,13 @@
               }
             ]
           },
-          "handedOn": {
+          "passed": {
             "nullable": true,
-            "description": "Where the run moved its task on to, if it did",
+            "description": "The station the run passed its task to, if it did",
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/HandedOnResponseDto"
+                "$ref": "#/components/schemas/StationPassResponseDto"
               }
             ]
           },
@@ -35426,7 +35431,7 @@
           "cost",
           "checks",
           "next",
-          "handedOn",
+          "passed",
           "delivery"
         ]
       },
@@ -35455,10 +35460,10 @@
             "example": 12,
             "description": "Runs that ran; the rest of the tally counts only these"
           },
-          "withdrawn": {
+          "cancelled": {
             "type": "number",
             "example": 1,
-            "description": "Runs withdrawn from the queue before they ran"
+            "description": "Runs cancelled before they ran"
           },
           "failed": {
             "type": "number",
@@ -35493,10 +35498,10 @@
             "example": 3,
             "description": "Runs a person next sent back or refused"
           },
-          "handedOn": {
+          "passed": {
             "type": "number",
             "example": 2,
-            "description": "Runs that moved their task on to another station"
+            "description": "Runs that passed their task to another station"
           },
           "merged": {
             "type": "number",
@@ -35538,7 +35543,7 @@
         },
         "required": [
           "runs",
-          "withdrawn",
+          "cancelled",
           "failed",
           "failedShare",
           "stopped",
@@ -35546,7 +35551,7 @@
           "checksFailed",
           "accepted",
           "sentBack",
-          "handedOn",
+          "passed",
           "merged",
           "cost",
           "unpriced",
@@ -35599,7 +35604,7 @@
           },
           "ran": {
             "type": "boolean",
-            "description": "Whether the group’s config is one the station ran: false for runs meant for a config other than the one in force that never ran it (never started, failed to provision or withdrawn), which are kept apart from the group in force"
+            "description": "Whether the group’s config is one the station ran: false for runs meant for a config other than the one in force that never ran it (never started, failed to provision or cancelled), which are kept apart from the group in force"
           },
           "config": {
             "nullable": true,
@@ -35691,7 +35696,7 @@
             "example": "d41f0a2c-8b7e-4f19-9d3a-6c5e2b1a4f80"
           },
           "groups": {
-            "description": "The station’s latest-started runs in groups, the newest first, in the order the runs started: a new group starts at every run that ran a config other than the station’s run before it that ran one, listed or not; a run meant for another config than the one in force that never ran it (never started, failed to provision or withdrawn) starts or joins a group of that config that never ran, and the group in force starts again after it; a run with no config joins the group in force",
+            "description": "The station’s latest-started runs in groups, the newest first, in the order the runs started: a new group starts at every run that ran a config other than the station’s run before it that ran one, listed or not; a run meant for another config than the one in force that never ran it (never started, failed to provision or cancelled) starts or joins a group of that config that never ran, and the group in force starts again after it; a run with no config joins the group in force",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FingerprintGroupResponseDto"
@@ -37618,7 +37623,7 @@
             "type": "boolean",
             "example": true
           },
-          "handedOn": {
+          "passed": {
             "type": "boolean",
             "example": false
           },
@@ -37626,7 +37631,7 @@
             "type": "boolean",
             "example": true
           },
-          "withdrawn": {
+          "cancelled": {
             "type": "boolean",
             "example": false
           }
@@ -37638,9 +37643,9 @@
           "checksFailed",
           "accepted",
           "sentBack",
-          "handedOn",
+          "passed",
           "merged",
-          "withdrawn"
+          "cancelled"
         ]
       },
       "DayTallyResponseDto": {
@@ -39055,11 +39060,11 @@
             "example": 0.2,
             "description": "Share of runs a person next sent back or refused"
           },
-          "handed_on": {
+          "passed": {
             "type": "number",
             "nullable": true,
             "example": 0.3,
-            "description": "Share of runs that moved their task on to another station"
+            "description": "Share of runs that passed their task to another station"
           },
           "checks_passed": {
             "type": "number",
@@ -39083,7 +39088,7 @@
         "required": [
           "accepted",
           "sent_back",
-          "handed_on",
+          "passed",
           "checks_passed",
           "merged",
           "judge"
@@ -39150,7 +39155,7 @@
               "enum": [
                 "accepted",
                 "sent_back",
-                "handed_on",
+                "passed",
                 "checks_passed",
                 "merged",
                 "judge"
@@ -39195,7 +39200,7 @@
             "description": "The run size the comparison was narrowed to, if any"
           },
           "sizes": {
-            "description": "How a run’s size is told: by the lines its changes took out and put in, or by its steps where it changed none",
+            "description": "How a run’s size is told: by the lines its changes removed and added, or by its steps where it changed none",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SizeBoundResponseDto"
@@ -39968,7 +39973,7 @@
             }
           },
           "depth": {
-            "description": "How many review rounds merged pull requests took, Spotlight’s against people’s, in the same repositories",
+            "description": "How many review rounds merged pull requests needed, Spotlight’s against people’s, in the same repositories",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/RoundsShareResponseDto"
@@ -40306,7 +40311,7 @@
             "description": "Merged that week"
           },
           "rounds": {
-            "description": "How many of them took each number of review rounds",
+            "description": "How many of them needed each number of review rounds",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/RoundsCountResponseDto"
@@ -41137,7 +41142,7 @@
           "startedAt": {
             "type": "string",
             "nullable": true,
-            "description": "When a runner first took it; none if none did"
+            "description": "When a runner first claimed it; none if none did"
           },
           "endedAt": {
             "type": "string",
@@ -41184,8 +41189,8 @@
               "completed",
               "failed",
               "stopped",
-              "abandoned",
-              "withdrawn",
+              "exhausted",
+              "cancelled",
               "superseded"
             ]
           },
@@ -41213,12 +41218,12 @@
               }
             ]
           },
-          "handedOn": {
+          "passed": {
             "nullable": true,
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/HandedOnResponseDto"
+                "$ref": "#/components/schemas/StationPassResponseDto"
               }
             ]
           },
@@ -41257,7 +41262,7 @@
           "failure",
           "checks",
           "next",
-          "handedOn",
+          "passed",
           "delivery"
         ]
       },
@@ -42070,7 +42075,7 @@
               "candidate-unfit",
               "cannot-start",
               "unchecked",
-              "forgone",
+              "cancelled",
               "dispatch-failed",
               null
             ],
@@ -42096,7 +42101,7 @@
             "type": "string",
             "nullable": true,
             "example": "slack",
-            "description": "Where its task came from: person when a person raised it at this station, the integration whose happening opened it here, as in slack or github, or station when another station handed it on; null once the task is deleted"
+            "description": "Where its task came from: person when a person raised it at this station, the integration whose happening opened it here, as in slack or github, or station when another station passed it on; null once the task is deleted"
           }
         },
         "required": [
@@ -42222,7 +42227,7 @@
               "candidate-unfit",
               "cannot-start",
               "unchecked",
-              "forgone",
+              "cancelled",
               "dispatch-failed",
               null
             ],
@@ -42283,7 +42288,7 @@
               "candidate-unfit",
               "cannot-start",
               "unchecked",
-              "forgone",
+              "cancelled",
               "dispatch-failed",
               null
             ],
@@ -43125,7 +43130,7 @@
               "candidate-unfit",
               "cannot-start",
               "unchecked",
-              "forgone",
+              "cancelled",
               "dispatch-failed",
               null
             ],
@@ -43142,10 +43147,11 @@
               "hooks-unanswered",
               "runner-lost",
               "timed-out",
+              "cancelled",
               "superseded",
               null
             ],
-            "description": "How its run failed: exited, refused and timed-out (it ran past its host’s time limit) count against the candidate; unprepared, unprovisioned, hooks-unanswered, runner-lost and superseded were down to what ran it, and leave the entry unscored"
+            "description": "How its run failed: exited, refused and timed-out (it ran past its host’s time limit) count against the candidate; unprepared, unprovisioned, hooks-unanswered, runner-lost, superseded and cancelled were down to what ran it, and leave the entry unscored"
           },
           "next": {
             "type": "string",

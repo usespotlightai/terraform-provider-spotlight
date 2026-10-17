@@ -68,7 +68,7 @@ type Server struct {
 	failNext   []int
 	scopes     map[string]bool
 	kept       map[string]string
-	given      map[givenToken]struct{}
+	used       map[usedToken]struct{}
 	minted     map[string]string
 	mintedFor  time.Duration
 }
@@ -88,7 +88,7 @@ func New(t interface{ Cleanup(func()) }) *Server {
 		stored:     map[string]*resource{},
 		idempotent: map[string]string{},
 		kept:       map[string]string{},
-		given:      map[givenToken]struct{}{},
+		used:       map[usedToken]struct{}{},
 		minted:     map[string]string{},
 		mintedFor:  15 * time.Minute,
 	}
@@ -276,7 +276,7 @@ func (s *Server) admits(authorization string) bool {
 	return bearer == Token || minted
 }
 
-func (s *Server) lapse(trust string) {
+func (s *Server) revokeMinted(trust string) {
 	for token, mintedBy := range s.minted {
 		if mintedBy == trust {
 			delete(s.minted, token)
@@ -585,7 +585,7 @@ func (s *Server) update(kind string) http.HandlerFunc {
 
 		existing.fields = fields
 		existing.version++
-		s.lapse(existing.id)
+		s.revokeMinted(existing.id)
 		s.answer(w, http.StatusOK, existing)
 	}
 }
@@ -621,7 +621,7 @@ func (s *Server) remove(kind string) http.HandlerFunc {
 
 		delete(s.stored, existing.id)
 		delete(s.kept, existing.id)
-		s.lapse(existing.id)
+		s.revokeMinted(existing.id)
 		w.WriteHeader(http.StatusNoContent)
 	}
 }
@@ -633,18 +633,18 @@ func (s *Server) keep(stored *resource, value string) {
 
 	s.kept[stored.id] = value
 	if givesToken(stored.kind, stored.fields) {
-		s.given[givenToken{stored.kind, value}] = struct{}{}
+		s.used[usedToken{stored.kind, value}] = struct{}{}
 	}
 }
 
-type givenToken struct{ kind, token string }
+type usedToken struct{ kind, token string }
 
 func (s *Server) tokenProblems(kind, claimant, value string) []fieldError {
 	if (kind != "runner-pool" && kind != "egress") || value == "" {
 		return nil
 	}
 
-	if _, ever := s.given[givenToken{kind, value}]; !ever {
+	if _, ever := s.used[usedToken{kind, value}]; !ever {
 		return nil
 	}
 
@@ -654,11 +654,11 @@ func (s *Server) tokenProblems(kind, claimant, value string) []fieldError {
 				return nil
 			}
 
-			return []fieldError{{"token", tokenTaken[kind]}}
+			return []fieldError{{"token", tokenInUse[kind]}}
 		}
 	}
 
-	return []fieldError{{"token", tokenSpent[kind]}}
+	return []fieldError{{"token", tokenAlreadyUsed[kind]}}
 }
 
 func (s *Server) unknownEgress(kind, workspace string, fields map[string]any) []fieldError {

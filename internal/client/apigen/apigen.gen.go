@@ -2359,7 +2359,7 @@ type JournalStepResponseDto struct {
 	// Ms How long it took, in ms
 	Ms float32 `json:"ms"`
 
-	// Returned What it handed back, unread
+	// Returned What it returned, unread
 	Returned *string `json:"returned"`
 
 	// StartedAt When it began, for laying the run out against a clock

@@ -59,8 +59,9 @@ func (r *EgressResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 func egressSchema() schema.Schema {
 	attributes := writeonly.EgressToken.Attributes("The token the egress calls Spotlight with: 32 to 255 URL-safe characters, as a generated password would be. " +
 		"Spotlight keeps only its hash. Left out, Spotlight issues one when it creates the egress, which Terraform does not keep; " +
-		"a change to `token_version` must come with a token. A token is given once, ever: another egress's token is not accepted, and one rotated away, " +
-		"or used by an egress that was deleted or replaced, is spent and no egress accepts it, the same one included, so rotating or replacing an egress always needs a new token.")
+		"a change to `token_version` must come with a token. Each token is single-use. Spotlight does not accept the token of another egress. " +
+		"A token that you rotated away, or that a deleted or replaced egress used, was used once, so no egress accepts it again, the same egress included. " +
+		"Thus, to rotate or replace an egress, you always need a new token.")
 	attributes["id"] = idAttribute("egress")
 	attributes["version"] = versionAttribute("egress")
 	attributes["address"] = addressAttribute("shared")

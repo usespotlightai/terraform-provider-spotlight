@@ -527,7 +527,7 @@ func TestLineRejectsAStationKeyRunsSayToHandOver(t *testing.T) {
 `, regexp.MustCompile(`(?s)station\[1\]\.key: cannot be review, which is reserved`))
 }
 
-func TestLineHandsOnOnlyToStationsWorkIsDoneAt(t *testing.T) {
+func TestLinePassesOnlyToStationsWorkIsDoneAt(t *testing.T) {
 	lineRejected(t, `
   station {
     key       = "backlog"
@@ -547,7 +547,7 @@ func TestLineHandsOnOnlyToStationsWorkIsDoneAt(t *testing.T) {
     name = "Completed"
     kind = "completed"
   }
-`, regexp.MustCompile(`(?s)station\[1\]\.passes_to: must hand on to a station work is done at`))
+`, regexp.MustCompile(`(?s)station\[1\]\.passes_to: must pass to work stations`))
 }
 
 func TestLineReviewsOnlyInTheReviewRole(t *testing.T) {

@@ -217,10 +217,10 @@ func egressBeside(token string, version int, neighbour string, neighbourVersion 
 	return acctest.Workspace + egressShared(token, version) + fmt.Sprintf(egressNeighbour, neighbour, neighbourVersion)
 }
 
-func TestAnEgressTokenIsGivenOnceEver(t *testing.T) {
+func TestAnEgressTokenIsSingleUse(t *testing.T) {
 	fake := fakeapi.New(t)
-	spent := regexp.MustCompile(`(?s)token: was used before\. Egress tokens work once only`)
-	taken := regexp.MustCompile(`(?s)token: belongs to another egress`)
+	alreadyUsed := regexp.MustCompile(`(?s)token: was used before\. Each egress token is single-use`)
+	inUse := regexp.MustCompile(`(?s)token: is in use by another egress`)
 
 	resource.UnitTest(t, resource.TestCase{
 		TerraformVersionChecks:   acctest.WriteOnly,
@@ -235,15 +235,15 @@ func TestAnEgressTokenIsGivenOnceEver(t *testing.T) {
 			},
 			{
 				Config:      acctest.Workspace + egressShared(tokenFirst, 3),
-				ExpectError: spent,
+				ExpectError: alreadyUsed,
 			},
 			{
 				Config:      egressBeside(tokenSecond, 2, tokenFirst, 1),
-				ExpectError: spent,
+				ExpectError: alreadyUsed,
 			},
 			{
 				Config:      egressBeside(tokenSecond, 2, tokenSecond, 1),
-				ExpectError: taken,
+				ExpectError: inUse,
 			},
 			{
 				Config: egressBeside(tokenSecond, 2, tokenThird, 1),
@@ -254,14 +254,14 @@ func TestAnEgressTokenIsGivenOnceEver(t *testing.T) {
 			},
 			{
 				Config:      acctest.Workspace + egressShared(tokenThird, 3),
-				ExpectError: spent,
+				ExpectError: alreadyUsed,
 			},
 			{
 				Config: acctest.Workspace + egressAt("central", "https://egress.example.com", tokenSecond, 2),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(egressAddress, plancheck.ResourceActionDestroyBeforeCreate)},
 				},
-				ExpectError: spent,
+				ExpectError: alreadyUsed,
 			},
 		},
 	})
