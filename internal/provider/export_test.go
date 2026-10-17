@@ -209,7 +209,7 @@ func seedExported(t *testing.T, cp acctest.ControlPlane, k acctest.Keys) (declar
 	_, err := cp.Client.CreateSecret(ctx, cp.Workspace.ID, client.SecretInput{
 		Name:         k.Secret,
 		Source:       client.SecretSource{Kind: client.SourceBuiltIn},
-		Bindings:     []client.SecretBinding{{Host: "api.linear.app", Carrier: "header", Name: "authorization", Prefix: "Bearer "}},
+		Bindings:     []client.SecretBinding{{Host: "api.linear.app", Location: "header", Name: "authorization", Prefix: "Bearer "}},
 		Value:        &value,
 		ValueVersion: &version,
 	})

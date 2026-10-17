@@ -13,19 +13,19 @@ import (
 )
 
 var (
-	wordsShape = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
-	secretName = regexp.MustCompile(`^[A-Z][A-Z0-9_]{0,63}$`)
-	runnerKey  = regexp.MustCompile(`^[A-Za-z0-9._~-]{32,255}$`)
-	rule       = regexp.MustCompile(`(?s)^([a-z]+)(?:\((.*)\))?$`)
-	envName    = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
-	bare       = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_-]*$`)
-	awsSecret  = regexp.MustCompile(`^[A-Za-z0-9/_+=.@:-]+$`)
-	hostShape  = regexp.MustCompile(`^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$`)
-	headerName = regexp.MustCompile("^[!#$%&'*+.^_`|~0-9a-z-]{1,128}$")
-	queryName  = regexp.MustCompile(`^[A-Za-z0-9._~-]{1,128}$`)
-	prefixText = regexp.MustCompile(`^[\x20-\x7e]{0,64}$`)
-	neverWorn  = []string{"host", "content-length", "content-type", "transfer-encoding", "connection", "upgrade", "te", "trailer"}
-	harnesses  = map[string]string{"claude-code": "json", "cursor": "json", "codex": "toml"}
+	wordsShape    = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
+	secretName    = regexp.MustCompile(`^[A-Z][A-Z0-9_]{0,63}$`)
+	runnerKey     = regexp.MustCompile(`^[A-Za-z0-9._~-]{32,255}$`)
+	rule          = regexp.MustCompile(`(?s)^([a-z]+)(?:\((.*)\))?$`)
+	envName       = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
+	bare          = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_-]*$`)
+	awsSecret     = regexp.MustCompile(`^[A-Za-z0-9/_+=.@:-]+$`)
+	hostShape     = regexp.MustCompile(`^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$`)
+	headerName    = regexp.MustCompile("^[!#$%&'*+.^_`|~0-9a-z-]{1,128}$")
+	queryName     = regexp.MustCompile(`^[A-Za-z0-9._~-]{1,128}$`)
+	prefixText    = regexp.MustCompile(`^[\x20-\x7e]{0,64}$`)
+	neverInjected = []string{"host", "content-length", "content-type", "transfer-encoding", "connection", "upgrade", "te", "trailer"}
+	harnesses     = map[string]string{"claude-code": "json", "cursor": "json", "codex": "toml"}
 )
 
 const longestWords = 64
@@ -108,9 +108,9 @@ func secret(body map[string]any) (map[string]any, []fieldError) {
 		binding, _ := each.(map[string]any)
 		host, _ := binding["host"].(string)
 		host = strings.ToLower(strings.TrimSpace(host))
-		carrier, ok := binding["carrier"].(string)
+		location, ok := binding["location"].(string)
 		if !ok {
-			carrier = "header"
+			location = "header"
 		}
 		name, named := binding["name"].(string)
 		prefix, _ := binding["prefix"].(string)
@@ -118,32 +118,32 @@ func secret(body map[string]any) (map[string]any, []fieldError) {
 		if !hostShape.MatchString(host) || len(host) > 253 {
 			errs = append(errs, fieldError{fmt.Sprintf("bindings[%d].host", at), "is the one host the secret may be sent to, as in api.linear.app, with no scheme, port or path"})
 		}
-		switch carrier {
+		switch location {
 		case "header":
 			if !named {
 				name = "authorization"
 			}
 			name = strings.ToLower(strings.TrimSpace(name))
-			if !headerName.MatchString(name) || slices.Contains(neverWorn, name) {
-				errs = append(errs, fieldError{fmt.Sprintf("bindings[%d].name", at), "is the request header the secret is worn in, as in authorization or x-api-key"})
+			if !headerName.MatchString(name) || slices.Contains(neverInjected, name) {
+				errs = append(errs, fieldError{fmt.Sprintf("bindings[%d].name", at), "is the request header that Spotlight injects the secret in, as in authorization or x-api-key"})
 			}
 		case "query":
 			name = strings.TrimSpace(name)
 			if !queryName.MatchString(name) {
-				errs = append(errs, fieldError{fmt.Sprintf("bindings[%d].name", at), "is the query parameter the secret is worn in, as in key or api_key"})
+				errs = append(errs, fieldError{fmt.Sprintf("bindings[%d].name", at), "is the query parameter that Spotlight injects the secret in, as in key or api_key"})
 			}
 		default:
-			errs = append(errs, fieldError{fmt.Sprintf("bindings[%d].carrier", at), "is where the secret is worn: header or query"})
+			errs = append(errs, fieldError{fmt.Sprintf("bindings[%d].location", at), "is where Spotlight injects the secret: header or query"})
 		}
 		if !prefixText.MatchString(prefix) {
 			errs = append(errs, fieldError{fmt.Sprintf("bindings[%d].prefix", at), `is up to 64 printable characters written before the value, as in "Bearer "`})
 		}
 		if hosts[host] {
-			errs = append(errs, fieldError{fmt.Sprintf("bindings[%d].host", at), fmt.Sprintf("binds %s twice; a secret is worn one way toward each host", host)})
+			errs = append(errs, fieldError{fmt.Sprintf("bindings[%d].host", at), fmt.Sprintf("binds %s more than once", host)})
 		}
 		hosts[host] = true
 
-		bindings = append(bindings, map[string]any{"host": host, "carrier": carrier, "name": name, "prefix": prefix})
+		bindings = append(bindings, map[string]any{"host": host, "location": location, "name": name, "prefix": prefix})
 	}
 
 	var version any

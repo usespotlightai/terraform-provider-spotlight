@@ -61,10 +61,10 @@ type secretSource struct {
 }
 
 type secretBinding struct {
-	Host    types.String `tfsdk:"host"`
-	Carrier types.String `tfsdk:"carrier"`
-	Name    types.String `tfsdk:"name"`
-	Prefix  types.String `tfsdk:"prefix"`
+	Host     types.String `tfsdk:"host"`
+	Location types.String `tfsdk:"location"`
+	Name     types.String `tfsdk:"name"`
+	Prefix   types.String `tfsdk:"prefix"`
 }
 
 var (
@@ -74,16 +74,16 @@ var (
 		"field":     types.StringType,
 	}
 	secretBindingType = types.ObjectType{AttrTypes: map[string]attr.Type{
-		"host":    types.StringType,
-		"carrier": types.StringType,
-		"name":    types.StringType,
-		"prefix":  types.StringType,
+		"host":     types.StringType,
+		"location": types.StringType,
+		"name":     types.StringType,
+		"prefix":   types.StringType,
 	}}
 )
 
 const (
-	carrierHeader = "header"
-	carrierQuery  = "query"
+	locationHeader = "header"
+	locationQuery  = "query"
 )
 
 var secretFields = fieldpath.Locator{Schema: secretSchema().Type()}
@@ -103,7 +103,7 @@ func secretSchema() schema.Schema {
 	attributes["version"] = versionAttribute("secret")
 	attributes["address"] = addressAttribute("LINEAR_API_KEY")
 	attributes["workspace_id"] = ownerAttribute("workspace", "secret")
-	attributes["name"] = fixedAttribute("What integrations call the secret, as in `LINEAR_API_KEY`, written `secret.LINEAR_API_KEY` where one wears it.", "secret")
+	attributes["name"] = fixedAttribute("What integrations call the secret, as in `LINEAR_API_KEY`, written `secret.LINEAR_API_KEY` where an integration or a harness profile names it.", "secret")
 	attributes["source"] = schema.SingleNestedAttribute{
 		Optional:            true,
 		Computed:            true,
@@ -128,24 +128,24 @@ func secretSchema() schema.Schema {
 		Optional:            true,
 		Computed:            true,
 		Default:             listdefault.StaticValue(types.ListValueMust(secretBindingType, []attr.Value{})),
-		MarkdownDescription: "The only hosts the secret is ever sent to, and how it is worn there; a request anywhere else goes without it.",
+		MarkdownDescription: "The only hosts the secret is ever sent to, and where Spotlight injects it there; a request anywhere else goes without it.",
 		NestedObject: schema.NestedAttributeObject{
 			Attributes: map[string]schema.Attribute{
 				"host": schema.StringAttribute{
 					Required:            true,
 					MarkdownDescription: "The host, as in `api.linear.app`, with no scheme, port or path. The secret goes there over HTTPS only.",
 				},
-				"carrier": schema.StringAttribute{
+				"location": schema.StringAttribute{
 					Optional:            true,
 					Computed:            true,
-					Default:             stringdefault.StaticString(carrierHeader),
-					MarkdownDescription: "Whether the secret is worn in a request header or a query parameter: `header` (the default) or `query`.",
-					Validators:          []validator.String{stringvalidator.OneOf(carrierHeader, carrierQuery)},
+					Default:             stringdefault.StaticString(locationHeader),
+					MarkdownDescription: "Whether Spotlight injects the secret in a request header or in a query parameter: `header` (the default) or `query`.",
+					Validators:          []validator.String{stringvalidator.OneOf(locationHeader, locationQuery)},
 				},
 				"name": schema.StringAttribute{
 					Optional:            true,
 					Computed:            true,
-					MarkdownDescription: "The header or query parameter the secret is worn in. A header defaults to `authorization`; Spotlight stores a header name in lower case. A query parameter must be named.",
+					MarkdownDescription: "The header or query parameter that Spotlight injects the secret in. A header defaults to `authorization`; Spotlight stores a header name in lower case. A query parameter must be named.",
 					Validators:          []validator.String{stringvalidator.LengthAtLeast(1)},
 					PlanModifiers:       []planmodifier.String{headerNamedByDefault{}},
 				},
@@ -153,7 +153,7 @@ func secretSchema() schema.Schema {
 					Optional:            true,
 					Computed:            true,
 					Default:             stringdefault.StaticString(""),
-					MarkdownDescription: "Written before the value where it is worn, as in `Bearer `.",
+					MarkdownDescription: "The text that Spotlight writes before the value, as in `Bearer `.",
 				},
 			},
 		},
@@ -164,7 +164,7 @@ func secretSchema() schema.Schema {
 	}
 
 	return schema.Schema{
-		MarkdownDescription: "A secret integrations wear toward the hosts it is bound to. Spotlight keeps its value and never answers it, so the value is write-only and never enters the plan or the state. " +
+		MarkdownDescription: "A secret that Spotlight injects into requests, for the hosts it is bound to. Spotlight keeps its value and never answers it, so the value is write-only and never enters the plan or the state. " +
 			"Writing secrets needs a token granted the `secrets` scope. Import it as `<workspace id>/<name>`.",
 		Attributes: attributes,
 	}
@@ -204,15 +204,15 @@ func (r *SecretResource) ValidateConfig(ctx context.Context, req resource.Valida
 			continue
 		}
 
-		carrier, _ := binding.Attributes()["carrier"].(types.String)
+		location, _ := binding.Attributes()["location"].(types.String)
 		name, _ := binding.Attributes()["name"].(types.String)
-		if carrier.IsUnknown() || name.IsUnknown() {
+		if location.IsUnknown() || name.IsUnknown() {
 			continue
 		}
 
-		if carrier.ValueString() == carrierQuery && name.IsNull() {
+		if location.ValueString() == locationQuery && name.IsNull() {
 			resp.Diagnostics.AddAttributeError(path.Root("bindings").AtListIndex(at).AtName("name"), "A query parameter must be named",
-				"name: is the query parameter the secret is worn in, as in key or api_key. Name it, or wear the secret in a header with carrier = \"header\".")
+				"name: is the query parameter that Spotlight injects the secret in, as in key or api_key. Name it, or inject the secret in a header with location = \"header\".")
 		}
 	}
 }
@@ -232,10 +232,10 @@ func (headerNamedByDefault) PlanModifyString(ctx context.Context, req planmodifi
 		return
 	}
 
-	var carrier types.String
-	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, req.Path.ParentPath().AtName("carrier"), &carrier)...)
+	var location types.String
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, req.Path.ParentPath().AtName("location"), &location)...)
 
-	if carrier.ValueString() == carrierHeader {
+	if location.ValueString() == locationHeader {
 		resp.PlanValue = types.StringValue("authorization")
 	}
 }
@@ -367,10 +367,10 @@ func secretInput(plan SecretResourceModel) client.SecretInput {
 
 	for _, each := range plan.Bindings {
 		in.Bindings = append(in.Bindings, client.SecretBinding{
-			Host:    each.Host.ValueString(),
-			Carrier: each.Carrier.ValueString(),
-			Name:    each.Name.ValueString(),
-			Prefix:  each.Prefix.ValueString(),
+			Host:     each.Host.ValueString(),
+			Location: each.Location.ValueString(),
+			Name:     each.Name.ValueString(),
+			Prefix:   each.Prefix.ValueString(),
 		})
 	}
 
@@ -444,10 +444,10 @@ func secretModel(secret client.Secret, kept *SecretResourceModel) SecretResource
 
 	for _, each := range secret.Bindings {
 		model.Bindings = append(model.Bindings, secretBinding{
-			Host:    types.StringValue(each.Host),
-			Carrier: types.StringValue(each.Carrier),
-			Name:    types.StringValue(each.Name),
-			Prefix:  types.StringValue(each.Prefix),
+			Host:     types.StringValue(each.Host),
+			Location: types.StringValue(each.Location),
+			Name:     types.StringValue(each.Name),
+			Prefix:   types.StringValue(each.Prefix),
 		})
 	}
 

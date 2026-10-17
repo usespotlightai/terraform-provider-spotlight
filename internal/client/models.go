@@ -177,13 +177,13 @@ const (
 	SourceAWSSecretsManager = "aws-secrets-manager"
 )
 
-// SecretBinding is a host that can receive a secret, and how the requests to
-// that host carry the secret.
+// SecretBinding is a host that can receive a secret, and where Spotlight injects
+// the secret in the requests to that host.
 type SecretBinding struct {
-	Host    string `json:"host"`
-	Carrier string `json:"carrier"`
-	Name    string `json:"name,omitempty"`
-	Prefix  string `json:"prefix"`
+	Host     string `json:"host"`
+	Location string `json:"location"`
+	Name     string `json:"name,omitempty"`
+	Prefix   string `json:"prefix"`
 }
 
 // SecretInput is the input to write a secret. The client sends Value only

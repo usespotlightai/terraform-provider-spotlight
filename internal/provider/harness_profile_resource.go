@@ -133,7 +133,7 @@ func harnessProfileSchema() schema.Schema {
 							Computed:            true,
 							ElementType:         types.StringType,
 							Default:             mapdefault.StaticValue(types.MapValueMust(types.StringType, map[string]attr.Value{})),
-							MarkdownDescription: "The server's environment. A value is plain text, stored and shown as written, or a reference to a workspace secret such as `secret.LINEAR_API_KEY`: the secret must exist, cannot be deleted while referenced, and reaches the server only as a stand-in, since egress wears its value on the server's requests to the hosts it is bound to.",
+							MarkdownDescription: "The server's environment. A value is plain text, stored and shown as written, or a reference to a workspace secret such as `secret.LINEAR_API_KEY`: the secret must exist, cannot be deleted while referenced, and reaches the server only as a stand-in, since egress injects its value into the server's requests to the hosts it is bound to.",
 						},
 					},
 				},

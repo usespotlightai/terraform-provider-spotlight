@@ -2227,17 +2227,17 @@
         ]
       }
     },
-    "/egress/redeem": {
+    "/egress/secrets": {
       "post": {
-        "description": "Called by the egress beside a sandbox with the credential its host was handed for this run alone, or by a shared egress with its egress token and the run proxy credential the runner presented. Each call grants the secrets the run wears; values Spotlight keeps come back sealed to the recipient, and values read from an external store come back as where egress reads them.",
-        "operationId": "redeemEgress",
+        "description": "Called by the egress beside a sandbox with the credential its host was handed for this run alone, or by a shared egress with its egress token and the run proxy credential the runner presented. Each call grants the secrets that egress injects for the run. Values that Spotlight keeps come back sealed to the recipient. For a value in an external store, the answer gives the external reference that egress reads.",
+        "operationId": "fetchRunSecrets",
         "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SharedRedeemEgressRequestDto"
+                "$ref": "#/components/schemas/FetchRunSecretsRequestDto"
               }
             }
           }
@@ -2248,7 +2248,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/EgressRedemptionResponseDto"
+                  "$ref": "#/components/schemas/EgressSecretsResponseDto"
                 }
               }
             }
@@ -2257,7 +2257,7 @@
             "description": "Missing or unknown egress token, or its runner no longer has a lease on work"
           },
           "409": {
-            "description": "The runner of this proxy credential has no lease on a run yet. Please redeem again after it claims one"
+            "description": "The runner of this proxy credential has no lease on a run yet. Please fetch the secrets again after it claims one"
           },
           "422": {
             "description": "The recipient is not an X25519 public key"
@@ -2268,7 +2268,7 @@
             "bearer": []
           }
         ],
-        "summary": "The secrets that the run in a sandbox may wear, for the egress beside it to inject toward their hosts",
+        "summary": "The secrets that egress injects into the run’s requests, for their bound hosts",
         "tags": [
           "runners"
         ]
@@ -8155,7 +8155,7 @@
                           "type": "string",
                           "example": "api.linear.app"
                         },
-                        "carrier": {
+                        "location": {
                           "type": "string",
                           "enum": [
                             "header",
@@ -8165,7 +8165,7 @@
                         },
                         "name": {
                           "type": "string",
-                          "description": "The header or query parameter it is worn in; authorization when a header is not named",
+                          "description": "The header or query parameter that Spotlight injects it in. The default header is authorization",
                           "example": "authorization"
                         },
                         "prefix": {
@@ -8585,7 +8585,7 @@
                           "type": "string",
                           "example": "api.linear.app"
                         },
-                        "carrier": {
+                        "location": {
                           "type": "string",
                           "enum": [
                             "header",
@@ -8595,7 +8595,7 @@
                         },
                         "name": {
                           "type": "string",
-                          "description": "The header or query parameter it is worn in; authorization when a header is not named",
+                          "description": "The header or query parameter that Spotlight injects it in. The default header is authorization",
                           "example": "authorization"
                         },
                         "prefix": {
@@ -13888,7 +13888,7 @@
                           "additionalProperties": {
                             "type": "string"
                           },
-                          "description": "Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace has, and the server gets only a stand-in, since egress wears the value on its requests to the hosts the secret is bound to."
+                          "description": "Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace has, and the server gets only a stand-in, since egress injects the value into its requests to the hosts the secret is bound to."
                         }
                       }
                     }
@@ -14238,7 +14238,7 @@
                           "additionalProperties": {
                             "type": "string"
                           },
-                          "description": "Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace has, and the server gets only a stand-in, since egress wears the value on its requests to the hosts the secret is bound to."
+                          "description": "Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace has, and the server gets only a stand-in, since egress injects the value into its requests to the hosts the secret is bound to."
                         }
                       }
                     }
@@ -23361,7 +23361,7 @@
     },
     "/runs/{runId}/search-candidates": {
       "post": {
-        "description": "Proposing the same name again from the same run answers with the candidate it proposed. A refused proposal does not count towards the iteration’s candidates, but the run may only try so often.",
+        "description": "Proposing the same name again from the same run answers with the candidate it proposed. A refused proposal does not count as one of the iteration’s candidates, but the run may only try so often.",
         "operationId": "proposeSearchCandidate",
         "parameters": [
           {
@@ -24785,18 +24785,18 @@
           "outcome": {
             "type": "string",
             "enum": [
-              "tunnelled",
-              "forwarded",
+              "passthrough",
+              "injected",
               "blocked",
               "failed"
             ],
-            "description": "blocked: egress stopped it. failed: egress could not open it. forwarded: the host refused or failed a request egress added a secret to"
+            "description": "blocked: egress stopped it. failed: egress could not open it. injected: the host refused or failed a request that egress injected a secret into"
           },
           "status": {
             "type": "number",
             "nullable": true,
             "example": 401,
-            "description": "The status the host answered a forwarded request with"
+            "description": "The status the host answered an injected request with"
           },
           "reason": {
             "type": "string",
@@ -24813,22 +24813,22 @@
             "nullable": true,
             "description": "Why egress blocked the connection or could not open it"
           },
-          "trouble": {
+          "error": {
             "type": "string",
             "enum": [
               "blocked",
               "failed",
-              "refused",
+              "auth-failed",
               "server-error",
               null
             ],
             "nullable": true,
-            "description": "What went wrong. blocked: egress stopped it. failed: egress could not open it. refused: the host answered a forwarded request with 401 or 403. server-error: the host answered it with 500 or more. null: nothing went wrong"
+            "description": "The error of the connection. blocked: egress stopped it. failed: egress could not open it. auth-failed: the host answered an injected request with 401 or 403. server-error: the host answered it with 500 or more. null: no error"
           },
-          "times": {
+          "count": {
             "type": "number",
             "example": 3,
-            "description": "How many times the same thing went wrong in this row. The row starts at the first time"
+            "description": "How many times the same error occurred in this row. The row starts at the first time"
           }
         },
         "required": [
@@ -24837,8 +24837,8 @@
           "outcome",
           "status",
           "reason",
-          "trouble",
-          "times"
+          "error",
+          "count"
         ]
       },
       "TraceNodeResponseDto": {
@@ -24912,7 +24912,7 @@
           },
           "connection": {
             "nullable": true,
-            "description": "On a connection row: a connection of the run that went wrong, as a shared egress recorded it",
+            "description": "On a connection row: a connection of the run with an error, as a shared egress recorded it",
             "type": "object",
             "allOf": [
               {
@@ -24920,7 +24920,7 @@
               }
             ]
           },
-          "egress": {
+          "egressEnforcement": {
             "type": "string",
             "enum": [
               "enforced",
@@ -24949,7 +24949,7 @@
           "step",
           "span",
           "connection",
-          "egress",
+          "egressEnforcement",
           "children"
         ]
       },
@@ -26195,7 +26195,7 @@
           },
           "egressToken": {
             "type": "string",
-            "description": "The credential the egress beside the sandbox redeems the run’s secrets with; the host hands it to egress alone, never into the sandbox"
+            "description": "The credential the egress beside the sandbox fetches the run’s secrets with; the host hands it to egress alone, never into the sandbox"
           },
           "work": {
             "$ref": "#/components/schemas/ClaimedWorkResponseDto"
@@ -26314,7 +26314,7 @@
           "ms"
         ]
       },
-      "SharedRedeemEgressRequestDto": {
+      "FetchRunSecretsRequestDto": {
         "type": "object",
         "properties": {
           "recipient": {
@@ -26331,7 +26331,7 @@
           "recipient"
         ]
       },
-      "ReadInNetworkResponseDto": {
+      "ExternalSecretRefResponseDto": {
         "type": "object",
         "properties": {
           "kind": {
@@ -26356,7 +26356,7 @@
           "field"
         ]
       },
-      "RedeemedSecretResponseDto": {
+      "FetchedSecretResponseDto": {
         "type": "object",
         "properties": {
           "secret": {
@@ -26366,16 +26366,16 @@
           "host": {
             "type": "string",
             "example": "mcp.linear.app",
-            "description": "The one host egress wears it toward"
+            "description": "The one host that egress injects it for"
           },
-          "carrier": {
+          "location": {
             "type": "string",
             "enum": [
               "header",
               "query"
             ],
             "example": "header",
-            "description": "Whether egress wears it in a request header or a query parameter"
+            "description": "Whether egress injects it in a request header or in a query parameter"
           },
           "name": {
             "type": "string",
@@ -26391,13 +26391,13 @@
             "nullable": true,
             "description": "The value, sealed to the recipient for this run; null when egress reads it in its own network"
           },
-          "readInNetwork": {
+          "externalRef": {
             "nullable": true,
             "description": "Where egress reads the value with its host’s own identity; null when Spotlight sealed it",
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ReadInNetworkResponseDto"
+                "$ref": "#/components/schemas/ExternalSecretRefResponseDto"
               }
             ]
           }
@@ -26405,14 +26405,14 @@
         "required": [
           "secret",
           "host",
-          "carrier",
+          "location",
           "name",
           "prefix",
           "sealed",
-          "readInNetwork"
+          "externalRef"
         ]
       },
-      "WithheldSecretResponseDto": {
+      "DeniedSecretResponseDto": {
         "type": "object",
         "properties": {
           "secret": {
@@ -26434,21 +26434,21 @@
         "properties": {
           "sealed": {
             "type": "string",
-            "description": "A read and plan token for this run alone, sealed to the recipient; egress wears it toward the control plane as a bearer token"
+            "description": "A read and plan token for this run alone, sealed to the recipient; egress injects it for the control plane as a bearer token"
           }
         },
         "required": [
           "sealed"
         ]
       },
-      "EgressRedemptionResponseDto": {
+      "EgressSecretsResponseDto": {
         "type": "object",
         "properties": {
           "runId": {
             "type": "string",
             "nullable": true,
             "example": "run_1",
-            "description": "The run the sealed values are bound to; null when the sandbox checks a change stack and wears nothing"
+            "description": "The run the sealed values are bound to; null when the sandbox checks a change stack and gets no secrets"
           },
           "reaches": {
             "example": [
@@ -26473,14 +26473,14 @@
           "secrets": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/RedeemedSecretResponseDto"
+              "$ref": "#/components/schemas/FetchedSecretResponseDto"
             }
           },
-          "withheld": {
-            "description": "Secrets the run wears that egress will not get, and why",
+          "denied": {
+            "description": "The secrets of the run that egress does not get, and why",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/WithheldSecretResponseDto"
+              "$ref": "#/components/schemas/DeniedSecretResponseDto"
             }
           },
           "spotlightApi": {
@@ -26499,7 +26499,7 @@
           "reaches",
           "bound",
           "secrets",
-          "withheld",
+          "denied",
           "spotlightApi"
         ]
       },
@@ -26615,8 +26615,8 @@
           "outcome": {
             "type": "string",
             "enum": [
-              "tunnelled",
-              "forwarded",
+              "passthrough",
+              "injected",
               "blocked",
               "failed"
             ]
@@ -26625,7 +26625,7 @@
             "type": "number",
             "minimum": 100,
             "maximum": 599,
-            "description": "The status the host answered a forwarded request with. Egress cannot read the status of a tunnel"
+            "description": "The status the host answered an injected request with. Egress cannot read the status of a passthrough connection"
           },
           "reason": {
             "type": "string",
@@ -28319,18 +28319,18 @@
           "outcome": {
             "type": "string",
             "enum": [
-              "tunnelled",
-              "forwarded",
+              "passthrough",
+              "injected",
               "blocked",
               "failed"
             ],
-            "description": "tunnelled: egress did not decrypt it. forwarded: egress decrypted it to add a secret. blocked: egress stopped it. failed: egress could not open it"
+            "description": "passthrough: egress did not decrypt it. injected: egress decrypted it to inject a secret. blocked: egress stopped it. failed: egress could not open it"
           },
           "status": {
             "type": "number",
             "nullable": true,
             "example": 401,
-            "description": "The status the host answered a forwarded request with. null for a tunnel, because egress cannot read it"
+            "description": "The status the host answered an injected request with. null for a passthrough connection, because egress cannot read it"
           },
           "reason": {
             "type": "string",
@@ -28347,17 +28347,17 @@
             "nullable": true,
             "description": "Why egress blocked the connection or could not open it"
           },
-          "trouble": {
+          "error": {
             "type": "string",
             "enum": [
               "blocked",
               "failed",
-              "refused",
+              "auth-failed",
               "server-error",
               null
             ],
             "nullable": true,
-            "description": "What went wrong. blocked: egress stopped it. failed: egress could not open it. refused: the host answered a forwarded request with 401 or 403. server-error: the host answered it with 500 or more. null: nothing went wrong"
+            "description": "The error of the connection. blocked: egress stopped it. failed: egress could not open it. auth-failed: the host answered an injected request with 401 or 403. server-error: the host answered it with 500 or more. null: no error"
           },
           "at": {
             "type": "string",
@@ -28373,7 +28373,7 @@
           "outcome",
           "status",
           "reason",
-          "trouble",
+          "error",
           "at"
         ]
       },
@@ -28388,7 +28388,7 @@
             "type": "number",
             "example": 1
           },
-          "egress": {
+          "egressEnforcement": {
             "type": "string",
             "enum": [
               "enforced",
@@ -28409,7 +28409,7 @@
         "required": [
           "runId",
           "attempt",
-          "egress",
+          "egressEnforcement",
           "connections"
         ]
       },
@@ -30815,29 +30815,29 @@
             "example": "api.linear.app",
             "description": "A host the secret may be sent to, over HTTPS only"
           },
-          "carrier": {
+          "location": {
             "type": "string",
             "enum": [
               "header",
               "query"
             ],
             "example": "header",
-            "description": "Whether it is worn in a request header or a query parameter"
+            "description": "Whether Spotlight injects it in a request header or in a query parameter"
           },
           "name": {
             "type": "string",
             "example": "authorization",
-            "description": "The header or query parameter it is worn in"
+            "description": "The header or query parameter that Spotlight injects it in"
           },
           "prefix": {
             "type": "string",
             "example": "Bearer ",
-            "description": "Written before the value it is worn with"
+            "description": "The text that Spotlight writes before the value"
           }
         },
         "required": [
           "host",
-          "carrier",
+          "location",
           "name",
           "prefix"
         ]
@@ -32119,7 +32119,7 @@
             "example": {
               "LINEAR_TEAM": "core"
             },
-            "description": "Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace has, and the server gets only a stand-in, since egress wears the value on its requests to the hosts the secret is bound to."
+            "description": "Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace has, and the server gets only a stand-in, since egress injects the value into its requests to the hosts the secret is bound to."
           }
         },
         "required": [
@@ -39219,7 +39219,7 @@
               "$ref": "#/components/schemas/SetupOutcomeResponseDto"
             }
           },
-          "judgeWithheld": {
+          "judgeOmitted": {
             "type": "string",
             "enum": [
               "no_station",
@@ -39244,7 +39244,7 @@
           "minRuns",
           "currency",
           "setups",
-          "judgeWithheld",
+          "judgeOmitted",
           "judges"
         ]
       },

@@ -11,7 +11,7 @@ import (
 func secretOf(dto apigen.SecretResourceResponseDto) Secret {
 	bindings := make([]SecretBinding, 0, len(dto.Bindings))
 	for _, each := range dto.Bindings {
-		bindings = append(bindings, SecretBinding{Host: each.Host, Carrier: string(each.Carrier), Name: each.Name, Prefix: each.Prefix})
+		bindings = append(bindings, SecretBinding{Host: each.Host, Location: string(each.Location), Name: each.Name, Prefix: each.Prefix})
 	}
 
 	secret := Secret{

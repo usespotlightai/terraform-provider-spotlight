@@ -6,7 +6,7 @@ description: |-
 
 # Spotlight Provider
 
-Configure a [Spotlight](https://github.com/usespotlightai) workspace as code: its teams, the lines their tasks move along, the skills and harness profiles their agents are given, the integrations that connect them to other tools, the secrets those integrations wear, and the runner pools, egresses and trusts the work runs through.
+Configure a [Spotlight](https://github.com/usespotlightai) workspace as code: its teams, the lines their tasks move along, the skills and harness profiles their agents are given, the integrations that connect them to other tools, the secrets that Spotlight injects into the requests of those integrations, and the runner pools, egresses and trusts the work runs through.
 
 **Download as Terraform**, in the web app's workspace menu, gives you a workspace you already have as configuration for this provider: a zipped module with an `import` block for each resource, and each prompt and skill as its own file. A first `terraform apply` adopts what is there and plans no change.
 

@@ -357,18 +357,18 @@ func (e RunnerPoolResourceResponseDtoMode) Valid() bool {
 	}
 }
 
-// Defines values for SecretBindingResponseDtoCarrier.
+// Defines values for SecretBindingResponseDtoLocation.
 const (
-	SecretBindingResponseDtoCarrierHeader SecretBindingResponseDtoCarrier = "header"
-	SecretBindingResponseDtoCarrierQuery  SecretBindingResponseDtoCarrier = "query"
+	SecretBindingResponseDtoLocationHeader SecretBindingResponseDtoLocation = "header"
+	SecretBindingResponseDtoLocationQuery  SecretBindingResponseDtoLocation = "query"
 )
 
-// Valid indicates whether the value is a known member of the SecretBindingResponseDtoCarrier enum.
-func (e SecretBindingResponseDtoCarrier) Valid() bool {
+// Valid indicates whether the value is a known member of the SecretBindingResponseDtoLocation enum.
+func (e SecretBindingResponseDtoLocation) Valid() bool {
 	switch e {
-	case SecretBindingResponseDtoCarrierHeader:
+	case SecretBindingResponseDtoLocationHeader:
 		return true
-	case SecretBindingResponseDtoCarrierQuery:
+	case SecretBindingResponseDtoLocationQuery:
 		return true
 	default:
 		return false
@@ -393,12 +393,39 @@ func (e SecretSourceResponseDtoKind) Valid() bool {
 	}
 }
 
+// Defines values for TraceConnectionResponseDtoError.
+const (
+	TraceConnectionResponseDtoErrorAuthFailed  TraceConnectionResponseDtoError = "auth-failed"
+	TraceConnectionResponseDtoErrorBlocked     TraceConnectionResponseDtoError = "blocked"
+	TraceConnectionResponseDtoErrorFailed      TraceConnectionResponseDtoError = "failed"
+	TraceConnectionResponseDtoErrorLessThannil TraceConnectionResponseDtoError = "<nil>"
+	TraceConnectionResponseDtoErrorServerError TraceConnectionResponseDtoError = "server-error"
+)
+
+// Valid indicates whether the value is a known member of the TraceConnectionResponseDtoError enum.
+func (e TraceConnectionResponseDtoError) Valid() bool {
+	switch e {
+	case TraceConnectionResponseDtoErrorAuthFailed:
+		return true
+	case TraceConnectionResponseDtoErrorBlocked:
+		return true
+	case TraceConnectionResponseDtoErrorFailed:
+		return true
+	case TraceConnectionResponseDtoErrorLessThannil:
+		return true
+	case TraceConnectionResponseDtoErrorServerError:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for TraceConnectionResponseDtoOutcome.
 const (
-	TraceConnectionResponseDtoOutcomeBlocked   TraceConnectionResponseDtoOutcome = "blocked"
-	TraceConnectionResponseDtoOutcomeFailed    TraceConnectionResponseDtoOutcome = "failed"
-	TraceConnectionResponseDtoOutcomeForwarded TraceConnectionResponseDtoOutcome = "forwarded"
-	TraceConnectionResponseDtoOutcomeTunnelled TraceConnectionResponseDtoOutcome = "tunnelled"
+	TraceConnectionResponseDtoOutcomeBlocked     TraceConnectionResponseDtoOutcome = "blocked"
+	TraceConnectionResponseDtoOutcomeFailed      TraceConnectionResponseDtoOutcome = "failed"
+	TraceConnectionResponseDtoOutcomeInjected    TraceConnectionResponseDtoOutcome = "injected"
+	TraceConnectionResponseDtoOutcomePassthrough TraceConnectionResponseDtoOutcome = "passthrough"
 )
 
 // Valid indicates whether the value is a known member of the TraceConnectionResponseDtoOutcome enum.
@@ -408,9 +435,9 @@ func (e TraceConnectionResponseDtoOutcome) Valid() bool {
 		return true
 	case TraceConnectionResponseDtoOutcomeFailed:
 		return true
-	case TraceConnectionResponseDtoOutcomeForwarded:
+	case TraceConnectionResponseDtoOutcomeInjected:
 		return true
-	case TraceConnectionResponseDtoOutcomeTunnelled:
+	case TraceConnectionResponseDtoOutcomePassthrough:
 		return true
 	default:
 		return false
@@ -453,48 +480,21 @@ func (e TraceConnectionResponseDtoReason) Valid() bool {
 	}
 }
 
-// Defines values for TraceConnectionResponseDtoTrouble.
+// Defines values for TraceNodeResponseDtoEgressEnforcement.
 const (
-	TraceConnectionResponseDtoTroubleBlocked     TraceConnectionResponseDtoTrouble = "blocked"
-	TraceConnectionResponseDtoTroubleFailed      TraceConnectionResponseDtoTrouble = "failed"
-	TraceConnectionResponseDtoTroubleLessThannil TraceConnectionResponseDtoTrouble = "<nil>"
-	TraceConnectionResponseDtoTroubleRefused     TraceConnectionResponseDtoTrouble = "refused"
-	TraceConnectionResponseDtoTroubleServerError TraceConnectionResponseDtoTrouble = "server-error"
+	TraceNodeResponseDtoEgressEnforcementEnforced    TraceNodeResponseDtoEgressEnforcement = "enforced"
+	TraceNodeResponseDtoEgressEnforcementLessThannil TraceNodeResponseDtoEgressEnforcement = "<nil>"
+	TraceNodeResponseDtoEgressEnforcementNotEnforced TraceNodeResponseDtoEgressEnforcement = "not-enforced"
 )
 
-// Valid indicates whether the value is a known member of the TraceConnectionResponseDtoTrouble enum.
-func (e TraceConnectionResponseDtoTrouble) Valid() bool {
+// Valid indicates whether the value is a known member of the TraceNodeResponseDtoEgressEnforcement enum.
+func (e TraceNodeResponseDtoEgressEnforcement) Valid() bool {
 	switch e {
-	case TraceConnectionResponseDtoTroubleBlocked:
+	case TraceNodeResponseDtoEgressEnforcementEnforced:
 		return true
-	case TraceConnectionResponseDtoTroubleFailed:
+	case TraceNodeResponseDtoEgressEnforcementLessThannil:
 		return true
-	case TraceConnectionResponseDtoTroubleLessThannil:
-		return true
-	case TraceConnectionResponseDtoTroubleRefused:
-		return true
-	case TraceConnectionResponseDtoTroubleServerError:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for TraceNodeResponseDtoEgress.
-const (
-	TraceNodeResponseDtoEgressEnforced    TraceNodeResponseDtoEgress = "enforced"
-	TraceNodeResponseDtoEgressLessThannil TraceNodeResponseDtoEgress = "<nil>"
-	TraceNodeResponseDtoEgressNotEnforced TraceNodeResponseDtoEgress = "not-enforced"
-)
-
-// Valid indicates whether the value is a known member of the TraceNodeResponseDtoEgress enum.
-func (e TraceNodeResponseDtoEgress) Valid() bool {
-	switch e {
-	case TraceNodeResponseDtoEgressEnforced:
-		return true
-	case TraceNodeResponseDtoEgressLessThannil:
-		return true
-	case TraceNodeResponseDtoEgressNotEnforced:
+	case TraceNodeResponseDtoEgressEnforcementNotEnforced:
 		return true
 	default:
 		return false
@@ -987,18 +987,18 @@ func (e UpdateSecretParamsSpotlightApiVersion) Valid() bool {
 	}
 }
 
-// Defines values for UpdateSecretJSONBodyBindingsCarrier.
+// Defines values for UpdateSecretJSONBodyBindingsLocation.
 const (
-	UpdateSecretJSONBodyBindingsCarrierHeader UpdateSecretJSONBodyBindingsCarrier = "header"
-	UpdateSecretJSONBodyBindingsCarrierQuery  UpdateSecretJSONBodyBindingsCarrier = "query"
+	UpdateSecretJSONBodyBindingsLocationHeader UpdateSecretJSONBodyBindingsLocation = "header"
+	UpdateSecretJSONBodyBindingsLocationQuery  UpdateSecretJSONBodyBindingsLocation = "query"
 )
 
-// Valid indicates whether the value is a known member of the UpdateSecretJSONBodyBindingsCarrier enum.
-func (e UpdateSecretJSONBodyBindingsCarrier) Valid() bool {
+// Valid indicates whether the value is a known member of the UpdateSecretJSONBodyBindingsLocation enum.
+func (e UpdateSecretJSONBodyBindingsLocation) Valid() bool {
 	switch e {
-	case UpdateSecretJSONBodyBindingsCarrierHeader:
+	case UpdateSecretJSONBodyBindingsLocationHeader:
 		return true
-	case UpdateSecretJSONBodyBindingsCarrierQuery:
+	case UpdateSecretJSONBodyBindingsLocationQuery:
 		return true
 	default:
 		return false
@@ -1701,14 +1701,14 @@ func (e CreateSecretParamsSpotlightApiVersion) Valid() bool {
 	}
 }
 
-// Defines values for CreateSecretJSONBodyBindingsCarrier.
+// Defines values for CreateSecretJSONBodyBindingsLocation.
 const (
-	Header CreateSecretJSONBodyBindingsCarrier = "header"
-	Query  CreateSecretJSONBodyBindingsCarrier = "query"
+	Header CreateSecretJSONBodyBindingsLocation = "header"
+	Query  CreateSecretJSONBodyBindingsLocation = "query"
 )
 
-// Valid indicates whether the value is a known member of the CreateSecretJSONBodyBindingsCarrier enum.
-func (e CreateSecretJSONBodyBindingsCarrier) Valid() bool {
+// Valid indicates whether the value is a known member of the CreateSecretJSONBodyBindingsLocation enum.
+func (e CreateSecretJSONBodyBindingsLocation) Valid() bool {
 	switch e {
 	case Header:
 		return true
@@ -2409,7 +2409,7 @@ type McpServerResponseDto struct {
 	Args    []string `json:"args"`
 	Command string   `json:"command"`
 
-	// Env Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace has, and the server gets only a stand-in, since egress wears the value on its requests to the hosts the secret is bound to.
+	// Env Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace has, and the server gets only a stand-in, since egress injects the value into its requests to the hosts the secret is bound to.
 	Env  map[string]string `json:"env"`
 	Name string            `json:"name"`
 }
@@ -2577,21 +2577,21 @@ type RunnerTrustResourceResponseDto struct {
 
 // SecretBindingResponseDto defines model for SecretBindingResponseDto.
 type SecretBindingResponseDto struct {
-	// Carrier Whether it is worn in a request header or a query parameter
-	Carrier SecretBindingResponseDtoCarrier `json:"carrier"`
-
 	// Host A host the secret may be sent to, over HTTPS only
 	Host string `json:"host"`
 
-	// Name The header or query parameter it is worn in
+	// Location Whether Spotlight injects it in a request header or in a query parameter
+	Location SecretBindingResponseDtoLocation `json:"location"`
+
+	// Name The header or query parameter that Spotlight injects it in
 	Name string `json:"name"`
 
-	// Prefix Written before the value it is worn with
+	// Prefix The text that Spotlight writes before the value
 	Prefix string `json:"prefix"`
 }
 
-// SecretBindingResponseDtoCarrier Whether it is worn in a request header or a query parameter
-type SecretBindingResponseDtoCarrier string
+// SecretBindingResponseDtoLocation Whether Spotlight injects it in a request header or in a query parameter
+type SecretBindingResponseDtoLocation string
 
 // SecretResourceListResponseDto defines model for SecretResourceListResponseDto.
 type SecretResourceListResponseDto struct {
@@ -2744,47 +2744,46 @@ type TeamResourceResponseDto struct {
 
 // TraceConnectionResponseDto defines model for TraceConnectionResponseDto.
 type TraceConnectionResponseDto struct {
-	Host string `json:"host"`
+	// Count How many times the same error occurred in this row. The row starts at the first time
+	Count float32 `json:"count"`
 
-	// Outcome blocked: egress stopped it. failed: egress could not open it. forwarded: the host refused or failed a request egress added a secret to
+	// Error The error of the connection. blocked: egress stopped it. failed: egress could not open it. auth-failed: the host answered an injected request with 401 or 403. server-error: the host answered it with 500 or more. null: no error
+	Error *TraceConnectionResponseDtoError `json:"error"`
+	Host  string                           `json:"host"`
+
+	// Outcome blocked: egress stopped it. failed: egress could not open it. injected: the host refused or failed a request that egress injected a secret into
 	Outcome TraceConnectionResponseDtoOutcome `json:"outcome"`
 	Port    float32                           `json:"port"`
 
 	// Reason Why egress blocked the connection or could not open it
 	Reason *TraceConnectionResponseDtoReason `json:"reason"`
 
-	// Status The status the host answered a forwarded request with
+	// Status The status the host answered an injected request with
 	Status *float32 `json:"status"`
-
-	// Times How many times the same thing went wrong in this row. The row starts at the first time
-	Times float32 `json:"times"`
-
-	// Trouble What went wrong. blocked: egress stopped it. failed: egress could not open it. refused: the host answered a forwarded request with 401 or 403. server-error: the host answered it with 500 or more. null: nothing went wrong
-	Trouble *TraceConnectionResponseDtoTrouble `json:"trouble"`
 }
 
-// TraceConnectionResponseDtoOutcome blocked: egress stopped it. failed: egress could not open it. forwarded: the host refused or failed a request egress added a secret to
+// TraceConnectionResponseDtoError The error of the connection. blocked: egress stopped it. failed: egress could not open it. auth-failed: the host answered an injected request with 401 or 403. server-error: the host answered it with 500 or more. null: no error
+type TraceConnectionResponseDtoError string
+
+// TraceConnectionResponseDtoOutcome blocked: egress stopped it. failed: egress could not open it. injected: the host refused or failed a request that egress injected a secret into
 type TraceConnectionResponseDtoOutcome string
 
 // TraceConnectionResponseDtoReason Why egress blocked the connection or could not open it
 type TraceConnectionResponseDtoReason string
 
-// TraceConnectionResponseDtoTrouble What went wrong. blocked: egress stopped it. failed: egress could not open it. refused: the host answered a forwarded request with 401 or 403. server-error: the host answered it with 500 or more. null: nothing went wrong
-type TraceConnectionResponseDtoTrouble string
-
 // TraceNodeResponseDto defines model for TraceNodeResponseDto.
 type TraceNodeResponseDto struct {
 	Children []TraceNodeResponseDto `json:"children"`
 
-	// Connection On a connection row: a connection of the run that went wrong, as a shared egress recorded it
+	// Connection On a connection row: a connection of the run with an error, as a shared egress recorded it
 	Connection *TraceConnectionResponseDto `json:"connection"`
 	Cost       *float32                    `json:"cost"`
 	Currency   *string                     `json:"currency"`
 
-	// Egress On a run row: what the runner in the sandbox reported before the harness started. enforced: a direct connection around egress failed. not-enforced: it operated. null: the runner did not check
-	Egress *TraceNodeResponseDtoEgress `json:"egress"`
-	Id     string                      `json:"id"`
-	Kind   TraceNodeResponseDtoKind    `json:"kind"`
+	// EgressEnforcement On a run row: what the runner in the sandbox reported before the harness started. enforced: a direct connection around egress failed. not-enforced: it operated. null: the runner did not check
+	EgressEnforcement *TraceNodeResponseDtoEgressEnforcement `json:"egressEnforcement"`
+	Id                string                                 `json:"id"`
+	Kind              TraceNodeResponseDtoKind               `json:"kind"`
 
 	// Ms How long it took, in ms
 	Ms        float32                 `json:"ms"`
@@ -2797,8 +2796,8 @@ type TraceNodeResponseDto struct {
 	Tone TraceNodeResponseDtoTone `json:"tone"`
 }
 
-// TraceNodeResponseDtoEgress On a run row: what the runner in the sandbox reported before the harness started. enforced: a direct connection around egress failed. not-enforced: it operated. null: the runner did not check
-type TraceNodeResponseDtoEgress string
+// TraceNodeResponseDtoEgressEnforcement On a run row: what the runner in the sandbox reported before the harness started. enforced: a direct connection around egress failed. not-enforced: it operated. null: the runner did not check
+type TraceNodeResponseDtoEgressEnforcement string
 
 // TraceNodeResponseDtoKind defines model for TraceNodeResponseDto.Kind.
 type TraceNodeResponseDtoKind string
@@ -3031,7 +3030,7 @@ type UpdateHarnessProfileJSONBody struct {
 		Args    *[]string `json:"args,omitempty"`
 		Command string    `json:"command"`
 
-		// Env Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace has, and the server gets only a stand-in, since egress wears the value on its requests to the hosts the secret is bound to.
+		// Env Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace has, and the server gets only a stand-in, since egress injects the value into its requests to the hosts the secret is bound to.
 		Env  *map[string]string `json:"env,omitempty"`
 		Name string             `json:"name"`
 	} `json:"mcpServers,omitempty"`
@@ -3347,10 +3346,10 @@ type ReadSecretParamsSpotlightApiVersion string
 // UpdateSecretJSONBody defines parameters for UpdateSecret.
 type UpdateSecretJSONBody struct {
 	Bindings *[]struct {
-		Carrier *UpdateSecretJSONBodyBindingsCarrier `json:"carrier,omitempty"`
-		Host    string                               `json:"host"`
+		Host     string                                `json:"host"`
+		Location *UpdateSecretJSONBodyBindingsLocation `json:"location,omitempty"`
 
-		// Name The header or query parameter it is worn in; authorization when a header is not named
+		// Name The header or query parameter that Spotlight injects it in. The default header is authorization
 		Name   *string `json:"name,omitempty"`
 		Prefix *string `json:"prefix,omitempty"`
 	} `json:"bindings,omitempty"`
@@ -3383,8 +3382,8 @@ type UpdateSecretParams struct {
 // UpdateSecretParamsSpotlightApiVersion defines parameters for UpdateSecret.
 type UpdateSecretParamsSpotlightApiVersion string
 
-// UpdateSecretJSONBodyBindingsCarrier defines parameters for UpdateSecret.
-type UpdateSecretJSONBodyBindingsCarrier string
+// UpdateSecretJSONBodyBindingsLocation defines parameters for UpdateSecret.
+type UpdateSecretJSONBodyBindingsLocation string
 
 // UpdateSecretJSONBodySourceKind defines parameters for UpdateSecret.
 type UpdateSecretJSONBodySourceKind string
@@ -3492,7 +3491,7 @@ type CreateHarnessProfileJSONBody struct {
 		Args    *[]string `json:"args,omitempty"`
 		Command string    `json:"command"`
 
-		// Env Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace has, and the server gets only a stand-in, since egress wears the value on its requests to the hosts the secret is bound to.
+		// Env Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace has, and the server gets only a stand-in, since egress injects the value into its requests to the hosts the secret is bound to.
 		Env  *map[string]string `json:"env,omitempty"`
 		Name string             `json:"name"`
 	} `json:"mcpServers,omitempty"`
@@ -4098,10 +4097,10 @@ type ListSecretsParamsSpotlightApiVersion string
 // CreateSecretJSONBody defines parameters for CreateSecret.
 type CreateSecretJSONBody struct {
 	Bindings *[]struct {
-		Carrier *CreateSecretJSONBodyBindingsCarrier `json:"carrier,omitempty"`
-		Host    string                               `json:"host"`
+		Host     string                                `json:"host"`
+		Location *CreateSecretJSONBodyBindingsLocation `json:"location,omitempty"`
 
-		// Name The header or query parameter it is worn in; authorization when a header is not named
+		// Name The header or query parameter that Spotlight injects it in. The default header is authorization
 		Name   *string `json:"name,omitempty"`
 		Prefix *string `json:"prefix,omitempty"`
 	} `json:"bindings,omitempty"`
@@ -4134,8 +4133,8 @@ type CreateSecretParams struct {
 // CreateSecretParamsSpotlightApiVersion defines parameters for CreateSecret.
 type CreateSecretParamsSpotlightApiVersion string
 
-// CreateSecretJSONBodyBindingsCarrier defines parameters for CreateSecret.
-type CreateSecretJSONBodyBindingsCarrier string
+// CreateSecretJSONBodyBindingsLocation defines parameters for CreateSecret.
+type CreateSecretJSONBodyBindingsLocation string
 
 // CreateSecretJSONBodySourceKind defines parameters for CreateSecret.
 type CreateSecretJSONBodySourceKind string
