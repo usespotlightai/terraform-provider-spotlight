@@ -59,8 +59,8 @@ func (r *EgressResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 func egressSchema() schema.Schema {
 	attributes := writeonly.EgressToken.Attributes("The token the egress calls Spotlight with: 32 to 255 URL-safe characters, as a generated password would be. " +
 		"Spotlight keeps only its hash. Left out, Spotlight issues one when it creates the egress, which Terraform does not keep; " +
-		"a change to `token_version` must come with a token. A token is given once, ever: another egress's token is refused, and one rotated away, " +
-		"or used by an egress that was deleted or replaced, is spent and refused to every egress, the same one included, so rotating or replacing an egress always needs a new token.")
+		"a change to `token_version` must come with a token. A token is given once, ever: another egress's token is not accepted, and one rotated away, " +
+		"or used by an egress that was deleted or replaced, is spent and no egress accepts it, the same one included, so rotating or replacing an egress always needs a new token.")
 	attributes["id"] = idAttribute("egress")
 	attributes["version"] = versionAttribute("egress")
 	attributes["address"] = addressAttribute("shared")
@@ -76,7 +76,7 @@ func egressSchema() schema.Schema {
 	return schema.Schema{
 		MarkdownDescription: "An egress that the runners of push pools send their traffic through. A `spotlight_runner_pool` names it in `provision.egress`. " +
 			"For each run, the egress adds the secrets of the run to the requests that go to their bound hosts. A bound host is a host that a secret of the run is bound to. " +
-			"The egress calls Spotlight with its token. Spotlight refuses to delete an egress while a pool names it. " +
+			"The egress calls Spotlight with its token. Spotlight does not delete an egress while a pool names it. " +
 			"Terraform can delete the egress before it updates the pools, so first remove `provision.egress` from the pools and apply, then remove the egress. " +
 			"Writing egresses needs a token granted the `runners` scope. Import it as `<workspace id>/<key>`.",
 		Attributes: attributes,

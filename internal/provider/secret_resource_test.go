@@ -322,7 +322,7 @@ func TestSecretValidatesABindingNotYetKnown(t *testing.T) {
 	}}, &validated)
 
 	if validated.Diagnostics.HasError() {
-		t.Fatalf("a binding not yet known was refused: %v", validated.Diagnostics)
+		t.Fatalf("a binding not yet known was rejected: %v", validated.Diagnostics)
 	}
 }
 

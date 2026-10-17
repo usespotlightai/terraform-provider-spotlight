@@ -80,7 +80,7 @@ func (c *Client) UpdateEgress(ctx context.Context, id string, version int64, in 
 }
 
 // DeleteEgress deletes version of the egress, the version from the last
-// read. Spotlight refuses it while a runner pool names the egress.
+// read. Spotlight does not delete it while a runner pool names the egress.
 func (c *Client) DeleteEgress(ctx context.Context, id string, version int64) error {
 	resp, err := c.api.DeleteEgressWithResponse(ctx, id, &apigen.DeleteEgressParams{IfMatch: entityTag(version)})
 	if err != nil {

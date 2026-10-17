@@ -67,7 +67,7 @@ func TestEachFieldErrorLandsOnItsAttribute(t *testing.T) {
 	}
 }
 
-func TestAStationAlertRefusalLandsOnItsBlock(t *testing.T) {
+func TestAStationAlertProblemLandsOnItsBlock(t *testing.T) {
 	var diags diag.Diagnostics
 
 	addAPIError(&diags, "Could not create the line", &client.Problem{
@@ -92,7 +92,7 @@ func TestAStationAlertRefusalLandsOnItsBlock(t *testing.T) {
 	}
 }
 
-func TestAStationBlockRefusalLandsOnTheBlock(t *testing.T) {
+func TestAStationBlockProblemLandsOnTheBlock(t *testing.T) {
 	var diags diag.Diagnostics
 
 	addAPIError(&diags, "Could not create the line", &client.Problem{
@@ -122,7 +122,7 @@ func TestAStationBlockRefusalLandsOnTheBlock(t *testing.T) {
 	}
 }
 
-func TestALineReplayCheckOrSourceRefusalLandsOnItsAttribute(t *testing.T) {
+func TestALineReplayCheckOrSourceProblemLandsOnItsAttribute(t *testing.T) {
 	var diags diag.Diagnostics
 
 	addAPIError(&diags, "Could not create the line", &client.Problem{
@@ -211,7 +211,7 @@ func TestAForbiddenCallNamesTheScopeTheTokenLacks(t *testing.T) {
 	}
 }
 
-func TestARefusedPlanNamesThePlanScope(t *testing.T) {
+func TestAForbiddenPlanNamesThePlanScope(t *testing.T) {
 	var diags diag.Diagnostics
 
 	addAPIError(&diags, "Could not check", &client.Problem{
@@ -223,7 +223,7 @@ func TestARefusedPlanNamesThePlanScope(t *testing.T) {
 	}
 }
 
-func refusedDetail(problem *client.Problem, needs client.Scope) string {
+func forbiddenUpdateDetail(problem *client.Problem, needs client.Scope) string {
 	var diags diag.Diagnostics
 
 	addAPIError(&diags, "Could not update", problem, diagnosedLineFields, needs)
@@ -243,7 +243,7 @@ func TestTheNamedPermissionOutranksTheResourceKind(t *testing.T) {
 		client.PermissionOpenWorkspaces: "cannot open one",
 		"a-permission-from-a-newer-api": "do not allow this",
 	} {
-		detail := refusedDetail(&client.Problem{
+		detail := forbiddenUpdateDetail(&client.Problem{
 			Status: 403, Type: client.ProblemForbidden, Title: "Not allowed to change the line", Permission: permission,
 		}, client.ScopeRunners)
 
@@ -259,7 +259,7 @@ func TestWithoutAPermissionTheTitleThenTheKindSays(t *testing.T) {
 		"Not allowed to open a workspace":         "cannot open one",
 		"Not allowed to change the runner-pool":   "lacks the runners scope",
 	} {
-		if detail := refusedDetail(&client.Problem{Status: 403, Type: client.ProblemForbidden, Title: title}, client.ScopeRunners); !strings.Contains(detail, says) {
+		if detail := forbiddenUpdateDetail(&client.Problem{Status: 403, Type: client.ProblemForbidden, Title: title}, client.ScopeRunners); !strings.Contains(detail, says) {
 			t.Errorf("%s: detail %q", title, detail)
 		}
 	}

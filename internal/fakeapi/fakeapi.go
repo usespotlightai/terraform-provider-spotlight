@@ -358,7 +358,7 @@ func (s *Server) allowed(w http.ResponseWriter, kind string) bool {
 			return true
 		}
 
-		refuseTrust(w, cannotChange("workspace-token-trust"))
+		forbidTrust(w, cannotChange("workspace-token-trust"))
 
 		return false
 	}
@@ -398,7 +398,7 @@ func (s *Server) grants(w http.ResponseWriter, scopes ...any) bool {
 	for _, listed := range scopes {
 		for _, each := range texts(listed) {
 			if !owned[textOf(each)] {
-				refuseTrust(w, cannotChange("workspace-token-trust"))
+				forbidTrust(w, cannotChange("workspace-token-trust"))
 				return false
 			}
 		}
@@ -407,7 +407,7 @@ func (s *Server) grants(w http.ResponseWriter, scopes ...any) bool {
 	return true
 }
 
-func refuseTrust(w http.ResponseWriter, detail string) {
+func forbidTrust(w http.ResponseWriter, detail string) {
 	writeJSON(w, http.StatusForbidden, "application/problem+json", map[string]any{
 		"type":       "urn:spotlight:problem:forbidden",
 		"title":      "Not allowed to change the workspace-token-trust",
@@ -494,7 +494,7 @@ func (s *Server) create(kind string) http.HandlerFunc {
 		value, more := written(kind, nil, fields, body)
 		errs = append(errs, more...)
 		if len(errs) == 0 {
-			errs = s.refusedToken(kind, "", value)
+			errs = s.tokenProblems(kind, "", value)
 		}
 		if len(errs) > 0 {
 			invalid(w, kind, errs)
@@ -565,7 +565,7 @@ func (s *Server) update(kind string) http.HandlerFunc {
 		value, more := written(kind, existing, fields, body)
 		errs = append(errs, more...)
 		if len(errs) == 0 {
-			errs = s.refusedToken(kind, existing.id, value)
+			errs = s.tokenProblems(kind, existing.id, value)
 		}
 
 		if len(errs) == 0 && kind == "workspace-token-trust" && !s.grants(w, existing.fields["scopes"], fields["scopes"]) {
@@ -639,7 +639,7 @@ func (s *Server) keep(stored *resource, value string) {
 
 type givenToken struct{ kind, token string }
 
-func (s *Server) refusedToken(kind, claimant, value string) []fieldError {
+func (s *Server) tokenProblems(kind, claimant, value string) []fieldError {
 	if (kind != "runner-pool" && kind != "egress") || value == "" {
 		return nil
 	}
@@ -925,7 +925,7 @@ func (s *Server) bodyOf(stored *resource) map[string]any {
 	}
 
 	if stored.kind == "egress" && strings.HasPrefix(textOf(stored.fields["url"]), "http:") {
-		body["warnings"] = []any{warned("url", "is not https. Runners send their proxy credential to it. A production deployment refuses to provision runners that use it")}
+		body["warnings"] = []any{warned("url", "is not https. Runners send their proxy credential to it. A production deployment does not provision runners that use it")}
 	}
 
 	if stored.kind == "integration" {

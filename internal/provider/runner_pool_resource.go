@@ -79,8 +79,8 @@ func (r *RunnerPoolResource) Schema(_ context.Context, _ resource.SchemaRequest,
 func runnerPoolSchema() schema.Schema {
 	attributes := writeonly.Token.Attributes("The token a `spotlight-host` serving the pool claims work with: 32 to 255 URL-safe characters, as a generated password would be. " +
 		"Only for a pool without `provision`. Spotlight keeps only its hash. Left out, Spotlight issues one when it creates the pool, which Terraform does not keep; " +
-		"a change to `token_version` must come with a token. A token is given once, ever: another pool's token is refused, and one rotated away, or used by a pool that was deleted or replaced, " +
-		"is spent and refused to every pool, the same one included, so rotating or replacing a pool always needs a new token.")
+		"a change to `token_version` must come with a token. A token is given once, ever: another pool's token is not accepted, and one rotated away, or used by a pool that was deleted or replaced, " +
+		"is spent and no pool accepts it, the same one included, so rotating or replacing a pool always needs a new token.")
 	attributes["id"] = idAttribute("runner pool")
 	attributes["version"] = versionAttribute("runner pool")
 	attributes["address"] = addressAttribute("ephemeral")
@@ -142,7 +142,7 @@ func (r *RunnerPoolResource) Configure(_ context.Context, req resource.Configure
 	r.client = clientOf(req.ProviderData, &resp.Diagnostics)
 }
 
-// ValidateConfig refuses a token for a push pool, because Spotlight calls the
+// ValidateConfig rejects a token for a push pool, because Spotlight calls the
 // provision URL of a push pool.
 func (r *RunnerPoolResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
 	var provision types.Object

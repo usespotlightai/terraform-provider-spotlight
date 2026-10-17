@@ -34,7 +34,7 @@ resource "spotlight_workspace_token_trust" "github_main" {
 - `issuer` (String) The https URL of the OIDC issuer whose signed tokens the trust accepts, as in `https://token.actions.githubusercontent.com`; its keys are found through OIDC discovery.
 - `key` (String) Names the trust, and every token it mints, as in `github-main`. It is fixed for the workspace token trust's life, so changing it replaces the workspace token trust.
 - `scopes` (Set of String) The scopes every token the trust mints is given: one of `read`, `plan` or `configure`, which are a ladder, and `secrets`, `runners` or `trusts` beside it, as a stored token's are. A trust that grants `trusts` lets the workloads it admits write every trust in the workspace, their own included, and so mint tokens with any scope.
-- `subject` (String) The subject the workload's token must carry, as in `repo:acme/platform:ref:refs/heads/main`. `*` matches any run of characters, colons included, as in `repo:acme/platform:*`; a subject with one names its owner before the first, so `repo:acme/*` is accepted but `repo:*` and `*` are refused.
+- `subject` (String) The subject the workload's token must carry, as in `repo:acme/platform:ref:refs/heads/main`. `*` matches any run of characters, colons included, as in `repo:acme/platform:*`; a subject with one names its owner before the first, so `repo:acme/*` is accepted but `repo:*` and `*` are rejected.
 - `workspace_id` (String) The workspace the workspace token trust belongs to. Changing it replaces the workspace token trust.
 
 ### Optional

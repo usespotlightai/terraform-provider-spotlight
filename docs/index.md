@@ -41,7 +41,7 @@ A token, stored or minted, acts only inside the workspace it was created in, and
 | `runners` | `spotlight_runner_pool`, `spotlight_egress`, `spotlight_runner_trust` and `spotlight_workspace_runners` |
 | `trusts` | `spotlight_workspace_token_trust` |
 
-**One token granted `configure`, `secrets`, `runners` and `trusts` manages everything this provider can.** `trusts` decides which CI jobs get tokens and with which scopes, so it is as powerful as all the others together: grant it only to a short-lived token that sets up the trusts, as the guide below does. A token can give a trust only the scopes that it has. A write the token's scopes do not allow is refused with `403`, and the provider's diagnostic names the scope the token lacks.
+**One token granted `configure`, `secrets`, `runners` and `trusts` manages everything this provider can.** `trusts` decides which CI jobs get tokens and with which scopes, so it is as powerful as all the others together: grant it only to a short-lived token that sets up the trusts, as the guide below does. A token can give a trust only the scopes that it has. A write the token's scopes do not allow fails with `403`, and the provider's diagnostic names the scope the token lacks.
 
 ## Workspaces are adopted, not created
 

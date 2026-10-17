@@ -425,7 +425,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -623,7 +623,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -1611,7 +1611,7 @@
             "description": "What the agent handed the tool is not what it takes"
           },
           "502": {
-            "description": "The integration the tool calls refused"
+            "description": "The integration the tool calls answered with an error"
           }
         },
         "summary": "Do what a tool the run was given does",
@@ -4649,7 +4649,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -4824,7 +4824,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -5320,7 +5320,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -5495,7 +5495,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -6137,7 +6137,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -6339,7 +6339,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -6992,7 +6992,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -7212,7 +7212,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -7438,7 +7438,7 @@
             }
           },
           "401": {
-            "description": "Spotlight refused the exchange. Possible causes: an unknown trust, a token its issuer did not sign for the trust’s audience, a workload the trust does not admit, or a closed workspace"
+            "description": "Spotlight did not accept the exchange. Possible causes: an unknown trust, a token its issuer did not sign for the trust’s audience, a workload the trust does not admit, or a closed workspace"
           }
         },
         "summary": "Exchange the OIDC token a CI platform issued a workload for a short-lived workspace token, through a workspace token trust that admits it",
@@ -8529,7 +8529,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -8765,7 +8765,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -9952,7 +9952,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -10145,7 +10145,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -10433,7 +10433,7 @@
                     "type": "integer",
                     "minimum": 0,
                     "nullable": true,
-                    "description": "Changed, with a new token, to rotate the pool token in place: the old token is refused at once, while runs already claimed keep their own one-run credentials"
+                    "description": "Changed, with a new token, to rotate the pool token in place: the old token stops working at once, while runs already claimed keep their own one-run credentials"
                   },
                   "provision": {
                     "type": "object",
@@ -10823,7 +10823,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -10872,7 +10872,7 @@
                     "type": "integer",
                     "minimum": 0,
                     "nullable": true,
-                    "description": "Changed, with a new token, to rotate the pool token in place: the old token is refused at once, while runs already claimed keep their own one-run credentials"
+                    "description": "Changed, with a new token, to rotate the pool token in place: the old token stops working at once, while runs already claimed keep their own one-run credentials"
                   },
                   "provision": {
                     "type": "object",
@@ -11062,7 +11062,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -11340,7 +11340,7 @@
                     "type": "integer",
                     "minimum": 0,
                     "nullable": true,
-                    "description": "Changed, with a new token, to rotate the egress token in place: the old token is refused at once"
+                    "description": "Changed, with a new token, to rotate the egress token in place: the old token stops working at once"
                   }
                 }
               }
@@ -11690,7 +11690,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -11729,7 +11729,7 @@
                     "type": "integer",
                     "minimum": 0,
                     "nullable": true,
-                    "description": "Changed, with a new token, to rotate the egress token in place: the old token is refused at once"
+                    "description": "Changed, with a new token, to rotate the egress token in place: the old token stops working at once"
                   }
                 }
               }
@@ -11879,7 +11879,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -12502,7 +12502,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -12692,7 +12692,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -13289,7 +13289,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -13469,7 +13469,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -14152,7 +14152,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -14400,7 +14400,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -16037,7 +16037,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -16210,7 +16210,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -17022,7 +17022,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -17183,7 +17183,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -20077,7 +20077,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -22740,7 +22740,7 @@
     },
     "/teams/{teamId}/searches/{searchId}/candidates/{candidateId}/pick": {
       "post": {
-        "description": "Spotlight never applies the change itself. It edits the station block of the line’s spotlight_line resource (and a prompt file read with file()), commits to its own branch and opens the pull request; until then the pull request is opening. Picking it again answers the same one, unless it was refused, which tries again.",
+        "description": "Spotlight never applies the change itself. It edits the station block of the line’s spotlight_line resource (and a prompt file read with file()), commits to its own branch and opens the pull request; until then the pull request is opening. Picking it again answers the same one, unless it failed, which tries again.",
         "operationId": "pickSearchCandidate",
         "parameters": [
           {
@@ -22803,7 +22803,7 @@
             }
           },
           "201": {
-            "description": "Picked, or tried again after a refusal",
+            "description": "Picked, or tried again after a failure",
             "content": {
               "application/json": {
                 "schema": {
@@ -23361,7 +23361,7 @@
     },
     "/runs/{runId}/search-candidates": {
       "post": {
-        "description": "Proposing the same name again from the same run answers with the candidate it proposed. A refused proposal does not count as one of the iteration’s candidates, but the run may only try so often.",
+        "description": "Proposing the same name again from the same run answers with the candidate it proposed. A rejected proposal does not count as one of the iteration’s candidates, but the run may only try so often.",
         "operationId": "proposeSearchCandidate",
         "parameters": [
           {
@@ -23418,7 +23418,7 @@
             }
           },
           "422": {
-            "description": "A name that is no slug, no hypothesis, or a station block the line refuses or that changes what a search may not; errors name each problem’s path",
+            "description": "A name that is no slug, no hypothesis, or a station block the line rejects or that changes what a search may not; errors name each problem’s path",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -23600,7 +23600,7 @@
             "bearer": []
           }
         ],
-        "summary": "Read the pull request a picked search candidate opens in the line’s config repository: opening, opened with its link, or refused and why",
+        "summary": "Read the pull request a picked search candidate opens in the line’s config repository: opening, opened with its link, or failed and why",
         "tags": [
           "replays"
         ]
@@ -23723,7 +23723,7 @@
   },
   "info": {
     "title": "Spotlight Control Plane",
-    "description": "HTTP API for the Spotlight Control Plane.\n\n## Resource conventions\n\nOperations marked `x-spotlight-resource` manage configuration resources, the ones the Terraform provider writes. They live under `/resources` and address everything by id. Every resource follows these rules, and a conformance suite checks each one against them.\n\n- **Stable ids.** Spotlight issues a resource's `id` when it is created. It never changes for the resource's life, whatever else does.\n- **Reads return every field.** A read answers the whole resource, defaults filled in, so a client comparing it with what it wrote sees any drift. A write answers exactly what a read would.\n- **Versions.** Every resource carries a `version` that rises with each change, and each answer carries it as a strong `ETag` (`\"3\"`). An update or delete must send it back as `If-Match`: without one it is refused with 428, and against a version that is no longer current with 409, whose body gives the `currentVersion` and whose `ETag` names it. A write that would remove something another resource still uses is refused with 409 `in-use`.\n- **Idempotent creates.** A create must carry an `Idempotency-Key`. Retrying with the same key and body within 24 hours answers the resource the first attempt created, marked `Idempotent-Replayed: true`, and creates nothing more; the same key with a different body is refused with 422.\n- **Problems name fields.** Errors are `application/problem+json` (RFC 9457). `type` is stable and safe to branch on. An invalid request lists `errors`, each with the `path` of the attribute it is about, as in `stations[2].check`; a key that is not a plain name is quoted, as Terraform addresses it: `on[\"task.opened\"].to.thread`.\n- **API versions.** A client may send `Spotlight-Api-Version`; every response names the version it was answered in, currently `2026-09-23`. Changes within a version are additive only: fields and operations are added, never removed, renamed or given a new meaning.\n- **Expression checks.** `POST /expressions/check` type-checks one CEL expression at the attribute that contains it, named within the resource's whole definition (`integration.webhook.events[0].when`), as `terraform plan` needs. What the expression may read is worked out from that definition exactly as applying it would, so a plan fails where an apply would; a definition that has an error is refused with 422, each error under `definition`. It answers the type and any errors, each with the span it is about and a suggestion where a declared name is near, and warnings about the definition, such as a capture shadowing a built-in name. `GET /expressions/positions` lists every position, with `[*]` for any index or key, and what an expression there sees. They follow these headers and problems, but are not resources.\n- **Credentials.** A client calls with a person's session or with a workspace token, sent as `Authorization: Bearer <token>`. A token acts only within its own workspace and only as its scopes allow. `read`, `plan` and `configure` are a ladder: `read` reads, `plan` also checks expressions, and `configure` also creates, changes and deletes configuration as a workspace admin may, except secrets, runners and token trusts. `secrets` is granted beside one of them and lets the token set, rebind, rotate and delete secrets; Terraform that manages secrets uses `[\"configure\", \"secrets\"]`. `runners` is granted the same way and lets the token create, rekey and delete runners and runner trusts and declare the workspace's runners, since a runner claims runs, checks out repositories and keeps git credentials; Terraform that manages runners uses `[\"configure\", \"runners\"]`. `trusts` is granted the same way and lets the token create, change and delete workspace token trusts, since a trust hands out tokens; a token can only define a trust granting scopes it has itself, so bootstrap the trusts once with a token that has `trusts` and every scope they grant, as in `[\"configure\", \"secrets\", \"trusts\"]`, and revoke it. No token manages members or tokens, or reads the audit.\n- **CI without a stored token.** A workspace admin, or a token granted `trusts`, defines a workspace token trust naming an OIDC issuer, audience, subject and claims, and the scopes and lifetime (at most an hour) of the tokens it mints. A CI job exchanges the OIDC token its platform issues it at `POST /api/workspace-tokens/exchange` with `{ \"trust\": <trust id>, \"token\": <OIDC token> }`, and calls with the short-lived token it gets back. Deleting the trust stops every token it minted at once, and the audit names the trust and the workload's subject beside each exchange and each change made with a minted token.\n- **Refusals.** A change by someone who may read the resource but not change it, person or token, is refused with 403 `forbidden`, whose `permission` names what the caller lacks, one of `configure`, `manage-secrets`, `manage-runners`, `manage-token-trusts`, `administer`, `open-workspaces`, `plan`. Anything they may not see at all answers 404.\n- **Who changed what.** A client names itself in `Spotlight-Client` (`terraform-provider/<version>` or `web`), and every configuration change is recorded with who made it, person or token, and through which client. A secret's change also records the value version it moved to and the hosts it is bound to, never its value.\n- **Import by address.** Each resource has an `address` that names it within its workspace, such as `core/linear`, and an import operation that answers the resource at that address, as `terraform import` needs. A workspace's address is its slug; a team's is its key; anything a team owns is the team's key and its own, as in `core/delivery`.",
+    "description": "HTTP API for the Spotlight Control Plane.\n\n## Resource conventions\n\nOperations marked `x-spotlight-resource` manage configuration resources, the ones the Terraform provider writes. They live under `/resources` and address everything by id. Every resource follows these rules, and a conformance suite checks each one against them.\n\n- **Stable ids.** Spotlight issues a resource's `id` when it is created. It never changes for the resource's life, whatever else does.\n- **Reads return every field.** A read answers the whole resource, defaults filled in, so a client comparing it with what it wrote sees any drift. A write answers exactly what a read would.\n- **Versions.** Every resource carries a `version` that rises with each change, and each answer carries it as a strong `ETag` (`\"3\"`). An update or delete must send it back as `If-Match`: without one it fails with 428, and against a version that is no longer current with 409, whose body gives the `currentVersion` and whose `ETag` names it. A write that would remove something another resource still uses fails with 409 `in-use`.\n- **Idempotent creates.** A create must carry an `Idempotency-Key`. Retrying with the same key and body within 24 hours answers the resource the first attempt created, marked `Idempotent-Replayed: true`, and creates nothing more; the same key with a different body fails with 422.\n- **Problems name fields.** Errors are `application/problem+json` (RFC 9457). `type` is stable and safe to branch on. An invalid request lists `errors`, each with the `path` of the attribute it is about, as in `stations[2].check`; a key that is not a plain name is quoted, as Terraform addresses it: `on[\"task.opened\"].to.thread`.\n- **API versions.** A client may send `Spotlight-Api-Version`; every response names the version it was answered in, currently `2026-09-23`. Changes within a version are additive only: fields and operations are added, never removed, renamed or given a new meaning.\n- **Expression checks.** `POST /expressions/check` type-checks one CEL expression at the attribute that contains it, named within the resource's whole definition (`integration.webhook.events[0].when`), as `terraform plan` needs. What the expression may read is worked out from that definition exactly as applying it would, so a plan fails where an apply would; a definition that has an error fails with 422, each error under `definition`. It answers the type and any errors, each with the span it is about and a suggestion where a declared name is near, and warnings about the definition, such as a capture shadowing a built-in name. `GET /expressions/positions` lists every position, with `[*]` for any index or key, and what an expression there sees. They follow these headers and problems, but are not resources.\n- **Credentials.** A client calls with a person's session or with a workspace token, sent as `Authorization: Bearer <token>`. A token acts only within its own workspace and only as its scopes allow. `read`, `plan` and `configure` are a ladder: `read` reads, `plan` also checks expressions, and `configure` also creates, changes and deletes configuration as a workspace admin may, except secrets, runners and token trusts. `secrets` is granted beside one of them and lets the token set, rebind, rotate and delete secrets; Terraform that manages secrets uses `[\"configure\", \"secrets\"]`. `runners` is granted the same way and lets the token create, rekey and delete runners and runner trusts and declare the workspace's runners, since a runner claims runs, checks out repositories and keeps git credentials; Terraform that manages runners uses `[\"configure\", \"runners\"]`. `trusts` is granted the same way and lets the token create, change and delete workspace token trusts, since a trust hands out tokens; a token can only define a trust granting scopes it has itself, so bootstrap the trusts once with a token that has `trusts` and every scope they grant, as in `[\"configure\", \"secrets\", \"trusts\"]`, and revoke it. No token manages members or tokens, or reads the audit.\n- **CI without a stored token.** A workspace admin, or a token granted `trusts`, defines a workspace token trust naming an OIDC issuer, audience, subject and claims, and the scopes and lifetime (at most an hour) of the tokens it mints. A CI job exchanges the OIDC token its platform issues it at `POST /api/workspace-tokens/exchange` with `{ \"trust\": <trust id>, \"token\": <OIDC token> }`, and calls with the short-lived token it gets back. Deleting the trust stops every token it minted at once, and the audit names the trust and the workload's subject beside each exchange and each change made with a minted token.\n- **Forbidden changes.** A change by someone who may read the resource but not change it, person or token, fails with 403 `forbidden`, whose `permission` names what the caller lacks, one of `configure`, `manage-secrets`, `manage-runners`, `manage-token-trusts`, `administer`, `open-workspaces`, `plan`. Anything they may not see at all answers 404.\n- **Who changed what.** A client names itself in `Spotlight-Client` (`terraform-provider/<version>` or `web`), and every configuration change is recorded with who made it, person or token, and through which client. A secret's change also records the value version it moved to and the hosts it is bound to, never its value.\n- **Import by address.** Each resource has an `address` that names it within its workspace, such as `core/linear`, and an import operation that answers the resource at that address, as `terraform import` needs. A workspace's address is its slug; a team's is its key; anything a team owns is the team's key and its own, as in `core/delivery`.",
     "version": "2026-09-23",
     "contact": {}
   },
@@ -24203,7 +24203,7 @@
               "plan"
             ],
             "example": "manage-secrets",
-            "description": "The permission the caller lacks, when it was refused as forbidden: one its role in the workspace, or its token’s scopes, do not grant"
+            "description": "The permission the caller lacks, when the request is forbidden: one its role in the workspace, or its token’s scopes, do not grant"
           }
         },
         "required": [
@@ -24790,7 +24790,7 @@
               "blocked",
               "failed"
             ],
-            "description": "blocked: egress stopped it. failed: egress could not open it. injected: the host refused or failed a request that egress injected a secret into"
+            "description": "blocked: egress stopped it. failed: egress could not open it. injected: egress injected a secret into the request"
           },
           "status": {
             "type": "number",
@@ -24802,7 +24802,7 @@
             "type": "string",
             "enum": [
               "not-allowed",
-              "address-refused",
+              "private-address",
               "not-bound",
               "no-such-host",
               "timed-out",
@@ -26125,7 +26125,7 @@
           "minimum": {
             "type": "string",
             "example": "20260925-01",
-            "description": "The oldest runner release this control plane works with; a host refuses an image whose runner is older"
+            "description": "The oldest runner release this control plane works with; a host cannot use an image whose runner is older"
           }
         },
         "required": [
@@ -26631,7 +26631,7 @@
             "type": "string",
             "enum": [
               "not-allowed",
-              "address-refused",
+              "private-address",
               "not-bound",
               "no-such-host",
               "timed-out",
@@ -27465,7 +27465,7 @@
           },
           "approve": {
             "type": "boolean",
-            "description": "Where the conversation asks for a tool call to be approved: true lets it run, false rejects it. Left out, the words answer it and the tool call stays undecided. Refused anywhere else."
+            "description": "Where the conversation asks for a tool call to be approved: true lets it run, false rejects it. Left out, the words answer it and the tool call stays undecided. Rejected anywhere else."
           },
           "inputs": {
             "description": "With approve: true on a tool call, what it runs with instead, as the person changed it. Names exactly the inputs it asked with; a harness asking permission takes no changes.",
@@ -28336,7 +28336,7 @@
             "type": "string",
             "enum": [
               "not-allowed",
-              "address-refused",
+              "private-address",
               "not-bound",
               "no-such-host",
               "timed-out",
@@ -31115,7 +31115,7 @@
             }
           },
           "images": {
-            "description": "The runner images it serves or refused, each with what it found inside",
+            "description": "The runner images it serves or cannot use, each with what it found inside",
             "items": {
               "type": "array",
               "items": {
@@ -31217,7 +31217,7 @@
               "$ref": "#/components/schemas/HostHarnessResponseDto"
             }
           },
-          "refused": {
+          "unavailableReason": {
             "type": "string",
             "nullable": true,
             "example": null,
@@ -31230,7 +31230,7 @@
           "usual",
           "release",
           "harnesses",
-          "refused"
+          "unavailableReason"
         ]
       },
       "HostResponseDto": {
@@ -31269,7 +31269,7 @@
             }
           },
           "images": {
-            "description": "The runner images it serves or refused, and what each contains",
+            "description": "The runner images it serves or cannot use, and what each contains",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/HostImageResponseDto"
@@ -33074,7 +33074,7 @@
               "posted",
               "failed"
             ],
-            "description": "draft: only its author sees it; sending: on its way to GitHub; posted: on GitHub; failed: GitHub refused it"
+            "description": "draft: only its author sees it; sending: on its way to GitHub; posted: on GitHub; failed: GitHub answered with an error"
           },
           "failure": {
             "type": "string",
@@ -34366,7 +34366,7 @@
           },
           "text": {
             "type": "string",
-            "example": "Never retry an upload refused with a 403."
+            "example": "Never retry an upload rejected with a 403."
           }
         },
         "required": [
@@ -34397,7 +34397,7 @@
           },
           "body": {
             "type": "string",
-            "example": "Never retry an upload the bucket refused with a 403."
+            "example": "Never retry an upload the bucket rejected with a 403."
           },
           "source": {
             "type": "string",
@@ -34537,7 +34537,7 @@
           },
           "body": {
             "type": "string",
-            "example": "Never retry an upload the bucket refused with a 403 or 404.",
+            "example": "Never retry an upload the bucket rejected with a 403 or 404.",
             "description": "The memory as it should be, where it was edited"
           }
         },
@@ -35024,7 +35024,7 @@
           },
           "body": {
             "type": "string",
-            "example": "Never retry an upload the bucket refused with a 403."
+            "example": "Never retry an upload the bucket rejected with a 403."
           },
           "source": {
             "type": "string",
@@ -42053,7 +42053,7 @@
             "type": "string",
             "example": "2026-10-01T09:00:00.000Z"
           },
-          "refusal": {
+          "unreplayableReason": {
             "type": "string",
             "enum": [
               "unknown-run",
@@ -42106,7 +42106,7 @@
           "state",
           "endedAt",
           "addedAt",
-          "refusal",
+          "unreplayableReason",
           "reason",
           "outcome",
           "origin"
@@ -42205,7 +42205,7 @@
             "type": "string",
             "example": "2026-10-01T09:00:00.000Z"
           },
-          "refusal": {
+          "unreplayableReason": {
             "type": "string",
             "enum": [
               "unknown-run",
@@ -42240,7 +42240,7 @@
           "title",
           "state",
           "endedAt",
-          "refusal",
+          "unreplayableReason",
           "reason"
         ]
       },
@@ -42266,7 +42266,7 @@
             "type": "string",
             "example": "2026-10-01T09:00:00.000Z"
           },
-          "refusal": {
+          "unreplayableReason": {
             "type": "string",
             "enum": [
               "unknown-run",
@@ -42312,7 +42312,7 @@
           "title",
           "state",
           "endedAt",
-          "refusal",
+          "unreplayableReason",
           "reason",
           "outcome"
         ]
@@ -42827,7 +42827,7 @@
               "unavailable",
               "unreadable-rubric",
               "no-evidence",
-              "refused",
+              "request-failed",
               "unreadable",
               "ungrounded",
               "errored",
@@ -42981,7 +42981,7 @@
               "unavailable",
               "unreadable-rubric",
               "no-evidence",
-              "refused",
+              "request-failed",
               "unreadable",
               "ungrounded",
               "errored",
@@ -43034,7 +43034,7 @@
           "detail": {
             "type": "string",
             "nullable": true,
-            "description": "The refusal, failure or skip code, the failed check step or layer, or what the judge said"
+            "description": "The unreplayable reason, the failure or skip code, the failed check step or layer, or what the judge said"
           },
           "steps": {
             "description": "Journal steps of the replay run the judge cited",
@@ -43108,7 +43108,7 @@
             ],
             "nullable": true
           },
-          "refusal": {
+          "unreplayableReason": {
             "type": "string",
             "enum": [
               "unknown-run",
@@ -43304,7 +43304,7 @@
           "fingerprint",
           "phase",
           "ending",
-          "refusal",
+          "unreplayableReason",
           "failure",
           "next",
           "ms",
@@ -44874,7 +44874,7 @@
           },
           "attempts": {
             "type": "number",
-            "description": "How many candidates it tried to propose, those refused included"
+            "description": "How many candidates it tried to propose, those rejected included"
           },
           "proposed": {
             "description": "The candidates it proposed, by id",
@@ -44928,14 +44928,14 @@
               "block-not-found",
               "blocks-ambiguous",
               "computed-attribute",
-              "drifted",
+              "base-changed",
               "edit-failed",
               "branch-taken",
               "file-unwritable",
-              "github-refused"
+              "github-error"
             ],
             "example": "computed-attribute",
-            "description": "Why Spotlight would not open it: the line names no source; the GitHub App cannot reach the repository; the file is missing or does not parse; the station’s block was not found exactly once; an attribute it would change is computed in Terraform; the file changed since the search began; or GitHub refused"
+            "description": "Why Spotlight would not open it: the line names no source; the GitHub App cannot reach the repository; the file is missing or does not parse; the station’s block was not found exactly once; an attribute it would change is computed in Terraform; the file changed since the search began; or GitHub answered with an error"
           },
           "message": {
             "type": "string",
@@ -44993,7 +44993,7 @@
             "enum": [
               "opening",
               "opened",
-              "refused"
+              "failed"
             ],
             "example": "opened"
           },
@@ -45005,7 +45005,7 @@
           },
           "reason": {
             "nullable": true,
-            "description": "Why it was refused; null unless it was",
+            "description": "Why it failed; null unless it failed",
             "type": "object",
             "allOf": [
               {
@@ -45391,7 +45391,7 @@
             "enum": [
               "opening",
               "opened",
-              "refused"
+              "failed"
             ],
             "example": "opened"
           },
@@ -45403,7 +45403,7 @@
           },
           "reason": {
             "nullable": true,
-            "description": "Why it was refused; null unless it was",
+            "description": "Why it failed; null unless it failed",
             "type": "object",
             "allOf": [
               {
@@ -45458,7 +45458,7 @@
           "attempts": {
             "type": "number",
             "example": 1,
-            "description": "How many times a person picked it; each pick after a refusal tries again"
+            "description": "How many times a person picked it; each pick after a failure tries again"
           },
           "createdAt": {
             "type": "string",

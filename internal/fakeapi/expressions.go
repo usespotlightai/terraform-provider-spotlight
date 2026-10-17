@@ -77,8 +77,8 @@ func (s *Server) check(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if refused := definitionRefused(at[0].Key, body.Definition); refused != nil {
-		problem(w, http.StatusUnprocessableEntity, "invalid", "The request is not valid", "", refused)
+	if problems := definitionProblems(at[0].Key, body.Definition); problems != nil {
+		problem(w, http.StatusUnprocessableEntity, "invalid", "The request is not valid", "", problems)
 		return
 	}
 
@@ -115,7 +115,7 @@ func (s *Server) check(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, "application/json", map[string]any{"type": "bool", "errors": errs, "warnings": []any{}})
 }
 
-func definitionRefused(resource string, definition map[string]any) []fieldError {
+func definitionProblems(resource string, definition map[string]any) []fieldError {
 	if resource == "integration" {
 		if source, _ := definition["integration"].(string); source == "" {
 			return []fieldError{{"definition.integration", "names the host this integration defines, as in linear"}}

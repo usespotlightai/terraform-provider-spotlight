@@ -198,7 +198,7 @@ func TestAnInvalidDefinitionIsReportedOnceAtItsAttribute(t *testing.T) {
 	}
 
 	if len(api.asked) != 1 {
-		t.Errorf("kept asking after the definition was refused: %v", api.asked)
+		t.Errorf("kept asking after the definition was rejected: %v", api.asked)
 	}
 }
 

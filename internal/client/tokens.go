@@ -21,9 +21,9 @@ const RenewBefore = time.Minute
 type TokenSource interface {
 	// Token returns the token for the current call.
 	Token(ctx context.Context) (string, error)
-	// Refused tells the source that the control plane returned 401 for token.
+	// Unauthorized tells the source that the control plane returned 401 for token.
 	// It reports if Token can now return a different token.
-	Refused(token string) bool
+	Unauthorized(token string) bool
 }
 
 // StaticToken is a token source that always returns the same token. A
@@ -39,8 +39,8 @@ func (t StaticToken) Token(context.Context) (string, error) {
 	return string(t), nil
 }
 
-// Refused reports false because there is no other token to try.
-func (t StaticToken) Refused(string) bool {
+// Unauthorized reports false because there is no other token to try.
+func (t StaticToken) Unauthorized(string) bool {
 	return false
 }
 
@@ -99,7 +99,7 @@ func renewalOf(expiresAt, now time.Time) time.Time {
 	return expiresAt.Add(-RenewBefore)
 }
 
-func (e *exchanging) Refused(token string) bool {
+func (e *exchanging) Unauthorized(token string) bool {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
@@ -153,7 +153,7 @@ func (a *authenticating) Do(req *http.Request) (*http.Response, error) {
 	req.Header.Set("Authorization", "Bearer "+token)
 
 	resp, err := a.next.Do(req)
-	if err != nil || resp.StatusCode != http.StatusUnauthorized || !a.tokens.Refused(token) {
+	if err != nil || resp.StatusCode != http.StatusUnauthorized || !a.tokens.Unauthorized(token) {
 		return resp, err
 	}
 

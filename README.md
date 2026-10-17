@@ -58,9 +58,9 @@ resource "spotlight_workspace" "acme" {
 
 - **Drift:** each refresh reads the whole resource, and changes made elsewhere are planned back.
 - **Defaults:** fields Spotlight fills in never show as a diff.
-- **Concurrency:** writes send `If-Match` with the version last read, so a resource changed since is refused, not overwritten.
+- **Concurrency:** writes send `If-Match` with the version last read, so a write to a resource changed since fails and does not overwrite it.
 - **Retries:** creates carry an `Idempotency-Key`, so a retried create makes one resource.
-- **Errors:** a refused write is reported on the attribute it's about, and a `403` names the scope the token lacks.
+- **Errors:** a rejected write is reported on the attribute it's about, and a `403` names the scope the token lacks.
 - **Expressions:** `terraform plan` type-checks every CEL expression in an integration or a hook. Write them as `$${{ ... }}`, and a hook's `when` bare.
 - **Tools:** name a tool through its integration, as in `spotlight_integration.grafana.tools["search"]`, so a tool renamed or removed fails the plan where it is named.
 

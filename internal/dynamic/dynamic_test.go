@@ -68,7 +68,7 @@ func TestCanonicalIgnoresOrderAndNumberSpelling(t *testing.T) {
 	}
 }
 
-func TestToJSONRefusesWhatIsNotKnown(t *testing.T) {
+func TestToJSONRejectsWhatIsNotKnown(t *testing.T) {
 	value := types.DynamicValue(types.ObjectValueMust(
 		map[string]attr.Type{"url": types.StringType},
 		map[string]attr.Value{"url": types.StringUnknown()},

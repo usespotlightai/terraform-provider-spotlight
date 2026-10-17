@@ -40,7 +40,7 @@ var titled = []struct {
 	{"Not allowed to open a workspace", client.PermissionOpenWorkspaces},
 }
 
-func refusal(problem *client.Problem, needs client.Scope) string {
+func forbiddenDetail(problem *client.Problem, needs client.Scope) string {
 	return withDetail(problem, lacked(permissionOf(problem), needs)+" "+oneTokenForAll)
 }
 
@@ -91,7 +91,7 @@ func addAPIError(diags *diag.Diagnostics, doing string, err error, at fieldpath.
 	}
 
 	if client.IsForbidden(problem) {
-		diags.AddError(doing+": "+problem.Title, refusal(problem, needs))
+		diags.AddError(doing+": "+problem.Title, forbiddenDetail(problem, needs))
 
 		return
 	}

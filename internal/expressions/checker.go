@@ -117,7 +117,7 @@ func (c *Checker) CheckSubject(ctx context.Context, subject Subject) diag.Diagno
 		for _, expression := range written.Expressions {
 			check, err := c.api.CheckExpression(ctx, position.String(), expression, subject.Definition)
 			if err != nil {
-				stop := refused(ctx, err, subject, written, &diags)
+				stop := failedCheck(ctx, err, subject, written, &diags)
 				if stop {
 					return diags
 				}
@@ -146,7 +146,7 @@ func (c *Checker) CheckSubject(ctx context.Context, subject Subject) diag.Diagno
 	return diags
 }
 
-func refused(ctx context.Context, err error, subject Subject, written Written, diags *diag.Diagnostics) bool {
+func failedCheck(ctx context.Context, err error, subject Subject, written Written, diags *diag.Diagnostics) bool {
 	if client.IsForbidden(err) {
 		diags.AddWarning("Expressions were not checked", "The API token's scope does not allow checking expressions. Checking is planning, which needs the plan scope or above; the apply checks them instead.")
 

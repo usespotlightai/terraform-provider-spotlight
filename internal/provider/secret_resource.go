@@ -178,8 +178,8 @@ func (r *SecretResource) Configure(_ context.Context, req resource.ConfigureRequ
 	r.client = clientOf(req.ProviderData, &resp.Diagnostics)
 }
 
-// ValidateConfig refuses a value for a secret that Spotlight reads from AWS
-// Secrets Manager, because AWS Secrets Manager keeps the value. It also refuses
+// ValidateConfig rejects a value for a secret that Spotlight reads from AWS
+// Secrets Manager, because AWS Secrets Manager keeps the value. It also rejects
 // a binding in a query parameter without a name. The plan checks values that
 // are not known yet.
 func (r *SecretResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {

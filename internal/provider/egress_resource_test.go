@@ -186,7 +186,7 @@ func TestAnEgressTokenSpotlightIssuesIsNeverKept(t *testing.T) {
 				},
 				Check: func(*terraform.State) error {
 					if kept := egressKept(fake); kept != first {
-						return fmt.Errorf("a refused rotation changed the egress's token to %q", kept)
+						return fmt.Errorf("a rejected rotation changed the egress's token to %q", kept)
 					}
 
 					return nil
@@ -267,7 +267,7 @@ func TestAnEgressTokenIsGivenOnceEver(t *testing.T) {
 	})
 }
 
-func TestAnEgressIsRefusedWhatItCannotTake(t *testing.T) {
+func TestSpotlightRejectsWhatAnEgressCannotTake(t *testing.T) {
 	fake := fakeapi.New(t)
 
 	resource.UnitTest(t, resource.TestCase{

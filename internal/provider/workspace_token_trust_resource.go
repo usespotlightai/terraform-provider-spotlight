@@ -94,7 +94,7 @@ func workspaceTokenTrustSchema() schema.Schema {
 				Required: true,
 				MarkdownDescription: "The subject the workload's token must carry, as in `repo:acme/platform:ref:refs/heads/main`. " +
 					"`*` matches any run of characters, colons included, as in `repo:acme/platform:*`; a subject with one names its owner before the first, " +
-					"so `repo:acme/*` is accepted but `repo:*` and `*` are refused.",
+					"so `repo:acme/*` is accepted but `repo:*` and `*` are rejected.",
 			},
 			"claims": schema.MapAttribute{
 				Optional:            true,

@@ -202,7 +202,7 @@ resource "spotlight_runner_pool" "ephemeral" {
 func runnerPoolKeepsIssued(fake *fakeapi.Server, first *string) resource.TestCheckFunc {
 	return func(*terraform.State) error {
 		if kept := runnerPoolKept(fake); kept != *first {
-			return fmt.Errorf("a refused rotation changed the pool's token to %q", kept)
+			return fmt.Errorf("a rejected rotation changed the pool's token to %q", kept)
 		}
 
 		return nil
@@ -409,7 +409,7 @@ func TestAPoolTokenIsGivenOnceEver(t *testing.T) {
 	})
 }
 
-func TestAPoolIsRefusedWhatItCannotTake(t *testing.T) {
+func TestSpotlightRejectsWhatAPoolCannotTake(t *testing.T) {
 	fake := fakeapi.New(t)
 
 	both := acctest.Workspace + `

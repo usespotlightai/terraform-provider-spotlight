@@ -446,11 +446,11 @@ func (e TraceConnectionResponseDtoOutcome) Valid() bool {
 
 // Defines values for TraceConnectionResponseDtoReason.
 const (
-	TraceConnectionResponseDtoReasonAddressRefused TraceConnectionResponseDtoReason = "address-refused"
 	TraceConnectionResponseDtoReasonLessThannil    TraceConnectionResponseDtoReason = "<nil>"
 	TraceConnectionResponseDtoReasonNoSuchHost     TraceConnectionResponseDtoReason = "no-such-host"
 	TraceConnectionResponseDtoReasonNotAllowed     TraceConnectionResponseDtoReason = "not-allowed"
 	TraceConnectionResponseDtoReasonNotBound       TraceConnectionResponseDtoReason = "not-bound"
+	TraceConnectionResponseDtoReasonPrivateAddress TraceConnectionResponseDtoReason = "private-address"
 	TraceConnectionResponseDtoReasonTimedOut       TraceConnectionResponseDtoReason = "timed-out"
 	TraceConnectionResponseDtoReasonTlsFailed      TraceConnectionResponseDtoReason = "tls-failed"
 	TraceConnectionResponseDtoReasonUnreachable    TraceConnectionResponseDtoReason = "unreachable"
@@ -459,8 +459,6 @@ const (
 // Valid indicates whether the value is a known member of the TraceConnectionResponseDtoReason enum.
 func (e TraceConnectionResponseDtoReason) Valid() bool {
 	switch e {
-	case TraceConnectionResponseDtoReasonAddressRefused:
-		return true
 	case TraceConnectionResponseDtoReasonLessThannil:
 		return true
 	case TraceConnectionResponseDtoReasonNoSuchHost:
@@ -468,6 +466,8 @@ func (e TraceConnectionResponseDtoReason) Valid() bool {
 	case TraceConnectionResponseDtoReasonNotAllowed:
 		return true
 	case TraceConnectionResponseDtoReasonNotBound:
+		return true
+	case TraceConnectionResponseDtoReasonPrivateAddress:
 		return true
 	case TraceConnectionResponseDtoReasonTimedOut:
 		return true
@@ -2468,7 +2468,7 @@ type ProblemResponseDto struct {
 	// Errors Each field that is wrong, when the request was invalid
 	Errors *[]FieldErrorResponseDto `json:"errors,omitempty"`
 
-	// Permission The permission the caller lacks, when it was refused as forbidden: one its role in the workspace, or its token’s scopes, do not grant
+	// Permission The permission the caller lacks, when the request is forbidden: one its role in the workspace, or its token’s scopes, do not grant
 	Permission *ProblemResponseDtoPermission `json:"permission,omitempty"`
 	Status     float32                       `json:"status"`
 	Title      string                        `json:"title"`
@@ -2477,7 +2477,7 @@ type ProblemResponseDto struct {
 	Type string `json:"type"`
 }
 
-// ProblemResponseDtoPermission The permission the caller lacks, when it was refused as forbidden: one its role in the workspace, or its token’s scopes, do not grant
+// ProblemResponseDtoPermission The permission the caller lacks, when the request is forbidden: one its role in the workspace, or its token’s scopes, do not grant
 type ProblemResponseDtoPermission string
 
 // RunSpanResponseDto defines model for RunSpanResponseDto.
@@ -2751,7 +2751,7 @@ type TraceConnectionResponseDto struct {
 	Error *TraceConnectionResponseDtoError `json:"error"`
 	Host  string                           `json:"host"`
 
-	// Outcome blocked: egress stopped it. failed: egress could not open it. injected: the host refused or failed a request that egress injected a secret into
+	// Outcome blocked: egress stopped it. failed: egress could not open it. injected: egress injected a secret into the request
 	Outcome TraceConnectionResponseDtoOutcome `json:"outcome"`
 	Port    float32                           `json:"port"`
 
@@ -2765,7 +2765,7 @@ type TraceConnectionResponseDto struct {
 // TraceConnectionResponseDtoError The error of the connection. blocked: egress stopped it. failed: egress could not open it. auth-failed: the host answered an injected request with 401 or 403. server-error: the host answered it with 500 or more. null: no error
 type TraceConnectionResponseDtoError string
 
-// TraceConnectionResponseDtoOutcome blocked: egress stopped it. failed: egress could not open it. injected: the host refused or failed a request that egress injected a secret into
+// TraceConnectionResponseDtoOutcome blocked: egress stopped it. failed: egress could not open it. injected: egress injected a secret into the request
 type TraceConnectionResponseDtoOutcome string
 
 // TraceConnectionResponseDtoReason Why egress blocked the connection or could not open it
@@ -2948,7 +2948,7 @@ type DeleteEgressParams struct {
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	// IfMatch The ETag of the version this write was based on; a write to any other version fails with 409
 	IfMatch string `json:"If-Match"`
 }
 
@@ -2974,7 +2974,7 @@ type UpdateEgressJSONBody struct {
 	// Token Write-only: the token the egress calls Spotlight with, kept only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Egress-Token
 	Token *string `json:"token,omitempty"`
 
-	// TokenVersion Changed, with a new token, to rotate the egress token in place: the old token is refused at once
+	// TokenVersion Changed, with a new token, to rotate the egress token in place: the old token stops working at once
 	TokenVersion *int `json:"tokenVersion,omitempty"`
 
 	// Url Where the runners of a pool that names this egress send their traffic
@@ -2989,7 +2989,7 @@ type UpdateEgressParams struct {
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	// IfMatch The ETag of the version this write was based on; a write to any other version fails with 409
 	IfMatch string `json:"If-Match"`
 }
 
@@ -3004,7 +3004,7 @@ type DeleteHarnessProfileParams struct {
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	// IfMatch The ETag of the version this write was based on; a write to any other version fails with 409
 	IfMatch string `json:"If-Match"`
 }
 
@@ -3050,7 +3050,7 @@ type UpdateHarnessProfileParams struct {
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	// IfMatch The ETag of the version this write was based on; a write to any other version fails with 409
 	IfMatch string `json:"If-Match"`
 }
 
@@ -3065,7 +3065,7 @@ type DeleteHookParams struct {
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	// IfMatch The ETag of the version this write was based on; a write to any other version fails with 409
 	IfMatch string `json:"If-Match"`
 }
 
@@ -3092,7 +3092,7 @@ type UpdateHookParams struct {
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	// IfMatch The ETag of the version this write was based on; a write to any other version fails with 409
 	IfMatch string `json:"If-Match"`
 }
 
@@ -3107,7 +3107,7 @@ type DeleteIntegrationParams struct {
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	// IfMatch The ETag of the version this write was based on; a write to any other version fails with 409
 	IfMatch string `json:"If-Match"`
 }
 
@@ -3137,7 +3137,7 @@ type UpdateIntegrationParams struct {
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	// IfMatch The ETag of the version this write was based on; a write to any other version fails with 409
 	IfMatch string `json:"If-Match"`
 }
 
@@ -3152,7 +3152,7 @@ type DeleteLineParams struct {
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	// IfMatch The ETag of the version this write was based on; a write to any other version fails with 409
 	IfMatch string `json:"If-Match"`
 }
 
@@ -3182,7 +3182,7 @@ type UpdateLineParams struct {
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	// IfMatch The ETag of the version this write was based on; a write to any other version fails with 409
 	IfMatch string `json:"If-Match"`
 }
 
@@ -3197,7 +3197,7 @@ type DeleteRunnerPoolParams struct {
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	// IfMatch The ETag of the version this write was based on; a write to any other version fails with 409
 	IfMatch string `json:"If-Match"`
 }
 
@@ -3243,7 +3243,7 @@ type UpdateRunnerPoolJSONBody struct {
 	// Token Write-only, and only for a pool without provision: the token its hosts claim with, kept only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Pool-Token
 	Token *string `json:"token,omitempty"`
 
-	// TokenVersion Changed, with a new token, to rotate the pool token in place: the old token is refused at once, while runs already claimed keep their own one-run credentials
+	// TokenVersion Changed, with a new token, to rotate the pool token in place: the old token stops working at once, while runs already claimed keep their own one-run credentials
 	TokenVersion *int `json:"tokenVersion,omitempty"`
 }
 
@@ -3255,7 +3255,7 @@ type UpdateRunnerPoolParams struct {
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	// IfMatch The ETag of the version this write was based on; a write to any other version fails with 409
 	IfMatch string `json:"If-Match"`
 }
 
@@ -3273,7 +3273,7 @@ type DeleteRunnerTrustParams struct {
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	// IfMatch The ETag of the version this write was based on; a write to any other version fails with 409
 	IfMatch string `json:"If-Match"`
 }
 
@@ -3309,7 +3309,7 @@ type UpdateRunnerTrustParams struct {
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	// IfMatch The ETag of the version this write was based on; a write to any other version fails with 409
 	IfMatch string `json:"If-Match"`
 }
 
@@ -3324,7 +3324,7 @@ type DeleteSecretParams struct {
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	// IfMatch The ETag of the version this write was based on; a write to any other version fails with 409
 	IfMatch string `json:"If-Match"`
 }
 
@@ -3375,7 +3375,7 @@ type UpdateSecretParams struct {
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	// IfMatch The ETag of the version this write was based on; a write to any other version fails with 409
 	IfMatch string `json:"If-Match"`
 }
 
@@ -3396,7 +3396,7 @@ type DeleteSkillParams struct {
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	// IfMatch The ETag of the version this write was based on; a write to any other version fails with 409
 	IfMatch string `json:"If-Match"`
 }
 
@@ -3429,7 +3429,7 @@ type UpdateSkillParams struct {
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	// IfMatch The ETag of the version this write was based on; a write to any other version fails with 409
 	IfMatch string `json:"If-Match"`
 }
 
@@ -3444,7 +3444,7 @@ type DeleteTeamParams struct {
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	// IfMatch The ETag of the version this write was based on; a write to any other version fails with 409
 	IfMatch string `json:"If-Match"`
 }
 
@@ -3477,7 +3477,7 @@ type UpdateTeamParams struct {
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	// IfMatch The ETag of the version this write was based on; a write to any other version fails with 409
 	IfMatch string `json:"If-Match"`
 }
 
@@ -3598,7 +3598,7 @@ type DeleteWorkspaceTokenTrustParams struct {
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	// IfMatch The ETag of the version this write was based on; a write to any other version fails with 409
 	IfMatch string `json:"If-Match"`
 }
 
@@ -3636,7 +3636,7 @@ type UpdateWorkspaceTokenTrustParams struct {
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	// IfMatch The ETag of the version this write was based on; a write to any other version fails with 409
 	IfMatch string `json:"If-Match"`
 }
 
@@ -3654,7 +3654,7 @@ type DeleteWorkspaceRunnersParams struct {
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	// IfMatch The ETag of the version this write was based on; a write to any other version fails with 409
 	IfMatch string `json:"If-Match"`
 }
 
@@ -3688,7 +3688,7 @@ type UpdateWorkspaceRunnersParams struct {
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	// IfMatch The ETag of the version this write was based on; a write to any other version fails with 409
 	IfMatch string `json:"If-Match"`
 }
 
@@ -3751,7 +3751,7 @@ type DeleteWorkspaceParams struct {
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	// IfMatch The ETag of the version this write was based on; a write to any other version fails with 409
 	IfMatch string `json:"If-Match"`
 }
 
@@ -3784,7 +3784,7 @@ type UpdateWorkspaceParams struct {
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	// IfMatch The ETag of the version this write was based on; a write to any other version fails with 409
 	IfMatch string `json:"If-Match"`
 }
 
@@ -3810,7 +3810,7 @@ type CreateEgressJSONBody struct {
 	// Token Write-only: the token the egress calls Spotlight with, kept only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Egress-Token
 	Token *string `json:"token,omitempty"`
 
-	// TokenVersion Changed, with a new token, to rotate the egress token in place: the old token is refused at once
+	// TokenVersion Changed, with a new token, to rotate the egress token in place: the old token stops working at once
 	TokenVersion *int `json:"tokenVersion,omitempty"`
 
 	// Url Where the runners of a pool that names this egress send their traffic
@@ -3994,7 +3994,7 @@ type CreateRunnerPoolJSONBody struct {
 	// Token Write-only, and only for a pool without provision: the token its hosts claim with, kept only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Pool-Token
 	Token *string `json:"token,omitempty"`
 
-	// TokenVersion Changed, with a new token, to rotate the pool token in place: the old token is refused at once, while runs already claimed keep their own one-run credentials
+	// TokenVersion Changed, with a new token, to rotate the pool token in place: the old token stops working at once, while runs already claimed keep their own one-run credentials
 	TokenVersion *int `json:"tokenVersion,omitempty"`
 }
 
