@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"maps"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -381,6 +382,60 @@ func TestAPoolTokenSpotlightIssuesIsDroppedUnread(t *testing.T) {
 	}
 
 	if strings.Contains(fmt.Sprintf("%#v", created), issued) || *created.MaxRuns != 4 || *created.TokenVersion != 2 || created.Mode != "pull" {
+		t.Errorf("pool %#v", created)
+	}
+}
+
+var egress = map[string]any{
+	"id": "egress-1", "version": 1, "address": "shared", "warnings": []any{}, "workspaceId": "ws-1",
+	"key": "shared", "url": "https://egress.example.com", "tokenVersion": 3,
+}
+
+func TestAnEgressTokenSpotlightIssuesIsDroppedUnread(t *testing.T) {
+	const issued = "issued-egress-token-that-must-never-be-kept-anywhere"
+
+	api, recorded := serve(t, func(w http.ResponseWriter, _ *http.Request, _ int) {
+		w.Header().Set(client.EgressTokenHeader, issued)
+		reply(w, http.StatusCreated, "application/json", egress)
+	})
+
+	created, err := api.CreateEgress(context.Background(), "ws-1", client.EgressInput{Key: "shared", URL: "https://egress.example.com"})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if strings.Contains(fmt.Sprintf("%#v", created), issued) || created.URL != "https://egress.example.com" || *created.TokenVersion != 3 {
+		t.Errorf("egress %#v", created)
+	}
+
+	if body := recorded.all()[0].Body; strings.Contains(body, `"token`) {
+		t.Errorf("body %s", body)
+	}
+}
+
+func TestAPushPoolNamesItsEgress(t *testing.T) {
+	answer := maps.Clone(pool)
+	answer["mode"] = "push"
+	answer["provision"] = map[string]any{"url": "https://provision.example.com/runs", "secretVersion": 1, "egress": client.PlatformEgress}
+
+	api, recorded := serve(t, func(w http.ResponseWriter, _ *http.Request, _ int) {
+		reply(w, http.StatusCreated, "application/json", answer)
+	})
+
+	egress := client.PlatformEgress
+	created, err := api.CreateRunnerPool(context.Background(), "ws-1", client.RunnerPoolInput{
+		Key: "ephemeral", Labels: []string{},
+		Provision: &client.PoolProvision{URL: "https://provision.example.com/runs", Secret: "whsec_c2VjcmV0", Egress: &egress},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if body := recorded.all()[0].Body; !strings.Contains(body, `"egress":"spotlight"`) {
+		t.Errorf("body %s", body)
+	}
+
+	if created.Provision == nil || created.Provision.Egress == nil || *created.Provision.Egress != client.PlatformEgress {
 		t.Errorf("pool %#v", created)
 	}
 }

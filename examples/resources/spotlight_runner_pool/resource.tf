@@ -35,5 +35,6 @@ resource "spotlight_runner_pool" "k8s_jobs" {
     url            = "https://provision.example.com/runs"
     secret         = "whsec_${base64encode(random_password.provision.result)}"
     secret_version = 1
+    egress         = spotlight_egress.shared.id
   }
 }

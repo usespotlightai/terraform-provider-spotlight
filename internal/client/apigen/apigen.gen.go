@@ -288,6 +288,24 @@ func (e MintedTokenResponseDtoScopes) Valid() bool {
 	}
 }
 
+// Defines values for PoolProvisionResponseDtoEgressTraffic.
+const (
+	PoolProvisionResponseDtoEgressTrafficAll   PoolProvisionResponseDtoEgressTraffic = "all"
+	PoolProvisionResponseDtoEgressTrafficBound PoolProvisionResponseDtoEgressTraffic = "bound"
+)
+
+// Valid indicates whether the value is a known member of the PoolProvisionResponseDtoEgressTraffic enum.
+func (e PoolProvisionResponseDtoEgressTraffic) Valid() bool {
+	switch e {
+	case PoolProvisionResponseDtoEgressTrafficAll:
+		return true
+	case PoolProvisionResponseDtoEgressTrafficBound:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ProblemResponseDtoPermission.
 const (
 	ProblemResponseDtoPermissionAdminister        ProblemResponseDtoPermission = "administer"
@@ -375,17 +393,128 @@ func (e SecretSourceResponseDtoKind) Valid() bool {
 	}
 }
 
+// Defines values for TraceConnectionResponseDtoOutcome.
+const (
+	TraceConnectionResponseDtoOutcomeBlocked   TraceConnectionResponseDtoOutcome = "blocked"
+	TraceConnectionResponseDtoOutcomeFailed    TraceConnectionResponseDtoOutcome = "failed"
+	TraceConnectionResponseDtoOutcomeForwarded TraceConnectionResponseDtoOutcome = "forwarded"
+	TraceConnectionResponseDtoOutcomeTunnelled TraceConnectionResponseDtoOutcome = "tunnelled"
+)
+
+// Valid indicates whether the value is a known member of the TraceConnectionResponseDtoOutcome enum.
+func (e TraceConnectionResponseDtoOutcome) Valid() bool {
+	switch e {
+	case TraceConnectionResponseDtoOutcomeBlocked:
+		return true
+	case TraceConnectionResponseDtoOutcomeFailed:
+		return true
+	case TraceConnectionResponseDtoOutcomeForwarded:
+		return true
+	case TraceConnectionResponseDtoOutcomeTunnelled:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TraceConnectionResponseDtoReason.
+const (
+	TraceConnectionResponseDtoReasonAddressRefused TraceConnectionResponseDtoReason = "address-refused"
+	TraceConnectionResponseDtoReasonLessThannil    TraceConnectionResponseDtoReason = "<nil>"
+	TraceConnectionResponseDtoReasonNoSuchHost     TraceConnectionResponseDtoReason = "no-such-host"
+	TraceConnectionResponseDtoReasonNotAllowed     TraceConnectionResponseDtoReason = "not-allowed"
+	TraceConnectionResponseDtoReasonNotBound       TraceConnectionResponseDtoReason = "not-bound"
+	TraceConnectionResponseDtoReasonTimedOut       TraceConnectionResponseDtoReason = "timed-out"
+	TraceConnectionResponseDtoReasonTlsFailed      TraceConnectionResponseDtoReason = "tls-failed"
+	TraceConnectionResponseDtoReasonUnreachable    TraceConnectionResponseDtoReason = "unreachable"
+)
+
+// Valid indicates whether the value is a known member of the TraceConnectionResponseDtoReason enum.
+func (e TraceConnectionResponseDtoReason) Valid() bool {
+	switch e {
+	case TraceConnectionResponseDtoReasonAddressRefused:
+		return true
+	case TraceConnectionResponseDtoReasonLessThannil:
+		return true
+	case TraceConnectionResponseDtoReasonNoSuchHost:
+		return true
+	case TraceConnectionResponseDtoReasonNotAllowed:
+		return true
+	case TraceConnectionResponseDtoReasonNotBound:
+		return true
+	case TraceConnectionResponseDtoReasonTimedOut:
+		return true
+	case TraceConnectionResponseDtoReasonTlsFailed:
+		return true
+	case TraceConnectionResponseDtoReasonUnreachable:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TraceConnectionResponseDtoTrouble.
+const (
+	TraceConnectionResponseDtoTroubleBlocked     TraceConnectionResponseDtoTrouble = "blocked"
+	TraceConnectionResponseDtoTroubleFailed      TraceConnectionResponseDtoTrouble = "failed"
+	TraceConnectionResponseDtoTroubleLessThannil TraceConnectionResponseDtoTrouble = "<nil>"
+	TraceConnectionResponseDtoTroubleRefused     TraceConnectionResponseDtoTrouble = "refused"
+	TraceConnectionResponseDtoTroubleServerError TraceConnectionResponseDtoTrouble = "server-error"
+)
+
+// Valid indicates whether the value is a known member of the TraceConnectionResponseDtoTrouble enum.
+func (e TraceConnectionResponseDtoTrouble) Valid() bool {
+	switch e {
+	case TraceConnectionResponseDtoTroubleBlocked:
+		return true
+	case TraceConnectionResponseDtoTroubleFailed:
+		return true
+	case TraceConnectionResponseDtoTroubleLessThannil:
+		return true
+	case TraceConnectionResponseDtoTroubleRefused:
+		return true
+	case TraceConnectionResponseDtoTroubleServerError:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TraceNodeResponseDtoEgress.
+const (
+	TraceNodeResponseDtoEgressEnforced    TraceNodeResponseDtoEgress = "enforced"
+	TraceNodeResponseDtoEgressLessThannil TraceNodeResponseDtoEgress = "<nil>"
+	TraceNodeResponseDtoEgressNotEnforced TraceNodeResponseDtoEgress = "not-enforced"
+)
+
+// Valid indicates whether the value is a known member of the TraceNodeResponseDtoEgress enum.
+func (e TraceNodeResponseDtoEgress) Valid() bool {
+	switch e {
+	case TraceNodeResponseDtoEgressEnforced:
+		return true
+	case TraceNodeResponseDtoEgressLessThannil:
+		return true
+	case TraceNodeResponseDtoEgressNotEnforced:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for TraceNodeResponseDtoKind.
 const (
-	Phase TraceNodeResponseDtoKind = "phase"
-	Run   TraceNodeResponseDtoKind = "run"
-	Span  TraceNodeResponseDtoKind = "span"
-	Step  TraceNodeResponseDtoKind = "step"
+	Connection TraceNodeResponseDtoKind = "connection"
+	Phase      TraceNodeResponseDtoKind = "phase"
+	Run        TraceNodeResponseDtoKind = "run"
+	Span       TraceNodeResponseDtoKind = "span"
+	Step       TraceNodeResponseDtoKind = "step"
 )
 
 // Valid indicates whether the value is a known member of the TraceNodeResponseDtoKind enum.
 func (e TraceNodeResponseDtoKind) Valid() bool {
 	switch e {
+	case Connection:
+		return true
 	case Phase:
 		return true
 	case Run:
@@ -474,6 +603,51 @@ const (
 func (e ListExpressionPositionsParamsSpotlightApiVersion) Valid() bool {
 	switch e {
 	case ListExpressionPositionsParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DeleteEgressParamsSpotlightApiVersion.
+const (
+	DeleteEgressParamsSpotlightApiVersionN20260923 DeleteEgressParamsSpotlightApiVersion = "2026-09-23"
+)
+
+// Valid indicates whether the value is a known member of the DeleteEgressParamsSpotlightApiVersion enum.
+func (e DeleteEgressParamsSpotlightApiVersion) Valid() bool {
+	switch e {
+	case DeleteEgressParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReadEgressParamsSpotlightApiVersion.
+const (
+	ReadEgressParamsSpotlightApiVersionN20260923 ReadEgressParamsSpotlightApiVersion = "2026-09-23"
+)
+
+// Valid indicates whether the value is a known member of the ReadEgressParamsSpotlightApiVersion enum.
+func (e ReadEgressParamsSpotlightApiVersion) Valid() bool {
+	switch e {
+	case ReadEgressParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateEgressParamsSpotlightApiVersion.
+const (
+	UpdateEgressParamsSpotlightApiVersionN20260923 UpdateEgressParamsSpotlightApiVersion = "2026-09-23"
+)
+
+// Valid indicates whether the value is a known member of the UpdateEgressParamsSpotlightApiVersion enum.
+func (e UpdateEgressParamsSpotlightApiVersion) Valid() bool {
+	switch e {
+	case UpdateEgressParamsSpotlightApiVersionN20260923:
 		return true
 	default:
 		return false
@@ -699,6 +873,24 @@ const (
 func (e UpdateRunnerPoolParamsSpotlightApiVersion) Valid() bool {
 	switch e {
 	case UpdateRunnerPoolParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateRunnerPoolJSONBodyProvisionEgressTraffic.
+const (
+	UpdateRunnerPoolJSONBodyProvisionEgressTrafficAll   UpdateRunnerPoolJSONBodyProvisionEgressTraffic = "all"
+	UpdateRunnerPoolJSONBodyProvisionEgressTrafficBound UpdateRunnerPoolJSONBodyProvisionEgressTraffic = "bound"
+)
+
+// Valid indicates whether the value is a known member of the UpdateRunnerPoolJSONBodyProvisionEgressTraffic enum.
+func (e UpdateRunnerPoolJSONBodyProvisionEgressTraffic) Valid() bool {
+	switch e {
+	case UpdateRunnerPoolJSONBodyProvisionEgressTrafficAll:
+		return true
+	case UpdateRunnerPoolJSONBodyProvisionEgressTrafficBound:
 		return true
 	default:
 		return false
@@ -1206,6 +1398,51 @@ func (e UpdateWorkspaceParamsSpotlightApiVersion) Valid() bool {
 	}
 }
 
+// Defines values for ListEgressesParamsSpotlightApiVersion.
+const (
+	ListEgressesParamsSpotlightApiVersionN20260923 ListEgressesParamsSpotlightApiVersion = "2026-09-23"
+)
+
+// Valid indicates whether the value is a known member of the ListEgressesParamsSpotlightApiVersion enum.
+func (e ListEgressesParamsSpotlightApiVersion) Valid() bool {
+	switch e {
+	case ListEgressesParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CreateEgressParamsSpotlightApiVersion.
+const (
+	CreateEgressParamsSpotlightApiVersionN20260923 CreateEgressParamsSpotlightApiVersion = "2026-09-23"
+)
+
+// Valid indicates whether the value is a known member of the CreateEgressParamsSpotlightApiVersion enum.
+func (e CreateEgressParamsSpotlightApiVersion) Valid() bool {
+	switch e {
+	case CreateEgressParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ImportEgressParamsSpotlightApiVersion.
+const (
+	ImportEgressParamsSpotlightApiVersionN20260923 ImportEgressParamsSpotlightApiVersion = "2026-09-23"
+)
+
+// Valid indicates whether the value is a known member of the ImportEgressParamsSpotlightApiVersion enum.
+func (e ImportEgressParamsSpotlightApiVersion) Valid() bool {
+	switch e {
+	case ImportEgressParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ListHarnessProfilesParamsSpotlightApiVersion.
 const (
 	ListHarnessProfilesParamsSpotlightApiVersionN20260923 ListHarnessProfilesParamsSpotlightApiVersion = "2026-09-23"
@@ -1350,6 +1587,24 @@ const (
 func (e CreateRunnerPoolParamsSpotlightApiVersion) Valid() bool {
 	switch e {
 	case CreateRunnerPoolParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CreateRunnerPoolJSONBodyProvisionEgressTraffic.
+const (
+	All   CreateRunnerPoolJSONBodyProvisionEgressTraffic = "all"
+	Bound CreateRunnerPoolJSONBodyProvisionEgressTraffic = "bound"
+)
+
+// Valid indicates whether the value is a known member of the CreateRunnerPoolJSONBodyProvisionEgressTraffic enum.
+func (e CreateRunnerPoolJSONBodyProvisionEgressTraffic) Valid() bool {
+	switch e {
+	case All:
+		return true
+	case Bound:
 		return true
 	default:
 		return false
@@ -1724,6 +1979,39 @@ type DescribedSourceResponseDto struct {
 
 // DescribedSourceResponseDtoKind The kind of API description, or the MCP server, its tools are generated from
 type DescribedSourceResponseDtoKind string
+
+// EgressResourceListResponseDto defines model for EgressResourceListResponseDto.
+type EgressResourceListResponseDto struct {
+	// Items Every one there is, each as a read would answer it, in address order
+	Items []EgressResourceResponseDto `json:"items"`
+}
+
+// EgressResourceResponseDto defines model for EgressResourceResponseDto.
+type EgressResourceResponseDto struct {
+	// Address Names the resource within its workspace; terraform import takes it
+	Address string `json:"address"`
+
+	// Id Issued by Spotlight when the resource is created, and never changed
+	Id string `json:"id"`
+
+	// Key Names the egress, and is its address; fixed for its life
+	Key string `json:"key"`
+
+	// TokenVersion Changed, with a new token, to rotate the egress token, which is write-only and never answered
+	TokenVersion *int `json:"tokenVersion"`
+
+	// Url Where the runners of a pool that names this egress send their traffic
+	Url string `json:"url"`
+
+	// Version Rises with every change; the ETag carries it, and a write sends it back as If-Match
+	Version float32 `json:"version"`
+
+	// Warnings What would work better, though nothing stops it working; not settable
+	Warnings []FieldErrorResponseDto `json:"warnings"`
+
+	// WorkspaceId The workspace it belongs to
+	WorkspaceId string `json:"workspaceId"`
+}
 
 // ExchangeWorkloadTokenRequestDto defines model for ExchangeWorkloadTokenRequestDto.
 type ExchangeWorkloadTokenRequestDto struct {
@@ -2155,12 +2443,21 @@ type PermissionsResponseDto struct {
 
 // PoolProvisionResponseDto defines model for PoolProvisionResponseDto.
 type PoolProvisionResponseDto struct {
+	// Egress The egress the pool’s runners send their traffic through: spotlight for the platform egress, the id of an egress in the workspace, or null for none
+	Egress *string `json:"egress"`
+
+	// EgressTraffic Which traffic of a run goes through the egress: all, or only the traffic to bound hosts. all when the pool names no egress
+	EgressTraffic PoolProvisionResponseDtoEgressTraffic `json:"egressTraffic"`
+
 	// SecretVersion Changed to rotate provision.secret, which is write-only and never answered
 	SecretVersion *int `json:"secretVersion"`
 
 	// Url Called with every run the pool is to serve, signed as Standard Webhooks sign
 	Url string `json:"url"`
 }
+
+// PoolProvisionResponseDtoEgressTraffic Which traffic of a run goes through the egress: all, or only the traffic to bound hosts. all when the pool names no egress
+type PoolProvisionResponseDtoEgressTraffic string
 
 // ProblemResponseDto defines model for ProblemResponseDto.
 type ProblemResponseDto struct {
@@ -2445,13 +2742,49 @@ type TeamResourceResponseDto struct {
 	WorkspaceId string `json:"workspaceId"`
 }
 
+// TraceConnectionResponseDto defines model for TraceConnectionResponseDto.
+type TraceConnectionResponseDto struct {
+	Host string `json:"host"`
+
+	// Outcome blocked: egress stopped it. failed: egress could not open it. forwarded: the host refused or failed a request egress added a secret to
+	Outcome TraceConnectionResponseDtoOutcome `json:"outcome"`
+	Port    float32                           `json:"port"`
+
+	// Reason Why egress blocked the connection or could not open it
+	Reason *TraceConnectionResponseDtoReason `json:"reason"`
+
+	// Status The status the host answered a forwarded request with
+	Status *float32 `json:"status"`
+
+	// Times How many times the same thing went wrong in this row. The row starts at the first time
+	Times float32 `json:"times"`
+
+	// Trouble What went wrong. blocked: egress stopped it. failed: egress could not open it. refused: the host answered a forwarded request with 401 or 403. server-error: the host answered it with 500 or more. null: nothing went wrong
+	Trouble *TraceConnectionResponseDtoTrouble `json:"trouble"`
+}
+
+// TraceConnectionResponseDtoOutcome blocked: egress stopped it. failed: egress could not open it. forwarded: the host refused or failed a request egress added a secret to
+type TraceConnectionResponseDtoOutcome string
+
+// TraceConnectionResponseDtoReason Why egress blocked the connection or could not open it
+type TraceConnectionResponseDtoReason string
+
+// TraceConnectionResponseDtoTrouble What went wrong. blocked: egress stopped it. failed: egress could not open it. refused: the host answered a forwarded request with 401 or 403. server-error: the host answered it with 500 or more. null: nothing went wrong
+type TraceConnectionResponseDtoTrouble string
+
 // TraceNodeResponseDto defines model for TraceNodeResponseDto.
 type TraceNodeResponseDto struct {
-	Children []TraceNodeResponseDto   `json:"children"`
-	Cost     *float32                 `json:"cost"`
-	Currency *string                  `json:"currency"`
-	Id       string                   `json:"id"`
-	Kind     TraceNodeResponseDtoKind `json:"kind"`
+	Children []TraceNodeResponseDto `json:"children"`
+
+	// Connection On a connection row: a connection of the run that went wrong, as a shared egress recorded it
+	Connection *TraceConnectionResponseDto `json:"connection"`
+	Cost       *float32                    `json:"cost"`
+	Currency   *string                     `json:"currency"`
+
+	// Egress On a run row: what the runner in the sandbox reported before the harness started. enforced: a direct connection around egress failed. not-enforced: it operated. null: the runner did not check
+	Egress *TraceNodeResponseDtoEgress `json:"egress"`
+	Id     string                      `json:"id"`
+	Kind   TraceNodeResponseDtoKind    `json:"kind"`
 
 	// Ms How long it took, in ms
 	Ms        float32                 `json:"ms"`
@@ -2463,6 +2796,9 @@ type TraceNodeResponseDto struct {
 	// Tone The agent working, the overhead around it, or a fault
 	Tone TraceNodeResponseDtoTone `json:"tone"`
 }
+
+// TraceNodeResponseDtoEgress On a run row: what the runner in the sandbox reported before the harness started. enforced: a direct connection around egress failed. not-enforced: it operated. null: the runner did not check
+type TraceNodeResponseDtoEgress string
 
 // TraceNodeResponseDtoKind defines model for TraceNodeResponseDto.Kind.
 type TraceNodeResponseDtoKind string
@@ -2604,6 +2940,62 @@ type ListExpressionPositionsParams struct {
 
 // ListExpressionPositionsParamsSpotlightApiVersion defines parameters for ListExpressionPositions.
 type ListExpressionPositionsParamsSpotlightApiVersion string
+
+// DeleteEgressParams defines parameters for DeleteEgress.
+type DeleteEgressParams struct {
+	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	SpotlightApiVersion *DeleteEgressParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
+
+	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
+	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
+
+	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	IfMatch string `json:"If-Match"`
+}
+
+// DeleteEgressParamsSpotlightApiVersion defines parameters for DeleteEgress.
+type DeleteEgressParamsSpotlightApiVersion string
+
+// ReadEgressParams defines parameters for ReadEgress.
+type ReadEgressParams struct {
+	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	SpotlightApiVersion *ReadEgressParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
+
+	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
+	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
+}
+
+// ReadEgressParamsSpotlightApiVersion defines parameters for ReadEgress.
+type ReadEgressParamsSpotlightApiVersion string
+
+// UpdateEgressJSONBody defines parameters for UpdateEgress.
+type UpdateEgressJSONBody struct {
+	Key string `json:"key"`
+
+	// Token Write-only: the token the egress calls Spotlight with, kept only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Egress-Token
+	Token *string `json:"token,omitempty"`
+
+	// TokenVersion Changed, with a new token, to rotate the egress token in place: the old token is refused at once
+	TokenVersion *int `json:"tokenVersion,omitempty"`
+
+	// Url Where the runners of a pool that names this egress send their traffic
+	Url string `json:"url"`
+}
+
+// UpdateEgressParams defines parameters for UpdateEgress.
+type UpdateEgressParams struct {
+	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	SpotlightApiVersion *UpdateEgressParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
+
+	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
+	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
+
+	// IfMatch The ETag of the version this write was based on; a write to any other version is refused with 409
+	IfMatch string `json:"If-Match"`
+}
+
+// UpdateEgressParamsSpotlightApiVersion defines parameters for UpdateEgress.
+type UpdateEgressParamsSpotlightApiVersion string
 
 // DeleteHarnessProfileParams defines parameters for DeleteHarnessProfile.
 type DeleteHarnessProfileParams struct {
@@ -2835,6 +3227,12 @@ type UpdateRunnerPoolJSONBody struct {
 
 	// Provision Makes the pool push: Spotlight calls url with each run it is to serve, and the pool has no token. Fixed for the pool’s life
 	Provision *struct {
+		// Egress The egress the pool’s runners send their traffic through: spotlight for the platform egress, or the id of an egress in the workspace. Left out, the runners have no egress, and runs that use secrets or the Spotlight API do not go to the pool
+		Egress *string `json:"egress,omitempty"`
+
+		// EgressTraffic Which traffic of a run goes through the egress. all: every connection, so egress records every host and its allow-list applies to all of them. bound: only the traffic to hosts that a secret of the run is bound to; other traffic goes directly. Only with egress
+		EgressTraffic *UpdateRunnerPoolJSONBodyProvisionEgressTraffic `json:"egressTraffic,omitempty"`
+
 		// Secret Write-only: signs each call as Standard Webhooks sign, given as whsec_ and 24 to 64 base64 bytes. Required on create, and whenever secretVersion changes
 		Secret *string `json:"secret,omitempty"`
 
@@ -2864,6 +3262,9 @@ type UpdateRunnerPoolParams struct {
 
 // UpdateRunnerPoolParamsSpotlightApiVersion defines parameters for UpdateRunnerPool.
 type UpdateRunnerPoolParamsSpotlightApiVersion string
+
+// UpdateRunnerPoolJSONBodyProvisionEgressTraffic defines parameters for UpdateRunnerPool.
+type UpdateRunnerPoolJSONBodyProvisionEgressTraffic string
 
 // DeleteRunnerTrustParams defines parameters for DeleteRunnerTrust.
 type DeleteRunnerTrustParams struct {
@@ -3391,6 +3792,62 @@ type UpdateWorkspaceParams struct {
 // UpdateWorkspaceParamsSpotlightApiVersion defines parameters for UpdateWorkspace.
 type UpdateWorkspaceParamsSpotlightApiVersion string
 
+// ListEgressesParams defines parameters for ListEgresses.
+type ListEgressesParams struct {
+	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	SpotlightApiVersion *ListEgressesParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
+
+	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
+	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
+}
+
+// ListEgressesParamsSpotlightApiVersion defines parameters for ListEgresses.
+type ListEgressesParamsSpotlightApiVersion string
+
+// CreateEgressJSONBody defines parameters for CreateEgress.
+type CreateEgressJSONBody struct {
+	Key string `json:"key"`
+
+	// Token Write-only: the token the egress calls Spotlight with, kept only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Egress-Token
+	Token *string `json:"token,omitempty"`
+
+	// TokenVersion Changed, with a new token, to rotate the egress token in place: the old token is refused at once
+	TokenVersion *int `json:"tokenVersion,omitempty"`
+
+	// Url Where the runners of a pool that names this egress send their traffic
+	Url string `json:"url"`
+}
+
+// CreateEgressParams defines parameters for CreateEgress.
+type CreateEgressParams struct {
+	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	SpotlightApiVersion *CreateEgressParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
+
+	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
+	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
+
+	// IdempotencyKey Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more
+	IdempotencyKey string `json:"Idempotency-Key"`
+}
+
+// CreateEgressParamsSpotlightApiVersion defines parameters for CreateEgress.
+type CreateEgressParamsSpotlightApiVersion string
+
+// ImportEgressParams defines parameters for ImportEgress.
+type ImportEgressParams struct {
+	// Address The egress's address within the workspace
+	Address interface{} `form:"address" json:"address"`
+
+	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	SpotlightApiVersion *ImportEgressParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
+
+	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
+	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
+}
+
+// ImportEgressParamsSpotlightApiVersion defines parameters for ImportEgress.
+type ImportEgressParamsSpotlightApiVersion string
+
 // ListHarnessProfilesParams defines parameters for ListHarnessProfiles.
 type ListHarnessProfilesParams struct {
 	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
@@ -3521,6 +3978,12 @@ type CreateRunnerPoolJSONBody struct {
 
 	// Provision Makes the pool push: Spotlight calls url with each run it is to serve, and the pool has no token. Fixed for the pool’s life
 	Provision *struct {
+		// Egress The egress the pool’s runners send their traffic through: spotlight for the platform egress, or the id of an egress in the workspace. Left out, the runners have no egress, and runs that use secrets or the Spotlight API do not go to the pool
+		Egress *string `json:"egress,omitempty"`
+
+		// EgressTraffic Which traffic of a run goes through the egress. all: every connection, so egress records every host and its allow-list applies to all of them. bound: only the traffic to hosts that a secret of the run is bound to; other traffic goes directly. Only with egress
+		EgressTraffic *CreateRunnerPoolJSONBodyProvisionEgressTraffic `json:"egressTraffic,omitempty"`
+
 		// Secret Write-only: signs each call as Standard Webhooks sign, given as whsec_ and 24 to 64 base64 bytes. Required on create, and whenever secretVersion changes
 		Secret *string `json:"secret,omitempty"`
 
@@ -3550,6 +4013,9 @@ type CreateRunnerPoolParams struct {
 
 // CreateRunnerPoolParamsSpotlightApiVersion defines parameters for CreateRunnerPool.
 type CreateRunnerPoolParamsSpotlightApiVersion string
+
+// CreateRunnerPoolJSONBodyProvisionEgressTraffic defines parameters for CreateRunnerPool.
+type CreateRunnerPoolJSONBodyProvisionEgressTraffic string
 
 // ImportRunnerPoolParams defines parameters for ImportRunnerPool.
 type ImportRunnerPoolParams struct {
@@ -3872,6 +4338,9 @@ type ImportWorkspaceRunnersParamsSpotlightApiVersion string
 // CheckExpressionJSONRequestBody defines body for CheckExpression for application/json ContentType.
 type CheckExpressionJSONRequestBody = CheckExpressionRequestDto
 
+// UpdateEgressJSONRequestBody defines body for UpdateEgress for application/json ContentType.
+type UpdateEgressJSONRequestBody UpdateEgressJSONBody
+
 // UpdateHarnessProfileJSONRequestBody defines body for UpdateHarnessProfile for application/json ContentType.
 type UpdateHarnessProfileJSONRequestBody UpdateHarnessProfileJSONBody
 
@@ -3925,6 +4394,9 @@ type CreateWorkspaceJSONRequestBody CreateWorkspaceJSONBody
 
 // UpdateWorkspaceJSONRequestBody defines body for UpdateWorkspace for application/json ContentType.
 type UpdateWorkspaceJSONRequestBody UpdateWorkspaceJSONBody
+
+// CreateEgressJSONRequestBody defines body for CreateEgress for application/json ContentType.
+type CreateEgressJSONRequestBody CreateEgressJSONBody
 
 // CreateRunnerPoolJSONRequestBody defines body for CreateRunnerPool for application/json ContentType.
 type CreateRunnerPoolJSONRequestBody CreateRunnerPoolJSONBody
@@ -4168,6 +4640,17 @@ type ClientInterface interface {
 	// ListExpressionPositions request
 	ListExpressionPositions(ctx context.Context, params *ListExpressionPositionsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// DeleteEgress request
+	DeleteEgress(ctx context.Context, id string, params *DeleteEgressParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ReadEgress request
+	ReadEgress(ctx context.Context, id string, params *ReadEgressParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateEgressWithBody request with any body
+	UpdateEgressWithBody(ctx context.Context, id string, params *UpdateEgressParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateEgress(ctx context.Context, id string, params *UpdateEgressParams, body UpdateEgressJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// DeleteHarnessProfile request
 	DeleteHarnessProfile(ctx context.Context, id string, params *DeleteHarnessProfileParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -4336,6 +4819,17 @@ type ClientInterface interface {
 
 	UpdateWorkspace(ctx context.Context, id string, params *UpdateWorkspaceParams, body UpdateWorkspaceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListEgresses request
+	ListEgresses(ctx context.Context, workspaceId string, params *ListEgressesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateEgressWithBody request with any body
+	CreateEgressWithBody(ctx context.Context, workspaceId string, params *CreateEgressParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateEgress(ctx context.Context, workspaceId string, params *CreateEgressParams, body CreateEgressJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ImportEgress request
+	ImportEgress(ctx context.Context, workspaceId string, params *ImportEgressParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListHarnessProfiles request
 	ListHarnessProfiles(ctx context.Context, workspaceId string, params *ListHarnessProfilesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -4464,6 +4958,54 @@ func (c *Client) CheckExpression(ctx context.Context, params *CheckExpressionPar
 
 func (c *Client) ListExpressionPositions(ctx context.Context, params *ListExpressionPositionsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListExpressionPositionsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteEgress(ctx context.Context, id string, params *DeleteEgressParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteEgressRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ReadEgress(ctx context.Context, id string, params *ReadEgressParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewReadEgressRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateEgressWithBody(ctx context.Context, id string, params *UpdateEgressParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateEgressRequestWithBody(c.Server, id, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateEgress(ctx context.Context, id string, params *UpdateEgressParams, body UpdateEgressJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateEgressRequest(c.Server, id, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -5218,6 +5760,54 @@ func (c *Client) UpdateWorkspace(ctx context.Context, id string, params *UpdateW
 	return c.Client.Do(req)
 }
 
+func (c *Client) ListEgresses(ctx context.Context, workspaceId string, params *ListEgressesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListEgressesRequest(c.Server, workspaceId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateEgressWithBody(ctx context.Context, workspaceId string, params *CreateEgressParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateEgressRequestWithBody(c.Server, workspaceId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateEgress(ctx context.Context, workspaceId string, params *CreateEgressParams, body CreateEgressJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateEgressRequest(c.Server, workspaceId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ImportEgress(ctx context.Context, workspaceId string, params *ImportEgressParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewImportEgressRequest(c.Server, workspaceId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) ListHarnessProfiles(ctx context.Context, workspaceId string, params *ListHarnessProfilesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListHarnessProfilesRequest(c.Server, workspaceId, params)
 	if err != nil {
@@ -5763,6 +6353,217 @@ func NewListExpressionPositionsRequest(server string, params *ListExpressionPosi
 
 			req.Header.Set("Spotlight-Client", headerParam1)
 		}
+
+	}
+
+	return req, nil
+}
+
+// NewDeleteEgressRequest generates requests for DeleteEgress
+func NewDeleteEgressRequest(server string, id string, params *DeleteEgressParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/resources/egresses/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+
+		if params.SpotlightApiVersion != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Api-Version", headerParam0)
+		}
+
+		if params.SpotlightClient != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Client", headerParam1)
+		}
+
+		var headerParam2 string
+
+		headerParam2, err = runtime.StyleParamWithOptions("simple", false, "If-Match", params.IfMatch, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("If-Match", headerParam2)
+
+	}
+
+	return req, nil
+}
+
+// NewReadEgressRequest generates requests for ReadEgress
+func NewReadEgressRequest(server string, id string, params *ReadEgressParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/resources/egresses/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+
+		if params.SpotlightApiVersion != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Api-Version", headerParam0)
+		}
+
+		if params.SpotlightClient != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Client", headerParam1)
+		}
+
+	}
+
+	return req, nil
+}
+
+// NewUpdateEgressRequest calls the generic UpdateEgress builder with application/json body
+func NewUpdateEgressRequest(server string, id string, params *UpdateEgressParams, body UpdateEgressJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateEgressRequestWithBody(server, id, params, "application/json", bodyReader)
+}
+
+// NewUpdateEgressRequestWithBody generates requests for UpdateEgress with any type of body
+func NewUpdateEgressRequestWithBody(server string, id string, params *UpdateEgressParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/resources/egresses/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		if params.SpotlightApiVersion != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Api-Version", headerParam0)
+		}
+
+		if params.SpotlightClient != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Client", headerParam1)
+		}
+
+		var headerParam2 string
+
+		headerParam2, err = runtime.StyleParamWithOptions("simple", false, "If-Match", params.IfMatch, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("If-Match", headerParam2)
 
 	}
 
@@ -8915,6 +9716,231 @@ func NewUpdateWorkspaceRequestWithBody(server string, id string, params *UpdateW
 	return req, nil
 }
 
+// NewListEgressesRequest generates requests for ListEgresses
+func NewListEgressesRequest(server string, workspaceId string, params *ListEgressesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/resources/workspaces/%s/egresses", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+
+		if params.SpotlightApiVersion != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Api-Version", headerParam0)
+		}
+
+		if params.SpotlightClient != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Client", headerParam1)
+		}
+
+	}
+
+	return req, nil
+}
+
+// NewCreateEgressRequest calls the generic CreateEgress builder with application/json body
+func NewCreateEgressRequest(server string, workspaceId string, params *CreateEgressParams, body CreateEgressJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateEgressRequestWithBody(server, workspaceId, params, "application/json", bodyReader)
+}
+
+// NewCreateEgressRequestWithBody generates requests for CreateEgress with any type of body
+func NewCreateEgressRequestWithBody(server string, workspaceId string, params *CreateEgressParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/resources/workspaces/%s/egresses", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		if params.SpotlightApiVersion != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Api-Version", headerParam0)
+		}
+
+		if params.SpotlightClient != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Client", headerParam1)
+		}
+
+		var headerParam2 string
+
+		headerParam2, err = runtime.StyleParamWithOptions("simple", false, "Idempotency-Key", params.IdempotencyKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("Idempotency-Key", headerParam2)
+
+	}
+
+	return req, nil
+}
+
+// NewImportEgressRequest generates requests for ImportEgress
+func NewImportEgressRequest(server string, workspaceId string, params *ImportEgressParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/resources/workspaces/%s/egresses/import", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "address", params.Address, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+
+		if params.SpotlightApiVersion != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Api-Version", headerParam0)
+		}
+
+		if params.SpotlightClient != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Client", headerParam1)
+		}
+
+	}
+
+	return req, nil
+}
+
 // NewListHarnessProfilesRequest generates requests for ListHarnessProfiles
 func NewListHarnessProfilesRequest(server string, workspaceId string, params *ListHarnessProfilesParams) (*http.Request, error) {
 	var err error
@@ -11071,6 +12097,17 @@ type ClientWithResponsesInterface interface {
 	// ListExpressionPositionsWithResponse request
 	ListExpressionPositionsWithResponse(ctx context.Context, params *ListExpressionPositionsParams, reqEditors ...RequestEditorFn) (*ListExpressionPositionsResponse, error)
 
+	// DeleteEgressWithResponse request
+	DeleteEgressWithResponse(ctx context.Context, id string, params *DeleteEgressParams, reqEditors ...RequestEditorFn) (*DeleteEgressResponse, error)
+
+	// ReadEgressWithResponse request
+	ReadEgressWithResponse(ctx context.Context, id string, params *ReadEgressParams, reqEditors ...RequestEditorFn) (*ReadEgressResponse, error)
+
+	// UpdateEgressWithBodyWithResponse request with any body
+	UpdateEgressWithBodyWithResponse(ctx context.Context, id string, params *UpdateEgressParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateEgressResponse, error)
+
+	UpdateEgressWithResponse(ctx context.Context, id string, params *UpdateEgressParams, body UpdateEgressJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateEgressResponse, error)
+
 	// DeleteHarnessProfileWithResponse request
 	DeleteHarnessProfileWithResponse(ctx context.Context, id string, params *DeleteHarnessProfileParams, reqEditors ...RequestEditorFn) (*DeleteHarnessProfileResponse, error)
 
@@ -11239,6 +12276,17 @@ type ClientWithResponsesInterface interface {
 
 	UpdateWorkspaceWithResponse(ctx context.Context, id string, params *UpdateWorkspaceParams, body UpdateWorkspaceJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWorkspaceResponse, error)
 
+	// ListEgressesWithResponse request
+	ListEgressesWithResponse(ctx context.Context, workspaceId string, params *ListEgressesParams, reqEditors ...RequestEditorFn) (*ListEgressesResponse, error)
+
+	// CreateEgressWithBodyWithResponse request with any body
+	CreateEgressWithBodyWithResponse(ctx context.Context, workspaceId string, params *CreateEgressParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateEgressResponse, error)
+
+	CreateEgressWithResponse(ctx context.Context, workspaceId string, params *CreateEgressParams, body CreateEgressJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateEgressResponse, error)
+
+	// ImportEgressWithResponse request
+	ImportEgressWithResponse(ctx context.Context, workspaceId string, params *ImportEgressParams, reqEditors ...RequestEditorFn) (*ImportEgressResponse, error)
+
 	// ListHarnessProfilesWithResponse request
 	ListHarnessProfilesWithResponse(ctx context.Context, workspaceId string, params *ListHarnessProfilesParams, reqEditors ...RequestEditorFn) (*ListHarnessProfilesResponse, error)
 
@@ -11401,6 +12449,111 @@ func (r ListExpressionPositionsResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r ListExpressionPositionsResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DeleteEgressResponse struct {
+	Body                      []byte
+	HTTPResponse              *http.Response
+	ApplicationproblemJSON400 *ProblemResponseDto
+	ApplicationproblemJSON401 *ProblemResponseDto
+	ApplicationproblemJSON403 *ProblemResponseDto
+	ApplicationproblemJSON404 *ProblemResponseDto
+	ApplicationproblemJSON409 *ProblemResponseDto
+	ApplicationproblemJSON428 *ProblemResponseDto
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteEgressResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteEgressResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteEgressResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ReadEgressResponse struct {
+	Body                      []byte
+	HTTPResponse              *http.Response
+	JSON200                   *EgressResourceResponseDto
+	ApplicationproblemJSON400 *ProblemResponseDto
+	ApplicationproblemJSON401 *ProblemResponseDto
+	ApplicationproblemJSON404 *ProblemResponseDto
+}
+
+// Status returns HTTPResponse.Status
+func (r ReadEgressResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ReadEgressResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ReadEgressResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type UpdateEgressResponse struct {
+	Body                      []byte
+	HTTPResponse              *http.Response
+	JSON200                   *EgressResourceResponseDto
+	ApplicationproblemJSON400 *ProblemResponseDto
+	ApplicationproblemJSON401 *ProblemResponseDto
+	ApplicationproblemJSON403 *ProblemResponseDto
+	ApplicationproblemJSON404 *ProblemResponseDto
+	ApplicationproblemJSON409 *ProblemResponseDto
+	ApplicationproblemJSON422 *ProblemResponseDto
+	ApplicationproblemJSON428 *ProblemResponseDto
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateEgressResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateEgressResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r UpdateEgressResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -12948,6 +14101,108 @@ func (r UpdateWorkspaceResponse) ContentType() string {
 	return ""
 }
 
+type ListEgressesResponse struct {
+	Body                      []byte
+	HTTPResponse              *http.Response
+	JSON200                   *EgressResourceListResponseDto
+	ApplicationproblemJSON400 *ProblemResponseDto
+	ApplicationproblemJSON401 *ProblemResponseDto
+	ApplicationproblemJSON404 *ProblemResponseDto
+}
+
+// Status returns HTTPResponse.Status
+func (r ListEgressesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListEgressesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListEgressesResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type CreateEgressResponse struct {
+	Body                      []byte
+	HTTPResponse              *http.Response
+	JSON201                   *EgressResourceResponseDto
+	ApplicationproblemJSON400 *ProblemResponseDto
+	ApplicationproblemJSON401 *ProblemResponseDto
+	ApplicationproblemJSON403 *ProblemResponseDto
+	ApplicationproblemJSON404 *ProblemResponseDto
+	ApplicationproblemJSON409 *ProblemResponseDto
+	ApplicationproblemJSON422 *ProblemResponseDto
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateEgressResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateEgressResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateEgressResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ImportEgressResponse struct {
+	Body                      []byte
+	HTTPResponse              *http.Response
+	JSON200                   *EgressResourceResponseDto
+	ApplicationproblemJSON400 *ProblemResponseDto
+	ApplicationproblemJSON401 *ProblemResponseDto
+	ApplicationproblemJSON404 *ProblemResponseDto
+}
+
+// Status returns HTTPResponse.Status
+func (r ImportEgressResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ImportEgressResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ImportEgressResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type ListHarnessProfilesResponse struct {
 	Body                      []byte
 	HTTPResponse              *http.Response
@@ -13946,6 +15201,41 @@ func (c *ClientWithResponses) ListExpressionPositionsWithResponse(ctx context.Co
 	return ParseListExpressionPositionsResponse(rsp)
 }
 
+// DeleteEgressWithResponse request returning *DeleteEgressResponse
+func (c *ClientWithResponses) DeleteEgressWithResponse(ctx context.Context, id string, params *DeleteEgressParams, reqEditors ...RequestEditorFn) (*DeleteEgressResponse, error) {
+	rsp, err := c.DeleteEgress(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteEgressResponse(rsp)
+}
+
+// ReadEgressWithResponse request returning *ReadEgressResponse
+func (c *ClientWithResponses) ReadEgressWithResponse(ctx context.Context, id string, params *ReadEgressParams, reqEditors ...RequestEditorFn) (*ReadEgressResponse, error) {
+	rsp, err := c.ReadEgress(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseReadEgressResponse(rsp)
+}
+
+// UpdateEgressWithBodyWithResponse request with arbitrary body returning *UpdateEgressResponse
+func (c *ClientWithResponses) UpdateEgressWithBodyWithResponse(ctx context.Context, id string, params *UpdateEgressParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateEgressResponse, error) {
+	rsp, err := c.UpdateEgressWithBody(ctx, id, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateEgressResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateEgressWithResponse(ctx context.Context, id string, params *UpdateEgressParams, body UpdateEgressJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateEgressResponse, error) {
+	rsp, err := c.UpdateEgress(ctx, id, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateEgressResponse(rsp)
+}
+
 // DeleteHarnessProfileWithResponse request returning *DeleteHarnessProfileResponse
 func (c *ClientWithResponses) DeleteHarnessProfileWithResponse(ctx context.Context, id string, params *DeleteHarnessProfileParams, reqEditors ...RequestEditorFn) (*DeleteHarnessProfileResponse, error) {
 	rsp, err := c.DeleteHarnessProfile(ctx, id, params, reqEditors...)
@@ -14486,6 +15776,41 @@ func (c *ClientWithResponses) UpdateWorkspaceWithResponse(ctx context.Context, i
 	return ParseUpdateWorkspaceResponse(rsp)
 }
 
+// ListEgressesWithResponse request returning *ListEgressesResponse
+func (c *ClientWithResponses) ListEgressesWithResponse(ctx context.Context, workspaceId string, params *ListEgressesParams, reqEditors ...RequestEditorFn) (*ListEgressesResponse, error) {
+	rsp, err := c.ListEgresses(ctx, workspaceId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListEgressesResponse(rsp)
+}
+
+// CreateEgressWithBodyWithResponse request with arbitrary body returning *CreateEgressResponse
+func (c *ClientWithResponses) CreateEgressWithBodyWithResponse(ctx context.Context, workspaceId string, params *CreateEgressParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateEgressResponse, error) {
+	rsp, err := c.CreateEgressWithBody(ctx, workspaceId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateEgressResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateEgressWithResponse(ctx context.Context, workspaceId string, params *CreateEgressParams, body CreateEgressJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateEgressResponse, error) {
+	rsp, err := c.CreateEgress(ctx, workspaceId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateEgressResponse(rsp)
+}
+
+// ImportEgressWithResponse request returning *ImportEgressResponse
+func (c *ClientWithResponses) ImportEgressWithResponse(ctx context.Context, workspaceId string, params *ImportEgressParams, reqEditors ...RequestEditorFn) (*ImportEgressResponse, error) {
+	rsp, err := c.ImportEgress(ctx, workspaceId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseImportEgressResponse(rsp)
+}
+
 // ListHarnessProfilesWithResponse request returning *ListHarnessProfilesResponse
 func (c *ClientWithResponses) ListHarnessProfilesWithResponse(ctx context.Context, workspaceId string, params *ListHarnessProfilesParams, reqEditors ...RequestEditorFn) (*ListHarnessProfilesResponse, error) {
 	rsp, err := c.ListHarnessProfiles(ctx, workspaceId, params, reqEditors...)
@@ -14891,6 +16216,189 @@ func ParseListExpressionPositionsResponse(rsp *http.Response) (*ListExpressionPo
 			return nil, err
 		}
 		response.ApplicationproblemJSON401 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteEgressResponse parses an HTTP response from a DeleteEgressWithResponse call
+func ParseDeleteEgressResponse(rsp *http.Response) (*DeleteEgressResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteEgressResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 428:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON428 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseReadEgressResponse parses an HTTP response from a ReadEgressWithResponse call
+func ParseReadEgressResponse(rsp *http.Response) (*ReadEgressResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ReadEgressResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest EgressResourceResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateEgressResponse parses an HTTP response from a UpdateEgressWithResponse call
+func ParseUpdateEgressResponse(rsp *http.Response) (*UpdateEgressResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateEgressResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest EgressResourceResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 428:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON428 = &dest
 
 	}
 
@@ -17582,6 +19090,168 @@ func ParseUpdateWorkspaceResponse(rsp *http.Response) (*UpdateWorkspaceResponse,
 			return nil, err
 		}
 		response.ApplicationproblemJSON428 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListEgressesResponse parses an HTTP response from a ListEgressesWithResponse call
+func ParseListEgressesResponse(rsp *http.Response) (*ListEgressesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListEgressesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest EgressResourceListResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateEgressResponse parses an HTTP response from a CreateEgressWithResponse call
+func ParseCreateEgressResponse(rsp *http.Response) (*CreateEgressResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateEgressResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest EgressResourceResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseImportEgressResponse parses an HTTP response from a ImportEgressWithResponse call
+func ParseImportEgressResponse(rsp *http.Response) (*ImportEgressResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ImportEgressResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest EgressResourceResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON404 = &dest
 
 	}
 

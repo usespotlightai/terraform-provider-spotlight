@@ -41,6 +41,8 @@ func runnerPoolOf(dto apigen.RunnerPoolResourceResponseDto) RunnerPool {
 		pool.Provision = &PoolProvision{
 			URL:           dto.Provision.Url,
 			SecretVersion: wholeOrNone(dto.Provision.SecretVersion),
+			Egress:        dto.Provision.Egress,
+			EgressTraffic: trafficOf(dto.Provision.EgressTraffic),
 		}
 	}
 
@@ -142,4 +144,12 @@ func (c *Client) ListRunnerPools(ctx context.Context, workspaceID string) ([]Run
 	}
 
 	return out, nil
+}
+
+func trafficOf(traffic apigen.PoolProvisionResponseDtoEgressTraffic) *string {
+	sent := string(traffic)
+	if sent == "" {
+		sent = EgressTrafficAll
+	}
+	return &sent
 }

@@ -4,6 +4,13 @@ variable "secret_linear_api_key" {
   sensitive   = true
 }
 
+variable "egress_shared_token" {
+  description = "The token the egress shared calls Spotlight with; left null, Spotlight issues one when it creates the egress"
+  type        = string
+  sensitive   = true
+  default     = null
+}
+
 variable "runner_pool_burst_token" {
   description = "The token the runner pool burst claims with; left null, Spotlight issues one when it creates the pool"
   type        = string

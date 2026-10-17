@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/compare"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -275,6 +276,8 @@ func TestAPushPoolSecretIsWrittenButNeverKept(t *testing.T) {
 						"url":            knownvalue.StringExact("https://provision.example.com/runs"),
 						"secret":         knownvalue.Null(),
 						"secret_version": knownvalue.Int64Exact(1),
+						"egress":         knownvalue.Null(),
+						"egress_traffic": knownvalue.StringExact("all"),
 					})),
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -608,6 +611,100 @@ func TestAccRunnerPool(t *testing.T) {
 					plancheck.ExpectResourceAction("spotlight_runner_pool.pull", plancheck.ResourceActionNoop),
 					plancheck.ExpectResourceAction("spotlight_runner_pool.push", plancheck.ResourceActionNoop),
 				}},
+			},
+		},
+	})
+}
+
+func pushPoolThrough(egress string) string {
+	return acctest.Workspace + egressShared(tokenFirst, 1) + fmt.Sprintf(`
+resource "spotlight_runner_pool" "ephemeral" {
+  workspace_id = spotlight_workspace.acme.id
+  key          = "ephemeral"
+
+  provision = {
+    url            = "https://provision.example.com/runs"
+    secret         = %q
+    secret_version = 1
+    %s
+  }
+}
+`, provisionFirst, egress)
+}
+
+func TestAPushPoolNamesItsEgress(t *testing.T) {
+	fake := fakeapi.New(t)
+	updated := resource.ConfigPlanChecks{
+		PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(runnerPoolAddress, plancheck.ResourceActionUpdate)},
+	}
+
+	resource.UnitTest(t, resource.TestCase{
+		TerraformVersionChecks:   acctest.WriteOnly,
+		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
+		CheckDestroy:             acctest.NoneLeft(fake, "runner-pool", "egress", "team", "workspace"),
+		Steps: []resource.TestStep{
+			{
+				Config: pushPoolThrough(`egress = "spotlight"`),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(runnerPoolAddress, tfjsonpath.New("provision").AtMapKey("egress"), knownvalue.StringExact("spotlight")),
+				},
+			},
+			{
+				Config:           pushPoolThrough(`egress = spotlight_egress.shared.id`),
+				ConfigPlanChecks: updated,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.CompareValuePairs(runnerPoolAddress, tfjsonpath.New("provision").AtMapKey("egress"), egressAddress, tfjsonpath.New("id"), compare.ValuesSame()),
+				},
+				Check: sentTimes(fake, provisionSecret, 1, "naming another egress sends no secret"),
+			},
+			{
+				Config:   pushPoolThrough(`egress = spotlight_egress.shared.id`),
+				PlanOnly: true,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(runnerPoolAddress, tfjsonpath.New("provision").AtMapKey("egress_traffic"), knownvalue.StringExact("all")),
+				},
+			},
+			{
+				Config:           pushPoolThrough("egress = spotlight_egress.shared.id\n    egress_traffic = \"bound\""),
+				ConfigPlanChecks: updated,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(runnerPoolAddress, tfjsonpath.New("provision").AtMapKey("egress_traffic"), knownvalue.StringExact("bound")),
+				},
+			},
+			{
+				Config:      pushPoolThrough("egress = spotlight_egress.shared.id\n    egress_traffic = \"some\""),
+				ExpectError: regexp.MustCompile(`(?s)egress_traffic.*value must be one of`),
+			},
+			{
+				Config:           pushPoolThrough(`egress = spotlight_egress.shared.id`),
+				ConfigPlanChecks: updated,
+			},
+			{
+				ResourceName:      runnerPoolAddress,
+				ImportState:       true,
+				ImportStateIdFunc: runnerPoolImportID,
+				ImportStateVerify: true,
+			},
+			{
+				Config:      pushPoolThrough(`egress = "egress-9999"`),
+				ExpectError: regexp.MustCompile(`(?s)provision\.egress: names egress-9999\. Egress egress-9999 doesn't exist in this\s+workspace`),
+			},
+			{
+				Config:           pushPoolThrough(""),
+				ConfigPlanChecks: updated,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(runnerPoolAddress, tfjsonpath.New("provision").AtMapKey("egress"), knownvalue.Null()),
+				},
+			},
+			{
+				Config: pushPool("https://provision.example.com/runs", provisionFirst, 1),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(runnerPoolAddress, plancheck.ResourceActionNoop),
+						plancheck.ExpectResourceAction(egressAddress, plancheck.ResourceActionDestroy),
+					},
+				},
+				Check: acctest.NoneLeft(fake, "egress"),
 			},
 		},
 	})
