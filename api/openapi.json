@@ -2213,7 +2213,7 @@
             "description": "No such call waits for this pool’s or trust’s workspace"
           },
           "409": {
-            "description": "The call was already answered, lapsed before it was answered, or was never claimed (`call-settled`), or another host claimed it (`not-this-hosts-call`)"
+            "description": "The call was already answered, lapsed before it was answered, or was never claimed (`call-completed`), or another host claimed it (`not-this-hosts-call`)"
           }
         },
         "security": [
@@ -2667,9 +2667,9 @@
         ]
       }
     },
-    "/workspaces/{slug}/inbox/notices/{noticeId}/settle": {
+    "/workspaces/{slug}/inbox/notices/{noticeId}/resolve": {
       "post": {
-        "operationId": "settleInboxNotice",
+        "operationId": "resolveInboxNotice",
         "parameters": [
           {
             "name": "slug",
@@ -2691,7 +2691,7 @@
         ],
         "responses": {
           "204": {
-            "description": "It is settled"
+            "description": "It is resolved"
           },
           "401": {
             "description": "No valid session"
@@ -2700,7 +2700,7 @@
             "description": "No such notice for this caller"
           }
         },
-        "summary": "Settle a notice, once its person has dealt with it",
+        "summary": "Resolve a notice, once its person has dealt with it",
         "tags": [
           "inbox"
         ]
@@ -4069,7 +4069,7 @@
             "description": "No such chat for this caller"
           },
           "409": {
-            "description": "The proposal is already settled"
+            "description": "The proposal is already decided"
           }
         },
         "summary": "Accept a task the agent proposed, so it is created",
@@ -4119,7 +4119,7 @@
             "description": "No such chat for this caller"
           },
           "409": {
-            "description": "The proposal is already settled"
+            "description": "The proposal is already decided"
           }
         },
         "summary": "Turn down a task the agent proposed",
@@ -25639,7 +25639,7 @@
           "stop": {
             "type": "boolean",
             "example": false,
-            "description": "Whether the runner should stop checking: the check was forgotten with its task, settled, or waited too long to be recorded"
+            "description": "Whether the runner should stop checking: the check was forgotten with its task, ended, or waited too long to be recorded"
           }
         },
         "required": [
@@ -26886,7 +26886,7 @@
               "alert"
             ],
             "example": "memories",
-            "description": "What is put aside for a person to settle, beside the task’s conversation: memories are proposed memories to approve or reject; grade asks a person to grade a judged run"
+            "description": "What is put aside for a person to resolve, beside the task’s conversation: memories are proposed memories to approve or reject; grade asks a person to grade a judged run"
           },
           "about": {
             "type": "string",
@@ -27085,7 +27085,7 @@
             "enum": [
               "words",
               "setup",
-              "settled",
+              "resolved",
               "approval",
               "failure",
               "connection"
@@ -27277,7 +27277,7 @@
           "resolved": {
             "type": "boolean",
             "example": false,
-            "description": "True once it is settled, and is no longer yours to answer"
+            "description": "True once it is resolved, and is no longer yours to answer"
           },
           "working": {
             "type": "boolean",
@@ -27311,7 +27311,7 @@
           },
           "aside": {
             "nullable": true,
-            "description": "What this item puts aside for a person to settle, where it is not a conversation; it never blocks the task",
+            "description": "What this item puts aside for a person to resolve, where it is not a conversation; it never blocks the task",
             "type": "object",
             "allOf": [
               {
@@ -27414,7 +27414,7 @@
           "resolved": {
             "type": "boolean",
             "example": false,
-            "description": "True once its person settled it"
+            "description": "True once its person resolved it"
           }
         },
         "required": [
@@ -27852,7 +27852,7 @@
             "type": "string",
             "enum": [
               "owed",
-              "settled"
+              "answered"
             ]
           },
           "conversationId": {
@@ -38734,20 +38734,20 @@
             "type": "number",
             "nullable": true,
             "example": 0.4,
-            "description": "The measure over the settled runs compared against: a share, or a cost per run"
+            "description": "The measure over the measured runs compared against: a share, or a cost per run"
           },
           "after": {
             "type": "number",
             "nullable": true,
             "example": 0.6,
-            "description": "The measure over the settled runs compared"
+            "description": "The measure over the measured runs compared"
           },
-          "settledBefore": {
+          "measuredBefore": {
             "type": "number",
             "example": 12,
             "description": "Runs compared against whose outcome for this measure is known"
           },
-          "settledAfter": {
+          "measuredAfter": {
             "type": "number",
             "example": 9,
             "description": "Runs compared whose outcome for this measure is known"
@@ -38766,7 +38766,7 @@
               "unchanged",
               "insufficient"
             ],
-            "description": "Whether the runs compared did better, worse or the same; insufficient below 5 settled runs on either side, or where the costs are in different currencies"
+            "description": "Whether the runs compared did better, worse or the same; insufficient below 5 measured runs on either side, or where the costs are in different currencies"
           },
           "change": {
             "nullable": true,
@@ -38783,8 +38783,8 @@
           "measure",
           "before",
           "after",
-          "settledBefore",
-          "settledAfter",
+          "measuredBefore",
+          "measuredAfter",
           "currency",
           "verdict",
           "change"
@@ -42417,7 +42417,7 @@
           "entries": {
             "type": "number"
           },
-          "settled": {
+          "ended": {
             "type": "number"
           },
           "completed": {
@@ -42513,7 +42513,7 @@
         },
         "required": [
           "entries",
-          "settled",
+          "ended",
           "completed",
           "failed",
           "stopped",
@@ -42605,7 +42605,7 @@
               "none",
               "unchecked"
             ],
-            "description": "drafting or checking until its change stacks settle and their checks end; absent when its run left no change stack; none when its stacks are checked by nothing"
+            "description": "drafting or checking until its change stacks complete and their checks end; absent when its run left no change stack; none when its stacks are checked by nothing"
           },
           "failedAt": {
             "description": "The steps or layers that failed",
@@ -43092,7 +43092,7 @@
             "enum": [
               "waiting",
               "dispatched",
-              "settled"
+              "ended"
             ]
           },
           "ending": {
@@ -43621,7 +43621,7 @@
           "costDelta": {
             "type": "number",
             "nullable": true,
-            "description": "Candidate cost less the baseline’s, each averaged over its copies, once both settled"
+            "description": "Candidate cost less the baseline’s, each averaged over its copies, once both ended"
           },
           "msDelta": {
             "type": "number",
