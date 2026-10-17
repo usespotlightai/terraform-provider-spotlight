@@ -548,7 +548,7 @@ resource "spotlight_integration" "linear" {
     }
     tools = {
       comment = {
-        does        = "comment"
+        action      = "comment"
         description = "Comment on the issue."
         inputs      = { body = { type = "string", required = true } }
       }

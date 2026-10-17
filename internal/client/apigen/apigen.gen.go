@@ -21,15 +21,15 @@ const (
 	BearerScopes bearerContextKey = "bearer.Scopes"
 )
 
-// Defines values for DescribedSourceResponseDtoKind.
+// Defines values for ApiSpecResponseDtoKind.
 const (
-	Graphql DescribedSourceResponseDtoKind = "graphql"
-	Mcp     DescribedSourceResponseDtoKind = "mcp"
-	Openapi DescribedSourceResponseDtoKind = "openapi"
+	Graphql ApiSpecResponseDtoKind = "graphql"
+	Mcp     ApiSpecResponseDtoKind = "mcp"
+	Openapi ApiSpecResponseDtoKind = "openapi"
 )
 
-// Valid indicates whether the value is a known member of the DescribedSourceResponseDtoKind enum.
-func (e DescribedSourceResponseDtoKind) Valid() bool {
+// Valid indicates whether the value is a known member of the ApiSpecResponseDtoKind enum.
+func (e ApiSpecResponseDtoKind) Valid() bool {
 	switch e {
 	case Graphql:
 		return true
@@ -42,15 +42,15 @@ func (e DescribedSourceResponseDtoKind) Valid() bool {
 	}
 }
 
-// Defines values for ExpressionPositionResponseDtoAlsoSees.
+// Defines values for ExpressionPositionResponseDtoAddedVariables.
 const (
-	Captures ExpressionPositionResponseDtoAlsoSees = "captures"
-	Inputs   ExpressionPositionResponseDtoAlsoSees = "inputs"
-	Item     ExpressionPositionResponseDtoAlsoSees = "item"
+	Captures ExpressionPositionResponseDtoAddedVariables = "captures"
+	Inputs   ExpressionPositionResponseDtoAddedVariables = "inputs"
+	Item     ExpressionPositionResponseDtoAddedVariables = "item"
 )
 
-// Valid indicates whether the value is a known member of the ExpressionPositionResponseDtoAlsoSees enum.
-func (e ExpressionPositionResponseDtoAlsoSees) Valid() bool {
+// Valid indicates whether the value is a known member of the ExpressionPositionResponseDtoAddedVariables enum.
+func (e ExpressionPositionResponseDtoAddedVariables) Valid() bool {
 	switch e {
 	case Captures:
 		return true
@@ -1947,9 +1947,30 @@ func (e ImportWorkspaceRunnersParamsSpotlightApiVersion) Valid() bool {
 	}
 }
 
+// ApiSpecResponseDto defines model for ApiSpecResponseDto.
+type ApiSpecResponseDto struct {
+	// Hash The sha256 of the spec that Spotlight last fetched. It does not change when a later fetch fails. It is null when Spotlight never fetched the spec
+	Hash *string `json:"hash"`
+
+	// Kind The kind of API spec that its tools are generated from: an OpenAPI document, a GraphQL schema or an MCP server
+	Kind ApiSpecResponseDtoKind `json:"kind"`
+
+	// Problem Why Spotlight could not fetch the spec the last time, or null when it could. Spotlight fetches the spec again when its url, document, baseUrl, revision or depth changes, on each update after a failed fetch, and when the integration is connected. Spotlight lists the tools of an MCP server again every MCP_RELIST_SECONDS
+	Problem *string `json:"problem"`
+
+	// ReadAt When Spotlight last fetched the spec
+	ReadAt time.Time `json:"readAt"`
+
+	// Tools How many of its tools were generated from the spec
+	Tools int `json:"tools"`
+}
+
+// ApiSpecResponseDtoKind The kind of API spec that its tools are generated from: an OpenAPI document, a GraphQL schema or an MCP server
+type ApiSpecResponseDtoKind string
+
 // CheckExpressionRequestDto defines model for CheckExpressionRequestDto.
 type CheckExpressionRequestDto struct {
-	// Definition The integration’s whole definition, as it would be created, which says what the position sees
+	// Definition The whole definition of the integration, as it would be created. It sets the variables at the position
 	Definition map[string]interface{} `json:"definition"`
 
 	// Expression The CEL expression alone, without ${{ }}; a templated attribute is checked one ${{ }} at a time
@@ -1958,27 +1979,6 @@ type CheckExpressionRequestDto struct {
 	// Position The attribute that contains the expression, within the definition, written as its problems would name it
 	Position string `json:"position"`
 }
-
-// DescribedSourceResponseDto defines model for DescribedSourceResponseDto.
-type DescribedSourceResponseDto struct {
-	// Hash The sha256 of what was last read, unchanged while a later read fails; null when it has never been read
-	Hash *string `json:"hash"`
-
-	// Kind The kind of API description, or the MCP server, its tools are generated from
-	Kind DescribedSourceResponseDtoKind `json:"kind"`
-
-	// Problem Why the description could not be read when it was last requested, or null when it was; Spotlight reads it again when its url, document, baseUrl, revision or depth changes, on any update after a failed read, and when the integration is connected, and lists an MCP server’s tools again every MCP_RELIST_SECONDS
-	Problem *string `json:"problem"`
-
-	// ReadAt When the description was last read
-	ReadAt time.Time `json:"readAt"`
-
-	// Tools How many of its tools were generated from the description
-	Tools int `json:"tools"`
-}
-
-// DescribedSourceResponseDtoKind The kind of API description, or the MCP server, its tools are generated from
-type DescribedSourceResponseDtoKind string
 
 // EgressResourceListResponseDto defines model for EgressResourceListResponseDto.
 type EgressResourceListResponseDto struct {
@@ -2027,7 +2027,7 @@ type ExpressionCheckResponseDto struct {
 	// Errors Empty when the expression is sound where it is written
 	Errors []ExpressionErrorResponseDto `json:"errors"`
 
-	// Type The CEL type it evaluates to; dyn where that depends on what the host sends, null where it does not check at all
+	// Type The CEL type it evaluates to; dyn where that depends on what the service sends, null where it does not check at all
 	Type *string `json:"type"`
 
 	// Warnings What the definition does that the expression may not expect, such as a capture shadowing a built-in name
@@ -2056,8 +2056,8 @@ type ExpressionErrorResponseDto struct {
 
 // ExpressionPositionResponseDto defines model for ExpressionPositionResponseDto.
 type ExpressionPositionResponseDto struct {
-	// AlsoSees What the definition adds here: item where the event has a forEach, the names its lookup captures, the inputs of the tools that do the action
-	AlsoSees []ExpressionPositionResponseDtoAlsoSees `json:"alsoSees"`
+	// AddedVariables What the definition adds here: item where the event has a forEach, the names its lookup captures, the inputs of the tools that do the action
+	AddedVariables []ExpressionPositionResponseDtoAddedVariables `json:"addedVariables"`
 
 	// Position Where an expression is written, with [*] for any list index or map key; a check names the concrete attribute and resolves it against the supplied definition
 	Position string `json:"position"`
@@ -2065,12 +2065,12 @@ type ExpressionPositionResponseDto struct {
 	// Returns What an expression here must return, where it matters
 	Returns *ExpressionPositionResponseDtoReturns `json:"returns"`
 
-	// Sees The names an expression here may read before the definition adds its own; type hints in the definition refine body and response
-	Sees []ExpressionDeclarationResponseDto `json:"sees"`
+	// Variables The names an expression here may read before the definition adds its own; type hints in the definition refine body and response
+	Variables []ExpressionDeclarationResponseDto `json:"variables"`
 }
 
-// ExpressionPositionResponseDtoAlsoSees defines model for ExpressionPositionResponseDto.AlsoSees.
-type ExpressionPositionResponseDtoAlsoSees string
+// ExpressionPositionResponseDtoAddedVariables defines model for ExpressionPositionResponseDto.AddedVariables.
+type ExpressionPositionResponseDtoAddedVariables string
 
 // ExpressionPositionResponseDtoReturns What an expression here must return, where it matters
 type ExpressionPositionResponseDtoReturns string
@@ -2322,19 +2322,19 @@ type IntegrationResourceResponseDto struct {
 	// Definition The integration as it was defined, with every field it left out filled in
 	Definition map[string]interface{} `json:"definition"`
 
-	// Described The API description its tools are generated from, as last read; null when it names none; not settable
-	Described *DescribedSourceResponseDto `json:"described"`
-
 	// Id Issued by Spotlight when the resource is created, and never changed
 	Id string `json:"id"`
 
-	// Source The host it defines; fixed for its life, so changing it means replacing the integration
-	Source string `json:"source"`
+	// Integration The name of the integration, as in linear. It cannot change. To change it, replace the integration
+	Integration string `json:"integration"`
+
+	// Spec The API spec that its tools are generated from, as Spotlight last fetched it; null when it names none; not settable
+	Spec *ApiSpecResponseDto `json:"spec"`
 
 	// TeamId The team it belongs to
 	TeamId string `json:"teamId"`
 
-	// Tools Each tool the integration offers, hand-written or generated from its API description, by its name within the integration, to the name that a station or hook uses for it; not settable
+	// Tools Each tool the integration provides, hand-written or generated from its API spec, by its name within the integration, to the name that a station or hook uses for it; not settable
 	Tools map[string]string `json:"tools"`
 
 	// Version Rises with every change; the ETag carries it, and a write sends it back as If-Match

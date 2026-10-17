@@ -44,7 +44,7 @@ func (s *Server) positions(w http.ResponseWriter, _ *http.Request) {
 			returns = "bool"
 		}
 
-		listed = append(listed, map[string]any{"position": position, "returns": returns, "sees": []any{}, "alsoSees": []any{}})
+		listed = append(listed, map[string]any{"position": position, "returns": returns, "variables": []any{}, "addedVariables": []any{}})
 	}
 
 	writeJSON(w, http.StatusOK, "application/json", listed)
@@ -117,8 +117,8 @@ func (s *Server) check(w http.ResponseWriter, r *http.Request) {
 
 func definitionProblems(resource string, definition map[string]any) []fieldError {
 	if resource == "integration" {
-		if source, _ := definition["integration"].(string); source == "" {
-			return []fieldError{{"definition.integration", "names the host this integration defines, as in linear"}}
+		if named, _ := definition["integration"].(string); named == "" {
+			return []fieldError{{"definition.integration", "is the name of the integration, as in linear"}}
 		}
 
 		return nil

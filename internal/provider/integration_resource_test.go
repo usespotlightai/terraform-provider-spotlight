@@ -18,7 +18,7 @@ import (
 
 const integrationAddress = "spotlight_integration.core_linear"
 
-func integrationConfig(host, when, thread string) string {
+func integrationConfig(integration, when, thread string) string {
 	return acctest.Workspace + fmt.Sprintf(`
 resource "spotlight_integration" "core_linear" {
   team_id = spotlight_team.core.id
@@ -46,13 +46,13 @@ resource "spotlight_integration" "core_linear" {
     }
     on = {
       "task.opened" = {
-        do = "comment"
-        to = { thread = %q }
+        action = "comment"
+        to     = { thread = %q }
       }
     }
   }
 }
-`, host, when, thread)
+`, integration, when, thread)
 }
 
 const (
@@ -78,7 +78,7 @@ func TestIntegrationLifecycle(t *testing.T) {
 			{
 				Config: integrationConfig("linear", integrationSoundWhen, integrationSoundThread),
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(integrationAddress, tfjsonpath.New("source"), knownvalue.StringExact("linear")),
+					statecheck.ExpectKnownValue(integrationAddress, tfjsonpath.New("integration"), knownvalue.StringExact("linear")),
 					statecheck.ExpectKnownValue(integrationAddress, tfjsonpath.New("address"), knownvalue.StringExact("core/linear")),
 					statecheck.ExpectKnownValue(integrationAddress,
 						tfjsonpath.New("definition").AtMapKey("webhook").AtMapKey("events").AtSliceIndex(0).AtMapKey("when"),
@@ -116,7 +116,7 @@ func TestIntegrationLifecycle(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(integrationAddress, plancheck.ResourceActionDestroyBeforeCreate),
-						plancheck.ExpectKnownValue(integrationAddress, tfjsonpath.New("source"), knownvalue.StringExact("jira")),
+						plancheck.ExpectKnownValue(integrationAddress, tfjsonpath.New("integration"), knownvalue.StringExact("jira")),
 					},
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
@@ -176,7 +176,7 @@ resource "spotlight_integration" "core_linear" {
   definition = {
     integration = "linear"
     connection = {
-      holder = "requester"
+      actsAs = "requester"
       oauth2 = {
         authorize    = "https://linear.app/oauth/authorize"
         token        = "https://api.linear.app/oauth/token"
@@ -202,7 +202,7 @@ func TestIntegrationActingAsEachPersonRoundTrips(t *testing.T) {
 				Config: acctest.Workspace + integrationActingAsEachPerson,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(integrationAddress,
-						tfjsonpath.New("definition").AtMapKey("connection").AtMapKey("holder"),
+						tfjsonpath.New("definition").AtMapKey("connection").AtMapKey("actsAs"),
 						knownvalue.StringExact("requester")),
 					statecheck.ExpectKnownValue(integrationAddress, oauth2("registration"),
 						knownvalue.StringExact("https://api.linear.app/oauth/register")),
@@ -284,7 +284,7 @@ resource "spotlight_integration" "core_linear" {
 }
 `,
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`(?s)Invalid definition at definition\.integration.*names the host`),
+				ExpectError: regexp.MustCompile(`(?s)Invalid definition at definition\.integration.*is the name of the integration`),
 			},
 		},
 	})
@@ -308,7 +308,7 @@ func TestIntegrationImportsByIdentity(t *testing.T) {
 
 const integrationPetstoreAddress = "spotlight_integration.core_petstore"
 
-func integrationPetstoreConfig(description string) string {
+func integrationPetstoreConfig(spec string) string {
 	return acctest.Workspace + fmt.Sprintf(`
 resource "spotlight_integration" "core_petstore" {
   team_id = spotlight_team.core.id
@@ -316,14 +316,14 @@ resource "spotlight_integration" "core_petstore" {
     integration = "petstore"
     %s
     tools = {
-      adopt = { does = "adopt", description = "Adopt a pet." }
+      adopt = { action = "adopt", description = "Adopt a pet." }
     }
   }
 }
-`, description)
+`, spec)
 }
 
-func TestIntegrationToolsFromAnAPIDescriptionAreKnownAfterApply(t *testing.T) {
+func TestIntegrationToolsFromAnAPISpecAreKnownAfterApply(t *testing.T) {
 	fake := fakeapi.New(t)
 
 	resource.UnitTest(t, resource.TestCase{
@@ -335,7 +335,7 @@ func TestIntegrationToolsFromAnAPIDescriptionAreKnownAfterApply(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectUnknownValue(integrationPetstoreAddress, tfjsonpath.New("tools")),
-						plancheck.ExpectUnknownValue(integrationPetstoreAddress, tfjsonpath.New("described")),
+						plancheck.ExpectUnknownValue(integrationPetstoreAddress, tfjsonpath.New("spec")),
 					},
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
@@ -344,9 +344,9 @@ func TestIntegrationToolsFromAnAPIDescriptionAreKnownAfterApply(t *testing.T) {
 						"find-pets": knownvalue.StringExact("petstore.find-pets"),
 						"add-pet":   knownvalue.StringExact("petstore.add-pet"),
 					})),
-					statecheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("described").AtMapKey("kind"), knownvalue.StringExact("openapi")),
-					statecheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("described").AtMapKey("tools"), knownvalue.Int64Exact(2)),
-					statecheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("described").AtMapKey("problem"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("spec").AtMapKey("kind"), knownvalue.StringExact("openapi")),
+					statecheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("spec").AtMapKey("tools"), knownvalue.Int64Exact(2)),
+					statecheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("spec").AtMapKey("problem"), knownvalue.Null()),
 				},
 			},
 			{
@@ -367,7 +367,7 @@ func TestIntegrationToolsFromAnAPIDescriptionAreKnownAfterApply(t *testing.T) {
 						plancheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("tools"), knownvalue.MapExact(map[string]knownvalue.Check{
 							"adopt": knownvalue.StringExact("petstore.adopt"),
 						})),
-						plancheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("described"), knownvalue.Null()),
+						plancheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("spec"), knownvalue.Null()),
 					},
 				},
 			},
@@ -375,7 +375,7 @@ func TestIntegrationToolsFromAnAPIDescriptionAreKnownAfterApply(t *testing.T) {
 	})
 }
 
-func TestIntegrationToolsWithoutAnAPIDescriptionAreKnownAtPlan(t *testing.T) {
+func TestIntegrationToolsWithoutAnAPISpecAreKnownAtPlan(t *testing.T) {
 	fake := fakeapi.New(t)
 
 	resource.UnitTest(t, resource.TestCase{
@@ -388,7 +388,7 @@ func TestIntegrationToolsWithoutAnAPIDescriptionAreKnownAtPlan(t *testing.T) {
 						plancheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("tools"), knownvalue.MapExact(map[string]knownvalue.Check{
 							"adopt": knownvalue.StringExact("petstore.adopt"),
 						})),
-						plancheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("described"), knownvalue.Null()),
+						plancheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("spec"), knownvalue.Null()),
 					},
 				},
 			},
@@ -401,7 +401,7 @@ func TestIntegrationToolsWithoutAnAPIDescriptionAreKnownAtPlan(t *testing.T) {
 					},
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("described").AtMapKey("kind"), knownvalue.StringExact("graphql")),
+					statecheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("spec").AtMapKey("kind"), knownvalue.StringExact("graphql")),
 				},
 			},
 		},
@@ -420,7 +420,7 @@ func TestIntegrationToolsFromAnMCPServerAreKnownAfterApply(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectUnknownValue(integrationPetstoreAddress, tfjsonpath.New("tools")),
-						plancheck.ExpectUnknownValue(integrationPetstoreAddress, tfjsonpath.New("described")),
+						plancheck.ExpectUnknownValue(integrationPetstoreAddress, tfjsonpath.New("spec")),
 					},
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
@@ -429,7 +429,7 @@ func TestIntegrationToolsFromAnMCPServerAreKnownAfterApply(t *testing.T) {
 						"search-issues": knownvalue.StringExact("petstore.search-issues"),
 						"delete-issue":  knownvalue.StringExact("petstore.delete-issue"),
 					})),
-					statecheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("described").AtMapKey("kind"), knownvalue.StringExact("mcp")),
+					statecheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("spec").AtMapKey("kind"), knownvalue.StringExact("mcp")),
 				},
 			},
 			{
@@ -443,7 +443,7 @@ func TestIntegrationToolsFromAnMCPServerAreKnownAfterApply(t *testing.T) {
 func TestIntegrationToolsOfADefinitionNotKnownYetAreUnknown(t *testing.T) {
 	for name, definition := range map[string]string{
 		"whole": `spotlight_team.core.id == "" ? local.petstore : local.petstore`,
-		"description": `merge(local.petstore, {
+		"spec": `merge(local.petstore, {
     openapi = { url = "https://petstore.example.com/${spotlight_team.core.id}/openapi.json" }
   })`,
 	} {

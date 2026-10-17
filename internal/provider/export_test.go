@@ -271,7 +271,7 @@ func seedExported(t *testing.T, cp acctest.ControlPlane, k acctest.Keys) (declar
 			"auth":    map[string]any{"secrets": []any{"secret." + k.Secret}},
 		}}},
 		"tools": map[string]any{"comment": map[string]any{
-			"does": "comment", "description": "Comment on the issue.\n",
+			"action": "comment", "description": "Comment on the issue.\n",
 			"inputs": map[string]any{"body": map[string]any{"type": "string", "required": true}},
 		}},
 	})

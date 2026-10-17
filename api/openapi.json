@@ -12924,7 +12924,7 @@
             "description": "No such team for this caller"
           }
         },
-        "summary": "What this team listens to",
+        "summary": "The integrations of this team and their connection status",
         "tags": [
           "configuration"
         ]
@@ -14891,7 +14891,7 @@
             "bearer": []
           }
         ],
-        "summary": "One resource as HCL, with the import block that adopts it and any variable it reads",
+        "summary": "One resource as HCL, with the import block that imports it and any variable it reads",
         "tags": [
           "terraform"
         ]
@@ -15522,7 +15522,7 @@
         ]
       }
     },
-    "/teams/{teamId}/integrations/{source}/connect": {
+    "/teams/{teamId}/integrations/{integration}/connect": {
       "post": {
         "operationId": "connectIntegration",
         "parameters": [
@@ -15536,7 +15536,7 @@
             }
           },
           {
-            "name": "source",
+            "name": "integration",
             "required": true,
             "in": "path",
             "schema": {
@@ -15567,16 +15567,16 @@
             }
           },
           "400": {
-            "description": "It requests a connection for someone other than the team or me"
+            "description": "It requests a connection that acts as someone other than the team or the requester"
           },
           "401": {
             "description": "No valid session"
           },
           "404": {
-            "description": "No such team, not yours to link, or the host does not link so"
+            "description": "No such team, not yours to connect, or the integration does not take this connection"
           }
         },
-        "summary": "Begin connecting the team, or the caller, to a host over OAuth2",
+        "summary": "Begin connecting the team, or the caller, to an integration over OAuth2",
         "tags": [
           "integrations"
         ]
@@ -15584,7 +15584,7 @@
     },
     "/teams/{teamId}/connections": {
       "get": {
-        "operationId": "listConnections",
+        "operationId": "listIntegrationConnections",
         "parameters": [
           {
             "name": "teamId",
@@ -15602,7 +15602,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HostConnectionsResponseDto"
+                  "$ref": "#/components/schemas/IntegrationConnectionsResponseDto"
                 }
               }
             }
@@ -15620,9 +15620,9 @@
         ]
       }
     },
-    "/teams/{teamId}/integrations/{source}/connections/mine": {
+    "/teams/{teamId}/integrations/{integration}/connections/mine": {
       "delete": {
-        "operationId": "disconnectMine",
+        "operationId": "disconnectIntegration",
         "parameters": [
           {
             "name": "teamId",
@@ -15634,7 +15634,7 @@
             }
           },
           {
-            "name": "source",
+            "name": "integration",
             "required": true,
             "in": "path",
             "schema": {
@@ -15660,7 +15660,7 @@
         ]
       }
     },
-    "/teams/{teamId}/integrations/{source}/connections/mine/tools/{tool}": {
+    "/teams/{teamId}/integrations/{integration}/connections/mine/tools/{tool}": {
       "put": {
         "description": "The stricter of the team’s rule and the caller’s wins, so this can ask first or block where the team allows, but never lets through a call the team asks about.",
         "operationId": "setMyToolRule",
@@ -15675,7 +15675,7 @@
             }
           },
           {
-            "name": "source",
+            "name": "integration",
             "required": true,
             "in": "path",
             "schema": {
@@ -16673,7 +16673,7 @@
             "bearer": []
           }
         ],
-        "summary": "Every position an expression is written at, and what it sees",
+        "summary": "Every position an expression is written at, and the variables it can read",
         "tags": [
           "expressions"
         ]
@@ -23723,7 +23723,7 @@
   },
   "info": {
     "title": "Spotlight Control Plane",
-    "description": "HTTP API for the Spotlight Control Plane.\n\n## Resource conventions\n\nOperations marked `x-spotlight-resource` manage configuration resources, the ones the Terraform provider writes. They live under `/resources` and address everything by id. Every resource follows these rules, and a conformance suite checks each one against them.\n\n- **Stable ids.** Spotlight issues a resource's `id` when it is created. It never changes for the resource's life, whatever else does.\n- **Reads return every field.** A read answers the whole resource, defaults filled in, so a client comparing it with what it wrote sees any drift. A write answers exactly what a read would.\n- **Versions.** Every resource carries a `version` that rises with each change, and each answer carries it as a strong `ETag` (`\"3\"`). An update or delete must send it back as `If-Match`: without one it fails with 428, and against a version that is no longer current with 409, whose body gives the `currentVersion` and whose `ETag` names it. A write that would remove something another resource still uses fails with 409 `in-use`.\n- **Idempotent creates.** A create must carry an `Idempotency-Key`. Retrying with the same key and body within 24 hours answers the resource the first attempt created, marked `Idempotent-Replayed: true`, and creates nothing more; the same key with a different body fails with 422.\n- **Problems name fields.** Errors are `application/problem+json` (RFC 9457). `type` is stable and safe to branch on. An invalid request lists `errors`, each with the `path` of the attribute it is about, as in `stations[2].check`; a key that is not a plain name is quoted, as Terraform addresses it: `on[\"task.opened\"].to.thread`.\n- **API versions.** A client may send `Spotlight-Api-Version`; every response names the version it was answered in, currently `2026-09-23`. Changes within a version are additive only: fields and operations are added, never removed, renamed or given a new meaning.\n- **Expression checks.** `POST /expressions/check` type-checks one CEL expression at the attribute that contains it, named within the resource's whole definition (`integration.webhook.events[0].when`), as `terraform plan` needs. What the expression may read is worked out from that definition exactly as applying it would, so a plan fails where an apply would; a definition that has an error fails with 422, each error under `definition`. It answers the type and any errors, each with the span it is about and a suggestion where a declared name is near, and warnings about the definition, such as a capture shadowing a built-in name. `GET /expressions/positions` lists every position, with `[*]` for any index or key, and what an expression there sees. They follow these headers and problems, but are not resources.\n- **Credentials.** A client calls with a person's session or with a workspace token, sent as `Authorization: Bearer <token>`. A token acts only within its own workspace and only as its scopes allow. `read`, `plan` and `configure` are a ladder: `read` reads, `plan` also checks expressions, and `configure` also creates, updates and deletes configuration as a workspace admin may, except secrets, runners and token trusts. `secrets` is granted beside one of them and lets the token create, rebind, rotate and delete secrets; Terraform that manages secrets uses `[\"configure\", \"secrets\"]`. `runners` is granted the same way and lets the token create, rekey and delete runners and runner trusts and create, update and delete the workspace's runners, since a runner claims runs, checks out repositories and keeps git credentials; Terraform that manages runners uses `[\"configure\", \"runners\"]`. `trusts` is granted the same way and lets the token create, update and delete workspace token trusts, since a trust hands out tokens; a token can only create a trust that grants scopes it has itself, so bootstrap the trusts once with a token that has `trusts` and every scope they grant, as in `[\"configure\", \"secrets\", \"trusts\"]`, and revoke it. No token manages members or tokens, or reads the audit.\n- **CI without a stored token.** A workspace admin, or a token granted `trusts`, creates a workspace token trust naming an OIDC issuer, audience, subject and claims, and the scopes and lifetime (at most an hour) of the tokens it issues. A CI job exchanges the OIDC token its platform issues it at `POST /api/workspace-tokens/exchange` with `{ \"trust\": <trust id>, \"token\": <OIDC token> }`, and calls with the short-lived token it gets back. Deleting the trust stops every token that it issued at once, and the audit names the trust and the workload's subject beside each exchange and each change made with an issued token.\n- **Forbidden changes.** A change by someone who may read the resource but not change it, person or token, fails with 403 `forbidden`, whose `permission` names what the caller lacks, one of `configure`, `manage-secrets`, `manage-runners`, `manage-token-trusts`, `administer`, `create-workspaces`, `plan`. Anything they may not see at all answers 404.\n- **Who changed what.** A client names itself in `Spotlight-Client` (`terraform-provider/<version>` or `web`), and every configuration change is recorded with who made it, person or token, and through which client. A secret's change also records the value version it moved to and the hosts it is bound to, never its value.\n- **Import by address.** Each resource has an `address` that names it within its workspace, such as `core/linear`, and an import operation that answers the resource at that address, as `terraform import` needs. A workspace's address is its slug; a team's is its key; anything a team owns is the team's key and its own, as in `core/delivery`.",
+    "description": "HTTP API for the Spotlight Control Plane.\n\n## Resource conventions\n\nOperations marked `x-spotlight-resource` manage configuration resources, the ones the Terraform provider writes. They live under `/resources` and address everything by id. Every resource follows these rules, and a conformance suite checks each one against them.\n\n- **Stable ids.** Spotlight issues a resource's `id` when it is created. It never changes for the resource's life, whatever else does.\n- **Reads return every field.** A read answers the whole resource, defaults filled in, so a client comparing it with what it wrote sees any drift. A write answers exactly what a read would.\n- **Versions.** Every resource carries a `version` that rises with each change, and each answer carries it as a strong `ETag` (`\"3\"`). An update or delete must send it back as `If-Match`: without one it fails with 428, and against a version that is no longer current with 409, whose body gives the `currentVersion` and whose `ETag` names it. A write that would remove something another resource still uses fails with 409 `in-use`.\n- **Idempotent creates.** A create must carry an `Idempotency-Key`. Retrying with the same key and body within 24 hours answers the resource the first attempt created, marked `Idempotent-Replayed: true`, and creates nothing more; the same key with a different body fails with 422.\n- **Problems name fields.** Errors are `application/problem+json` (RFC 9457). `type` is stable and safe to branch on. An invalid request lists `errors`, each with the `path` of the attribute it is about, as in `stations[2].check`; a key that is not a plain name is quoted, as Terraform addresses it: `on[\"task.opened\"].to.thread`.\n- **API versions.** A client may send `Spotlight-Api-Version`; every response names the version it was answered in, currently `2026-09-23`. Changes within a version are additive only: fields and operations are added, never removed, renamed or given a new meaning.\n- **Expression checks.** `POST /expressions/check` type-checks one CEL expression at the attribute that contains it, named within the resource's whole definition (`integration.webhook.events[0].when`), as `terraform plan` needs. What the expression may read is worked out from that definition exactly as applying it would, so a plan fails where an apply would; a definition that has an error fails with 422, each error under `definition`. It answers the type and any errors, each with the span it is about and a suggestion where a declared name is near, and warnings about the definition, such as a capture shadowing a built-in name. `GET /expressions/positions` lists every position, with `[*]` for any index or key, and the variables an expression there can read. They follow these headers and problems, but are not resources.\n- **Credentials.** A client calls with a person's session or with a workspace token, sent as `Authorization: Bearer <token>`. A token acts only within its own workspace and only as its scopes allow. `read`, `plan` and `configure` are a ladder: `read` reads, `plan` also checks expressions, and `configure` also creates, updates and deletes configuration as a workspace admin may, except secrets, runners and token trusts. `secrets` is granted beside one of them and lets the token create, rebind, rotate and delete secrets; Terraform that manages secrets uses `[\"configure\", \"secrets\"]`. `runners` is granted the same way and lets the token create, rekey and delete runners and runner trusts and create, update and delete the workspace's runners, since a runner claims runs, checks out repositories and keeps git credentials; Terraform that manages runners uses `[\"configure\", \"runners\"]`. `trusts` is granted the same way and lets the token create, update and delete workspace token trusts, since a trust hands out tokens; a token can only create a trust that grants scopes it has itself, so bootstrap the trusts once with a token that has `trusts` and every scope they grant, as in `[\"configure\", \"secrets\", \"trusts\"]`, and revoke it. No token manages members or tokens, or reads the audit.\n- **CI without a stored token.** A workspace admin, or a token granted `trusts`, creates a workspace token trust naming an OIDC issuer, audience, subject and claims, and the scopes and lifetime (at most an hour) of the tokens it issues. A CI job exchanges the OIDC token its platform issues it at `POST /api/workspace-tokens/exchange` with `{ \"trust\": <trust id>, \"token\": <OIDC token> }`, and calls with the short-lived token it gets back. Deleting the trust stops every token that it issued at once, and the audit names the trust and the workload's subject beside each exchange and each change made with an issued token.\n- **Forbidden changes.** A change by someone who may read the resource but not change it, person or token, fails with 403 `forbidden`, whose `permission` names what the caller lacks, one of `configure`, `manage-secrets`, `manage-runners`, `manage-token-trusts`, `administer`, `create-workspaces`, `plan`. Anything they may not see at all answers 404.\n- **Who changed what.** A client names itself in `Spotlight-Client` (`terraform-provider/<version>` or `web`), and every configuration change is recorded with who made it, person or token, and through which client. A secret's change also records the value version it moved to and the hosts it is bound to, never its value.\n- **Import by address.** Each resource has an `address` that names it within its workspace, such as `core/linear`, and an import operation that answers the resource at that address, as `terraform import` needs. A workspace's address is its slug; a team's is its key; anything a team owns is the team's key and its own, as in `core/delivery`.",
     "version": "2026-09-23",
     "contact": {}
   },
@@ -25753,14 +25753,14 @@
       "ToolActingAsResponseDto": {
         "type": "object",
         "properties": {
-          "holder": {
+          "actsAs": {
             "type": "string",
             "description": "Whose connection the call used: the team’s, or the person’s who started the task",
             "enum": [
               "team",
-              "person"
+              "requester"
             ],
-            "example": "person"
+            "example": "requester"
           },
           "personId": {
             "type": "string",
@@ -25768,17 +25768,17 @@
             "example": "user_1",
             "nullable": true
           },
-          "handle": {
+          "linkedAccount": {
             "type": "string",
-            "description": "What the host calls whoever the call acted as, where it says",
+            "description": "The account name on the service of whoever the call acted as, where the service gives it",
             "example": "@alice",
             "nullable": true
           }
         },
         "required": [
-          "holder",
+          "actsAs",
           "personId",
-          "handle"
+          "linkedAccount"
         ]
       },
       "ToolAnswerResponseDto": {
@@ -25809,7 +25809,7 @@
           },
           "actingAs": {
             "nullable": true,
-            "description": "Whose connection the call acted with, where its integration connects",
+            "description": "Whose connection the call acted with, where its integration requires a connection",
             "type": "object",
             "allOf": [
               {
@@ -27032,11 +27032,11 @@
       "InboxConnectionResponseDto": {
         "type": "object",
         "properties": {
-          "source": {
+          "integration": {
             "type": "string",
             "example": "linear"
           },
-          "integration": {
+          "integrationName": {
             "type": "string",
             "example": "Linear"
           },
@@ -27055,8 +27055,8 @@
           }
         },
         "required": [
-          "source",
           "integration",
+          "integrationName",
           "personId",
           "personName",
           "met"
@@ -31794,7 +31794,7 @@
           "items"
         ]
       },
-      "DescriptionViewResponseDto": {
+      "ApiSpecViewResponseDto": {
         "type": "object",
         "properties": {
           "kind": {
@@ -31805,7 +31805,7 @@
               "mcp"
             ],
             "example": "openapi",
-            "description": "The kind of API description, or the MCP server, its tools are generated from"
+            "description": "The kind of API spec that its tools are generated from: an OpenAPI document, a GraphQL schema or an MCP server"
           },
           "tools": {
             "type": "integer",
@@ -31816,13 +31816,13 @@
             "type": "string",
             "format": "date-time",
             "example": "2026-10-05T12:00:00.000Z",
-            "description": "When it was last read"
+            "description": "When Spotlight last fetched the spec"
           },
           "problem": {
             "type": "string",
             "nullable": true,
             "example": null,
-            "description": "Why it could not be read when it was last requested; the tools from the last good read stay offered"
+            "description": "Why it could not be read when it was last requested. The tools from the last good read stay available"
           }
         },
         "required": [
@@ -31835,8 +31835,9 @@
       "IntegrationViewResponseDto": {
         "type": "object",
         "properties": {
-          "source": {
+          "integration": {
             "type": "string",
+            "description": "The name of the integration, as in slack",
             "example": "linear"
           },
           "name": {
@@ -31850,15 +31851,15 @@
           },
           "connectionStatus": {
             "type": "string",
-            "description": "Whether the team is linked to the host: it only listens, it links by authorizing and has not, or it has",
+            "description": "Whether the team is connected to the integration. The integration needs no connection, is disconnected, or is connected.",
             "enum": [
-              "listens",
-              "unlinked",
-              "linked"
+              "not-required",
+              "disconnected",
+              "connected"
             ],
-            "example": "linked"
+            "example": "connected"
           },
-          "holderRule": {
+          "actsAs": {
             "type": "string",
             "description": "Whose connection its tools act with: the team’s, or that of the person who started the task",
             "enum": [
@@ -31867,31 +31868,31 @@
             ],
             "example": "team"
           },
-          "handle": {
+          "linkedAccount": {
             "type": "string",
-            "description": "What the host calls the team once linked, where it says",
+            "description": "The account name of the team on the service once connected, where the service gives one",
             "example": "Acme",
             "nullable": true
           },
-          "described": {
-            "description": "The API description its tools are generated from, as last read; null where it names none",
+          "spec": {
+            "description": "The API spec that its tools are generated from, as last read. Null where it names none",
             "nullable": true,
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/DescriptionViewResponseDto"
+                "$ref": "#/components/schemas/ApiSpecViewResponseDto"
               }
             ]
           }
         },
         "required": [
-          "source",
+          "integration",
           "name",
           "path",
           "connectionStatus",
-          "holderRule",
-          "handle",
-          "described"
+          "actsAs",
+          "linkedAccount",
+          "spec"
         ]
       },
       "ConfigurationResponseDto": {
@@ -32267,7 +32268,7 @@
           "hcl": {
             "type": "string",
             "example": "import {\n  to = spotlight_team.core\n  id = \"5b1e9d2c-7a43-4f8e-b6c0-3d9a8e1f2b57/core\"\n}\n\nresource \"spotlight_team\" \"core\" {\n  workspace_id = spotlight_workspace.acme.id\n  key          = \"core\"\n  name         = \"Core\"\n}\n",
-            "description": "The resource as HCL, formatted as terraform fmt would: any variable it reads, then an import block that adopts it, then the resource, referring to the resources it names"
+            "description": "The resource as HCL, formatted as terraform fmt would: any variable it reads, then an import block that imports it, then the resource, referring to the resources it names"
           },
           "files": {
             "description": "The prompt and skill files the HCL reads with file()",
@@ -33285,18 +33286,18 @@
       "ConnectIntegrationRequestDto": {
         "type": "object",
         "properties": {
-          "for": {
+          "actsAs": {
             "type": "string",
-            "description": "Whose connection to make: the team’s, which only an admin makes, or the caller’s own",
+            "description": "Whose connection to make: the team’s, which only an admin makes, or the requester’s own",
             "enum": [
               "team",
-              "me"
+              "requester"
             ],
             "default": "team"
           },
-          "back": {
+          "returnTo": {
             "type": "string",
-            "description": "Where in the app to land once connected, as a path in a workspace’s inbox or settings; anything else lands on the team’s integrations",
+            "description": "Where in the app to return to after the connection, as a path in a workspace’s inbox or settings. For any other value, the app returns to the team’s integrations.",
             "example": "/w/acme/inbox/task_1"
           }
         }
@@ -33306,7 +33307,7 @@
         "properties": {
           "url": {
             "type": "string",
-            "description": "Where to send the person to authorize the link",
+            "description": "Where to send the person to authorize the connection",
             "example": "https://slack.com/oauth/authorize?client_id=...&state=..."
           }
         },
@@ -33340,13 +33341,13 @@
       "MyConnectionResponseDto": {
         "type": "object",
         "properties": {
-          "source": {
+          "integration": {
             "type": "string",
             "example": "linear"
           },
-          "handle": {
+          "linkedAccount": {
             "type": "string",
-            "description": "What the host calls the person, where it says",
+            "description": "The account name of the person on the service",
             "example": "@alice",
             "nullable": true
           },
@@ -33363,8 +33364,8 @@
           }
         },
         "required": [
-          "source",
-          "handle",
+          "integration",
+          "linkedAccount",
           "connectedAt",
           "tools"
         ]
@@ -33372,13 +33373,13 @@
       "PersonConnectionResponseDto": {
         "type": "object",
         "properties": {
-          "source": {
+          "integration": {
             "type": "string",
             "example": "linear"
           },
-          "handle": {
+          "linkedAccount": {
             "type": "string",
-            "description": "What the host calls the person, where it says",
+            "description": "The account name of the person on the service",
             "example": "@alice",
             "nullable": true
           },
@@ -33396,14 +33397,14 @@
           }
         },
         "required": [
-          "source",
-          "handle",
+          "integration",
+          "linkedAccount",
           "connectedAt",
           "personId",
           "name"
         ]
       },
-      "HostConnectionsResponseDto": {
+      "IntegrationConnectionsResponseDto": {
         "type": "object",
         "properties": {
           "mine": {
@@ -33445,7 +33446,7 @@
           "rule"
         ]
       },
-      "DescribedSourceResponseDto": {
+      "ApiSpecResponseDto": {
         "type": "object",
         "properties": {
           "kind": {
@@ -33456,30 +33457,30 @@
               "mcp"
             ],
             "example": "openapi",
-            "description": "The kind of API description, or the MCP server, its tools are generated from"
+            "description": "The kind of API spec that its tools are generated from: an OpenAPI document, a GraphQL schema or an MCP server"
           },
           "hash": {
             "type": "string",
             "nullable": true,
             "example": "9f2c4e1a7b3d5f6081a2c3e4f5061728394a5b6c7d8e9f0a1b2c3d4e5f607182",
-            "description": "The sha256 of what was last read, unchanged while a later read fails; null when it has never been read"
+            "description": "The sha256 of the spec that Spotlight last fetched. It does not change when a later fetch fails. It is null when Spotlight never fetched the spec"
           },
           "readAt": {
             "type": "string",
             "format": "date-time",
             "example": "2026-10-05T12:00:00.000Z",
-            "description": "When the description was last read"
+            "description": "When Spotlight last fetched the spec"
           },
           "problem": {
             "type": "string",
             "nullable": true,
             "example": null,
-            "description": "Why the description could not be read when it was last requested, or null when it was; Spotlight reads it again when its url, document, baseUrl, revision or depth changes, on any update after a failed read, and when the integration is connected, and lists an MCP server’s tools again every MCP_RELIST_SECONDS"
+            "description": "Why Spotlight could not fetch the spec the last time, or null when it could. Spotlight fetches the spec again when its url, document, baseUrl, revision or depth changes, on each update after a failed fetch, and when the integration is connected. Spotlight lists the tools of an MCP server again every MCP_RELIST_SECONDS"
           },
           "tools": {
             "type": "integer",
             "example": 19,
-            "description": "How many of its tools were generated from the description"
+            "description": "How many of its tools were generated from the spec"
           }
         },
         "required": [
@@ -33520,10 +33521,10 @@
             "example": "9c2e6d5a-1f47-4c8b-9a3d-2b7e5f0c1d84",
             "description": "The team it belongs to"
           },
-          "source": {
+          "integration": {
             "type": "string",
             "example": "linear",
-            "description": "The host it defines; fixed for its life, so changing it means replacing the integration"
+            "description": "The name of the integration, as in linear. It cannot change. To change it, replace the integration"
           },
           "definition": {
             "type": "object",
@@ -33538,15 +33539,15 @@
             "example": {
               "search": "grafana.search"
             },
-            "description": "Each tool the integration offers, hand-written or generated from its API description, by its name within the integration, to the name that a station or hook uses for it; not settable"
+            "description": "Each tool the integration provides, hand-written or generated from its API spec, by its name within the integration, to the name that a station or hook uses for it; not settable"
           },
-          "described": {
+          "spec": {
             "nullable": true,
-            "description": "The API description its tools are generated from, as last read; null when it names none; not settable",
+            "description": "The API spec that its tools are generated from, as Spotlight last fetched it; null when it names none; not settable",
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/DescribedSourceResponseDto"
+                "$ref": "#/components/schemas/ApiSpecResponseDto"
               }
             ]
           }
@@ -33557,10 +33558,10 @@
           "address",
           "warnings",
           "teamId",
-          "source",
+          "integration",
           "definition",
           "tools",
-          "described"
+          "spec"
         ]
       },
       "IntegrationResourceListResponseDto": {
@@ -33594,7 +33595,7 @@
           "definition": {
             "type": "object",
             "additionalProperties": true,
-            "description": "The integration’s whole definition, as it would be created, which says what the position sees"
+            "description": "The whole definition of the integration, as it would be created. It sets the variables at the position"
           }
         },
         "required": [
@@ -33677,7 +33678,7 @@
             "type": "string",
             "nullable": true,
             "example": "bool",
-            "description": "The CEL type it evaluates to; dyn where that depends on what the host sends, null where it does not check at all"
+            "description": "The CEL type it evaluates to; dyn where that depends on what the service sends, null where it does not check at all"
           },
           "errors": {
             "description": "Empty when the expression is sound where it is written",
@@ -33742,14 +33743,14 @@
             ],
             "description": "What an expression here must return, where it matters"
           },
-          "sees": {
+          "variables": {
             "description": "The names an expression here may read before the definition adds its own; type hints in the definition refine body and response",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ExpressionDeclarationResponseDto"
             }
           },
-          "alsoSees": {
+          "addedVariables": {
             "type": "array",
             "description": "What the definition adds here: item where the event has a forEach, the names its lookup captures, the inputs of the tools that do the action",
             "items": {
@@ -33765,8 +33766,8 @@
         "required": [
           "position",
           "returns",
-          "sees",
-          "alsoSees"
+          "variables",
+          "addedVariables"
         ]
       },
       "HappeningResponseDto": {
@@ -33776,7 +33777,7 @@
             "type": "string",
             "example": "github.pull_request.commented"
           },
-          "source": {
+          "integration": {
             "type": "string",
             "example": "github"
           },
@@ -33791,7 +33792,7 @@
         },
         "required": [
           "happening",
-          "source",
+          "integration",
           "label",
           "summary"
         ]

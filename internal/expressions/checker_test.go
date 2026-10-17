@@ -69,7 +69,7 @@ var definition = dynamic.FromJSON(map[string]any{
 		}},
 	},
 	"on": map[string]any{
-		"task.opened": map[string]any{"do": "comment", "to": map[string]any{"thread": "${{ ask.body }}"}},
+		"task.opened": map[string]any{"action": "comment", "to": map[string]any{"thread": "${{ ask.body }}"}},
 	},
 })
 

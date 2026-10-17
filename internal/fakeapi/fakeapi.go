@@ -823,7 +823,7 @@ var fixedFields = map[string][]string{
 	"team":                  {"key"},
 	"line":                  {"key"},
 	"skill":                 {"key"},
-	"integration":           {"source"},
+	"integration":           {"integration"},
 	"harness-profile":       {"key"},
 	"secret":                {"name"},
 	"runner-trust":          {"key"},
@@ -859,7 +859,7 @@ func (s *Server) addressOf(stored *resource) string {
 	case "workspace-runners":
 		return s.slugOf(stored.owner)
 	case "integration":
-		return s.teamKeyOf(stored) + "/" + textOf(stored.fields["source"])
+		return s.teamKeyOf(stored) + "/" + textOf(stored.fields["integration"])
 	default:
 		return s.teamKeyOf(stored) + "/" + textOf(stored.fields["key"])
 	}
@@ -929,8 +929,8 @@ func (s *Server) bodyOf(stored *resource) map[string]any {
 	}
 
 	if stored.kind == "integration" {
-		body["tools"] = offered(stored.fields)
-		body["described"] = described(stored.fields)
+		body["tools"] = provided(stored.fields)
+		body["spec"] = spec(stored.fields)
 	}
 
 	return body

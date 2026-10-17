@@ -357,9 +357,9 @@ func skill(body map[string]any) (map[string]any, []fieldError) {
 func integration(body map[string]any) (map[string]any, []fieldError) {
 	definition := maps.Clone(body)
 
-	source, _ := definition["integration"].(string)
-	if source == "" {
-		return nil, []fieldError{{"integration", "names the host this integration defines, as in linear"}}
+	named, _ := definition["integration"].(string)
+	if named == "" {
+		return nil, []fieldError{{"integration", "is the name of the integration, as in linear"}}
 	}
 
 	if actions, ok := definition["actions"].(map[string]any); ok {
@@ -377,7 +377,7 @@ func integration(body map[string]any) (map[string]any, []fieldError) {
 		definition["actions"] = filled
 	}
 
-	return map[string]any{"source": source, "definition": definition}, nil
+	return map[string]any{"integration": named, "definition": definition}, nil
 }
 
 var generated = map[string][]string{
@@ -386,7 +386,7 @@ var generated = map[string][]string{
 	"mcp":     {"search-issues", "delete-issue"},
 }
 
-func describedBy(fields map[string]any) string {
+func specKindOf(fields map[string]any) string {
 	definition := objectOf(fields["definition"])
 	for _, kind := range slices.Sorted(maps.Keys(generated)) {
 		if definition[kind] != nil {
@@ -397,23 +397,23 @@ func describedBy(fields map[string]any) string {
 	return ""
 }
 
-func offered(fields map[string]any) map[string]any {
-	source := textOf(fields["source"])
+func provided(fields map[string]any) map[string]any {
+	named := textOf(fields["integration"])
 	tools := map[string]any{}
 
-	for _, name := range generated[describedBy(fields)] {
-		tools[name] = source + "." + name
+	for _, name := range generated[specKindOf(fields)] {
+		tools[name] = named + "." + name
 	}
 
 	for name := range objectOf(objectOf(fields["definition"])["tools"]) {
-		tools[name] = source + "." + name
+		tools[name] = named + "." + name
 	}
 
 	return tools
 }
 
-func described(fields map[string]any) any {
-	kind := describedBy(fields)
+func spec(fields map[string]any) any {
+	kind := specKindOf(fields)
 	if kind == "" {
 		return nil
 	}

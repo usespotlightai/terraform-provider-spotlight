@@ -83,20 +83,20 @@ type SkillInput struct {
 
 // Integration is an integration resource. Tools maps the name of each tool
 // in the integration to the name that stations and hooks use, for example
-// grafana.search. A tool can be hand-written or come from the API description
-// of the integration.
+// grafana.search. A tool can be hand-written or come from the API spec of the
+// integration.
 type Integration struct {
 	Meta
-	TeamID     string
-	Source     string
-	Definition Definition
-	Tools      map[string]string
-	Described  *Described
+	TeamID      string
+	Integration string
+	Definition  Definition
+	Tools       map[string]string
+	Spec        *Spec
 }
 
-// Described is the API description that the tools of an integration come
-// from, as Spotlight last read it.
-type Described struct {
+// Spec is the API spec that the tools of an integration come from, as
+// Spotlight last read it.
+type Spec struct {
 	Kind    string
 	Hash    *string
 	ReadAt  time.Time

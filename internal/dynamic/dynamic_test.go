@@ -26,7 +26,7 @@ func document(t *testing.T, written string) any {
 }
 
 func TestAJSONDocumentRoundTrips(t *testing.T) {
-	written := document(t, `{"integration":"linear","port":8080,"ratio":0.5,"on":{"task.opened":{"do":"comment"}},"events":[{"when":"${{ true }}"},"x"],"empty":{},"none":[],"missing":null,"flag":true}`)
+	written := document(t, `{"integration":"linear","port":8080,"ratio":0.5,"on":{"task.opened":{"action":"comment"}},"events":[{"when":"${{ true }}"},"x"],"empty":{},"none":[],"missing":null,"flag":true}`)
 
 	value := dynamic.FromJSON(written)
 

@@ -274,7 +274,7 @@ func TestExpressionsAreCheckedWhereTheyAreWritten(t *testing.T) {
 	api, recorded := serve(t, func(w http.ResponseWriter, r *http.Request, _ int) {
 		if r.Method == http.MethodGet {
 			reply(w, http.StatusOK, "application/json", []any{
-				map[string]any{"position": "integration.webhook.events[*].when", "returns": "bool", "sees": []any{}, "alsoSees": []any{"item"}},
+				map[string]any{"position": "integration.webhook.events[*].when", "returns": "bool", "variables": []any{}, "addedVariables": []any{"item"}},
 			})
 			return
 		}
