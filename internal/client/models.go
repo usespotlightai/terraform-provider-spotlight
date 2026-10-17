@@ -263,11 +263,20 @@ type PoolProvision struct {
 	Secret        string  `json:"secret,omitempty"`
 	SecretVersion *int64  `json:"secretVersion,omitempty"`
 	Egress        *string `json:"egress,omitempty"`
+	EgressTraffic *string `json:"egressTraffic,omitempty"`
 }
 
 // PlatformEgress names the egress that Spotlight operates, in place of the id
 // of an egress in the workspace.
 const PlatformEgress = "spotlight"
+
+// EgressTrafficAll sends all the traffic of a run through the egress, and
+// EgressTrafficBound only the traffic to the hosts that its secrets are bound
+// to.
+const (
+	EgressTrafficAll   = "all"
+	EgressTrafficBound = "bound"
+)
 
 // Egress is a service that the runners of push pools send their traffic
 // through. It calls Spotlight with its token.

@@ -264,9 +264,19 @@ func runnerPool(body map[string]any) (map[string]any, []fieldError) {
 	}
 
 	fields["mode"] = "push"
-	fields["provision"] = map[string]any{"url": written, "secretVersion": versionOf(given["secretVersion"]), "egress": nil}
-	if named, ok := given["egress"].(string); ok && strings.TrimSpace(named) != "" {
+	fields["provision"] = map[string]any{"url": written, "secretVersion": versionOf(given["secretVersion"]), "egress": nil, "egressTraffic": "all"}
+	named, _ := given["egress"].(string)
+	if strings.TrimSpace(named) != "" {
 		objectOf(fields["provision"])["egress"] = strings.TrimSpace(named)
+	}
+	switch traffic := given["egressTraffic"]; {
+	case traffic == nil:
+	case traffic != "all" && traffic != "bound":
+		errs = append(errs, fieldError{"provision.egressTraffic", "is all or bound"})
+	case strings.TrimSpace(named) == "":
+		errs = append(errs, fieldError{"provision.egressTraffic", "is only for a pool that names an egress in provision.egress"})
+	default:
+		objectOf(fields["provision"])["egressTraffic"] = traffic
 	}
 
 	return fields, errs

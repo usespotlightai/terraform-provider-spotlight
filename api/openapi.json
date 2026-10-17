@@ -2361,7 +2361,7 @@
     },
     "/egress/connections": {
       "post": {
-        "description": "Called by a shared egress with its egress token. Spotlight keeps each record with its run for 30 days. A record of a run that the runner no longer holds is dropped.",
+        "description": "Called by a shared egress with its egress token. Spotlight keeps each record with its run for 30 days. It keeps a record only when the run still names the runner of the proxy credential, and that runner stands or ended at most 2 minutes before.",
         "operationId": "recordEgressConnections",
         "parameters": [],
         "requestBody": {
@@ -10463,6 +10463,15 @@
                         "nullable": true,
                         "example": "spotlight",
                         "description": "The egress the pool’s runners send their traffic through: spotlight for the platform egress, or the id of an egress in the workspace. Left out, the runners have no egress, and runs that use secrets or the Spotlight API do not go to the pool"
+                      },
+                      "egressTraffic": {
+                        "type": "string",
+                        "enum": [
+                          "all",
+                          "bound"
+                        ],
+                        "default": "all",
+                        "description": "Which traffic of a run goes through the egress. all: every connection, so egress records every host and its allow-list applies to all of them. bound: only the traffic to hosts that a secret of the run is bound to; other traffic goes directly. Only with egress"
                       }
                     }
                   }
@@ -10893,6 +10902,15 @@
                         "nullable": true,
                         "example": "spotlight",
                         "description": "The egress the pool’s runners send their traffic through: spotlight for the platform egress, or the id of an egress in the workspace. Left out, the runners have no egress, and runs that use secrets or the Spotlight API do not go to the pool"
+                      },
+                      "egressTraffic": {
+                        "type": "string",
+                        "enum": [
+                          "all",
+                          "bound"
+                        ],
+                        "default": "all",
+                        "description": "Which traffic of a run goes through the egress. all: every connection, so egress records every host and its allow-list applies to all of them. bound: only the traffic to hosts that a secret of the run is bound to; other traffic goes directly. Only with egress"
                       }
                     }
                   }
@@ -31498,12 +31516,22 @@
             "nullable": true,
             "example": "spotlight",
             "description": "The egress the pool’s runners send their traffic through: spotlight for the platform egress, the id of an egress in the workspace, or null for none"
+          },
+          "egressTraffic": {
+            "type": "string",
+            "enum": [
+              "all",
+              "bound"
+            ],
+            "example": "all",
+            "description": "Which traffic of a run goes through the egress: all, or only the traffic to bound hosts. all when the pool names no egress"
           }
         },
         "required": [
           "url",
           "secretVersion",
-          "egress"
+          "egress",
+          "egressTraffic"
         ]
       },
       "RunnerPoolResourceResponseDto": {

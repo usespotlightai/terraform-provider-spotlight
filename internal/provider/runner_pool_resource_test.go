@@ -277,6 +277,7 @@ func TestAPushPoolSecretIsWrittenButNeverKept(t *testing.T) {
 						"secret":         knownvalue.Null(),
 						"secret_version": knownvalue.Int64Exact(1),
 						"egress":         knownvalue.Null(),
+						"egress_traffic": knownvalue.StringExact("all"),
 					})),
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -659,6 +660,24 @@ func TestAPushPoolNamesItsEgress(t *testing.T) {
 			{
 				Config:   pushPoolThrough(`egress = spotlight_egress.shared.id`),
 				PlanOnly: true,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(runnerPoolAddress, tfjsonpath.New("provision").AtMapKey("egress_traffic"), knownvalue.StringExact("all")),
+				},
+			},
+			{
+				Config:           pushPoolThrough("egress = spotlight_egress.shared.id\n    egress_traffic = \"bound\""),
+				ConfigPlanChecks: updated,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(runnerPoolAddress, tfjsonpath.New("provision").AtMapKey("egress_traffic"), knownvalue.StringExact("bound")),
+				},
+			},
+			{
+				Config:      pushPoolThrough("egress = spotlight_egress.shared.id\n    egress_traffic = \"some\""),
+				ExpectError: regexp.MustCompile(`(?s)egress_traffic.*value must be one of`),
+			},
+			{
+				Config:           pushPoolThrough(`egress = spotlight_egress.shared.id`),
+				ConfigPlanChecks: updated,
 			},
 			{
 				ResourceName:      runnerPoolAddress,

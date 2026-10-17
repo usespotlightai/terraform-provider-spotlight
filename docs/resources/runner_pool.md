@@ -90,6 +90,7 @@ Required:
 Optional:
 
 - `egress` (String) The egress the pool's runners send their traffic through: `spotlight` for the egress that Spotlight operates, or the `id` of a `spotlight_egress` in the workspace. Left out, the runners have no egress, and Spotlight does not send to the pool a run that uses secrets or the Spotlight API. Changing it updates the pool in place.
+- `egress_traffic` (String) Which traffic of a run goes through the egress: `all`, so egress records every connection and its allow-list applies to every host, or `bound`, only the traffic to hosts that a secret of the run is bound to. Other traffic then goes directly. Only with `egress`.
 - `secret_version` (Number) Any number; change it whenever `secret` changes, so Terraform sends the new value.
 
 ## Import

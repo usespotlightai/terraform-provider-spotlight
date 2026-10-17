@@ -288,6 +288,24 @@ func (e MintedTokenResponseDtoScopes) Valid() bool {
 	}
 }
 
+// Defines values for PoolProvisionResponseDtoEgressTraffic.
+const (
+	PoolProvisionResponseDtoEgressTrafficAll   PoolProvisionResponseDtoEgressTraffic = "all"
+	PoolProvisionResponseDtoEgressTrafficBound PoolProvisionResponseDtoEgressTraffic = "bound"
+)
+
+// Valid indicates whether the value is a known member of the PoolProvisionResponseDtoEgressTraffic enum.
+func (e PoolProvisionResponseDtoEgressTraffic) Valid() bool {
+	switch e {
+	case PoolProvisionResponseDtoEgressTrafficAll:
+		return true
+	case PoolProvisionResponseDtoEgressTrafficBound:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ProblemResponseDtoPermission.
 const (
 	ProblemResponseDtoPermissionAdminister        ProblemResponseDtoPermission = "administer"
@@ -855,6 +873,24 @@ const (
 func (e UpdateRunnerPoolParamsSpotlightApiVersion) Valid() bool {
 	switch e {
 	case UpdateRunnerPoolParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateRunnerPoolJSONBodyProvisionEgressTraffic.
+const (
+	UpdateRunnerPoolJSONBodyProvisionEgressTrafficAll   UpdateRunnerPoolJSONBodyProvisionEgressTraffic = "all"
+	UpdateRunnerPoolJSONBodyProvisionEgressTrafficBound UpdateRunnerPoolJSONBodyProvisionEgressTraffic = "bound"
+)
+
+// Valid indicates whether the value is a known member of the UpdateRunnerPoolJSONBodyProvisionEgressTraffic enum.
+func (e UpdateRunnerPoolJSONBodyProvisionEgressTraffic) Valid() bool {
+	switch e {
+	case UpdateRunnerPoolJSONBodyProvisionEgressTrafficAll:
+		return true
+	case UpdateRunnerPoolJSONBodyProvisionEgressTrafficBound:
 		return true
 	default:
 		return false
@@ -1551,6 +1587,24 @@ const (
 func (e CreateRunnerPoolParamsSpotlightApiVersion) Valid() bool {
 	switch e {
 	case CreateRunnerPoolParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CreateRunnerPoolJSONBodyProvisionEgressTraffic.
+const (
+	All   CreateRunnerPoolJSONBodyProvisionEgressTraffic = "all"
+	Bound CreateRunnerPoolJSONBodyProvisionEgressTraffic = "bound"
+)
+
+// Valid indicates whether the value is a known member of the CreateRunnerPoolJSONBodyProvisionEgressTraffic enum.
+func (e CreateRunnerPoolJSONBodyProvisionEgressTraffic) Valid() bool {
+	switch e {
+	case All:
+		return true
+	case Bound:
 		return true
 	default:
 		return false
@@ -2392,12 +2446,18 @@ type PoolProvisionResponseDto struct {
 	// Egress The egress the pool’s runners send their traffic through: spotlight for the platform egress, the id of an egress in the workspace, or null for none
 	Egress *string `json:"egress"`
 
+	// EgressTraffic Which traffic of a run goes through the egress: all, or only the traffic to bound hosts. all when the pool names no egress
+	EgressTraffic PoolProvisionResponseDtoEgressTraffic `json:"egressTraffic"`
+
 	// SecretVersion Changed to rotate provision.secret, which is write-only and never answered
 	SecretVersion *int `json:"secretVersion"`
 
 	// Url Called with every run the pool is to serve, signed as Standard Webhooks sign
 	Url string `json:"url"`
 }
+
+// PoolProvisionResponseDtoEgressTraffic Which traffic of a run goes through the egress: all, or only the traffic to bound hosts. all when the pool names no egress
+type PoolProvisionResponseDtoEgressTraffic string
 
 // ProblemResponseDto defines model for ProblemResponseDto.
 type ProblemResponseDto struct {
@@ -3170,6 +3230,9 @@ type UpdateRunnerPoolJSONBody struct {
 		// Egress The egress the pool’s runners send their traffic through: spotlight for the platform egress, or the id of an egress in the workspace. Left out, the runners have no egress, and runs that use secrets or the Spotlight API do not go to the pool
 		Egress *string `json:"egress,omitempty"`
 
+		// EgressTraffic Which traffic of a run goes through the egress. all: every connection, so egress records every host and its allow-list applies to all of them. bound: only the traffic to hosts that a secret of the run is bound to; other traffic goes directly. Only with egress
+		EgressTraffic *UpdateRunnerPoolJSONBodyProvisionEgressTraffic `json:"egressTraffic,omitempty"`
+
 		// Secret Write-only: signs each call as Standard Webhooks sign, given as whsec_ and 24 to 64 base64 bytes. Required on create, and whenever secretVersion changes
 		Secret *string `json:"secret,omitempty"`
 
@@ -3199,6 +3262,9 @@ type UpdateRunnerPoolParams struct {
 
 // UpdateRunnerPoolParamsSpotlightApiVersion defines parameters for UpdateRunnerPool.
 type UpdateRunnerPoolParamsSpotlightApiVersion string
+
+// UpdateRunnerPoolJSONBodyProvisionEgressTraffic defines parameters for UpdateRunnerPool.
+type UpdateRunnerPoolJSONBodyProvisionEgressTraffic string
 
 // DeleteRunnerTrustParams defines parameters for DeleteRunnerTrust.
 type DeleteRunnerTrustParams struct {
@@ -3915,6 +3981,9 @@ type CreateRunnerPoolJSONBody struct {
 		// Egress The egress the pool’s runners send their traffic through: spotlight for the platform egress, or the id of an egress in the workspace. Left out, the runners have no egress, and runs that use secrets or the Spotlight API do not go to the pool
 		Egress *string `json:"egress,omitempty"`
 
+		// EgressTraffic Which traffic of a run goes through the egress. all: every connection, so egress records every host and its allow-list applies to all of them. bound: only the traffic to hosts that a secret of the run is bound to; other traffic goes directly. Only with egress
+		EgressTraffic *CreateRunnerPoolJSONBodyProvisionEgressTraffic `json:"egressTraffic,omitempty"`
+
 		// Secret Write-only: signs each call as Standard Webhooks sign, given as whsec_ and 24 to 64 base64 bytes. Required on create, and whenever secretVersion changes
 		Secret *string `json:"secret,omitempty"`
 
@@ -3944,6 +4013,9 @@ type CreateRunnerPoolParams struct {
 
 // CreateRunnerPoolParamsSpotlightApiVersion defines parameters for CreateRunnerPool.
 type CreateRunnerPoolParamsSpotlightApiVersion string
+
+// CreateRunnerPoolJSONBodyProvisionEgressTraffic defines parameters for CreateRunnerPool.
+type CreateRunnerPoolJSONBodyProvisionEgressTraffic string
 
 // ImportRunnerPoolParams defines parameters for ImportRunnerPool.
 type ImportRunnerPoolParams struct {
