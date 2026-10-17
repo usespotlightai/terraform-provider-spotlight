@@ -1102,7 +1102,7 @@
             "description": "No such run leased by this runner"
           }
         },
-        "summary": "What a person has said to the agent working this run",
+        "summary": "The messages that a person sent to the agent of this run",
         "tags": [
           "runners"
         ]
@@ -1279,9 +1279,9 @@
         ]
       }
     },
-    "/runs/{runId}/messages/delivered": {
+    "/runs/{runId}/messages/ack": {
       "post": {
-        "operationId": "deliverSaid",
+        "operationId": "ackMessages",
         "parameters": [
           {
             "name": "runId",
@@ -1297,7 +1297,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/DeliverSaidRequestDto"
+                "$ref": "#/components/schemas/AckMessagesRequestDto"
               }
             }
           }
@@ -1313,7 +1313,7 @@
             "description": "The run is not leased by this runner"
           }
         },
-        "summary": "Say what the agent has been given",
+        "summary": "Acknowledge the messages that the agent got",
         "tags": [
           "runners"
         ]
@@ -1668,10 +1668,10 @@
         ]
       }
     },
-    "/runs/{runId}/remark": {
+    "/runs/{runId}/review-comment-replies": {
       "post": {
-        "description": "Answered under Spotlight’s own credential. Nothing that reaches GitHub is ever sent to a runner.",
-        "operationId": "answerRemark",
+        "description": "Spotlight replies with its own credential. Nothing that reaches GitHub is ever sent to a runner.",
+        "operationId": "replyToReviewComment",
         "parameters": [
           {
             "name": "runId",
@@ -1687,7 +1687,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AnswerRemarkRequestDto"
+                "$ref": "#/components/schemas/ReplyToReviewCommentRequestDto"
               }
             }
           }
@@ -1700,7 +1700,7 @@
             "description": "Missing, no longer valid or wrong runner token"
           }
         },
-        "summary": "Answer something said on the pull request, and resolve it",
+        "summary": "Reply to a review comment on the pull request, and resolve it",
         "tags": [
           "runners"
         ]
@@ -2749,7 +2749,7 @@
             "description": "No such task for this caller"
           }
         },
-        "summary": "What each run did to arrive at what it said",
+        "summary": "What each run did to arrive at its result",
         "tags": [
           "inbox"
         ]
@@ -3128,9 +3128,9 @@
         ]
       }
     },
-    "/teams/{teamId}/runs/{runId}/say": {
+    "/teams/{teamId}/runs/{runId}/messages": {
       "post": {
-        "operationId": "sayToRun",
+        "operationId": "sendMessage",
         "parameters": [
           {
             "name": "runId",
@@ -3155,7 +3155,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SayToRunRequestDto"
+                "$ref": "#/components/schemas/SendMessageRequestDto"
               }
             }
           }
@@ -3174,7 +3174,7 @@
             "description": "The task has moved on from that station"
           }
         },
-        "summary": "Say something to the agent working a run",
+        "summary": "Send a message to the agent of a run",
         "tags": [
           "tasks"
         ]
@@ -3640,7 +3640,7 @@
             "bearer": []
           }
         ],
-        "summary": "A replay run: the past run it replays, what it did and said, and what it spent",
+        "summary": "A replay run: the past run it replays, what it did and wrote, and what it spent",
         "tags": [
           "replays"
         ]
@@ -3737,7 +3737,7 @@
             "bearer": []
           }
         ],
-        "summary": "A search’s agent run: its search and iteration, the agent it ran, what it did and said, and what it spent",
+        "summary": "A search’s agent run: its search and iteration, the agent it ran, what it did and wrote, and what it spent",
         "tags": [
           "replays"
         ]
@@ -3876,7 +3876,7 @@
             "description": "No such chat for this caller"
           }
         },
-        "summary": "A chat, with everything said and proposed in it",
+        "summary": "A chat, with all its messages and proposals",
         "tags": [
           "chats"
         ]
@@ -3925,7 +3925,7 @@
             "description": "No such chat for this caller"
           }
         },
-        "summary": "What the agent did and said in each run of a chat",
+        "summary": "What the agent did and wrote in each run of a chat",
         "tags": [
           "chats"
         ]
@@ -3933,7 +3933,7 @@
     },
     "/teams/{teamId}/chats/{chatId}/messages": {
       "post": {
-        "operationId": "sayInChat",
+        "operationId": "sendChatMessage",
         "parameters": [
           {
             "name": "teamId",
@@ -3958,14 +3958,14 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SayInChatRequestDto"
+                "$ref": "#/components/schemas/SendChatMessageRequestDto"
               }
             }
           }
         },
         "responses": {
           "204": {
-            "description": "The agent hears it"
+            "description": "The agent gets the message"
           },
           "400": {
             "description": "A model or effort that is not text"
@@ -3980,7 +3980,7 @@
             "description": "An unknown model or effort"
           }
         },
-        "summary": "Say something to the agent in a chat",
+        "summary": "Send a message to the agent in a chat",
         "tags": [
           "chats"
         ]
@@ -15419,7 +15419,7 @@
             "description": "No such run or comment for this caller"
           },
           "422": {
-            "description": "Nothing said, or no file"
+            "description": "The comment has no text, or names no file"
           }
         },
         "summary": "Draft a comment on lines or a whole file, or reply to a comment; a reply goes to GitHub straight away",
@@ -17544,7 +17544,7 @@
           {
             "name": "Idempotency-Key",
             "in": "header",
-            "description": "The same on every retry of one note, so a retried note is said once",
+            "description": "The same on every retry of one note, so a retried note is added once",
             "required": false,
             "schema": {
               "type": "string"
@@ -17574,7 +17574,7 @@
             "bearer": []
           }
         ],
-        "summary": "Say something on the task a hook request was about",
+        "summary": "Add a note to the task that a hook request was about",
         "tags": [
           "hooks"
         ]
@@ -23927,7 +23927,7 @@
             "type": "string",
             "example": "high",
             "nullable": true,
-            "description": "How hard the harness is told to think. Null leaves its own default."
+            "description": "How hard the harness must think. Null leaves its own default."
           },
           "agentPrompt": {
             "type": "string",
@@ -24633,7 +24633,7 @@
             "type": "string",
             "example": "tool",
             "enum": [
-              "said",
+              "message",
               "thought",
               "tool",
               "planned",
@@ -25607,13 +25607,13 @@
           "seedBlock"
         ]
       },
-      "DeliverSaidRequestDto": {
+      "AckMessagesRequestDto": {
         "type": "object",
         "properties": {
           "upTo": {
             "type": "number",
             "example": 4,
-            "description": "Everything said up to and including this note was given"
+            "description": "The agent got all the messages up to and including this note"
           }
         },
         "required": [
@@ -25869,13 +25869,13 @@
           "decision"
         ]
       },
-      "AnswerRemarkRequestDto": {
+      "ReplyToReviewCommentRequestDto": {
         "type": "object",
         "properties": {
           "handle": {
             "type": "string",
             "example": "c3",
-            "description": "Which remark, as briefed"
+            "description": "Which review comment, as the briefing named it"
           },
           "body": {
             "type": "string",
@@ -25884,7 +25884,7 @@
           "resolve": {
             "type": "boolean",
             "example": true,
-            "description": "Resolve the thread as well as answering it"
+            "description": "Resolve the thread as well as replying to it"
           }
         },
         "required": [
@@ -25892,7 +25892,7 @@
           "body"
         ]
       },
-      "DeclaredOutcomeDto": {
+      "HandoverDto": {
         "type": "object",
         "properties": {
           "next": {
@@ -25934,8 +25934,8 @@
           "message": {
             "type": "string"
           },
-          "outcome": {
-            "$ref": "#/components/schemas/DeclaredOutcomeDto"
+          "handover": {
+            "$ref": "#/components/schemas/HandoverDto"
           },
           "sessionId": {
             "type": "string",
@@ -27062,7 +27062,7 @@
           "met"
         ]
       },
-      "InboxMessageResponseDto": {
+      "NoteResponseDto": {
         "type": "object",
         "properties": {
           "position": {
@@ -27076,7 +27076,7 @@
               "asked",
               "passed",
               "answered",
-              "said"
+              "message"
             ]
           },
           "form": {
@@ -27100,7 +27100,7 @@
               "person",
               "world"
             ],
-            "description": "Who spoke: the station, a person, or the world outside it"
+            "description": "Who wrote it: the station, a person, or the world outside it"
           },
           "station": {
             "type": "string",
@@ -27137,7 +27137,7 @@
           },
           "author": {
             "nullable": true,
-            "description": "Absent where the station said it rather than a person",
+            "description": "Absent where the station wrote it rather than a person",
             "type": "object",
             "allOf": [
               {
@@ -27322,7 +27322,7 @@
           "notes": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/InboxMessageResponseDto"
+              "$ref": "#/components/schemas/NoteResponseDto"
             }
           }
         },
@@ -27454,7 +27454,7 @@
           "body": {
             "type": "string",
             "example": "Drain the queue before retrying, and cap it at 500.",
-            "description": "What the person says back. It joins the task’s trail. May be empty where files are attached."
+            "description": "What the person writes back. It joins the task’s trail. May be empty where files are attached."
           },
           "attachments": {
             "description": "Uploads to attach, by the id each was granted",
@@ -27491,11 +27491,11 @@
             "nullable": true,
             "description": "When the workspace was handed to the agent"
           },
-          "spokeFrom": {
+          "firstAgentUpdateAt": {
             "type": "string",
             "nullable": true
           },
-          "spokeTo": {
+          "lastAgentUpdateAt": {
             "type": "string",
             "nullable": true
           },
@@ -27507,8 +27507,8 @@
         "required": [
           "startedAt",
           "readyAt",
-          "spokeFrom",
-          "spokeTo",
+          "firstAgentUpdateAt",
+          "lastAgentUpdateAt",
           "endedAt"
         ]
       },
@@ -27571,7 +27571,7 @@
             "type": "number",
             "example": 56000,
             "nullable": true,
-            "description": "How long the run spoke for, in ms"
+            "description": "How long the agent was active, in ms"
           },
           "marks": {
             "$ref": "#/components/schemas/RunMarksResponseDto"
@@ -27787,7 +27787,7 @@
           },
           "note": {
             "nullable": true,
-            "description": "The last thing said about this task, and where it was said",
+            "description": "The last note on this task, and the station where it was written",
             "type": "object",
             "allOf": [
               {
@@ -27946,7 +27946,7 @@
           "taskDescription": {
             "type": "string",
             "nullable": true,
-            "description": "What was asked for, shown before a run has said anything"
+            "description": "What was asked for, shown before a run has written a note"
           }
         },
         "required": [
@@ -28086,7 +28086,7 @@
           "output": {
             "type": "string",
             "nullable": true,
-            "description": "What it said when it passed the task on"
+            "description": "The last note that the run wrote on the task"
           },
           "ms": {
             "type": "number",
@@ -28513,7 +28513,7 @@
           "notes": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/InboxMessageResponseDto"
+              "$ref": "#/components/schemas/NoteResponseDto"
             }
           },
           "spend": {
@@ -28541,7 +28541,7 @@
           "spend"
         ]
       },
-      "SayToRunRequestDto": {
+      "SendMessageRequestDto": {
         "type": "object",
         "properties": {
           "body": {
@@ -28656,7 +28656,7 @@
             "example": "## Steps\n\nReproduce, then fix.",
             "maxLength": 20000,
             "nullable": true,
-            "description": "Markdown. Left out or blank for a task with nothing said."
+            "description": "Markdown. Left out or blank for a task with no description."
           },
           "attachments": {
             "description": "Uploads to attach, by the id each was granted",
@@ -28841,7 +28841,7 @@
             ]
           },
           "journals": {
-            "description": "What it did and said, attempt by attempt",
+            "description": "What it did and wrote, attempt by attempt",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/RunJournalResponseDto"
@@ -28849,7 +28849,7 @@
           },
           "briefing": {
             "type": "string",
-            "description": "What the replay told its agent when it was dispatched"
+            "description": "The briefing that the replay gave its agent when it was dispatched"
           },
           "agent": {
             "description": "The harness, model and effort the replay ran its agent on",
@@ -29031,7 +29031,7 @@
             ]
           },
           "journals": {
-            "description": "What it did and said, attempt by attempt",
+            "description": "What it did and wrote, attempt by attempt",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/RunJournalResponseDto"
@@ -29039,7 +29039,7 @@
           },
           "briefing": {
             "type": "string",
-            "description": "What the search told its agent when it dispatched this iteration"
+            "description": "The briefing that the search gave its agent when it dispatched this iteration"
           }
         },
         "required": [
@@ -29394,10 +29394,10 @@
           "kind": {
             "type": "string",
             "enum": [
-              "said",
+              "message",
               "proposed"
             ],
-            "example": "said"
+            "example": "message"
           },
           "body": {
             "type": "string",
@@ -29551,7 +29551,7 @@
           "messages"
         ]
       },
-      "SayInChatRequestDto": {
+      "SendChatMessageRequestDto": {
         "type": "object",
         "properties": {
           "body": {
@@ -33784,7 +33784,7 @@
             "type": "string",
             "example": "Pull request commented on"
           },
-          "told": {
+          "summary": {
             "type": "string",
             "example": "The pull request was commented on."
           }
@@ -33793,7 +33793,7 @@
           "happening",
           "source",
           "label",
-          "told"
+          "summary"
         ]
       },
       "HookMatchDto": {
@@ -34268,7 +34268,7 @@
           "body": {
             "type": "string",
             "example": "A DBA looked at the migration and it is safe to run online.",
-            "description": "What to say on the task, as the hook"
+            "description": "The note to add to the task, as the hook"
           }
         },
         "required": [
@@ -34309,7 +34309,7 @@
           "kind": {
             "type": "string",
             "example": "thought",
-            "description": "said, thought, planned, handover, or remember"
+            "description": "message, thought, planned, handover, or remember"
           },
           "text": {
             "type": "string",
@@ -34361,7 +34361,7 @@
           },
           "author": {
             "nullable": true,
-            "description": "The teammate who said it; absent for words from another tool, which carry no author",
+            "description": "The teammate who wrote it; absent for a note from another tool, which carries no author",
             "type": "object",
             "allOf": [
               {
@@ -34412,7 +34412,7 @@
               "outside"
             ],
             "example": "person",
-            "description": "person: only what a teammate said; outside: input the team does not control, approved one at a time; run: anything else"
+            "description": "person: only notes by a teammate; outside: input the team does not control, approved one at a time; run: anything else"
           },
           "origin": {
             "type": "string",
@@ -34485,7 +34485,7 @@
             }
           },
           "notes": {
-            "description": "What people said on the task that it rests on",
+            "description": "The notes on the task that it rests on",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/MemoryGroundNoteResponseDto"
@@ -35039,7 +35039,7 @@
               "outside"
             ],
             "example": "person",
-            "description": "person: only what a teammate said; outside: input the team does not control, approved one at a time; run: anything else"
+            "description": "person: only notes by a teammate; outside: input the team does not control, approved one at a time; run: anything else"
           },
           "origin": {
             "type": "string",
@@ -35112,7 +35112,7 @@
             }
           },
           "notes": {
-            "description": "What people said on the task that it rests on",
+            "description": "The notes on the task that it rests on",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/MemoryGroundNoteResponseDto"
@@ -35154,7 +35154,7 @@
         "type": "object",
         "properties": {
           "briefed": {
-            "description": "What the run was briefed with, in the order it was told",
+            "description": "What the run was briefed with, in the order of the briefing",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/TeamMemoryResponseDto"
@@ -39200,7 +39200,7 @@
             "description": "The run size the comparison was narrowed to, if any"
           },
           "sizes": {
-            "description": "How a run’s size is told: by the lines its changes removed and added, or by its steps where it changed none",
+            "description": "How a run’s size is measured: by the lines its changes removed and added, or by its steps where it changed none",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SizeBoundResponseDto"
@@ -41762,7 +41762,7 @@
         "properties": {
           "replayId": {
             "type": "string",
-            "description": "The newest replay of the live config handed each run’s answer: the change people accepted, or what they said when they sent it back"
+            "description": "The newest replay of the live config handed each run’s answer: the change people accepted, or the note they wrote when they sent it back"
           },
           "candidateId": {
             "type": "string"
@@ -41801,7 +41801,7 @@
           },
           "answered": {
             "type": "number",
-            "description": "Runs it replayed: those the live replay replayed whose original was accepted with a change, or sent back with something a person said. Others have no answer to hand over"
+            "description": "Runs it replayed: those the live replay replayed whose original was accepted with a change, or sent back with a note from a person. Others have no answer to hand over"
           },
           "live": {
             "type": "number",

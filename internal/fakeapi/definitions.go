@@ -292,7 +292,7 @@ func repositories(definition map[string]any, errs *[]fieldError) {
 			repository["image"] = image
 		}
 		if setup := textOf(given["setup"]); setup != "" {
-			if said := strings.TrimSpace(setup); said == "" || len(said) > 500 || strings.ContainsAny(said, "\r\n") {
+			if command := strings.TrimSpace(setup); command == "" || len(command) > 500 || strings.ContainsAny(command, "\r\n") {
 				*errs = append(*errs, fieldError{fmt.Sprintf("repositories[%d].setup", at), "Invalid repository setup: is one line of at most 500 characters"})
 			}
 			repository["setup"] = setup

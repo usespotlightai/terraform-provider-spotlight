@@ -24,9 +24,9 @@ func TestTeamListResource(t *testing.T) {
 func TestTeamListResourceNeedsAWorkspaceItMaySee(t *testing.T) {
 	fake := fakeapi.New(t)
 
-	said := acctest.ListFails(t, fake, "spotlight_team", map[string]string{"workspace_id": "nowhere"})
-	if !strings.Contains(said, "Could not list the teams") || !strings.Contains(said, "There is no workspace here that you may see") {
-		t.Errorf("listing in a workspace nobody may see said:\n%s", said)
+	output := acctest.ListFails(t, fake, "spotlight_team", map[string]string{"workspace_id": "nowhere"})
+	if !strings.Contains(output, "Could not list the teams") || !strings.Contains(output, "There is no workspace here that you may see") {
+		t.Errorf("listing in a workspace nobody may see said:\n%s", output)
 	}
 }
 

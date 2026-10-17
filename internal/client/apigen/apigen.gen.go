@@ -234,8 +234,8 @@ func (e HookResourceResponseDtoOn) Valid() bool {
 // Defines values for JournalStepResponseDtoKind.
 const (
 	Hook    JournalStepResponseDtoKind = "hook"
+	Message JournalStepResponseDtoKind = "message"
 	Planned JournalStepResponseDtoKind = "planned"
-	Said    JournalStepResponseDtoKind = "said"
 	Thought JournalStepResponseDtoKind = "thought"
 	Tool    JournalStepResponseDtoKind = "tool"
 )
@@ -245,9 +245,9 @@ func (e JournalStepResponseDtoKind) Valid() bool {
 	switch e {
 	case Hook:
 		return true
-	case Planned:
+	case Message:
 		return true
-	case Said:
+	case Planned:
 		return true
 	case Thought:
 		return true
