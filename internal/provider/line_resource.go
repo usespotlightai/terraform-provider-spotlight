@@ -349,7 +349,7 @@ func lineSchema() schema.Schema {
 			"replay_check": schema.SingleNestedBlock{
 				MarkdownDescription: "When a planned change to the line passes `spotlight replay check`, which replays the changed station's replay set under the change and compares it with the live config. `spotlight replay check` checks no change to a line without one.",
 				Attributes: map[string]schema.Attribute{
-					"most_regressions": schema.Int64Attribute{
+					"max_regressions": schema.Int64Attribute{
 						Optional:            true,
 						Computed:            true,
 						Default:             int64default.StaticInt64(0),

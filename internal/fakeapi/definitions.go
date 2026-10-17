@@ -199,7 +199,7 @@ func line(body map[string]any) (map[string]any, []fieldError) {
 
 	if check, ok := definition["replayCheck"].(map[string]any); ok {
 		check = maps.Clone(check)
-		orDefault(check, "mostRegressions", float64(0))
+		orDefault(check, "maxRegressions", float64(0))
 		orDefault(check, "ceiling", float64(10))
 		orDefault(check, "currency", "USD")
 		orDefault(check, "minGain", 0.05)

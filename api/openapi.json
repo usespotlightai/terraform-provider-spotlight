@@ -24035,7 +24035,7 @@
       "LineReplayCheckResponseDto": {
         "type": "object",
         "properties": {
-          "mostRegressions": {
+          "maxRegressions": {
             "type": "number",
             "example": 0,
             "description": "How many tasks a planned change may regress on and still pass `spotlight replay check`"
@@ -24057,7 +24057,7 @@
           }
         },
         "required": [
-          "mostRegressions",
+          "maxRegressions",
           "ceiling",
           "currency",
           "minGain"
@@ -24276,7 +24276,7 @@
               ],
               "reactions": [],
               "replayCheck": {
-                "mostRegressions": 0,
+                "maxRegressions": 0,
                 "ceiling": 10,
                 "currency": "USD",
                 "minGain": 0.05
@@ -25006,7 +25006,7 @@
           "name"
         ]
       },
-      "ConfiguredProfileResponseDto": {
+      "ProfileViewResponseDto": {
         "type": "object",
         "properties": {
           "key": {
@@ -25024,7 +25024,7 @@
           "settings"
         ]
       },
-      "ConfiguredRepositoryResponseDto": {
+      "RepositoryViewResponseDto": {
         "type": "object",
         "properties": {
           "name": {
@@ -25042,7 +25042,7 @@
           "setup"
         ]
       },
-      "ConfiguredSkillResponseDto": {
+      "SkillViewResponseDto": {
         "type": "object",
         "properties": {
           "key": {
@@ -25059,7 +25059,7 @@
           "digest"
         ]
       },
-      "ConfiguredJudgeResponseDto": {
+      "JudgeViewResponseDto": {
         "type": "object",
         "properties": {
           "rubricDigest": {
@@ -25109,7 +25109,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ConfiguredProfileResponseDto"
+                "$ref": "#/components/schemas/ProfileViewResponseDto"
               }
             ]
           },
@@ -25121,13 +25121,13 @@
           "repositories": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ConfiguredRepositoryResponseDto"
+              "$ref": "#/components/schemas/RepositoryViewResponseDto"
             }
           },
           "skills": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ConfiguredSkillResponseDto"
+              "$ref": "#/components/schemas/SkillViewResponseDto"
             }
           },
           "tools": {
@@ -25150,7 +25150,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ConfiguredJudgeResponseDto"
+                "$ref": "#/components/schemas/JudgeViewResponseDto"
               }
             ]
           }
@@ -26122,14 +26122,14 @@
       "RunnerReleaseResponseDto": {
         "type": "object",
         "properties": {
-          "atLeast": {
+          "minimum": {
             "type": "string",
             "example": "20260925-01",
             "description": "The oldest runner release this control plane works with; a host refuses an image whose runner is older"
           }
         },
         "required": [
-          "atLeast"
+          "minimum"
         ]
       },
       "HostRequirementsResponseDto": {
@@ -31789,7 +31789,7 @@
           "items"
         ]
       },
-      "ConfiguredDescriptionResponseDto": {
+      "DescriptionViewResponseDto": {
         "type": "object",
         "properties": {
           "kind": {
@@ -31827,7 +31827,7 @@
           "problem"
         ]
       },
-      "ConfiguredIntegrationResponseDto": {
+      "IntegrationViewResponseDto": {
         "type": "object",
         "properties": {
           "source": {
@@ -31874,7 +31874,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ConfiguredDescriptionResponseDto"
+                "$ref": "#/components/schemas/DescriptionViewResponseDto"
               }
             ]
           }
@@ -31895,7 +31895,7 @@
           "integrations": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ConfiguredIntegrationResponseDto"
+              "$ref": "#/components/schemas/IntegrationViewResponseDto"
             }
           }
         },
@@ -37678,7 +37678,7 @@
             "example": 3,
             "description": "Times it was raised or repeated in the period"
           },
-          "mostInARow": {
+          "maxInARow": {
             "type": "number",
             "example": 3,
             "description": "The most times it repeated on one task without a break"
@@ -37694,7 +37694,7 @@
           "source",
           "code",
           "occurrences",
-          "mostInARow",
+          "maxInARow",
           "taskIds"
         ]
       },
@@ -38394,10 +38394,10 @@
             "example": 2,
             "description": "How many of the latest weeks are weighed against the rest"
           },
-          "fewestRuns": {
+          "minRuns": {
             "type": "number",
             "example": 5,
-            "description": "The fewest runs each side needs for a trend"
+            "description": "The minimum number of runs each side needs for a trend"
           },
           "shiftPoints": {
             "type": "number",
@@ -38407,7 +38407,7 @@
         },
         "required": [
           "recentWeeks",
-          "fewestRuns",
+          "minRuns",
           "shiftPoints"
         ]
       },
@@ -39021,13 +39021,13 @@
               "large"
             ]
           },
-          "mostLines": {
+          "maxLines": {
             "type": "number",
             "nullable": true,
             "example": 50,
             "description": "The most lines a run’s changes may take out and put in to be this size; none for no limit"
           },
-          "mostSteps": {
+          "maxSteps": {
             "type": "number",
             "nullable": true,
             "example": 20,
@@ -39036,8 +39036,8 @@
         },
         "required": [
           "size",
-          "mostLines",
-          "mostSteps"
+          "maxLines",
+          "maxSteps"
         ]
       },
       "SetupOutcomesResponseDto": {
@@ -39201,10 +39201,10 @@
               "$ref": "#/components/schemas/SizeBoundResponseDto"
             }
           },
-          "fewestRuns": {
+          "minRuns": {
             "type": "number",
             "example": 3,
-            "description": "The fewest runs a setup needs to sit on the frontier"
+            "description": "The minimum number of runs a setup needs to sit on the frontier"
           },
           "currency": {
             "type": "string",
@@ -39241,7 +39241,7 @@
           "stationId",
           "size",
           "sizes",
-          "fewestRuns",
+          "minRuns",
           "currency",
           "setups",
           "judgeWithheld",
@@ -45582,7 +45582,7 @@
       "ReplayCheckThresholdResponseDto": {
         "type": "object",
         "properties": {
-          "mostRegressions": {
+          "maxRegressions": {
             "type": "number",
             "example": 0,
             "description": "How many tasks the change may regress on and still pass, taken from the live line’s replay_check when the check started"
@@ -45612,7 +45612,7 @@
           }
         },
         "required": [
-          "mostRegressions",
+          "maxRegressions",
           "minGain",
           "ceiling",
           "unpricedRun"
