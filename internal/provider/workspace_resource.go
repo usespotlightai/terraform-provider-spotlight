@@ -122,12 +122,12 @@ func (r *WorkspaceResource) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 
-	kept := &state
+	prior := &state
 	if !answerUnchanged(ctx, req.Private, workspaceSettable(workspace)) {
-		kept = nil
+		prior = nil
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, workspaceModel(workspace, kept))...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, workspaceModel(workspace, prior))...)
 	resp.Diagnostics.Append(setIdentity(ctx, resp.Identity, workspace.ID)...)
 	resp.Diagnostics.Append(rememberAnswer(ctx, resp.Private, workspaceSettable(workspace))...)
 }
@@ -196,7 +196,7 @@ func workspaceSettable(workspace client.Workspace) any {
 	return client.WorkspaceInput{Name: workspace.Name, Slug: workspace.Slug}
 }
 
-func workspaceModel(workspace client.Workspace, kept *WorkspaceResourceModel) WorkspaceResourceModel {
+func workspaceModel(workspace client.Workspace, prior *WorkspaceResourceModel) WorkspaceResourceModel {
 	model := WorkspaceResourceModel{
 		ID:      types.StringValue(workspace.ID),
 		Version: types.Int64Value(workspace.Version),
@@ -205,9 +205,9 @@ func workspaceModel(workspace client.Workspace, kept *WorkspaceResourceModel) Wo
 		Slug:    types.StringValue(workspace.Slug),
 	}
 
-	if kept != nil {
-		model.Name = kept.Name
-		model.Slug = kept.Slug
+	if prior != nil {
+		model.Name = prior.Name
+		model.Slug = prior.Slug
 	}
 
 	return model

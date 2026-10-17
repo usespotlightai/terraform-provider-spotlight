@@ -39,8 +39,8 @@ type RunnerPoolResource struct {
 }
 
 const (
-	runnerPoolIssuedToken = "Spotlight issued this pool a token, answered only once. Terraform keeps no secret in its state, so the token was not kept, and no host can claim with it. " +
-		"Give the pool a token that you have instead: set `token` (from a sensitive variable, or a write-only ephemeral value) and change `token_version` to send it."
+	runnerPoolIssuedToken = "Spotlight issued this pool a token, answered only once. Terraform stores no secret in its state, so the token was not stored, and no host can claim with it. " +
+		"To use a token that you have instead, set `token` (from a sensitive variable, or a write-only ephemeral value) and change `token_version` to send it."
 	runnerPoolPullOnly = "is only for a pool that is pulled from; a pool that provisions is called instead, and has no token."
 )
 
@@ -78,7 +78,7 @@ func (r *RunnerPoolResource) Schema(_ context.Context, _ resource.SchemaRequest,
 
 func runnerPoolSchema() schema.Schema {
 	attributes := writeonly.Token.Attributes("The token a `spotlight-host` serving the pool claims work with: 32 to 255 URL-safe characters, as a generated password would be. " +
-		"Only for a pool without `provision`. Spotlight keeps only its hash. Left out, Spotlight issues one when it creates the pool, which Terraform does not keep; " +
+		"Only for a pool without `provision`. Spotlight stores only its hash. Left out, Spotlight issues one when it creates the pool, which Terraform does not store; " +
 		"a change to `token_version` must come with a token. Each token is single-use. Spotlight does not accept the token of another pool. " +
 		"A token that you rotated away, or that a deleted or replaced pool used, was used once, so no pool accepts it again, the same pool included. " +
 		"Thus, to rotate or replace a pool, you always need a new token.")
@@ -212,12 +212,12 @@ func (r *RunnerPoolResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	kept := &state
+	prior := &state
 	if !answerUnchanged(ctx, req.Private, runnerPoolSettable(pool)) {
-		kept = nil
+		prior = nil
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, runnerPoolModel(pool, kept))...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, runnerPoolModel(pool, prior))...)
 	resp.Diagnostics.Append(setIdentity(ctx, resp.Identity, pool.ID)...)
 	resp.Diagnostics.Append(rememberAnswer(ctx, resp.Private, runnerPoolSettable(pool))...)
 }
@@ -350,13 +350,13 @@ func runnerPoolCreated(in client.RunnerPoolInput) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	if in.Provision == nil && in.Token == "" {
-		diags.AddAttributeWarning(writeonly.Token.Path(), "Spotlight issued the pool a token Terraform did not keep", runnerPoolIssuedToken)
+		diags.AddAttributeWarning(writeonly.Token.Path(), "Spotlight issued the pool a token Terraform did not store", runnerPoolIssuedToken)
 	}
 
 	return diags
 }
 
-func runnerPoolModel(pool client.RunnerPool, kept *RunnerPoolResourceModel) RunnerPoolResourceModel {
+func runnerPoolModel(pool client.RunnerPool, prior *RunnerPoolResourceModel) RunnerPoolResourceModel {
 	model := RunnerPoolResourceModel{
 		ID:           types.StringValue(pool.ID),
 		Version:      types.Int64Value(pool.Version),
@@ -379,17 +379,17 @@ func runnerPoolModel(pool client.RunnerPool, kept *RunnerPoolResourceModel) Runn
 		}
 	}
 
-	if kept != nil {
-		model.Key = kept.Key
-		model.Labels = kept.Labels
-		model.MaxRuns = kept.MaxRuns
-		model.TokenVersion = kept.TokenVersion
+	if prior != nil {
+		model.Key = prior.Key
+		model.Labels = prior.Labels
+		model.MaxRuns = prior.MaxRuns
+		model.TokenVersion = prior.TokenVersion
 
-		if model.Provision != nil && kept.Provision != nil {
-			model.Provision.URL = kept.Provision.URL
-			model.Provision.SecretVersion = kept.Provision.SecretVersion
-			model.Provision.Egress = kept.Provision.Egress
-			model.Provision.EgressTraffic = kept.Provision.EgressTraffic
+		if model.Provision != nil && prior.Provision != nil {
+			model.Provision.URL = prior.Provision.URL
+			model.Provision.SecretVersion = prior.Provision.SecretVersion
+			model.Provision.Egress = prior.Provision.Egress
+			model.Provision.EgressTraffic = prior.Provision.EgressTraffic
 		}
 	}
 

@@ -23,7 +23,7 @@ type Located struct {
 func (l Located) IsRoot() bool { return len(l.Path.Steps()) == 0 }
 
 // Locator finds the Terraform attribute that an API path identifies. It
-// changes names to snake_case, but Renames can give a different name, for
+// changes names to snake_case, but Renames can set a different name, for
 // example for a list of blocks (stations becomes station). Locator puts Under
 // before each API path, for resources whose API body is one Terraform
 // attribute. In a dynamic attribute, Locator does not change the names. A

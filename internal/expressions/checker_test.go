@@ -18,14 +18,14 @@ import (
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/fieldpath"
 )
 
-type asked struct {
+type checked struct {
 	position   string
 	expression string
 }
 
 type stub struct {
 	listed   int
-	asked    []asked
+	checked  []checked
 	answer   func(position, expression string) (client.ExpressionCheck, error)
 	listFail error
 }
@@ -47,7 +47,7 @@ func (s *stub) ExpressionPositions(context.Context) ([]client.Position, error) {
 }
 
 func (s *stub) CheckExpression(_ context.Context, position, expression string, _ client.Definition) (client.ExpressionCheck, error) {
-	s.asked = append(s.asked, asked{position, expression})
+	s.checked = append(s.checked, checked{position, expression})
 	if s.answer == nil {
 		return client.ExpressionCheck{Type: "bool"}, nil
 	}
@@ -81,15 +81,15 @@ func TestItChecksEachExpressionWhereItIsWritten(t *testing.T) {
 		t.Fatal(diags)
 	}
 
-	want := []asked{
+	want := []checked{
 		{"integration.actions.comment.request.body.query", "inputs.body"},
 		{"integration.actions.comment.request.body.query", "inputs.title"},
 		{`integration.on["task.opened"].to.thread`, "ask.body"},
 		{"integration.webhook.events[0].when", `body.type == "Issue"`},
 	}
 
-	if !reflect.DeepEqual(api.asked, want) {
-		t.Errorf("asked %v\nwant  %v", api.asked, want)
+	if !reflect.DeepEqual(api.checked, want) {
+		t.Errorf("checked %v\nwant    %v", api.checked, want)
 	}
 }
 
@@ -169,16 +169,16 @@ func TestItSkipsWhatIsNotKnown(t *testing.T) {
 
 	expressions.NewChecker(api).Check(context.Background(), partly)
 
-	if len(api.asked) != 1 || api.asked[0].expression != "ask.channel" {
-		t.Errorf("asked %v", api.asked)
+	if len(api.checked) != 1 || api.checked[0].expression != "ask.channel" {
+		t.Errorf("checked %v", api.checked)
 	}
 
-	api.asked = nil
+	api.checked = nil
 	expressions.NewChecker(api).Check(context.Background(), types.DynamicUnknown())
 	expressions.NewChecker(api).Check(context.Background(), types.DynamicNull())
 
-	if len(api.asked) != 0 {
-		t.Errorf("asked %v about a definition not known", api.asked)
+	if len(api.checked) != 0 {
+		t.Errorf("checked %v in a definition not known", api.checked)
 	}
 }
 
@@ -197,8 +197,8 @@ func TestAnInvalidDefinitionIsReportedOnceAtItsAttribute(t *testing.T) {
 		t.Errorf("errors %v", errs)
 	}
 
-	if len(api.asked) != 1 {
-		t.Errorf("kept asking after the definition was rejected: %v", api.asked)
+	if len(api.checked) != 1 {
+		t.Errorf("continued to check after the definition was rejected: %v", api.checked)
 	}
 }
 
@@ -257,13 +257,13 @@ func TestItChecksAHookWhereEachExpressionIsWritten(t *testing.T) {
 
 	diags := expressions.NewChecker(api).CheckSubject(context.Background(), subject)
 
-	want := []asked{
+	want := []checked{
 		{"hook.when", "event.inputs.query != ''"},
 		{"hook.steps[0].with.text", "event.inputs.qeury"},
 		{"hook.steps[1].request.body.q", "event.inputs"},
 	}
-	if !reflect.DeepEqual(api.asked, want) {
-		t.Errorf("asked %v\nwant  %v", api.asked, want)
+	if !reflect.DeepEqual(api.checked, want) {
+		t.Errorf("checked %v\nwant    %v", api.checked, want)
 	}
 
 	errs := diags.Errors()

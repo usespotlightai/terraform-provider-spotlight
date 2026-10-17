@@ -119,7 +119,7 @@ func (e HookDefinitionRequestDtoFailure) Valid() bool {
 
 // Defines values for HookDefinitionRequestDtoOn.
 const (
-	HookDefinitionRequestDtoOnHandoverGiving     HookDefinitionRequestDtoOn = "handover.giving"
+	HookDefinitionRequestDtoOnHandoverSubmitting HookDefinitionRequestDtoOn = "handover.submitting"
 	HookDefinitionRequestDtoOnPullRequestMerged  HookDefinitionRequestDtoOn = "pull-request.merged"
 	HookDefinitionRequestDtoOnPullRequestOpening HookDefinitionRequestDtoOn = "pull-request.opening"
 	HookDefinitionRequestDtoOnRunEnded           HookDefinitionRequestDtoOn = "run.ended"
@@ -133,7 +133,7 @@ const (
 // Valid indicates whether the value is a known member of the HookDefinitionRequestDtoOn enum.
 func (e HookDefinitionRequestDtoOn) Valid() bool {
 	switch e {
-	case HookDefinitionRequestDtoOnHandoverGiving:
+	case HookDefinitionRequestDtoOnHandoverSubmitting:
 		return true
 	case HookDefinitionRequestDtoOnPullRequestMerged:
 		return true
@@ -194,7 +194,7 @@ func (e HookResourceResponseDtoFailure) Valid() bool {
 
 // Defines values for HookResourceResponseDtoOn.
 const (
-	HookResourceResponseDtoOnHandoverGiving     HookResourceResponseDtoOn = "handover.giving"
+	HookResourceResponseDtoOnHandoverSubmitting HookResourceResponseDtoOn = "handover.submitting"
 	HookResourceResponseDtoOnPullRequestMerged  HookResourceResponseDtoOn = "pull-request.merged"
 	HookResourceResponseDtoOnPullRequestOpening HookResourceResponseDtoOn = "pull-request.opening"
 	HookResourceResponseDtoOnRunEnded           HookResourceResponseDtoOn = "run.ended"
@@ -208,7 +208,7 @@ const (
 // Valid indicates whether the value is a known member of the HookResourceResponseDtoOn enum.
 func (e HookResourceResponseDtoOn) Valid() bool {
 	switch e {
-	case HookResourceResponseDtoOnHandoverGiving:
+	case HookResourceResponseDtoOnHandoverSubmitting:
 		return true
 	case HookResourceResponseDtoOnPullRequestMerged:
 		return true
@@ -1961,13 +1961,13 @@ type CheckExpressionRequestDto struct {
 
 // DescribedSourceResponseDto defines model for DescribedSourceResponseDto.
 type DescribedSourceResponseDto struct {
-	// Hash The sha256 of what was last read, kept while a later read fails; null when it has never been read
+	// Hash The sha256 of what was last read, unchanged while a later read fails; null when it has never been read
 	Hash *string `json:"hash"`
 
 	// Kind The kind of API description, or the MCP server, its tools are generated from
 	Kind DescribedSourceResponseDtoKind `json:"kind"`
 
-	// Problem Why the description could not be read when it was last asked for, or null when it was; Spotlight reads it again when its url, document, baseUrl, revision or depth changes, on any update after a failed read, and when the integration is connected, and lists an MCP server’s tools again every MCP_RELIST_SECONDS
+	// Problem Why the description could not be read when it was last requested, or null when it was; Spotlight reads it again when its url, document, baseUrl, revision or depth changes, on any update after a failed read, and when the integration is connected, and lists an MCP server’s tools again every MCP_RELIST_SECONDS
 	Problem *string `json:"problem"`
 
 	// ReadAt When the description was last read
@@ -2304,7 +2304,7 @@ type HookStepDto struct {
 	// Request The request the step makes
 	Request *HookRequestDto `json:"request,omitempty"`
 
-	// With The inputs the step gives its tool
+	// With The inputs the step sends to its tool
 	With *map[string]interface{} `json:"with,omitempty"`
 }
 
@@ -2334,7 +2334,7 @@ type IntegrationResourceResponseDto struct {
 	// TeamId The team it belongs to
 	TeamId string `json:"teamId"`
 
-	// Tools Each tool the integration offers, hand-written or generated from its API description, by its name within the integration, to the name a station or hook gives it by; not settable
+	// Tools Each tool the integration offers, hand-written or generated from its API description, by its name within the integration, to the name that a station or hook uses for it; not settable
 	Tools map[string]string `json:"tools"`
 
 	// Version Rises with every change; the ETag carries it, and a write sends it back as If-Match
@@ -2346,11 +2346,11 @@ type IntegrationResourceResponseDto struct {
 
 // IssuedTokenResponseDto defines model for IssuedTokenResponseDto.
 type IssuedTokenResponseDto struct {
-	// ExpiresAt After this it admits nobody
+	// ExpiresAt After this Spotlight does not accept it
 	ExpiresAt string                         `json:"expiresAt"`
 	Scopes    []IssuedTokenResponseDtoScopes `json:"scopes"`
 
-	// Token The token to send as Authorization: Bearer until it expires; answered this once, and kept only as a hash
+	// Token The token to send as Authorization: Bearer until it expires; answered this once, and stored only as a hash
 	Token       string `json:"token"`
 	TokenId     string `json:"tokenId"`
 	WorkspaceId string `json:"workspaceId"`
@@ -2366,16 +2366,16 @@ type JournalStepResponseDto struct {
 	// Detail What the tool answered with, as much of it as is worth reading
 	Detail *string `json:"detail"`
 
-	// Given What the tool was asked for, as it was asked
-	Given     *string                    `json:"given"`
+	// Input The input of the call, as it was sent
+	Input     *string                    `json:"input"`
 	Kind      JournalStepResponseDtoKind `json:"kind"`
 	Locations []StepLocationResponseDto  `json:"locations"`
 
 	// Ms How long it took, in ms
 	Ms float32 `json:"ms"`
 
-	// Returned What it returned, unread
-	Returned *string `json:"returned"`
+	// Output The output of the call, unread
+	Output *string `json:"output"`
 
 	// StartedAt When it began, for laying the run out against a clock
 	StartedAt string  `json:"startedAt"`
@@ -2434,7 +2434,7 @@ type PermissionsResponseDto struct {
 	// Allow What the harness may do without asking: read, edit or execute, alone or with a pattern
 	Allow []string `json:"allow"`
 
-	// Ask What the harness asks a person about first; the ask reaches their inbox as an approval
+	// Ask What the harness asks a person about first; the ask goes to their inbox as an approval
 	Ask []string `json:"ask"`
 
 	// Deny What the harness may never do
@@ -2553,7 +2553,7 @@ type RunnerTrustResourceResponseDto struct {
 	// Id Issued by Spotlight when the resource is created, and never changed
 	Id string `json:"id"`
 
-	// Issuer The issuer of the tokens the platform gives its workloads; its keys are found through OIDC discovery
+	// Issuer The issuer of the tokens the platform issues to its workloads; its keys are found through OIDC discovery
 	Issuer string `json:"issuer"`
 
 	// Key Names the trust; fixed for its life
@@ -2635,14 +2635,14 @@ type SecretSourceResponseDto struct {
 	// Field The key to read when that secret contains JSON
 	Field *string `json:"field"`
 
-	// Kind Where the value lives: kept by Spotlight, or read from AWS Secrets Manager when it is used
+	// Kind Where the value lives: stored by Spotlight, or read from AWS Secrets Manager when it is used
 	Kind SecretSourceResponseDtoKind `json:"kind"`
 
 	// SecretId The name or ARN of the secret in AWS Secrets Manager
 	SecretId *string `json:"secretId"`
 }
 
-// SecretSourceResponseDtoKind Where the value lives: kept by Spotlight, or read from AWS Secrets Manager when it is used
+// SecretSourceResponseDtoKind Where the value lives: stored by Spotlight, or read from AWS Secrets Manager when it is used
 type SecretSourceResponseDtoKind string
 
 // SkillResourceListResponseDto defines model for SkillResourceListResponseDto.
@@ -2665,10 +2665,10 @@ type SkillResourceResponseDto struct {
 	// Id Issued by Spotlight when the resource is created, and never changed
 	Id string `json:"id"`
 
-	// Key What stations give it by; fixed for its life, so changing it means replacing the skill
+	// Key What stations enable it by; fixed for its life, so changing it means replacing the skill
 	Key string `json:"key"`
 
-	// Secrets The secrets SKILL.md asks for; not settable
+	// Secrets The secrets SKILL.md requires; not settable
 	Secrets []SkillSecretResponseDto `json:"secrets"`
 
 	// TeamId The team it belongs to
@@ -2873,7 +2873,7 @@ type WorkspaceTokenTrustResourceResponseDto struct {
 	// Address Names the resource within its workspace; terraform import takes it
 	Address string `json:"address"`
 
-	// Audience The audience the workload must ask its issuer for
+	// Audience The audience the workload must request from its issuer
 	Audience string `json:"audience"`
 
 	// Claims Further claims the workload’s token must carry, each matching its pattern the way subject does
@@ -2891,10 +2891,10 @@ type WorkspaceTokenTrustResourceResponseDto struct {
 	// Key Names the trust within its workspace, and every token it issues; fixed for its life
 	Key string `json:"key"`
 
-	// LifetimeMinutes How many minutes a token it issues admits its bearer
+	// LifetimeMinutes How many minutes a token it issues stays valid
 	LifetimeMinutes int `json:"lifetimeMinutes"`
 
-	// Scopes The scopes every token it issues is given
+	// Scopes The scopes of every token it issues
 	Scopes []WorkspaceTokenTrustResourceResponseDtoScopes `json:"scopes"`
 
 	// Subject The subject the workload’s token must carry; * matches any run of characters
@@ -2971,7 +2971,7 @@ type ReadEgressParamsSpotlightApiVersion string
 type UpdateEgressJSONBody struct {
 	Key string `json:"key"`
 
-	// Token Write-only: the token the egress calls Spotlight with, kept only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Egress-Token
+	// Token Write-only: the token the egress calls Spotlight with, stored only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Egress-Token
 	Token *string `json:"token,omitempty"`
 
 	// TokenVersion Changed, with a new token, to rotate the egress token in place: the old token stops working at once
@@ -3240,7 +3240,7 @@ type UpdateRunnerPoolJSONBody struct {
 		Url           string `json:"url"`
 	} `json:"provision,omitempty"`
 
-	// Token Write-only, and only for a pool without provision: the token its hosts claim with, kept only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Pool-Token
+	// Token Write-only, and only for a pool without provision: the token its hosts claim with, stored only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Pool-Token
 	Token *string `json:"token,omitempty"`
 
 	// TokenVersion Changed, with a new token, to rotate the pool token in place: the old token stops working at once, while runs already claimed keep their own one-run credentials
@@ -3360,7 +3360,7 @@ type UpdateSecretJSONBody struct {
 		SecretId *string                        `json:"secretId,omitempty"`
 	} `json:"source,omitempty"`
 
-	// ValueWo The value to keep; accepted on create and whenever valueWoVersion changes, and never answered
+	// ValueWo The value to store; accepted on create and whenever valueWoVersion changes, and never answered
 	ValueWo *string `json:"valueWo,omitempty"`
 
 	// ValueWoVersion Change it to rotate the value to the valueWo sent with it
@@ -3807,7 +3807,7 @@ type ListEgressesParamsSpotlightApiVersion string
 type CreateEgressJSONBody struct {
 	Key string `json:"key"`
 
-	// Token Write-only: the token the egress calls Spotlight with, kept only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Egress-Token
+	// Token Write-only: the token the egress calls Spotlight with, stored only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Egress-Token
 	Token *string `json:"token,omitempty"`
 
 	// TokenVersion Changed, with a new token, to rotate the egress token in place: the old token stops working at once
@@ -3991,7 +3991,7 @@ type CreateRunnerPoolJSONBody struct {
 		Url           string `json:"url"`
 	} `json:"provision,omitempty"`
 
-	// Token Write-only, and only for a pool without provision: the token its hosts claim with, kept only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Pool-Token
+	// Token Write-only, and only for a pool without provision: the token its hosts claim with, stored only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Pool-Token
 	Token *string `json:"token,omitempty"`
 
 	// TokenVersion Changed, with a new token, to rotate the pool token in place: the old token stops working at once, while runs already claimed keep their own one-run credentials
@@ -4111,7 +4111,7 @@ type CreateSecretJSONBody struct {
 		SecretId *string                        `json:"secretId,omitempty"`
 	} `json:"source,omitempty"`
 
-	// ValueWo The value to keep; accepted on create and whenever valueWoVersion changes, and never answered
+	// ValueWo The value to store; accepted on create and whenever valueWoVersion changes, and never answered
 	ValueWo *string `json:"valueWo,omitempty"`
 
 	// ValueWoVersion Change it to rotate the value to the valueWo sent with it

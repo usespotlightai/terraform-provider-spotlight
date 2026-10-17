@@ -60,13 +60,13 @@ func (r *SkillResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 
 func skillSchema() schema.Schema {
 	return schema.Schema{
-		MarkdownDescription: "A skill a team's stations can give their agents: a folder of files read from `SKILL.md`. Import it as `<workspace id>/<team key>/<key>`.",
+		MarkdownDescription: "A skill that a team's stations can enable for their agents: a folder of files read from `SKILL.md`. Import it as `<workspace id>/<team key>/<key>`.",
 		Attributes: map[string]schema.Attribute{
 			"id":      idAttribute("skill"),
 			"version": versionAttribute("skill"),
 			"address": addressAttribute("core/grafana"),
 			"team_id": ownerAttribute("team", "skill"),
-			"key":     fixedAttribute("What stations give the skill by.", "skill"),
+			"key":     fixedAttribute("What stations enable the skill by.", "skill"),
 			"files": schema.MapAttribute{
 				Required:            true,
 				ElementType:         types.StringType,
@@ -78,7 +78,7 @@ func skillSchema() schema.Schema {
 			},
 			"secrets": schema.ListNestedAttribute{
 				Computed:            true,
-				MarkdownDescription: "The secrets `SKILL.md` asks for.",
+				MarkdownDescription: "The secrets that `SKILL.md` requires.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name":        schema.StringAttribute{Computed: true, MarkdownDescription: "The secret's name."},
@@ -145,12 +145,12 @@ func (r *SkillResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		return
 	}
 
-	kept := &state
+	prior := &state
 	if !answerUnchanged(ctx, req.Private, skillSettable(skill)) {
-		kept = nil
+		prior = nil
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, skillModel(skill, kept))...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, skillModel(skill, prior))...)
 	resp.Diagnostics.Append(setIdentity(ctx, resp.Identity, skill.ID)...)
 	resp.Diagnostics.Append(rememberAnswer(ctx, resp.Private, skillSettable(skill))...)
 }
@@ -228,7 +228,7 @@ func skillSettable(skill client.Skill) any {
 	return client.SkillInput{Key: skill.Key, Files: skill.Files}
 }
 
-func skillModel(skill client.Skill, kept *SkillResourceModel) SkillResourceModel {
+func skillModel(skill client.Skill, prior *SkillResourceModel) SkillResourceModel {
 	secrets := make([]attr.Value, 0, len(skill.Secrets))
 	for _, each := range skill.Secrets {
 		secrets = append(secrets, types.ObjectValueMust(skillSecretType.AttrTypes, map[string]attr.Value{
@@ -249,9 +249,9 @@ func skillModel(skill client.Skill, kept *SkillResourceModel) SkillResourceModel
 		Tools:       stringList(skill.Tools),
 	}
 
-	if kept != nil {
-		model.Key = kept.Key
-		model.Files = kept.Files
+	if prior != nil {
+		model.Key = prior.Key
+		model.Files = prior.Files
 	}
 
 	return model

@@ -68,8 +68,8 @@ Required:
 
 Optional:
 
-- `args` (List of String) What the command is given.
-- `env` (Map of String) The server's environment. A value is plain text, stored and shown as written, or a reference to a workspace secret such as `secret.LINEAR_API_KEY`: the secret must exist, cannot be deleted while referenced, and reaches the server only as a stand-in, since egress injects its value into the server's requests to the hosts it is bound to.
+- `args` (List of String) The arguments of the command.
+- `env` (Map of String) The server's environment. A value is plain text, stored and shown as written, or a reference to a workspace secret such as `secret.LINEAR_API_KEY`: the secret must exist, cannot be deleted while referenced, and goes to the server only as a stand-in, since egress injects its value into the server's requests to the hosts it is bound to.
 
 
 <a id="nestedatt--permissions"></a>
@@ -78,7 +78,7 @@ Optional:
 Optional:
 
 - `allow` (List of String) What the harness may do without asking. Each is `read`, `edit` or `execute`, alone or with a pattern, as in `execute(npm test *)` or `read(.env)`.
-- `ask` (List of String) What the harness asks a person about first; the ask reaches their inbox as an approval. Each is `read`, `edit` or `execute`, alone or with a pattern, as in `execute(npm test *)` or `read(.env)`.
+- `ask` (List of String) What the harness asks a person about first; the ask goes to their inbox as an approval. Each is `read`, `edit` or `execute`, alone or with a pattern, as in `execute(npm test *)` or `read(.env)`.
 - `deny` (List of String) What the harness may never do. Each is `read`, `edit` or `execute`, alone or with a pattern, as in `execute(npm test *)` or `read(.env)`.
 
 ## Import

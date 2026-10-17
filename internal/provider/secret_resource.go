@@ -97,7 +97,7 @@ func (r *SecretResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 }
 
 func secretSchema() schema.Schema {
-	attributes := writeonly.Value.Attributes("The value Spotlight keeps, usually read from a sensitive variable. " +
+	attributes := writeonly.Value.Attributes("The value Spotlight stores, usually read from a sensitive variable. " +
 		"A secret read from AWS Secrets Manager takes none.")
 	attributes["id"] = idAttribute("secret")
 	attributes["version"] = versionAttribute("secret")
@@ -108,7 +108,7 @@ func secretSchema() schema.Schema {
 		Optional:            true,
 		Computed:            true,
 		Default:             objectdefault.StaticValue(types.ObjectValueMust(secretSourceType, map[string]attr.Value{"kind": types.StringValue(client.SourceBuiltIn), "secret_id": types.StringNull(), "field": types.StringNull()})),
-		MarkdownDescription: "Where the value lives: kept by Spotlight (`built-in`, the default) or read from AWS Secrets Manager whenever it is used.",
+		MarkdownDescription: "Where the value lives: stored by Spotlight (`built-in`, the default) or read from AWS Secrets Manager whenever it is used.",
 		Attributes: map[string]schema.Attribute{
 			"kind": schema.StringAttribute{
 				Required:            true,
@@ -164,7 +164,7 @@ func secretSchema() schema.Schema {
 	}
 
 	return schema.Schema{
-		MarkdownDescription: "A secret that Spotlight injects into requests, for the hosts it is bound to. Spotlight keeps its value and never answers it, so the value is write-only and never enters the plan or the state. " +
+		MarkdownDescription: "A secret that Spotlight injects into requests, for the hosts it is bound to. Spotlight stores its value and never answers it, so the value is write-only and never enters the plan or the state. " +
 			"Writing secrets needs a token granted the `secrets` scope. Import it as `<workspace id>/<name>`.",
 		Attributes: attributes,
 	}
@@ -179,17 +179,17 @@ func (r *SecretResource) Configure(_ context.Context, req resource.ConfigureRequ
 }
 
 // ValidateConfig rejects a value for a secret that Spotlight reads from AWS
-// Secrets Manager, because AWS Secrets Manager keeps the value. It also rejects
+// Secrets Manager, because AWS Secrets Manager stores the value. It also rejects
 // a binding in a query parameter without a name. The plan checks values that
 // are not known yet.
 func (r *SecretResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var kept, value types.String
-	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("source").AtName("kind"), &kept)...)
+	var kind, value types.String
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("source").AtName("kind"), &kind)...)
 	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root(writeonly.Value.Name), &value)...)
 
-	if kept.ValueString() == client.SourceAWSSecretsManager && !value.IsNull() {
+	if kind.ValueString() == client.SourceAWSSecretsManager && !value.IsNull() {
 		resp.Diagnostics.AddAttributeError(path.Root(writeonly.Value.Name), "A secret read from AWS takes no value",
-			"value_wo: is kept only by Spotlight; a secret read from AWS Secrets Manager is set there. Leave value_wo out, or keep the secret in Spotlight with source.kind = \"built-in\".")
+			"value_wo: is stored only by Spotlight; a secret read from AWS Secrets Manager is set there. Leave value_wo out, or store the secret in Spotlight with source.kind = \"built-in\".")
 	}
 
 	var listed types.List
@@ -282,12 +282,12 @@ func (r *SecretResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	kept := &state
+	prior := &state
 	if !answerUnchanged(ctx, req.Private, secretSettable(secret)) {
-		kept = nil
+		prior = nil
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, secretModel(secret, kept))...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, secretModel(secret, prior))...)
 	resp.Diagnostics.Append(setIdentity(ctx, resp.Identity, secret.ID)...)
 	resp.Diagnostics.Append(rememberAnswer(ctx, resp.Private, secretSettable(secret))...)
 }
@@ -389,10 +389,10 @@ func sendSecretValue(ctx context.Context, config tfsdk.Config, plan tfsdk.Plan, 
 		rewritten, more := writeonly.Value.Rewritten(ctx, plan, *state)
 		diags.Append(more...)
 
-		keptFromNow, more := secretBecomesBuiltIn(ctx, *state, in.Source)
+		storedFromNow, more := secretBecomesBuiltIn(ctx, *state, in.Source)
 		diags.Append(more...)
 
-		if !rewritten && !keptFromNow {
+		if !rewritten && !storedFromNow {
 			return diags
 		}
 	}
@@ -424,7 +424,7 @@ func secretSettable(s client.Secret) any {
 	}
 }
 
-func secretModel(secret client.Secret, kept *SecretResourceModel) SecretResourceModel {
+func secretModel(secret client.Secret, prior *SecretResourceModel) SecretResourceModel {
 	model := SecretResourceModel{
 		ID:          types.StringValue(secret.ID),
 		Version:     types.Int64Value(secret.Version),
@@ -451,11 +451,11 @@ func secretModel(secret client.Secret, kept *SecretResourceModel) SecretResource
 		})
 	}
 
-	if kept != nil {
-		model.Name = kept.Name
-		model.Source = kept.Source
-		model.Bindings = kept.Bindings
-		model.ValueVersion = kept.ValueVersion
+	if prior != nil {
+		model.Name = prior.Name
+		model.Source = prior.Source
+		model.Bindings = prior.Bindings
+		model.ValueVersion = prior.ValueVersion
 	}
 
 	return model

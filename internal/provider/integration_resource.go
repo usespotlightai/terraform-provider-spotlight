@@ -75,7 +75,7 @@ func (r *IntegrationResource) Schema(_ context.Context, _ resource.SchemaRequest
 
 func integrationSchema() schema.Schema {
 	return schema.Schema{
-		MarkdownDescription: "An integration a team has created: how Spotlight hears from a host, and the actions and tools it offers against it. " +
+		MarkdownDescription: "An integration a team has created: how Spotlight receives events from a host, and the actions and tools it offers against it. " +
 			"Spotlight stores the definition whole, exactly as the integration's definition is written, with its keys verbatim; write each expression as `$${{ ... }}` so Terraform leaves it alone. " +
 			"`terraform plan` type-checks every expression in it where it is written. " +
 			"A definition may name an API description, `openapi` or `graphql`, that Spotlight generates a tool from for each operation when it reads it, or a remote MCP server, `mcp`, whose tools it lists; those tools are known only after apply. " +
@@ -96,7 +96,7 @@ func integrationSchema() schema.Schema {
 			integrationTools: schema.MapAttribute{
 				Computed:    true,
 				ElementType: types.StringType,
-				MarkdownDescription: "Each tool the integration offers, by its name in `definition.tools` or as generated from its API description or MCP server, to the name a station or hook gives it by, as in `{ search = \"grafana.search\" }`. " +
+				MarkdownDescription: "Each tool the integration offers, by its name in `definition.tools` or as generated from its API description or MCP server, to the name that a station or hook uses for it, as in `{ search = \"grafana.search\" }`. " +
 					"Name a tool through it, as in `spotlight_integration.grafana.tools[\"search\"]`, so a tool renamed or removed fails the plan where it is named. " +
 					"When the definition names an API description or an MCP server the tools are known only after apply, so a generated tool named through it that is not there fails the apply, not the plan.",
 			},
@@ -110,7 +110,7 @@ func integrationSchema() schema.Schema {
 					},
 					"hash": schema.StringAttribute{
 						Computed:            true,
-						MarkdownDescription: "The sha256 of the last good read, kept while a later read fails; null when the description has never been read.",
+						MarkdownDescription: "The sha256 of the last good read, unchanged while a later read fails; null when the description has never been read.",
 					},
 					"read_at": schema.StringAttribute{
 						Computed:            true,
@@ -245,12 +245,12 @@ func (r *IntegrationResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	kept := &state
+	prior := &state
 	if !answerUnchanged(ctx, req.Private, integrationSettable(integration)) {
-		kept = nil
+		prior = nil
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, integrationModel(integration, kept))...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, integrationModel(integration, prior))...)
 	resp.Diagnostics.Append(setIdentity(ctx, resp.Identity, integration.ID)...)
 	resp.Diagnostics.Append(rememberAnswer(ctx, resp.Private, integrationSettable(integration))...)
 }
@@ -341,7 +341,7 @@ func integrationInput(plan IntegrationResourceModel) (client.Definition, diag.Di
 	return definition, diags
 }
 
-func integrationModel(integration client.Integration, kept *IntegrationResourceModel) IntegrationResourceModel {
+func integrationModel(integration client.Integration, prior *IntegrationResourceModel) IntegrationResourceModel {
 	model := IntegrationResourceModel{
 		ID:         types.StringValue(integration.ID),
 		Version:    types.Int64Value(integration.Version),
@@ -353,8 +353,8 @@ func integrationModel(integration client.Integration, kept *IntegrationResourceM
 		Described:  integrationDescribedValue(integration.Described),
 	}
 
-	if kept != nil {
-		model.Definition = dynamic.Resolve(kept.Definition, integration.Definition)
+	if prior != nil {
+		model.Definition = dynamic.Resolve(prior.Definition, integration.Definition)
 	}
 
 	return model

@@ -31,8 +31,8 @@ type EgressResource struct {
 	client *client.Client
 }
 
-const egressIssuedToken = "Spotlight issued this egress a token, answered only once. Terraform keeps no secret in its state, so the token was not kept, and the egress cannot call Spotlight with it. " +
-	"Give the egress a token that you have instead: set `token` (from a sensitive variable, or a write-only ephemeral value) and change `token_version` to send it."
+const egressIssuedToken = "Spotlight issued this egress a token, answered only once. Terraform stores no secret in its state, so the token was not stored, and the egress cannot call Spotlight with it. " +
+	"To use a token that you have instead, set `token` (from a sensitive variable, or a write-only ephemeral value) and change `token_version` to send it."
 
 // EgressResourceModel is a spotlight_egress as Terraform stores it.
 type EgressResourceModel struct {
@@ -58,7 +58,7 @@ func (r *EgressResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 
 func egressSchema() schema.Schema {
 	attributes := writeonly.EgressToken.Attributes("The token the egress calls Spotlight with: 32 to 255 URL-safe characters, as a generated password would be. " +
-		"Spotlight keeps only its hash. Left out, Spotlight issues one when it creates the egress, which Terraform does not keep; " +
+		"Spotlight stores only its hash. Left out, Spotlight issues one when it creates the egress, which Terraform does not store; " +
 		"a change to `token_version` must come with a token. Each token is single-use. Spotlight does not accept the token of another egress. " +
 		"A token that you rotated away, or that a deleted or replaced egress used, was used once, so no egress accepts it again, the same egress included. " +
 		"Thus, to rotate or replace an egress, you always need a new token.")
@@ -135,12 +135,12 @@ func (r *EgressResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	kept := &state
+	prior := &state
 	if !answerUnchanged(ctx, req.Private, egressSettable(egress)) {
-		kept = nil
+		prior = nil
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, egressModel(egress, kept))...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, egressModel(egress, prior))...)
 	resp.Diagnostics.Append(setIdentity(ctx, resp.Identity, egress.ID)...)
 	resp.Diagnostics.Append(rememberAnswer(ctx, resp.Private, egressSettable(egress))...)
 }
@@ -247,13 +247,13 @@ func egressCreated(in client.EgressInput) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	if in.Token == "" {
-		diags.AddAttributeWarning(writeonly.EgressToken.Path(), "Spotlight issued the egress a token Terraform did not keep", egressIssuedToken)
+		diags.AddAttributeWarning(writeonly.EgressToken.Path(), "Spotlight issued the egress a token Terraform did not store", egressIssuedToken)
 	}
 
 	return diags
 }
 
-func egressModel(egress client.Egress, kept *EgressResourceModel) EgressResourceModel {
+func egressModel(egress client.Egress, prior *EgressResourceModel) EgressResourceModel {
 	model := EgressResourceModel{
 		ID:           types.StringValue(egress.ID),
 		Version:      types.Int64Value(egress.Version),
@@ -265,10 +265,10 @@ func egressModel(egress client.Egress, kept *EgressResourceModel) EgressResource
 		TokenVersion: types.Int64PointerValue(egress.TokenVersion),
 	}
 
-	if kept != nil {
-		model.Key = kept.Key
-		model.URL = kept.URL
-		model.TokenVersion = kept.TokenVersion
+	if prior != nil {
+		model.Key = prior.Key
+		model.URL = prior.URL
+		model.TokenVersion = prior.TokenVersion
 	}
 
 	return model

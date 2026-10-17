@@ -70,10 +70,10 @@ func (r *WorkspaceTokenTrustResource) Schema(_ context.Context, _ resource.Schem
 func workspaceTokenTrustSchema() schema.Schema {
 	return schema.Schema{
 		MarkdownDescription: "A CI workload whose OIDC tokens are exchanged for short-lived workspace tokens, so the CI platform stores no Spotlight token: " +
-			"a job whose token the trust admits calls `POST /api/workspace-tokens/exchange`, as the provider's `oidc` block does, and is given a token with the trust's scopes for its lifetime. " +
+			"a job whose token the trust matches calls `POST /api/workspace-tokens/exchange`, as the provider's `oidc` block does, and receives a token with the trust's scopes for its lifetime. " +
 			"Changing or deleting the trust stops every token that it issued at once. " +
-			"Writing workspace token trusts needs a workspace admin, or a token granted the `trusts` scope that has every scope the trust gives. " +
-			"A token can give a trust only the scopes that it has. A token can change a trust only when it has the current scopes and the new scopes of the trust. Import it as `<workspace id>/<key>`.",
+			"Writing workspace token trusts needs a workspace admin, or a token granted the `trusts` scope that has every scope the trust grants. " +
+			"A token can grant a trust only the scopes that it has. A token can change a trust only when it has the current scopes and the new scopes of the trust. Import it as `<workspace id>/<key>`.",
 		Attributes: map[string]schema.Attribute{
 			"id":           idAttribute("workspace token trust"),
 			"version":      versionAttribute("workspace token trust"),
@@ -88,7 +88,7 @@ func workspaceTokenTrustSchema() schema.Schema {
 				Optional:            true,
 				Computed:            true,
 				Default:             stringdefault.StaticString(client.DefaultAudience),
-				MarkdownDescription: "The audience the workload must ask its issuer for.",
+				MarkdownDescription: "The audience the workload must request from its issuer.",
 			},
 			"subject": schema.StringAttribute{
 				Required: true,
@@ -113,15 +113,15 @@ func workspaceTokenTrustSchema() schema.Schema {
 						string(client.ScopeTrusts),
 					)),
 				},
-				MarkdownDescription: "The scopes every token the trust issues is given: one of `read`, `plan` or `configure`, which are a ladder, and `secrets`, `runners` or `trusts` beside it, as a stored token's are. " +
-					"A trust that grants `trusts` lets the workloads it admits write every trust in the workspace, their own included, and so issue tokens with any scope.",
+				MarkdownDescription: "The scopes of every token the trust issues: one of `read`, `plan` or `configure`, which are a ladder, and `secrets`, `runners` or `trusts` beside it, as a stored token's are. " +
+					"A trust that grants `trusts` lets the workloads it matches write every trust in the workspace, their own included, and so issue tokens with any scope.",
 			},
 			"lifetime_minutes": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
 				Default:             int64default.StaticInt64(15),
 				Validators:          []validator.Int64{int64validator.Between(1, 60)},
-				MarkdownDescription: "How many minutes a token the trust issues admits its bearer, from 1 to 60.",
+				MarkdownDescription: "How many minutes a token the trust issues stays valid, from 1 to 60.",
 			},
 			"created_by": schema.StringAttribute{
 				Computed:            true,
@@ -182,12 +182,12 @@ func (r *WorkspaceTokenTrustResource) Read(ctx context.Context, req resource.Rea
 		return
 	}
 
-	kept := &state
+	prior := &state
 	if !answerUnchanged(ctx, req.Private, workspaceTokenTrustSettable(trust)) {
-		kept = nil
+		prior = nil
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, workspaceTokenTrustModel(trust, kept))...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, workspaceTokenTrustModel(trust, prior))...)
 	resp.Diagnostics.Append(setIdentity(ctx, resp.Identity, trust.ID)...)
 	resp.Diagnostics.Append(rememberAnswer(ctx, resp.Private, workspaceTokenTrustSettable(trust))...)
 }
@@ -277,7 +277,7 @@ func workspaceTokenTrustInput(ctx context.Context, plan WorkspaceTokenTrustResou
 	}, diags
 }
 
-func workspaceTokenTrustModel(trust client.WorkspaceTokenTrust, kept *WorkspaceTokenTrustResourceModel) WorkspaceTokenTrustResourceModel {
+func workspaceTokenTrustModel(trust client.WorkspaceTokenTrust, prior *WorkspaceTokenTrustResourceModel) WorkspaceTokenTrustResourceModel {
 	model := WorkspaceTokenTrustResourceModel{
 		ID:              types.StringValue(trust.ID),
 		Version:         types.Int64Value(trust.Version),
@@ -293,14 +293,14 @@ func workspaceTokenTrustModel(trust client.WorkspaceTokenTrust, kept *WorkspaceT
 		CreatedBy:       types.StringValue(trust.CreatedBy),
 	}
 
-	if kept != nil {
-		model.Key = kept.Key
-		model.Issuer = kept.Issuer
-		model.Audience = kept.Audience
-		model.Subject = kept.Subject
-		model.Claims = kept.Claims
-		model.Scopes = kept.Scopes
-		model.LifetimeMinutes = kept.LifetimeMinutes
+	if prior != nil {
+		model.Key = prior.Key
+		model.Issuer = prior.Issuer
+		model.Audience = prior.Audience
+		model.Subject = prior.Subject
+		model.Claims = prior.Claims
+		model.Scopes = prior.Scopes
+		model.LifetimeMinutes = prior.LifetimeMinutes
 	}
 
 	return model

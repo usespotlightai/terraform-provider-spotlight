@@ -17,7 +17,7 @@ import (
 // duration, the client renews it after half of its life.
 const RenewBefore = time.Minute
 
-// TokenSource gives the bearer token for each call.
+// TokenSource returns the bearer token for each call.
 type TokenSource interface {
 	// Token returns the token for the current call.
 	Token(ctx context.Context) (string, error)
@@ -128,7 +128,7 @@ func (e *exchanging) exchange(ctx context.Context) (issued, error) {
 
 	dto, err := answered(resp.HTTPResponse, resp.Body, resp.JSON200)
 	if err != nil {
-		return issued{}, fmt.Errorf("the workspace token trust %s did not admit the OIDC token: %v", e.oidc.Trust, err)
+		return issued{}, fmt.Errorf("the workspace token trust %s did not accept the OIDC token: %v", e.oidc.Trust, err)
 	}
 
 	expiresAt, err := time.Parse(time.RFC3339, dto.ExpiresAt)

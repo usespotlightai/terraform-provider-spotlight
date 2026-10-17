@@ -40,7 +40,7 @@ type issuing struct {
 	clock        *clock
 	lifetime     time.Duration
 	unauthorized map[string]bool
-	admit        string
+	accept       string
 	jwts         int
 }
 
@@ -63,9 +63,9 @@ func (i *issuing) serve(w http.ResponseWriter, r *http.Request) {
 		reply(w, http.StatusOK, "application/json", map[string]any{"count": 1, "value": jwt})
 	case "/api/workspace-tokens/exchange":
 		token, _ := body["token"].(string)
-		if i.admit != "" && !strings.HasPrefix(token, i.admit) {
+		if i.accept != "" && !strings.HasPrefix(token, i.accept) {
 			reply(w, http.StatusUnauthorized, "application/problem+json", map[string]any{
-				"type": "urn:spotlight:problem:unauthenticated", "title": "Unauthorized", "status": 401, "detail": "The workload is not admitted",
+				"type": "urn:spotlight:problem:unauthenticated", "title": "Unauthorized", "status": 401, "detail": "The workload is not accepted",
 			})
 			return
 		}
@@ -161,28 +161,28 @@ func fromGitHub(serverURL string) client.WorkloadTokens {
 	return client.GitHubActions{RequestURL: serverURL + "/github/token?api-version=2.0", RequestToken: "github-request-token"}
 }
 
-func given(string) client.WorkloadTokens {
-	return client.GivenWorkloadToken("gitlab-jwt")
+func supplied(string) client.WorkloadTokens {
+	return client.SuppliedWorkloadToken("gitlab-jwt")
 }
 
-func TestGitHubActionsIsAskedForATokenForTheAudience(t *testing.T) {
+func TestATokenForTheAudienceIsRequestedFromGitHubActions(t *testing.T) {
 	api, issued := exchangingClient(t, fromGitHub)
 
 	if _, err := api.ReadWorkspace(context.Background(), "ws-1"); err != nil {
 		t.Fatal(err)
 	}
 
-	asked := issued.at("/github/token")
-	if len(asked) != 1 {
-		t.Fatalf("GitHub was asked %d times, want 1", len(asked))
+	requests := issued.at("/github/token")
+	if len(requests) != 1 {
+		t.Fatalf("GitHub received %d requests, want 1", len(requests))
 	}
 
-	if asked[0].Method != http.MethodGet || asked[0].Query != "api-version=2.0&audience=spotlight-ci" {
-		t.Errorf("asked GitHub %s ?%s", asked[0].Method, asked[0].Query)
+	if requests[0].Method != http.MethodGet || requests[0].Query != "api-version=2.0&audience=spotlight-ci" {
+		t.Errorf("requested from GitHub %s ?%s", requests[0].Method, requests[0].Query)
 	}
 
-	if got := asked[0].Headers.Get("Authorization"); got != "Bearer github-request-token" {
-		t.Errorf("asked GitHub with Authorization %q", got)
+	if got := requests[0].Headers.Get("Authorization"); got != "Bearer github-request-token" {
+		t.Errorf("requested from GitHub with Authorization %q", got)
 	}
 }
 
@@ -218,15 +218,15 @@ func TestTheWorkloadTokenIsExchangedThroughTheTrust(t *testing.T) {
 	}
 }
 
-func TestAGivenWorkloadTokenIsExchangedAsItIs(t *testing.T) {
-	api, issued := exchangingClient(t, given)
+func TestASuppliedWorkloadTokenIsExchangedAsItIs(t *testing.T) {
+	api, issued := exchangingClient(t, supplied)
 
 	if _, err := api.ReadWorkspace(context.Background(), "ws-1"); err != nil {
 		t.Fatal(err)
 	}
 
-	if asked := issued.at("/github/token"); len(asked) != 0 {
-		t.Errorf("GitHub was asked %d times, want none", len(asked))
+	if requests := issued.at("/github/token"); len(requests) != 0 {
+		t.Errorf("GitHub received %d requests, want none", len(requests))
 	}
 
 	var sent map[string]string
@@ -236,7 +236,7 @@ func TestAGivenWorkloadTokenIsExchangedAsItIs(t *testing.T) {
 	}
 }
 
-func TestAnIssuedTokenIsKeptUntilAMinuteBeforeItExpires(t *testing.T) {
+func TestAnIssuedTokenIsReusedUntilAMinuteBeforeItExpires(t *testing.T) {
 	api, issued := exchangingClient(t, fromGitHub)
 	ctx := context.Background()
 
@@ -264,8 +264,8 @@ func TestAnIssuedTokenIsKeptUntilAMinuteBeforeItExpires(t *testing.T) {
 		t.Fatalf("%d exchanges once renewal was due, want 2", exchanged)
 	}
 
-	if asked := len(issued.at("/github/token")); asked != 2 {
-		t.Errorf("GitHub was asked %d times, want a fresh token for each exchange", asked)
+	if requests := len(issued.at("/github/token")); requests != 2 {
+		t.Errorf("GitHub received %d requests, want a fresh token for each exchange", requests)
 	}
 
 	reads := issued.at("/api/resources/workspaces/ws-1")
@@ -353,10 +353,10 @@ func TestAnUnauthorizedStoredTokenIsNotRetried(t *testing.T) {
 
 func TestAFailedExchangeNamesTheTrust(t *testing.T) {
 	api, issued := exchangingClient(t, fromGitHub)
-	issued.admit = "nothing"
+	issued.accept = "nothing"
 
 	_, err := api.ReadWorkspace(context.Background(), "ws-1")
-	if err == nil || !strings.Contains(err.Error(), "workspace token trust trust-1 did not admit the OIDC token") || !strings.Contains(err.Error(), "The workload is not admitted") {
+	if err == nil || !strings.Contains(err.Error(), "workspace token trust trust-1 did not accept the OIDC token") || !strings.Contains(err.Error(), "The workload is not accepted") {
 		t.Fatalf("got %v", err)
 	}
 
@@ -405,7 +405,7 @@ func TestATokenAndATrustAreNotBothUsed(t *testing.T) {
 	_, err := client.New(client.Config{
 		URL:   "https://spotlight.example.com",
 		Token: "token",
-		OIDC:  &client.OIDC{Trust: "trust-1", Workload: client.GivenWorkloadToken("jwt")},
+		OIDC:  &client.OIDC{Trust: "trust-1", Workload: client.SuppliedWorkloadToken("jwt")},
 	})
 	if err == nil {
 		t.Error("expected an error")
@@ -437,7 +437,7 @@ func TestAChangeToTheTrustMidApplyIsRecoveredFrom(t *testing.T) {
 
 	ci, err := client.New(client.Config{
 		URL:             fake.URL,
-		OIDC:            &client.OIDC{Trust: trust.ID, Workload: client.GivenWorkloadToken(fakeapi.WorkloadToken)},
+		OIDC:            &client.OIDC{Trust: trust.ID, Workload: client.SuppliedWorkloadToken(fakeapi.WorkloadToken)},
 		ProviderVersion: "1.2.3",
 	})
 	if err != nil {

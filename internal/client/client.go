@@ -113,7 +113,7 @@ func baseURL(raw string) (string, error) {
 func tokenSourceOf(cfg Config, base string, doer apigen.HttpRequestDoer) (TokenSource, error) {
 	switch {
 	case cfg.Token != "" && cfg.OIDC != nil:
-		return nil, errors.New("a Spotlight API token and an OIDC trust were both given; authenticate with one")
+		return nil, errors.New("a Spotlight API token and an OIDC trust were both set; authenticate with one")
 	case cfg.Token != "":
 		return StaticToken(cfg.Token), nil
 	case cfg.OIDC == nil:

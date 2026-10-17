@@ -183,7 +183,7 @@ func TestAnUpdateIsNotRetried(t *testing.T) {
 	}
 }
 
-func TestImportAsksByAddress(t *testing.T) {
+func TestImportRequestsByAddress(t *testing.T) {
 	api, recorded := serve(t, func(w http.ResponseWriter, _ *http.Request, _ int) {
 		reply(w, http.StatusOK, "application/json", map[string]any{
 			"id": "line-1", "version": 1, "address": "core/delivery", "warnings": []any{},
@@ -198,7 +198,7 @@ func TestImportAsksByAddress(t *testing.T) {
 
 	got := recorded.all()[0]
 	if got.Path != "/api/resources/workspaces/ws-1/lines/import" || got.Query != "address=core%2Fdelivery" {
-		t.Errorf("asked %s?%s", got.Path, got.Query)
+		t.Errorf("requested %s?%s", got.Path, got.Query)
 	}
 
 	if found.Definition["name"] != "Delivery" {
@@ -342,7 +342,7 @@ func TestURLMayNameTheAPIPath(t *testing.T) {
 
 	for _, each := range paths {
 		if each != "/api/resources/workspaces/ws-1" {
-			t.Errorf("asked %s", each)
+			t.Errorf("requested %s", each)
 		}
 	}
 }
@@ -369,7 +369,7 @@ var pool = map[string]any{
 }
 
 func TestAPoolTokenSpotlightIssuesIsDroppedUnread(t *testing.T) {
-	const issued = "issued-pool-token-that-must-never-be-kept-anywhere"
+	const issued = "issued-pool-token-that-must-never-be-stored-anywhere"
 
 	api, _ := serve(t, func(w http.ResponseWriter, _ *http.Request, _ int) {
 		w.Header().Set(client.PoolTokenHeader, issued)
@@ -392,7 +392,7 @@ var egress = map[string]any{
 }
 
 func TestAnEgressTokenSpotlightIssuesIsDroppedUnread(t *testing.T) {
-	const issued = "issued-egress-token-that-must-never-be-kept-anywhere"
+	const issued = "issued-egress-token-that-must-never-be-stored-anywhere"
 
 	api, recorded := serve(t, func(w http.ResponseWriter, _ *http.Request, _ int) {
 		w.Header().Set(client.EgressTokenHeader, issued)

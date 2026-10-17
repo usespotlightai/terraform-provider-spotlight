@@ -71,7 +71,7 @@ func New(version string, options ...Option) func() provider.Provider {
 	}
 }
 
-// Metadata gives the provider the name spotlight.
+// Metadata sets the name of the provider to spotlight.
 func (p *SpotlightProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
 	resp.TypeName = "spotlight"
 	resp.Version = p.version
@@ -97,7 +97,7 @@ func (p *SpotlightProvider) Schema(_ context.Context, _ provider.SchemaRequest, 
 		Blocks: map[string]schema.Block{
 			"oidc": schema.SingleNestedBlock{
 				MarkdownDescription: "Authenticate from CI with no stored token: the OIDC token the CI platform issues the job is exchanged, through a `spotlight_workspace_token_trust`, for a short-lived token, renewed before it expires. " +
-					"In GitHub Actions, a job granted `permissions: id-token: write` needs only `trust`; elsewhere, give the platform's OIDC token as `token`.",
+					"In GitHub Actions, a job granted `permissions: id-token: write` needs only `trust`; elsewhere, set the platform's OIDC token as `token`.",
 				Attributes: map[string]schema.Attribute{
 					"trust": schema.StringAttribute{
 						Optional:            true,
@@ -110,7 +110,7 @@ func (p *SpotlightProvider) Schema(_ context.Context, _ provider.SchemaRequest, 
 					"token": schema.StringAttribute{
 						Optional:  true,
 						Sensitive: true,
-						MarkdownDescription: "An OIDC token the CI platform issued the job, as GitLab's `id_tokens`, CircleCI's `$CIRCLE_OIDC_TOKEN_V2` or `buildkite-agent oidc request-token` give one. " +
+						MarkdownDescription: "An OIDC token the CI platform issued the job, as GitLab's `id_tokens`, CircleCI's `$CIRCLE_OIDC_TOKEN_V2` or `buildkite-agent oidc request-token` return one. " +
 							"Defaults to `" + OIDCTokenEnv + "`; in GitHub Actions, one is requested for each exchange.",
 					},
 				},
@@ -252,9 +252,9 @@ func (p *SpotlightProvider) ListResources(_ context.Context) []func() list.ListR
 	}
 }
 
-func workloadTokens(given types.String, diags *diag.Diagnostics) client.WorkloadTokens {
-	if token := orEnv(given, OIDCTokenEnv); token != "" {
-		return client.GivenWorkloadToken(token)
+func workloadTokens(configured types.String, diags *diag.Diagnostics) client.WorkloadTokens {
+	if token := orEnv(configured, OIDCTokenEnv); token != "" {
+		return client.SuppliedWorkloadToken(token)
 	}
 
 	requestURL, requestToken := os.Getenv(GitHubTokenRequestURLEnv), os.Getenv(GitHubTokenRequestTokenEnv)

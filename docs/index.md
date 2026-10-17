@@ -6,15 +6,15 @@ description: |-
 
 # Spotlight Provider
 
-Configure a [Spotlight](https://github.com/usespotlightai) workspace as code: its teams, the lines their tasks move along, the skills and harness profiles their agents are given, the integrations that connect them to other tools, the secrets that Spotlight injects into the requests of those integrations, and the runner pools, egresses and trusts the work runs through.
+Configure a [Spotlight](https://github.com/usespotlightai) workspace as code: its teams, the lines their tasks move along, the skills and harness profiles that their stations enable for their agents, the integrations that connect them to other tools, the secrets that Spotlight injects into the requests of those integrations, and the runner pools, egresses and trusts the work runs through.
 
-**Download as Terraform**, in the web app's workspace menu, gives you a workspace you already have as configuration for this provider: a zipped module with an `import` block for each resource, and each prompt and skill as its own file. A first `terraform apply` adopts what is there and plans no change.
+**Download as Terraform**, in the web app's workspace menu, turns a workspace you already have into configuration for this provider: a zipped module with an `import` block for each resource, and each prompt and skill as its own file. A first `terraform apply` adopts what is there and plans no change.
 
 ## Authentication
 
 The provider calls the Spotlight control plane with a workspace token, sent as `Authorization: Bearer <token>`, which it gets in one of two ways.
 
-**A stored API token.** Create one in the web app and give it to the provider through the environment:
+**A stored API token.** Create one in the web app and pass it to the provider through the environment:
 
 ```shell
 export SPOTLIGHT_URL=https://spotlight.example.com
@@ -23,14 +23,14 @@ export SPOTLIGHT_API_TOKEN=<token>
 
 or through the provider block, as below. Keep the token out of version control.
 
-**From CI, with no stored token.** A `spotlight_workspace_token_trust` admits the OIDC tokens a CI platform issues its jobs, and the provider exchanges the job's token for a short-lived one with the trust's scopes, exchanging again before it expires. In GitHub Actions, a job granted `permissions: id-token: write` needs only the trust's id:
+**From CI, with no stored token.** A `spotlight_workspace_token_trust` accepts the OIDC tokens a CI platform issues its jobs, and the provider exchanges the job's token for a short-lived one with the trust's scopes, exchanging again before it expires. In GitHub Actions, a job granted `permissions: id-token: write` needs only the trust's id:
 
 ```shell
 export SPOTLIGHT_URL=https://spotlight.example.com
 export SPOTLIGHT_OIDC_TRUST=<trust id>
 ```
 
-or `oidc { trust = "<trust id>" }` in the provider block. On other platforms, give the job's OIDC token in `SPOTLIGHT_OIDC_TOKEN` too. [GitHub Actions without a stored token](guides/github-actions-without-a-stored-token) sets up a pipeline that plans pull requests and applies `main` this way. A stored token and a trust are never used together.
+or `oidc { trust = "<trust id>" }` in the provider block. On other platforms, set the job's OIDC token in `SPOTLIGHT_OIDC_TOKEN` too. [GitHub Actions without a stored token](guides/github-actions-without-a-stored-token) sets up a pipeline that plans pull requests and applies `main` this way. A stored token and a trust are never used together.
 
 A token, stored or issued, acts only inside the workspace it was created in, and only as its scopes allow. `read`, `plan` and `configure` are a ladder, each allowing what the one before it does: `read` refreshes and imports, `plan` also checks expressions, and `configure` also creates, updates and deletes configuration. Three grants go beside them:
 
@@ -41,7 +41,7 @@ A token, stored or issued, acts only inside the workspace it was created in, and
 | `runners` | `spotlight_runner_pool`, `spotlight_egress`, `spotlight_runner_trust` and `spotlight_workspace_runners` |
 | `trusts` | `spotlight_workspace_token_trust` |
 
-**One token granted `configure`, `secrets`, `runners` and `trusts` manages everything this provider can.** `trusts` decides which CI jobs get tokens and with which scopes, so it is as powerful as all the others together: grant it only to a short-lived token that sets up the trusts, as the guide below does. A token can give a trust only the scopes that it has. A write the token's scopes do not allow fails with `403`, and the provider's diagnostic names the scope the token lacks.
+**One token granted `configure`, `secrets`, `runners` and `trusts` manages everything this provider can.** `trusts` decides which CI jobs get tokens and with which scopes, so it is as powerful as all the others together: grant it only to a short-lived token that sets up the trusts, as the guide below does. A token can grant a trust only the scopes that it has. A write the token's scopes do not allow fails with `403`, and the provider's diagnostic names the scope the token lacks.
 
 ## Workspaces are adopted, not created
 
@@ -75,15 +75,15 @@ Every run gets a fresh runner of its own that ends with it, and only a runner po
 curl -fsSL https://spotlight.example.com/api/install.sh | SPOTLIGHT_URL=https://spotlight.example.com SPOTLIGHT_TOKEN=<pool token> sh
 ```
 
-The host claims each run with that token and starts a fresh sandbox for it. A host on a platform that issues its workloads tokens, as Kubernetes does, claims through a `spotlight_runner_trust` instead and has no Spotlight token: set `SPOTLIGHT_TRUST` to the trust's `id` and `SPOTLIGHT_OIDC_TOKEN_FILE` to the path of the projected token. A pool with `provision` is pushed to instead: Spotlight calls its URL for each run, handing a one-run runner its credential. The runners of a push pool send their traffic through the egress that `provision.egress` names: `spotlight` for the egress that Spotlight operates, or the `id` of a `spotlight_egress` that you operate. The egress adds the secrets of each run to the requests that go to their bound hosts. A bound host is a host that a secret of the run is bound to. A host is live state, shown on the web app's Runners page, and never a Terraform resource. A line or station names in `runners` the labels of a pool or trust to place its work. A line's `repository` may name the runner `image` its work runs in, built `FROM ghcr.io/usespotlightai/spotlight-runner`; a host serves it when its `SPOTLIGHT_RUNNER_IMAGE` admits it.
+The host claims each run with that token and starts a fresh sandbox for it. A host on a platform that issues its workloads tokens, as Kubernetes does, claims through a `spotlight_runner_trust` instead and has no Spotlight token: set `SPOTLIGHT_TRUST` to the trust's `id` and `SPOTLIGHT_OIDC_TOKEN_FILE` to the path of the projected token. A pool with `provision` is pushed to instead: Spotlight calls its URL for each run, handing a one-run runner its credential. The runners of a push pool send their traffic through the egress that `provision.egress` names: `spotlight` for the egress that Spotlight operates, or the `id` of a `spotlight_egress` that you operate. The egress adds the secrets of each run to the requests that go to their bound hosts. A bound host is a host that a secret of the run is bound to. A host is live state, shown on the web app's Runners page, and never a Terraform resource. A line or station names in `runners` the labels of a pool or trust to place its work. A line's `repository` may name the runner `image` its work runs in, built `FROM ghcr.io/usespotlightai/spotlight-runner`; a host serves it when its `SPOTLIGHT_RUNNER_IMAGE` allows it.
 
 ## Plans check expressions
 
 Integrations contain CEL expressions, written `$${{ ... }}` in HCL so Terraform leaves them alone. `terraform plan` sends each one to the control plane to be type-checked where it is written, so a misspelt field fails the plan with the attribute that contains it named, rather than failing the apply.
 
-## Values Terraform never keeps
+## Values Terraform never stores
 
-A secret's value (`value_wo`), a pull pool's token (`token`), a push pool's signing secret (`provision.secret`) and an egress's token (`token`) are write-only attributes: they are sent to Spotlight and never stored in the plan or the state, so they need Terraform 1.11 or later. Terraform cannot see a change to a value it never keeps, so each has a version beside it (`value_wo_version`, `token_version`, `provision.secret_version`): change it to send the value again. A pull pool or an egress created without a token is issued one by Spotlight, answered only once; the provider does not keep it, and warns that it cannot be used until it is given a token that you have. Each pool token and each egress token is single-use. After you rotate a token, or delete or replace its pool or egress, no pool or egress accepts that token again. Thus, a new `token_version` or a replaced pool or egress needs a new value, such as a new `random_password`.
+A secret's value (`value_wo`), a pull pool's token (`token`), a push pool's signing secret (`provision.secret`) and an egress's token (`token`) are write-only attributes: they are sent to Spotlight and never stored in the plan or the state, so they need Terraform 1.11 or later. Terraform cannot see a change to a value it never stores, so each has a version beside it (`value_wo_version`, `token_version`, `provision.secret_version`): change it to send the value again. A pull pool or an egress created without a token is issued one by Spotlight, answered only once; the provider does not store it, and warns that it cannot be used until you set a token that you have. Each pool token and each egress token is single-use. After you rotate a token, or delete or replace its pool or egress, no pool or egress accepts that token again. Thus, a new `token_version` or a replaced pool or egress needs a new value, such as a new `random_password`.
 
 ## Example Usage
 
@@ -114,7 +114,7 @@ variable "spotlight_token" {
 
 ### Optional
 
-- `oidc` (Block, Optional) Authenticate from CI with no stored token: the OIDC token the CI platform issues the job is exchanged, through a `spotlight_workspace_token_trust`, for a short-lived token, renewed before it expires. In GitHub Actions, a job granted `permissions: id-token: write` needs only `trust`; elsewhere, give the platform's OIDC token as `token`. (see [below for nested schema](#nestedblock--oidc))
+- `oidc` (Block, Optional) Authenticate from CI with no stored token: the OIDC token the CI platform issues the job is exchanged, through a `spotlight_workspace_token_trust`, for a short-lived token, renewed before it expires. In GitHub Actions, a job granted `permissions: id-token: write` needs only `trust`; elsewhere, set the platform's OIDC token as `token`. (see [below for nested schema](#nestedblock--oidc))
 - `token` (String, Sensitive) A Spotlight API token. Defaults to `SPOTLIGHT_API_TOKEN`. Leave it unset to authenticate through `oidc`.
 - `url` (String) The control plane's URL, as in `https://spotlight.example.com`. Defaults to `SPOTLIGHT_URL`, which the `spotlight` CLI reads too.
 
@@ -124,5 +124,5 @@ variable "spotlight_token" {
 Optional:
 
 - `audience` (String) The audience to request the OIDC token for, which must be the trust's. Defaults to `SPOTLIGHT_OIDC_AUDIENCE`, then `spotlight`.
-- `token` (String, Sensitive) An OIDC token the CI platform issued the job, as GitLab's `id_tokens`, CircleCI's `$CIRCLE_OIDC_TOKEN_V2` or `buildkite-agent oidc request-token` give one. Defaults to `SPOTLIGHT_OIDC_TOKEN`; in GitHub Actions, one is requested for each exchange.
+- `token` (String, Sensitive) An OIDC token the CI platform issued the job, as GitLab's `id_tokens`, CircleCI's `$CIRCLE_OIDC_TOKEN_V2` or `buildkite-agent oidc request-token` return one. Defaults to `SPOTLIGHT_OIDC_TOKEN`; in GitHub Actions, one is requested for each exchange.
 - `trust` (String) The `id` of the workspace token trust to exchange through. Defaults to `SPOTLIGHT_OIDC_TRUST`.

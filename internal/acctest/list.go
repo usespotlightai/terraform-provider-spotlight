@@ -70,7 +70,7 @@ func ListBlock(kind, name string, config map[string]string) string {
 	return block.String()
 }
 
-// List asks the provider, configured against fake, which resources the list
+// List queries the provider, configured against fake, which resources the list
 // resource kind finds with config. It does the same query as terraform query
 // with include_resource. It fails the test if the provider reports an error
 // or returns a resource that is not the resource in its identity.
@@ -85,7 +85,7 @@ func List(t *testing.T, fake *fakeapi.Server, kind string, config map[string]str
 	return listed
 }
 
-// ListFails asks the provider which resources the list resource kind finds
+// ListFails queries the provider for the resources the list resource kind finds
 // with config, and returns the errors that it reports. It fails the test if
 // there are no errors.
 func ListFails(t *testing.T, fake *fakeapi.Server, kind string, config map[string]string) string {
@@ -120,8 +120,8 @@ func list(t *testing.T, fake *fakeapi.Server, kind string, config map[string]str
 	values := map[string]tftypes.Value{}
 	for name := range configType.AttributeTypes {
 		values[name] = tftypes.NewValue(tftypes.String, nil)
-		if given, ok := config[name]; ok {
-			values[name] = tftypes.NewValue(tftypes.String, given)
+		if value, ok := config[name]; ok {
+			values[name] = tftypes.NewValue(tftypes.String, value)
 		}
 	}
 

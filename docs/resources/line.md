@@ -129,7 +129,7 @@ resource "spotlight_line" "core_delivery" {
 
 - `reaction` (Block Set) Moves a task when something happens, as when a pull request's checks fail. (see [below for nested schema](#nestedblock--reaction))
 - `replay_check` (Block, Optional) When a planned change to the line passes `spotlight replay check`, which replays the changed station's replay set under the change and compares it with the live config. `spotlight replay check` checks no change to a line without one. (see [below for nested schema](#nestedblock--replay_check))
-- `repository` (Block Set) A repository the line works on. Spotlight keeps them sorted by name, so they are a set. The repositories of a line name at most one `image`. (see [below for nested schema](#nestedblock--repository))
+- `repository` (Block Set) A repository the line works on. Spotlight stores them sorted by name, so they are a set. The repositories of a line name at most one `image`. (see [below for nested schema](#nestedblock--repository))
 - `reviews` (Block, Optional) Which pull requests the line reviews, for a line whose role is `review`. (see [below for nested schema](#nestedblock--reviews))
 - `role` (String) The role the line plays for its team, as in `delivery` or `review`. A role names one line.
 - `runners` (Set of String) Where the line's work runs: the labels of a runner pool or trust, any of which a runner must answer to. A station's own `runners` replace it. Anywhere when left out.
@@ -184,8 +184,8 @@ Optional:
 
 Optional:
 
-- `label` (String) The pull request label that asks for a review, whatever `start` says. Matched without regard to case. GitHub labels are at most 50 characters.
-- `mention` (String) The handle that asks for a review.
+- `label` (String) The pull request label that requests a review, whatever `start` says. Matched without regard to case. GitHub labels are at most 50 characters.
+- `mention` (String) The handle that requests a review.
 - `skip` (Block, Optional) Pull requests not to review. (see [below for nested schema](#nestedblock--reviews--skip))
 - `start` (String) `opened`, to review every pull request as it opens, or `mentioned`, to review one when Spotlight is mentioned on it.
 
@@ -194,7 +194,7 @@ Optional:
 
 Optional:
 
-- `authors` (Set of String) Skip pull requests by these GitHub logins, in lower case, as in `dependabot[bot]`. Spotlight keeps them sorted and each once, so they are a set.
+- `authors` (Set of String) Skip pull requests by these GitHub logins, in lower case, as in `dependabot[bot]`. Spotlight stores them sorted and each once, so they are a set.
 - `drafts` (Boolean) Skip draft pull requests.
 - `spotlight` (Boolean) Skip pull requests Spotlight opened.
 
@@ -226,7 +226,7 @@ Optional:
 - `description` (String) What the station is for.
 - `diffs` (Boolean) Whether the station's runs draft a change stack from their diff.
 - `effort` (String) How hard the agent thinks: `low`, `medium`, `high`, `xhigh` or `max`.
-- `ends` (Boolean) Whether a task that reaches the station is finished.
+- `ends` (Boolean) Whether a task that arrives at the station is finished.
 - `harness` (String) The agent harness that works tasks here, as in `claude-code`.
 - `judge` (Block, Optional) Scores the station's runs against a rubric or checkable claims, for Insights. A judge sets `sample`, `trust` and at least one of `rubric` and `claims`. No run is judged when left out. (see [below for nested schema](#nestedblock--station--judge))
 - `kind` (String) `backlog`, `work` or `completed`.
@@ -234,10 +234,10 @@ Optional:
 - `model` (String) The model the harness uses.
 - `passes_to` (Set of String) The stations a task here may move on to, by key.
 - `profile` (String) The harness profile the station's agent runs with, by key, as in `careful`.
-- `prompt` (String) What the agent is asked to do, usually read with `file()`.
+- `prompt` (String) The instructions for the agent, usually read with `file()`.
 - `runners` (Set of String) Where the station's work runs, in place of the line's `runners`: the labels of a runner pool or trust, any of which a runner must answer to. The line's apply when left out.
-- `skills` (List of String) The skills the station gives its agent, by key.
-- `tools` (List of String) The tools the station gives its agent, as in `linear.comment`.
+- `skills` (List of String) The skills the station enables for its agent, by key.
+- `tools` (List of String) The tools the station enables for its agent, as in `linear.comment`.
 
 <a id="nestedblock--station--alert"></a>
 ### Nested Schema for `station.alert`
@@ -260,7 +260,7 @@ Optional:
 
 Optional:
 
-- `claims` (List of String) Checkable claims the judge answers yes or no about each change, from 1 to 20, each at most 500 characters. A change passes when the share of claims met reaches `pass_share`.
+- `claims` (List of String) Checkable claims the judge answers yes or no about each change, from 1 to 20, each at most 500 characters. A change passes when the share of claims met is at least `pass_share`.
 - `pass_share` (Number) Share of claims a change must meet to pass, from 0 to 1, set only with `claims`. 1 means every claim. 1 when left out.
 - `rubric` (String) What a good run looks like, at most 20,000 characters, usually read with `file()`, as in `file("judges/implement.md")`. Optional when `claims` is set.
 - `sample` (Number) The share of runs judged, from 0 to 1.

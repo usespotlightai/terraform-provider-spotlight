@@ -66,7 +66,7 @@ resource "spotlight_line" "core_delivery" {
     ends      = false
 
     judge {
-      rubric = "A good run changes only what the task asks for.\n"
+      rubric = "A good run changes only what the task requires.\n"
       sample = 0.2
       trust  = 0.6
     }
@@ -756,7 +756,7 @@ func TestLineStationsJudgeAndAlert(t *testing.T) {
 
 	judged := lineJudged(`
     judge {
-      rubric = "A good run changes only what the task asks for."
+      rubric = "A good run changes only what the task requires."
       sample = 0.2
       trust  = 0.6
     }
@@ -769,7 +769,7 @@ func TestLineStationsJudgeAndAlert(t *testing.T) {
 `)
 	retuned := lineJudged(`
     judge {
-      rubric = "A good run changes only what the task asks for."
+      rubric = "A good run changes only what the task requires."
       sample = 1
       trust  = 0.6
     }
@@ -808,7 +808,7 @@ func TestLineStationsJudgeAndAlert(t *testing.T) {
 				Config: judged,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "judge"), knownvalue.ObjectExact(map[string]knownvalue.Check{
-						"rubric":     knownvalue.StringExact("A good run changes only what the task asks for."),
+						"rubric":     knownvalue.StringExact("A good run changes only what the task requires."),
 						"claims":     knownvalue.Null(),
 						"pass_share": knownvalue.Null(),
 						"sample":     knownvalue.Float64Exact(0.2),
@@ -887,7 +887,7 @@ func TestLineJudgeChecksClaims(t *testing.T) {
 `)
 	shared := lineJudged(`
     judge {
-      rubric     = "A good run changes only what the task asks for."
+      rubric     = "A good run changes only what the task requires."
       claims     = ["The change touches only files the task names."]
       pass_share = 0.75
       sample     = 0.2
@@ -930,7 +930,7 @@ func TestLineJudgeChecksClaims(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(lineAddress, plancheck.ResourceActionUpdate)},
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "judge").AtMapKey("rubric"), knownvalue.StringExact("A good run changes only what the task asks for.")),
+					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "judge").AtMapKey("rubric"), knownvalue.StringExact("A good run changes only what the task requires.")),
 					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "judge").AtMapKey("pass_share"), knownvalue.Float64Exact(0.75)),
 				},
 			},
@@ -1132,7 +1132,7 @@ resource "spotlight_line" "delivery" {
     prompt  = "Implement the task."
 
     judge {
-      rubric = "A good run changes only what the task asks for."
+      rubric = "A good run changes only what the task requires."
       sample = %[3]s
       trust  = 0.6
     }

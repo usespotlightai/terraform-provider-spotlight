@@ -109,12 +109,12 @@ func (r *TeamResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
-	kept := &state
+	prior := &state
 	if !answerUnchanged(ctx, req.Private, teamSettable(team)) {
-		kept = nil
+		prior = nil
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, teamModel(team, kept))...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, teamModel(team, prior))...)
 	resp.Diagnostics.Append(setIdentity(ctx, resp.Identity, team.ID)...)
 	resp.Diagnostics.Append(rememberAnswer(ctx, resp.Private, teamSettable(team))...)
 }
@@ -183,7 +183,7 @@ func teamSettable(team client.Team) any {
 	return client.TeamInput{Key: team.Key, Name: team.Name}
 }
 
-func teamModel(team client.Team, kept *TeamResourceModel) TeamResourceModel {
+func teamModel(team client.Team, prior *TeamResourceModel) TeamResourceModel {
 	model := TeamResourceModel{
 		ID:          types.StringValue(team.ID),
 		Version:     types.Int64Value(team.Version),
@@ -193,9 +193,9 @@ func teamModel(team client.Team, kept *TeamResourceModel) TeamResourceModel {
 		Name:        types.StringValue(team.Name),
 	}
 
-	if kept != nil {
-		model.Key = kept.Key
-		model.Name = kept.Name
+	if prior != nil {
+		model.Key = prior.Key
+		model.Name = prior.Name
 	}
 
 	return model

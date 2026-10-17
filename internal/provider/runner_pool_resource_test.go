@@ -63,14 +63,14 @@ func runnerPoolImportID(state *terraform.State) (string, error) {
 	return state.RootModule().Resources["spotlight_workspace.acme"].Primary.ID + "/ephemeral", nil
 }
 
-func runnerPoolKept(fake *fakeapi.Server) string {
-	return fake.Kept(fake.IDOf("runner-pool", "ephemeral"))
+func runnerPoolStoredToken(fake *fakeapi.Server) string {
+	return fake.WriteOnly(fake.IDOf("runner-pool", "ephemeral"))
 }
 
-func runnerPoolKeeps(fake *fakeapi.Server, want string) resource.TestCheckFunc {
+func runnerPoolStores(fake *fakeapi.Server, want string) resource.TestCheckFunc {
 	return func(*terraform.State) error {
-		if got := runnerPoolKept(fake); got != want {
-			return fmt.Errorf("the pool keeps %q, want %q", got, want)
+		if got := runnerPoolStoredToken(fake); got != want {
+			return fmt.Errorf("the pool stores %q, want %q", got, want)
 		}
 
 		return nil
@@ -113,7 +113,7 @@ func sentTimes(fake *fakeapi.Server, field func(map[string]any) (any, bool), wan
 	}
 }
 
-func TestRunnerPoolTokenIsWrittenButNeverKept(t *testing.T) {
+func TestRunnerPoolTokenIsWrittenButNeverStored(t *testing.T) {
 	fake := fakeapi.New(t)
 
 	resource.UnitTest(t, resource.TestCase{
@@ -131,7 +131,7 @@ func TestRunnerPoolTokenIsWrittenButNeverKept(t *testing.T) {
 					statecheck.ExpectKnownValue(runnerPoolAddress, tfjsonpath.New("provision"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(runnerPoolAddress, tfjsonpath.New("labels"), knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact("linux")})),
 				},
-				Check: resource.ComposeAggregateTestCheckFunc(runnerPoolKeeps(fake, tokenFirst), acctest.NothingContains(acctest.Value(tokenFirst))),
+				Check: resource.ComposeAggregateTestCheckFunc(runnerPoolStores(fake, tokenFirst), acctest.NothingContains(acctest.Value(tokenFirst))),
 			},
 			{
 				Config:   pullPool("ephemeral", `"linux"`, tokenFirst, 1),
@@ -150,7 +150,7 @@ func TestRunnerPoolTokenIsWrittenButNeverKept(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(runnerPoolAddress, plancheck.ResourceActionUpdate)},
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
-					runnerPoolKeeps(fake, tokenSecond),
+					runnerPoolStores(fake, tokenSecond),
 					sentTimes(fake, poolToken, 2, "a new token_version sends the token again"),
 					acctest.NothingContains(acctest.Value(tokenFirst), acctest.Value(tokenSecond)),
 				),
@@ -199,17 +199,17 @@ resource "spotlight_runner_pool" "ephemeral" {
 }
 `
 
-func runnerPoolKeepsIssued(fake *fakeapi.Server, first *string) resource.TestCheckFunc {
+func runnerPoolStoresIssued(fake *fakeapi.Server, first *string) resource.TestCheckFunc {
 	return func(*terraform.State) error {
-		if kept := runnerPoolKept(fake); kept != *first {
-			return fmt.Errorf("a rejected rotation changed the pool's token to %q", kept)
+		if stored := runnerPoolStoredToken(fake); stored != *first {
+			return fmt.Errorf("a rejected rotation changed the pool's token to %q", stored)
 		}
 
 		return nil
 	}
 }
 
-func TestAPoolTokenSpotlightIssuesIsNeverKept(t *testing.T) {
+func TestAPoolTokenSpotlightIssuesIsNeverStored(t *testing.T) {
 	fake := fakeapi.New(t)
 	var first string
 
@@ -225,7 +225,7 @@ func TestAPoolTokenSpotlightIssuesIsNeverKept(t *testing.T) {
 					statecheck.ExpectKnownValue(runnerPoolAddress, tfjsonpath.New("max_runs"), knownvalue.Null()),
 				},
 				Check: func(state *terraform.State) error {
-					first = runnerPoolKept(fake)
+					first = runnerPoolStoredToken(fake)
 					if !strings.HasPrefix(first, "issued-") {
 						return fmt.Errorf("Spotlight issued no token")
 					}
@@ -239,27 +239,27 @@ func TestAPoolTokenSpotlightIssuesIsNeverKept(t *testing.T) {
 			},
 			{
 				Config:      acctest.Workspace + runnerPoolRotated,
-				ExpectError: regexp.MustCompile(`(?s)token: is given whenever tokenVersion changes`),
+				ExpectError: regexp.MustCompile(`(?s)token: is required whenever tokenVersion changes`),
 			},
 			{
 				Config: acctest.Workspace + runnerPoolIssued,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
 				},
-				Check: runnerPoolKeepsIssued(fake, &first),
+				Check: runnerPoolStoresIssued(fake, &first),
 			},
 			{
 				Config: pullPool("ephemeral", "", tokenFirst, 2),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(runnerPoolAddress, plancheck.ResourceActionUpdate)},
 				},
-				Check: runnerPoolKeeps(fake, tokenFirst),
+				Check: runnerPoolStores(fake, tokenFirst),
 			},
 		},
 	})
 }
 
-func TestAPushPoolSecretIsWrittenButNeverKept(t *testing.T) {
+func TestAPushPoolSecretIsWrittenButNeverStored(t *testing.T) {
 	fake := fakeapi.New(t)
 
 	resource.UnitTest(t, resource.TestCase{
@@ -281,7 +281,7 @@ func TestAPushPoolSecretIsWrittenButNeverKept(t *testing.T) {
 					})),
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
-					runnerPoolKeeps(fake, provisionFirst),
+					runnerPoolStores(fake, provisionFirst),
 					sentTimes(fake, poolToken, 0, "a pool that provisions has no token"),
 					acctest.NothingContains(acctest.Value(provisionFirst)),
 				),
@@ -303,7 +303,7 @@ func TestAPushPoolSecretIsWrittenButNeverKept(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(runnerPoolAddress, plancheck.ResourceActionUpdate)},
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
-					runnerPoolKeeps(fake, provisionSecond),
+					runnerPoolStores(fake, provisionSecond),
 					sentTimes(fake, provisionSecret, 2, "a new secret_version sends the secret again"),
 					acctest.NothingContains(acctest.Value(provisionFirst), acctest.Value(provisionSecond)),
 				),
@@ -333,14 +333,14 @@ func TestAddingOrRemovingProvisionReplacesThePool(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(runnerPoolAddress, plancheck.ResourceActionDestroyBeforeCreate)},
 				},
-				Check: runnerPoolKeeps(fake, provisionFirst),
+				Check: runnerPoolStores(fake, provisionFirst),
 			},
 			{
 				Config: pullPool("ephemeral", "", tokenSecond, 2),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(runnerPoolAddress, plancheck.ResourceActionDestroyBeforeCreate)},
 				},
-				Check: runnerPoolKeeps(fake, tokenSecond),
+				Check: runnerPoolStores(fake, tokenSecond),
 			},
 		},
 	})
@@ -373,7 +373,7 @@ func TestAPoolTokenIsSingleUse(t *testing.T) {
 			},
 			{
 				Config: pullPool("ephemeral", "", tokenSecond, 2),
-				Check:  runnerPoolKeeps(fake, tokenSecond),
+				Check:  runnerPoolStores(fake, tokenSecond),
 			},
 			{
 				Config:      pullPool("ephemeral", "", tokenFirst, 3),
@@ -389,7 +389,7 @@ func TestAPoolTokenIsSingleUse(t *testing.T) {
 			},
 			{
 				Config: pullPoolBeside(tokenSecond, 2, tokenThird, 1),
-				Check:  runnerPoolKeeps(fake, tokenSecond),
+				Check:  runnerPoolStores(fake, tokenSecond),
 			},
 			{
 				Config: pullPool("ephemeral", "", tokenSecond, 2),

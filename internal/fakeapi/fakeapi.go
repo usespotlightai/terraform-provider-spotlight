@@ -67,7 +67,7 @@ type Server struct {
 	requests   []Request
 	failNext   []int
 	scopes     map[string]bool
-	kept       map[string]string
+	writeOnly  map[string]string
 	used       map[usedToken]struct{}
 	issued     map[string]string
 	issuedFor  time.Duration
@@ -87,7 +87,7 @@ func New(t interface{ Cleanup(func()) }) *Server {
 	s := &Server{
 		stored:     map[string]*resource{},
 		idempotent: map[string]string{},
-		kept:       map[string]string{},
+		writeOnly:  map[string]string{},
 		used:       map[usedToken]struct{}{},
 		issued:     map[string]string{},
 		issuedFor:  15 * time.Minute,
@@ -119,7 +119,7 @@ func New(t interface{ Cleanup(func()) }) *Server {
 	return s
 }
 
-// Grant gives the token only these scopes for all later calls.
+// Grant limits the token to these scopes for all later calls.
 func (s *Server) Grant(scopes ...string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -185,17 +185,17 @@ func (s *Server) IDOf(kind, address string) string {
 	return ""
 }
 
-// Kept returns the write-only value that the fake keeps for a resource:
+// WriteOnly returns the write-only value that the fake stores for a resource:
 //   - The value of a secret.
 //   - The token of a pull pool.
 //   - The token of an egress.
 //   - The provision secret of a push pool.
 //   - The secret that a hook signs with.
-func (s *Server) Kept(id string) string {
+func (s *Server) WriteOnly(id string) string {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	return s.kept[id]
+	return s.writeOnly[id]
 }
 
 // Change changes a resource without Terraform, as a different client does,
@@ -240,7 +240,7 @@ func (s *Server) guard(next http.Handler) http.Handler {
 			return
 		}
 
-		if r.URL.Path != exchangePath && !s.admits(r.Header.Get("Authorization")) {
+		if r.URL.Path != exchangePath && !s.authenticates(r.Header.Get("Authorization")) {
 			problem(w, http.StatusUnauthorized, "unauthenticated", "No valid credentials", "Send a Spotlight API token as a bearer token", nil)
 			return
 		}
@@ -250,8 +250,8 @@ func (s *Server) guard(next http.Handler) http.Handler {
 			return
 		}
 
-		if asked := r.Header.Get("Spotlight-Api-Version"); asked != "" && asked != apiVersion {
-			problem(w, http.StatusBadRequest, "unsupported-api-version", "This API version is not served here", "Asked for "+asked, nil)
+		if requested := r.Header.Get("Spotlight-Api-Version"); requested != "" && requested != apiVersion {
+			problem(w, http.StatusBadRequest, "unsupported-api-version", "This API version is not served here", "Requested "+requested, nil)
 			return
 		}
 
@@ -262,7 +262,7 @@ func (s *Server) guard(next http.Handler) http.Handler {
 
 const exchangePath = "/api/workspace-tokens/exchange"
 
-func (s *Server) admits(authorization string) bool {
+func (s *Server) authenticates(authorization string) bool {
 	bearer, ok := strings.CutPrefix(authorization, "Bearer ")
 	if !ok {
 		return false
@@ -299,7 +299,7 @@ func (s *Server) exchange(w http.ResponseWriter, r *http.Request) {
 
 	trust, ok := s.stored[body.Trust]
 	if !ok || trust.kind != "workspace-token-trust" || body.Token != WorkloadToken {
-		problem(w, http.StatusUnauthorized, "unauthenticated", "The workload token was not admitted", "No trust here admits that workload", nil)
+		problem(w, http.StatusUnauthorized, "unauthenticated", "The workload token was not accepted", "No trust here matches that workload", nil)
 		return
 	}
 
@@ -515,11 +515,11 @@ func (s *Server) create(kind string) http.HandlerFunc {
 			}
 		}
 
-		if value == "" && givesToken(kind, fields) {
+		if value == "" && hasToken(kind, fields) {
 			value = issue(w, created)
 		}
 
-		s.keep(created, value)
+		s.storeWriteOnly(created, value)
 		s.stored[created.id] = created
 		s.idempotent[key] = created.id
 		s.answer(w, http.StatusCreated, created)
@@ -577,10 +577,10 @@ func (s *Server) update(kind string) http.HandlerFunc {
 			return
 		}
 
-		s.keep(existing, value)
+		s.storeWriteOnly(existing, value)
 
 		if kind == "secret" && objectOf(fields["source"])["kind"] != "built-in" {
-			delete(s.kept, existing.id)
+			delete(s.writeOnly, existing.id)
 		}
 
 		existing.fields = fields
@@ -620,19 +620,19 @@ func (s *Server) remove(kind string) http.HandlerFunc {
 		}
 
 		delete(s.stored, existing.id)
-		delete(s.kept, existing.id)
+		delete(s.writeOnly, existing.id)
 		s.revokeIssued(existing.id)
 		w.WriteHeader(http.StatusNoContent)
 	}
 }
 
-func (s *Server) keep(stored *resource, value string) {
+func (s *Server) storeWriteOnly(stored *resource, value string) {
 	if value == "" {
 		return
 	}
 
-	s.kept[stored.id] = value
-	if givesToken(stored.kind, stored.fields) {
+	s.writeOnly[stored.id] = value
+	if hasToken(stored.kind, stored.fields) {
 		s.used[usedToken{stored.kind, value}] = struct{}{}
 	}
 }
@@ -648,8 +648,8 @@ func (s *Server) tokenProblems(kind, claimant, value string) []fieldError {
 		return nil
 	}
 
-	for id, kept := range s.kept {
-		if stored := s.stored[id]; kept == value && stored != nil && stored.kind == kind && givesToken(stored.kind, stored.fields) {
+	for id, token := range s.writeOnly {
+		if stored := s.stored[id]; token == value && stored != nil && stored.kind == kind && hasToken(stored.kind, stored.fields) {
 			if id == claimant {
 				return nil
 			}
@@ -833,7 +833,7 @@ var fixedFields = map[string][]string{
 	"hook":                  {"key"},
 }
 
-func givesToken(kind string, fields map[string]any) bool {
+func hasToken(kind string, fields map[string]any) bool {
 	return kind == "egress" || (kind == "runner-pool" && fields["mode"] == "pull")
 }
 

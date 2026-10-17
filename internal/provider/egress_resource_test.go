@@ -40,14 +40,14 @@ func egressImportID(state *terraform.State) (string, error) {
 	return state.RootModule().Resources["spotlight_workspace.acme"].Primary.ID + "/shared", nil
 }
 
-func egressKept(fake *fakeapi.Server) string {
-	return fake.Kept(fake.IDOf("egress", "shared"))
+func egressStoredToken(fake *fakeapi.Server) string {
+	return fake.WriteOnly(fake.IDOf("egress", "shared"))
 }
 
-func egressKeeps(fake *fakeapi.Server, want string) resource.TestCheckFunc {
+func egressStores(fake *fakeapi.Server, want string) resource.TestCheckFunc {
 	return func(*terraform.State) error {
-		if got := egressKept(fake); got != want {
-			return fmt.Errorf("the egress keeps %q, want %q", got, want)
+		if got := egressStoredToken(fake); got != want {
+			return fmt.Errorf("the egress stores %q, want %q", got, want)
 		}
 
 		return nil
@@ -64,7 +64,7 @@ func egressToken(body map[string]any) (any, bool) {
 	return token, ok
 }
 
-func TestEgressTokenIsWrittenButNeverKept(t *testing.T) {
+func TestEgressTokenIsWrittenButNeverStored(t *testing.T) {
 	fake := fakeapi.New(t)
 	updated := resource.ConfigPlanChecks{
 		PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(egressAddress, plancheck.ResourceActionUpdate)},
@@ -84,7 +84,7 @@ func TestEgressTokenIsWrittenButNeverKept(t *testing.T) {
 					statecheck.ExpectKnownValue(egressAddress, tfjsonpath.New("token"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(egressAddress, tfjsonpath.New("token_version"), knownvalue.Int64Exact(1)),
 				},
-				Check: resource.ComposeAggregateTestCheckFunc(egressKeeps(fake, tokenFirst), acctest.NothingContains(acctest.Value(tokenFirst))),
+				Check: resource.ComposeAggregateTestCheckFunc(egressStores(fake, tokenFirst), acctest.NothingContains(acctest.Value(tokenFirst))),
 			},
 			{
 				Config:   acctest.Workspace + egressShared(tokenFirst, 1),
@@ -99,7 +99,7 @@ func TestEgressTokenIsWrittenButNeverKept(t *testing.T) {
 				Config:           acctest.Workspace + egressAt("shared", "https://egress.example.com/v2", tokenSecond, 2),
 				ConfigPlanChecks: updated,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					egressKeeps(fake, tokenSecond),
+					egressStores(fake, tokenSecond),
 					sentTimes(fake, egressToken, 2, "a new token_version sends the token again"),
 					acctest.NothingContains(acctest.Value(tokenFirst), acctest.Value(tokenSecond)),
 				),
@@ -148,7 +148,7 @@ resource "spotlight_egress" "shared" {
 }
 `
 
-func TestAnEgressTokenSpotlightIssuesIsNeverKept(t *testing.T) {
+func TestAnEgressTokenSpotlightIssuesIsNeverStored(t *testing.T) {
 	fake := fakeapi.New(t)
 	var first string
 
@@ -163,7 +163,7 @@ func TestAnEgressTokenSpotlightIssuesIsNeverKept(t *testing.T) {
 					statecheck.ExpectKnownValue(egressAddress, tfjsonpath.New("token_version"), knownvalue.Null()),
 				},
 				Check: func(state *terraform.State) error {
-					first = egressKept(fake)
+					first = egressStoredToken(fake)
 					if !strings.HasPrefix(first, "issued-") {
 						return fmt.Errorf("Spotlight issued no token")
 					}
@@ -185,8 +185,8 @@ func TestAnEgressTokenSpotlightIssuesIsNeverKept(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
 				},
 				Check: func(*terraform.State) error {
-					if kept := egressKept(fake); kept != first {
-						return fmt.Errorf("a rejected rotation changed the egress's token to %q", kept)
+					if stored := egressStoredToken(fake); stored != first {
+						return fmt.Errorf("a rejected rotation changed the egress's token to %q", stored)
 					}
 
 					return nil
@@ -197,7 +197,7 @@ func TestAnEgressTokenSpotlightIssuesIsNeverKept(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(egressAddress, plancheck.ResourceActionUpdate)},
 				},
-				Check: egressKeeps(fake, tokenFirst),
+				Check: egressStores(fake, tokenFirst),
 			},
 		},
 	})
@@ -231,7 +231,7 @@ func TestAnEgressTokenIsSingleUse(t *testing.T) {
 			},
 			{
 				Config: acctest.Workspace + egressShared(tokenSecond, 2),
-				Check:  egressKeeps(fake, tokenSecond),
+				Check:  egressStores(fake, tokenSecond),
 			},
 			{
 				Config:      acctest.Workspace + egressShared(tokenFirst, 3),
@@ -247,7 +247,7 @@ func TestAnEgressTokenIsSingleUse(t *testing.T) {
 			},
 			{
 				Config: egressBeside(tokenSecond, 2, tokenThird, 1),
-				Check:  egressKeeps(fake, tokenSecond),
+				Check:  egressStores(fake, tokenSecond),
 			},
 			{
 				Config: acctest.Workspace + egressShared(tokenSecond, 2),

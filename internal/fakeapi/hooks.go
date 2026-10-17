@@ -10,7 +10,7 @@ import (
 
 var (
 	hookEvents = []string{
-		"tool.using", "tool.used", "run.starting", "run.ended", "handover.giving",
+		"tool.using", "tool.used", "run.starting", "run.ended", "handover.submitting",
 		"pull-request.opening", "pull-request.merged", "task.opened", "task.moved",
 	}
 	hookMatches = []string{"tools", "lines", "stations", "repositories", "paths"}
@@ -64,18 +64,18 @@ func hook(body map[string]any) (map[string]any, []fieldError) {
 		errs = append(errs, fieldError{"signing", "is missing; a hook that makes requests signs them, with an HMAC secret or an OIDC token"})
 	}
 
-	if when, given := body["when"].(string); given {
+	if when, present := body["when"].(string); present {
 		fields["when"] = when
 	}
 
-	if failure, given := body["failure"].(string); given {
+	if failure, present := body["failure"].(string); present {
 		if failure != "continue" && failure != "block" {
 			errs = append(errs, fieldError{"failure", "is continue or block"})
 		}
 		fields["failure"] = failure
 	}
 
-	if timeout, given := body["timeoutSeconds"].(float64); given {
+	if timeout, present := body["timeoutSeconds"].(float64); present {
 		if timeout != float64(int64(timeout)) || timeout < 1 || timeout > 30 {
 			errs = append(errs, fieldError{"timeoutSeconds", "is a whole number of seconds from 1 to 30"})
 		}
@@ -121,8 +121,8 @@ func hookSteps(listed []any, errs *[]fieldError) []any {
 			}
 			orDefault(step, "with", map[string]any{})
 		default:
-			if _, given := step["with"]; given {
-				*errs = append(*errs, fieldError{at + ".with", "gives inputs to a tool. It goes only with call"})
+			if _, present := step["with"]; present {
+				*errs = append(*errs, fieldError{at + ".with", "sets inputs for a tool. It goes only with call"})
 			}
 			step["request"] = hookRequest(request, at+".request", errs)
 		}
@@ -133,8 +133,8 @@ func hookSteps(listed []any, errs *[]fieldError) []any {
 	return steps
 }
 
-func hookRequest(given map[string]any, at string, errs *[]fieldError) map[string]any {
-	request := maps.Clone(given)
+func hookRequest(input map[string]any, at string, errs *[]fieldError) map[string]any {
+	request := maps.Clone(input)
 
 	if textOf(request["url"]) == "" {
 		*errs = append(*errs, fieldError{at + ".url", "is the address to send the request to"})
@@ -150,8 +150,8 @@ func hookRequest(given map[string]any, at string, errs *[]fieldError) map[string
 	return request
 }
 
-func hookSigning(given any, errs *[]fieldError) any {
-	signing, ok := given.(map[string]any)
+func hookSigning(input any, errs *[]fieldError) any {
+	signing, ok := input.(map[string]any)
 	if !ok {
 		return nil
 	}
@@ -181,16 +181,16 @@ func hookSecret(existing *resource, fields, body map[string]any) (string, []fiel
 		return "", nil
 	}
 
-	secret, given := objectOf(body["signing"])["secret"].(string)
-	if given && !signingSecret(secret) {
+	secret, present := objectOf(body["signing"])["secret"].(string)
+	if present && !signingSecret(secret) {
 		return "", []fieldError{{"signing.secret", "is whsec_ followed by 24 to 64 base64-encoded random bytes, as Standard Webhooks signing secrets are"}}
 	}
 
 	switch {
-	case given:
+	case present:
 		return secret, nil
 	case existing == nil || objectOf(existing.fields["signing"])["secretVersion"] != signing["secretVersion"]:
-		return "", []fieldError{{"signing.secret", "is given whenever signing.secretVersion is set or changes, since that is how it is rotated"}}
+		return "", []fieldError{{"signing.secret", "is required whenever signing.secretVersion is set or changes, since that is how it is rotated"}}
 	default:
 		return "", nil
 	}

@@ -37,7 +37,7 @@ func setIdentity(ctx context.Context, identity *tfsdk.ResourceIdentity, id strin
 
 // removed removes from the state a resource that someone deleted outside
 // Terraform. It still returns the identity of the resource. Terraform before
-// 1.12 keeps no identity, and the framework rejects a read without identity.
+// 1.12 stores no identity, and the framework rejects a read without identity.
 func removed(ctx context.Context, resp *resource.ReadResponse, id string) {
 	resp.Diagnostics.Append(setIdentity(ctx, resp.Identity, id)...)
 	resp.State.RemoveResource(ctx)

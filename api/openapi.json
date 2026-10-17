@@ -210,7 +210,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -343,7 +343,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -501,7 +501,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -576,7 +576,7 @@
             "bearer": []
           }
         ],
-        "summary": "Reconcile a line with its definition, keeping each station it keeps",
+        "summary": "Reconcile a line with its definition, and keep each station that the definition still names",
         "tags": [
           "lines"
         ],
@@ -636,7 +636,7 @@
             "description": "Deleted"
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -778,7 +778,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -872,7 +872,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1140,7 +1140,7 @@
             "description": "No such file, or not this runner’s run to read it for"
           }
         },
-        "summary": "A file the run’s task was given, to lay out in its workspace",
+        "summary": "A file attached to the run’s task, to lay out in its workspace",
         "tags": [
           "runners"
         ]
@@ -1321,7 +1321,7 @@
     },
     "/runs/{runId}/lease": {
       "post": {
-        "description": "The answer carries back whether a person has asked the run to stop, so the heartbeat doubles as how a stop reaches the runner.",
+        "description": "The answer carries back whether a person has requested that the run stop, so the heartbeat also tells the runner about a stop.",
         "operationId": "renewLease",
         "parameters": [
           {
@@ -1497,7 +1497,7 @@
             "description": "The run is not leased by this runner on that attempt, works no task, or already started from somewhere else"
           },
           "422": {
-            "description": "An archive the run could not have restored, a commit that is not a full SHA, or checkouts other than the ones the run was given"
+            "description": "An archive the run could not have restored, a commit that is not a full SHA, or checkouts that are not the run’s own"
           }
         },
         "summary": "Say where the run started: the archive it restored and the commit each checkout was at",
@@ -1548,7 +1548,7 @@
     },
     "/runs/{runId}/tools/{tool}": {
       "post": {
-        "description": "The input and the answer are the tool’s own. Only for a tool the run was given; any credential it needs is added by Spotlight, never sent by the run.",
+        "description": "The input and the answer are the tool’s own. Only for a tool enabled for the run; any credential it needs is added by Spotlight, never sent by the run.",
         "operationId": "useTool",
         "parameters": [
           {
@@ -1599,7 +1599,7 @@
             "description": "Missing, no longer valid or wrong runner token"
           },
           "403": {
-            "description": "The run was not given this tool"
+            "description": "This tool is not enabled for the run"
           },
           "404": {
             "description": "No such run, station or tool for this runner"
@@ -1614,7 +1614,7 @@
             "description": "The integration the tool calls answered with an error"
           }
         },
-        "summary": "Do what a tool the run was given does",
+        "summary": "Do what a tool enabled for the run does",
         "tags": [
           "runners"
         ]
@@ -1670,7 +1670,7 @@
     },
     "/runs/{runId}/review-comment-replies": {
       "post": {
-        "description": "Spotlight replies with its own credential. Nothing that reaches GitHub is ever sent to a runner.",
+        "description": "Spotlight replies with its own credential. No GitHub credential is ever sent to a runner.",
         "operationId": "replyToReviewComment",
         "parameters": [
           {
@@ -1751,10 +1751,10 @@
         ]
       }
     },
-    "/runs/{runId}/completion/asks": {
+    "/runs/{runId}/completion/awaits-person": {
       "post": {
-        "description": "Asked before the runner keeps the workspace at the end of a turn. Nothing changes: the completion decides.",
-        "operationId": "turnAsksAPerson",
+        "description": "The runner calls this before it archives the workspace at the end of a turn. Nothing changes: the completion decides.",
+        "operationId": "turnAwaitsPerson",
         "parameters": [
           {
             "name": "runId",
@@ -1781,7 +1781,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TurnAsksAPersonResponseDto"
+                  "$ref": "#/components/schemas/TurnAwaitsPersonResponseDto"
                 }
               }
             }
@@ -1926,10 +1926,10 @@
             "description": "Not this runner’s run"
           },
           "422": {
-            "description": "Too large, not a SHA-256, work that does not carry on, or nowhere to keep it"
+            "description": "Too large, not a SHA-256, work that does not carry on, or nowhere to store it"
           }
         },
-        "summary": "Keep the workspace as the run leaves it: a place to upload its archive, for this size and SHA-256 only",
+        "summary": "Archive the workspace as the run leaves it: a place to upload its archive, for this size and SHA-256 only",
         "tags": [
           "runners"
         ]
@@ -2042,7 +2042,7 @@
             }
           },
           "401": {
-            "description": "Missing, rotated or unknown pool token, or a workload the trust does not admit"
+            "description": "Missing, rotated or unknown pool token, or a workload the trust does not match"
           }
         },
         "security": [
@@ -2096,7 +2096,7 @@
             "description": "Nothing waits for this pool or trust yet, or the pool is at maxRuns"
           },
           "401": {
-            "description": "Missing, rotated or unknown pool token, or a workload the trust does not admit"
+            "description": "Missing, rotated or unknown pool token, or a workload the trust does not match"
           },
           "409": {
             "description": "The host has not reported through this pool or trust (`host-unreported`), or has not reported serving the image it claims for (`image-unreported`)"
@@ -2153,7 +2153,7 @@
             "description": "No call waits for this pool’s or trust’s workspace"
           },
           "401": {
-            "description": "Missing, rotated or unknown pool token, or a workload the trust does not admit"
+            "description": "Missing, rotated or unknown pool token, or a workload the trust does not match"
           },
           "409": {
             "description": "The host has not reported through this pool or trust (`host-unreported`)"
@@ -2164,7 +2164,7 @@
             "bearer": []
           }
         ],
-        "summary": "Long-poll for one call a hook asked to be sent from inside the host’s network",
+        "summary": "Long-poll for one call that a hook requested, to send from inside the host’s network",
         "tags": [
           "runners"
         ]
@@ -2207,7 +2207,7 @@
             "description": "The answer was taken"
           },
           "401": {
-            "description": "Missing, rotated or unknown pool token, or a workload the trust does not admit"
+            "description": "Missing, rotated or unknown pool token, or a workload the trust does not match"
           },
           "404": {
             "description": "No such call waits for this pool’s or trust’s workspace"
@@ -2229,7 +2229,7 @@
     },
     "/egress/secrets": {
       "post": {
-        "description": "Called by the egress beside a sandbox with the credential its host was handed for this run alone, or by a shared egress with its egress token and the run proxy credential the runner presented. Each call grants the secrets that egress injects for the run. Values that Spotlight keeps come back sealed to the recipient. For a value in an external store, the answer gives the external reference that egress reads.",
+        "description": "Called by the egress beside a sandbox with the credential its host was handed for this run alone, or by a shared egress with its egress token and the run proxy credential the runner presented. Each call grants the secrets that egress injects for the run. Values that Spotlight stores come back sealed to the recipient. For a value in an external store, the answer gives the external reference that egress reads.",
         "operationId": "fetchRunSecrets",
         "parameters": [],
         "requestBody": {
@@ -2274,17 +2274,17 @@
         ]
       }
     },
-    "/egress/admit": {
+    "/egress/authorize": {
       "post": {
-        "description": "Called by a shared egress with its egress token. Before the runner has a run, the egress lets it reach only the control plane.",
-        "operationId": "admitThroughEgress",
+        "description": "Called by a shared egress with its egress token. Before the runner has a run, the egress allows it to connect only to the control plane.",
+        "operationId": "authorizeRunner",
         "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AdmitThroughEgressRequestDto"
+                "$ref": "#/components/schemas/AuthorizeRunnerRequestDto"
               }
             }
           }
@@ -2295,7 +2295,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/EgressAdmissionResponseDto"
+                  "$ref": "#/components/schemas/EgressAuthorizationResponseDto"
                 }
               }
             }
@@ -2361,7 +2361,7 @@
     },
     "/egress/connections": {
       "post": {
-        "description": "Called by a shared egress with its egress token. Spotlight keeps each record with its run for 30 days. It keeps a record only when the run still names the runner of the proxy credential, and that runner is active, or ended at most 2 minutes before.",
+        "description": "Called by a shared egress with its egress token. Spotlight stores each record with its run for 30 days. It stores a record only when the run still names the runner of the proxy credential, and that runner is active, or ended at most 2 minutes before.",
         "operationId": "recordEgressConnections",
         "parameters": [],
         "requestBody": {
@@ -2578,7 +2578,7 @@
             "description": "No such conversation for this caller"
           },
           "409": {
-            "description": "Only a conversation waiting on a tool call can be approved or rejected, and only an approved tool call can be changed, naming exactly the inputs it asked with"
+            "description": "Only a conversation waiting on a tool call can be approved or rejected, and only an approved tool call can be changed, naming exactly the inputs it was called with"
           }
         },
         "summary": "Answer what a conversation is waiting on, and let it carry on",
@@ -2757,7 +2757,7 @@
     },
     "/workspaces/{slug}/attachments": {
       "post": {
-        "description": "The bytes go straight to where files are kept, not through here. The upload is only an upload: the file joins a task when its id is sent with one.",
+        "description": "The bytes go straight to where files are stored, not through here. The upload is only an upload: the file joins a task when its id is sent with one.",
         "operationId": "grantAttachmentUpload",
         "parameters": [
           {
@@ -2798,7 +2798,7 @@
             "description": "No such workspace for this caller"
           },
           "422": {
-            "description": "Too large to attach, or nowhere to keep it"
+            "description": "Too large to attach, or nowhere to store it"
           }
         },
         "summary": "Somewhere to upload one file, before attaching it",
@@ -2847,7 +2847,7 @@
             "description": "No such file for this caller"
           }
         },
-        "summary": "Open a file a task was given",
+        "summary": "Open a file attached to a task",
         "tags": [
           "attachments"
         ]
@@ -2949,7 +2949,7 @@
             "name": "range",
             "required": false,
             "in": "query",
-            "description": "How far back from now to look, counting runs started since; 30d unless asked",
+            "description": "How far back from now to look, counting runs started since; 30d by default",
             "schema": {
               "enum": [
                 "30m",
@@ -3122,7 +3122,7 @@
             "description": "No such run for this caller"
           }
         },
-        "summary": "The task and the trail since it reached this run’s station",
+        "summary": "The task and the trail since it arrived at this run’s station",
         "tags": [
           "tasks"
         ]
@@ -3204,7 +3204,7 @@
         ],
         "responses": {
           "204": {
-            "description": "The run was asked to stop"
+            "description": "The run received a stop request"
           },
           "401": {
             "description": "No valid session"
@@ -3543,7 +3543,7 @@
             "description": "No such task for this caller"
           }
         },
-        "summary": "Give a task to a team member, or clear its assignee",
+        "summary": "Assign a task to a team member, or clear its assignee",
         "tags": [
           "tasks"
         ]
@@ -3605,7 +3605,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -3702,7 +3702,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -3827,7 +3827,7 @@
             "description": "No such team for this caller"
           },
           "422": {
-            "description": "An unknown harness, model, effort or repository, or a setup the GitHub App cannot reach or no host can run"
+            "description": "An unknown harness, model, effort or repository, or a setup the GitHub App cannot access or no host can run"
           }
         },
         "summary": "Start planning with the team’s agent",
@@ -4010,7 +4010,7 @@
         ],
         "responses": {
           "204": {
-            "description": "The agent was asked to stop"
+            "description": "The agent received a stop request"
           },
           "401": {
             "description": "No valid session"
@@ -4224,7 +4224,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -4309,7 +4309,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -4434,7 +4434,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -4567,7 +4567,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -4702,7 +4702,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -4837,7 +4837,7 @@
             "description": "Deleted"
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -5013,7 +5013,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -5135,7 +5135,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -5238,7 +5238,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -5373,7 +5373,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -5508,7 +5508,7 @@
             "description": "Deleted"
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -5650,7 +5650,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -5814,7 +5814,7 @@
                 }
               },
               "Spotlight-Workspace-Token": {
-                "description": "The token to send as Authorization: Bearer; answered this once and never again, not even to a retry, and kept only as a hash",
+                "description": "The token to send as Authorization: Bearer; answered this once and never again, not even to a retry, and stored only as a hash",
                 "schema": {
                   "type": "string",
                   "example": "q3Vd0n8yXbT2c4kPzR7mW1sLhA9eJ5gUfN6oYiC0xEw"
@@ -5830,7 +5830,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -5952,7 +5952,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -6055,7 +6055,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -6217,7 +6217,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -6352,7 +6352,7 @@
             "description": "Deleted"
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -6417,7 +6417,7 @@
             "bearer": []
           }
         ],
-        "summary": "Revoke a workspace token; it admits nobody from this moment",
+        "summary": "Revoke a workspace token; Spotlight does not accept it from this moment",
         "tags": [
           "workspace-tokens"
         ],
@@ -6494,7 +6494,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -6685,7 +6685,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -6807,7 +6807,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -6910,7 +6910,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -7090,7 +7090,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -7165,7 +7165,7 @@
             "bearer": []
           }
         ],
-        "summary": "Change which workloads a token trust admits, or what the tokens it issues may do; tokens issued with scopes it no longer grants stop admitting their bearers",
+        "summary": "Change which workloads a token trust matches, or what the tokens it issues may do; tokens issued with scopes it no longer grants stop being valid",
         "tags": [
           "workspace-tokens"
         ],
@@ -7225,7 +7225,7 @@
             "description": "Deleted"
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -7290,7 +7290,7 @@
             "bearer": []
           }
         ],
-        "summary": "Delete a token trust; every token that the trust issued admits nobody from this moment",
+        "summary": "Delete a token trust; Spotlight accepts no token that the trust issued from this moment",
         "tags": [
           "workspace-tokens"
         ],
@@ -7367,7 +7367,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -7438,10 +7438,10 @@
             }
           },
           "401": {
-            "description": "Spotlight did not accept the exchange. Possible causes: an unknown trust, a token its issuer did not sign for the trust’s audience, a workload the trust does not admit, or a deleted workspace"
+            "description": "Spotlight did not accept the exchange. Possible causes: an unknown trust, a token its issuer did not sign for the trust’s audience, a workload the trust does not match, or a deleted workspace"
           }
         },
-        "summary": "Exchange the OIDC token a CI platform issued a workload for a short-lived workspace token, through a workspace token trust that admits it",
+        "summary": "Exchange the OIDC token a CI platform issued a workload for a short-lived workspace token, through a workspace token trust that matches it",
         "tags": [
           "workspace-tokens"
         ]
@@ -7595,7 +7595,7 @@
     },
     "/workspaces/{slug}/members/{userId}": {
       "patch": {
-        "description": "Roles are given downwards: an owner may set anyone’s, an admin only those of people they outrank, and nobody may hand out a rank they do not have. The last owner keeps the workspace.",
+        "description": "Roles are assigned downwards: an owner may set anyone’s, an admin only those of people they outrank, and nobody may hand out a rank they do not have. The last owner keeps the workspace.",
         "operationId": "changeMemberRole",
         "parameters": [
           {
@@ -7634,7 +7634,7 @@
             "description": "No valid session"
           },
           "403": {
-            "description": "Not yours to give"
+            "description": "You cannot assign this role"
           },
           "404": {
             "description": "No such workspace for this caller"
@@ -7874,7 +7874,7 @@
             "description": "No valid session"
           },
           "403": {
-            "description": "Not a role yours to give"
+            "description": "You cannot assign this role"
           },
           "404": {
             "description": "No such workspace, or not yours to invite to"
@@ -8179,7 +8179,7 @@
                   "valueWo": {
                     "type": "string",
                     "writeOnly": true,
-                    "description": "The value to keep; accepted on create and whenever valueWoVersion changes, and never answered"
+                    "description": "The value to store; accepted on create and whenever valueWoVersion changes, and never answered"
                   },
                   "valueWoVersion": {
                     "type": "integer",
@@ -8222,7 +8222,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -8344,7 +8344,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -8447,7 +8447,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -8609,7 +8609,7 @@
                   "valueWo": {
                     "type": "string",
                     "writeOnly": true,
-                    "description": "The value to keep; accepted on create and whenever valueWoVersion changes, and never answered"
+                    "description": "The value to store; accepted on create and whenever valueWoVersion changes, and never answered"
                   },
                   "valueWoVersion": {
                     "type": "integer",
@@ -8643,7 +8643,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -8778,7 +8778,7 @@
             "description": "Deleted"
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -8920,7 +8920,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -9032,7 +9032,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -9163,7 +9163,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -9396,7 +9396,7 @@
             }
           },
           "401": {
-            "description": "Pool token is missing, rotated or unknown, or no trust admits this workload."
+            "description": "Pool token is missing, rotated or unknown, or no trust accepts this workload."
           },
           "409": {
             "description": "The host id is in use by another pool or trust"
@@ -9439,7 +9439,7 @@
             "description": "Deregistered"
           },
           "401": {
-            "description": "Pool token is missing, rotated or unknown, or no trust admits this workload."
+            "description": "Pool token is missing, rotated or unknown, or no trust accepts this workload."
           }
         },
         "security": [
@@ -9645,7 +9645,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -9767,7 +9767,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -9870,7 +9870,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -10023,7 +10023,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -10098,7 +10098,7 @@
             "bearer": []
           }
         ],
-        "summary": "Change which workload a runner trust admits, or how its runners are labelled",
+        "summary": "Change which workload a runner trust matches, or how its runners are labelled",
         "tags": [
           "runners"
         ],
@@ -10158,7 +10158,7 @@
             "description": "Deleted"
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -10300,7 +10300,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -10427,7 +10427,7 @@
                     "writeOnly": true,
                     "minLength": 32,
                     "maxLength": 255,
-                    "description": "Write-only, and only for a pool without provision: the token its hosts claim with, kept only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Pool-Token"
+                    "description": "Write-only, and only for a pool without provision: the token its hosts claim with, stored only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Pool-Token"
                   },
                   "tokenVersion": {
                     "type": "integer",
@@ -10516,7 +10516,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -10638,7 +10638,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -10741,7 +10741,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -10866,7 +10866,7 @@
                     "writeOnly": true,
                     "minLength": 32,
                     "maxLength": 255,
-                    "description": "Write-only, and only for a pool without provision: the token its hosts claim with, kept only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Pool-Token"
+                    "description": "Write-only, and only for a pool without provision: the token its hosts claim with, stored only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Pool-Token"
                   },
                   "tokenVersion": {
                     "type": "integer",
@@ -10940,7 +10940,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -11075,7 +11075,7 @@
             "description": "Deleted"
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -11217,7 +11217,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -11334,7 +11334,7 @@
                     "writeOnly": true,
                     "minLength": 32,
                     "maxLength": 255,
-                    "description": "Write-only: the token the egress calls Spotlight with, kept only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Egress-Token"
+                    "description": "Write-only: the token the egress calls Spotlight with, stored only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Egress-Token"
                   },
                   "tokenVersion": {
                     "type": "integer",
@@ -11383,7 +11383,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -11505,7 +11505,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -11608,7 +11608,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -11723,7 +11723,7 @@
                     "writeOnly": true,
                     "minLength": 32,
                     "maxLength": 255,
-                    "description": "Write-only: the token the egress calls Spotlight with, kept only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Egress-Token"
+                    "description": "Write-only: the token the egress calls Spotlight with, stored only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Egress-Token"
                   },
                   "tokenVersion": {
                     "type": "integer",
@@ -11757,7 +11757,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -11892,7 +11892,7 @@
             "description": "Deleted"
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -12034,7 +12034,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -12195,7 +12195,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -12317,7 +12317,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -12420,7 +12420,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -12570,7 +12570,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -12705,7 +12705,7 @@
             "description": "Deleted"
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -12847,7 +12847,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -13074,7 +13074,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -13207,7 +13207,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -13347,7 +13347,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -13482,7 +13482,7 @@
             "description": "Deleted"
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -13547,7 +13547,7 @@
             "bearer": []
           }
         ],
-        "summary": "Delete a skill no station gives",
+        "summary": "Delete a skill no station enables",
         "tags": [
           "skills"
         ],
@@ -13624,7 +13624,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -13718,7 +13718,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -13937,7 +13937,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -14070,7 +14070,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -14278,7 +14278,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -14413,7 +14413,7 @@
             "description": "Deleted"
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -14555,7 +14555,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -14649,7 +14649,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -14743,7 +14743,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -14856,7 +14856,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -15080,7 +15080,7 @@
             }
           },
           "400": {
-            "description": "No reason given, one too long, or a path the decision does not name"
+            "description": "The reason is missing or too long, or the decision does not name the path"
           },
           "401": {
             "description": "No valid session"
@@ -15138,7 +15138,7 @@
             "name": "path",
             "required": false,
             "in": "query",
-            "description": "A file or directory in the repository; repeat it to ask about several",
+            "description": "A file or directory in the repository; repeat it to query several",
             "schema": {
               "type": "array",
               "items": {
@@ -15567,7 +15567,7 @@
             }
           },
           "400": {
-            "description": "It asks to connect for someone other than the team or me"
+            "description": "It requests a connection for someone other than the team or me"
           },
           "401": {
             "description": "No valid session"
@@ -15717,7 +15717,7 @@
             "description": "No such rule"
           }
         },
-        "summary": "Set what the caller asks of calls a tool makes with their own connection: allowed, needs-approval or blocked",
+        "summary": "Set what the caller requires of calls a tool makes with their own connection: allowed, needs-approval or blocked",
         "tags": [
           "integrations"
         ]
@@ -15822,7 +15822,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -15955,7 +15955,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -16088,7 +16088,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -16223,7 +16223,7 @@
             "description": "Deleted"
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -16365,7 +16365,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -16459,7 +16459,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -16554,7 +16554,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -16648,7 +16648,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -16807,7 +16807,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -16940,7 +16940,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -17061,7 +17061,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -17196,7 +17196,7 @@
             "description": "Deleted"
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -17338,7 +17338,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -17432,7 +17432,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -17627,7 +17627,7 @@
             "description": "No such task for this caller"
           }
         },
-        "summary": "The memories a run proposed for the team to keep, each with what it rests on",
+        "summary": "The memories a run proposed for the team to approve, each with what it rests on",
         "tags": [
           "memories"
         ]
@@ -17760,7 +17760,7 @@
             "description": "It was decided or redrafted meanwhile"
           }
         },
-        "summary": "Turn a proposed memory down; it is kept, never briefed, and not proposed again",
+        "summary": "Turn a proposed memory down; it stays stored, never briefed, and not proposed again",
         "tags": [
           "memories"
         ]
@@ -18068,10 +18068,10 @@
             "description": "It was already retired"
           },
           "422": {
-            "description": "No reason given, or one too long"
+            "description": "The reason is missing or too long"
           }
         },
-        "summary": "Stop a memory being given to runs, saying why",
+        "summary": "Stop briefing a memory to runs, saying why",
         "tags": [
           "memories"
         ]
@@ -18172,7 +18172,7 @@
             "description": "Nothing to look for"
           }
         },
-        "summary": "Search what the run’s team remembers, for an agent reaching past its briefing, noting what it recalled",
+        "summary": "Search what the run’s team remembers, for an agent that needs more than its briefing, noting what it recalled",
         "tags": [
           "runners"
         ]
@@ -18275,10 +18275,10 @@
             "description": "The run is a replay or a search, which remembers nothing for the team"
           },
           "422": {
-            "description": "An unknown kind or reach, a path outside the run’s repositories, or a chat run"
+            "description": "An unknown kind or scope, a path outside the run’s repositories, or a chat run"
           }
         },
-        "summary": "Propose a memory from inside the run, grounded in the step it was asked from",
+        "summary": "Propose a memory from inside the run, grounded in the step that proposed it",
         "tags": [
           "runners"
         ]
@@ -18356,7 +18356,7 @@
             "name": "last",
             "required": false,
             "in": "query",
-            "description": "How many of the latest-started runs to look at: 50 unless asked, 200 at most",
+            "description": "How many of the latest-started runs to look at: 50 by default, 200 at most",
             "schema": {
               "type": "number"
             }
@@ -18561,7 +18561,7 @@
             "name": "period",
             "required": false,
             "in": "query",
-            "description": "How many whole UTC days, up to and including today, to look at; 30d unless asked. Every answer also covers the period before, as long",
+            "description": "How many whole UTC days, up to and including today, to look at; 30d by default. Every answer also covers the period before, as long",
             "schema": {
               "enum": [
                 "7d",
@@ -18620,7 +18620,7 @@
             "name": "period",
             "required": false,
             "in": "query",
-            "description": "How many whole UTC days, up to and including today, to look at; 30d unless asked. Every answer also covers the period before, as long",
+            "description": "How many whole UTC days, up to and including today, to look at; 30d by default. Every answer also covers the period before, as long",
             "schema": {
               "enum": [
                 "7d",
@@ -18679,7 +18679,7 @@
             "name": "period",
             "required": false,
             "in": "query",
-            "description": "How many whole UTC days, up to and including today, to look at; 30d unless asked. Every answer also covers the period before, as long",
+            "description": "How many whole UTC days, up to and including today, to look at; 30d by default. Every answer also covers the period before, as long",
             "schema": {
               "enum": [
                 "7d",
@@ -18738,7 +18738,7 @@
             "name": "period",
             "required": false,
             "in": "query",
-            "description": "How many whole UTC days, up to and including today, to look at; 30d unless asked. Every answer also covers the period before, as long",
+            "description": "How many whole UTC days, up to and including today, to look at; 30d by default. Every answer also covers the period before, as long",
             "schema": {
               "enum": [
                 "7d",
@@ -18797,7 +18797,7 @@
             "name": "period",
             "required": false,
             "in": "query",
-            "description": "How many whole UTC days, up to and including today, to look at; 30d unless asked. Every answer also covers the period before, as long",
+            "description": "How many whole UTC days, up to and including today, to look at; 30d by default. Every answer also covers the period before, as long",
             "schema": {
               "enum": [
                 "7d",
@@ -18856,7 +18856,7 @@
             "name": "period",
             "required": false,
             "in": "query",
-            "description": "How many whole UTC days, up to and including today, to look at; 30d unless asked. Every answer also covers the period before, as long",
+            "description": "How many whole UTC days, up to and including today, to look at; 30d by default. Every answer also covers the period before, as long",
             "schema": {
               "enum": [
                 "7d",
@@ -18893,7 +18893,7 @@
             "bearer": []
           }
         ],
-        "summary": "Which skills the team’s runs were given and read, week by week, and how each MCP server they called behaved",
+        "summary": "Which skills the team’s stations enabled for runs and which skills runs read, week by week, and how each MCP server they called behaved",
         "tags": [
           "insights"
         ]
@@ -18915,7 +18915,7 @@
             "name": "period",
             "required": false,
             "in": "query",
-            "description": "How many whole UTC days, up to and including today, to look at; 30d unless asked. Every answer also covers the period before, as long",
+            "description": "How many whole UTC days, up to and including today, to look at; 30d by default. Every answer also covers the period before, as long",
             "schema": {
               "enum": [
                 "7d",
@@ -18997,7 +18997,7 @@
             "name": "period",
             "required": false,
             "in": "query",
-            "description": "How many whole UTC days, up to and including today, to look at; 30d unless asked. Every answer also covers the period before, as long",
+            "description": "How many whole UTC days, up to and including today, to look at; 30d by default. Every answer also covers the period before, as long",
             "schema": {
               "enum": [
                 "7d",
@@ -19056,7 +19056,7 @@
             "name": "period",
             "required": false,
             "in": "query",
-            "description": "How many whole UTC days, up to and including today, to look at; 30d unless asked. Every answer also covers the period before, as long",
+            "description": "How many whole UTC days, up to and including today, to look at; 30d by default. Every answer also covers the period before, as long",
             "schema": {
               "enum": [
                 "7d",
@@ -19168,7 +19168,7 @@
             "name": "period",
             "required": false,
             "in": "query",
-            "description": "How many whole UTC days, up to and including today, to look at; 30d unless asked. Every answer also covers the period before, as long",
+            "description": "How many whole UTC days, up to and including today, to look at; 30d by default. Every answer also covers the period before, as long",
             "schema": {
               "enum": [
                 "7d",
@@ -19227,7 +19227,7 @@
             "name": "period",
             "required": false,
             "in": "query",
-            "description": "How many whole UTC days, up to and including today, to look at; 30d unless asked. Every answer also covers the period before, as long",
+            "description": "How many whole UTC days, up to and including today, to look at; 30d by default. Every answer also covers the period before, as long",
             "schema": {
               "enum": [
                 "7d",
@@ -19286,7 +19286,7 @@
             "name": "size",
             "required": false,
             "in": "query",
-            "description": "Pull requests per page: 50 unless asked, 200 at most",
+            "description": "Pull requests per page: 50 by default, 200 at most",
             "schema": {
               "type": "number"
             }
@@ -19401,7 +19401,7 @@
             "name": "period",
             "required": false,
             "in": "query",
-            "description": "How many whole UTC days, up to and including today, to look at; 30d unless asked. Every answer also covers the period before, as long",
+            "description": "How many whole UTC days, up to and including today, to look at; 30d by default. Every answer also covers the period before, as long",
             "schema": {
               "enum": [
                 "7d",
@@ -19460,7 +19460,7 @@
             "name": "size",
             "required": false,
             "in": "query",
-            "description": "Runs per page: 50 unless asked, 200 at most",
+            "description": "Runs per page: 50 by default, 200 at most",
             "schema": {
               "type": "number"
             }
@@ -19568,10 +19568,10 @@
             }
           },
           {
-            "name": "skillGiven",
+            "name": "skillEnabled",
             "required": false,
             "in": "query",
-            "description": "Only runs whose station config gave this skill",
+            "description": "Only runs whose station config enabled this skill",
             "schema": {
               "type": "string"
             }
@@ -19696,7 +19696,7 @@
             "name": "period",
             "required": false,
             "in": "query",
-            "description": "How many whole UTC days, up to and including today, to look at; 30d unless asked. Every answer also covers the period before, as long",
+            "description": "How many whole UTC days, up to and including today, to look at; 30d by default. Every answer also covers the period before, as long",
             "schema": {
               "enum": [
                 "7d",
@@ -19862,7 +19862,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -19995,7 +19995,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -20090,7 +20090,7 @@
             "description": "Deleted"
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -20232,7 +20232,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -20335,7 +20335,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -20447,7 +20447,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -20560,7 +20560,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -20690,7 +20690,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -20808,7 +20808,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -20908,7 +20908,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -20943,7 +20943,7 @@
             "bearer": []
           }
         ],
-        "summary": "Up to 5 recent runs of the set’s station that would even out how its runs turned out, accepted ones first, then sent back; none are added until asked",
+        "summary": "Up to 5 recent runs of the set’s station that would even out how its runs turned out, accepted ones first, then sent back; none are added until requested",
         "tags": [
           "replays"
         ]
@@ -21008,7 +21008,7 @@
             "description": "Renamed"
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -21116,7 +21116,7 @@
             "description": "Deleted"
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -21171,7 +21171,7 @@
             "bearer": []
           }
         ],
-        "summary": "Delete a replay set and its replays, and release the archives it kept",
+        "summary": "Delete a replay set and its replays, and release the archives it holds",
         "tags": [
           "replays"
         ]
@@ -21236,7 +21236,7 @@
             "description": "Added"
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -21301,7 +21301,7 @@
             "bearer": []
           }
         ],
-        "summary": "Add a past run of the station to a replay set, keeping the archive it started from while it is there",
+        "summary": "Add a past run of the station to a replay set, holding the archive it started from while it is there",
         "tags": [
           "replays"
         ]
@@ -21364,7 +21364,7 @@
             "description": "Removed"
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -21464,7 +21464,7 @@
             "description": "It guards the station’s changes"
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -21519,7 +21519,7 @@
             "bearer": []
           }
         ],
-        "summary": "Check planned changes of the set’s station against this set, as `spotlight replay check` asks; a station has one such set",
+        "summary": "Check planned changes of the set’s station against this set, as `spotlight replay check` requests; a station has one such set",
         "tags": [
           "replays"
         ]
@@ -21572,7 +21572,7 @@
             "description": "It no longer guards the station’s changes"
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -21682,7 +21682,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -21723,7 +21723,7 @@
         ]
       },
       "post": {
-        "description": "When the set has no baseline covering its runs, a baseline replay of the live config starts beside it; the answer names it and gives its own ceiling. Replaying live when the set has no baseline makes that replay the baseline. On a set of at least 5 runs, the first baseline of a live config also checks the set: it replays each run at least 3 times, with its ceiling raised in step up to 1,000, and judges and checks each change a second time. The set's health then reads its noise, and whether the judge and the check give the same answer twice. Once a whole-set replay of the live config finishes, Spotlight replays the live config again on the runs people accepted or sent back, handing each its answer, with the same ceiling and repeats; the set's health reads the gain as its room to improve.",
+        "description": "When the set has no baseline covering its runs, a baseline replay of the live config starts beside it; the answer names it and shows its own ceiling. Replaying live when the set has no baseline makes that replay the baseline. On a set of at least 5 runs, the first baseline of a live config also checks the set: it replays each run at least 3 times, with its ceiling raised in step up to 1,000, and judges and checks each change a second time. The set's health then reads its noise, and whether the judge and the check return the same answer twice. Once a whole-set replay of the live config finishes, Spotlight replays the live config again on the runs people accepted or sent back, handing each its answer, with the same ceiling and repeats; the set's health reads the gain as its room to improve.",
         "operationId": "startReplay",
         "parameters": [
           {
@@ -21788,7 +21788,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -21905,7 +21905,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -22002,7 +22002,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -22092,7 +22092,7 @@
             "description": "Stopped"
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -22220,7 +22220,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -22334,7 +22334,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -22480,7 +22480,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -22600,7 +22600,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -22697,7 +22697,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -22813,7 +22813,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -22923,7 +22923,7 @@
             "description": "Stopped"
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -23022,7 +23022,7 @@
           {
             "name": "Idempotency-Key",
             "in": "header",
-            "description": "Unique per check asked for; a retry with the same key and body answers the check the first attempt started, and starts nothing more",
+            "description": "Unique per requested check; a retry with the same key and body answers the check the first attempt started, and starts nothing more",
             "required": true,
             "schema": {
               "type": "string",
@@ -23073,7 +23073,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -23221,7 +23221,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -23318,7 +23318,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -23565,7 +23565,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -23646,7 +23646,7 @@
             "name": "period",
             "required": false,
             "in": "query",
-            "description": "How many whole UTC days, up to and including today, to look at; 30d unless asked",
+            "description": "How many whole UTC days, up to and including today, to look at; 30d by default",
             "schema": {
               "enum": [
                 "7d",
@@ -23669,7 +23669,7 @@
             }
           },
           "400": {
-            "description": "Malformed, or asking for an API version this server does not serve",
+            "description": "Malformed, or requests an API version this server does not serve",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -23789,7 +23789,7 @@
           "rubric": {
             "type": "string",
             "nullable": true,
-            "example": "A good run changes only what the task asks for.",
+            "example": "A good run changes only what the task requests.",
             "description": "What a good run looks like, in Markdown. Null when the judge goes by its claims alone"
           },
           "claims": {
@@ -23965,7 +23965,7 @@
             "example": [
               "our-migrations"
             ],
-            "description": "The team’s own skills given to a run here",
+            "description": "The team’s own skills enabled for a run here",
             "type": "array",
             "items": {
               "type": "string"
@@ -24319,7 +24319,7 @@
           },
           "spec": {
             "type": "object",
-            "description": "Sent to the runner unchanged: checkouts, briefing, handover and continuity. The command is filled in from the harness, so it is not given here.",
+            "description": "Sent to the runner unchanged: checkouts, briefing, handover and continuity. The command is filled in from the harness, so it is not sent here.",
             "example": {
               "checkouts": [
                 {
@@ -24433,7 +24433,7 @@
         "properties": {
           "id": {
             "type": "string",
-            "description": "The whole change, or the layer this step reaches",
+            "description": "The whole change, or the layer this step covers",
             "example": "whole"
           },
           "patch": {
@@ -24573,7 +24573,7 @@
             "example": "Cap the retries at 500 while you are in there."
           },
           "attachments": {
-            "description": "Files to lay out before the words are given",
+            "description": "Files to lay out before the words are sent",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/RunAttachmentResponseDto"
@@ -24676,15 +24676,15 @@
               "$ref": "#/components/schemas/StepLocationResponseDto"
             }
           },
-          "given": {
+          "input": {
             "type": "string",
             "nullable": true,
-            "description": "What the tool was asked for, as it was asked"
+            "description": "The input of the call, as it was sent"
           },
-          "returned": {
+          "output": {
             "type": "string",
             "nullable": true,
-            "description": "What it returned, unread"
+            "description": "The output of the call, unread"
           },
           "change": {
             "nullable": true,
@@ -24705,8 +24705,8 @@
           "ms",
           "startedAt",
           "locations",
-          "given",
-          "returned",
+          "input",
+          "output",
           "change"
         ]
       },
@@ -25454,7 +25454,7 @@
           },
           "cost": {
             "nullable": true,
-            "description": "What the replay cost; a replay run has no outcome of its own, so the response gives its cost beside the run",
+            "description": "What the replay cost; a replay run has no outcome of its own, so the response shows its cost beside the run",
             "type": "object",
             "allOf": [
               {
@@ -25626,7 +25626,7 @@
           "stop": {
             "type": "boolean",
             "example": false,
-            "description": "Whether a person has asked the runner to stop this run"
+            "description": "Whether a person has requested that the runner stop this run"
           }
         },
         "required": [
@@ -25665,7 +25665,7 @@
           "path": {
             "type": "string",
             "example": "service",
-            "description": "The checkout, by its path in the workspace, as the run was given it"
+            "description": "The checkout, by its path in the workspace, as the run received it"
           },
           "commit": {
             "type": "string",
@@ -25834,7 +25834,7 @@
           "kind": {
             "type": "string",
             "example": "execute",
-            "description": "The ACP tool kind the harness gave, as in read, edit or execute"
+            "description": "The ACP tool kind the harness sent, as in read, edit or execute"
           },
           "title": {
             "type": "string",
@@ -25847,7 +25847,7 @@
             "example": {
               "command": "git push origin main"
             },
-            "description": "The tool call’s raw input, as the harness gave it"
+            "description": "The tool call’s raw input, as the harness sent it"
           }
         }
       },
@@ -25947,7 +25947,7 @@
             "example": false,
             "description": "A person stopped the run rather than the agent finishing it."
           },
-          "kept": {
+          "archived": {
             "type": "boolean",
             "example": true,
             "description": "The workspace archive is sealed as this turn left it. A run waits for a person only when it is, so a later runner can take it up from there."
@@ -25971,17 +25971,17 @@
           "waiting"
         ]
       },
-      "TurnAsksAPersonResponseDto": {
+      "TurnAwaitsPersonResponseDto": {
         "type": "object",
         "properties": {
-          "asks": {
+          "awaitsPerson": {
             "type": "boolean",
             "example": true,
-            "description": "Whether this turn, reported as given, would put the run to a person, so the runner keeps its harness running while it keeps the workspace. Otherwise the runner closes the harness first, as the run ends."
+            "description": "Whether this turn, as reported, would put the run to a person, so the runner keeps its harness running while it archives the workspace. Otherwise the runner closes the harness first, as the run ends."
           }
         },
         "required": [
-          "asks"
+          "awaitsPerson"
         ]
       },
       "SuspendRunRequestDto": {
@@ -26000,7 +26000,7 @@
           "suspended": {
             "type": "boolean",
             "example": true,
-            "description": "Whether the run is suspended (or, if a stop was asked for, ended) and no longer leased by this runner. False when the answer arrived first: the run is working again, and the answer waits in its messages."
+            "description": "Whether the run is suspended (or, if a stop was requested, ended) and no longer leased by this runner. False when the answer arrived first: the run is working again, and the answer waits in its messages."
           }
         },
         "required": [
@@ -26149,7 +26149,7 @@
             "example": [
               "ghcr.io/acme/api-runner:main"
             ],
-            "description": "The images this workspace’s lines name; a host serves those its allow-list admits, beside its default",
+            "description": "The images this workspace’s lines name; a host serves those its allow-list allows, beside its default",
             "type": "array",
             "items": {
               "type": "string"
@@ -26320,7 +26320,7 @@
           "recipient": {
             "type": "string",
             "example": "p8kX0q1cVJ3Q0x4yQ2a6m0dD6b8hT3n1gC9sZ7rW2Ek=",
-            "description": "The X25519 public key that egress keeps for this run alone, in base64; values Spotlight keeps are sealed to it"
+            "description": "The X25519 public key that egress holds for this run alone, in base64; values Spotlight stores are sealed to it"
           },
           "proxyCredential": {
             "type": "string",
@@ -26450,11 +26450,11 @@
             "example": "run_1",
             "description": "The run the sealed values are bound to; null when the sandbox checks a change stack and gets no secrets"
           },
-          "reaches": {
+          "extraAllowedHosts": {
             "example": [
               "storage.example.com"
             ],
-            "description": "Hosts every sandbox must reach besides the control plane, whatever else the host allows",
+            "description": "Hosts that every sandbox is allowed to connect to besides the control plane, whatever else the host allows",
             "type": "array",
             "items": {
               "type": "string"
@@ -26485,7 +26485,7 @@
           },
           "spotlightApi": {
             "nullable": true,
-            "description": "Where the run reaches Spotlight’s own API, the token it reaches it with",
+            "description": "Where the run uses Spotlight’s own API, the token that it uses",
             "type": "object",
             "allOf": [
               {
@@ -26496,14 +26496,14 @@
         },
         "required": [
           "runId",
-          "reaches",
+          "extraAllowedHosts",
           "bound",
           "secrets",
           "denied",
           "spotlightApi"
         ]
       },
-      "AdmitThroughEgressRequestDto": {
+      "AuthorizeRunnerRequestDto": {
         "type": "object",
         "properties": {
           "proxyCredential": {
@@ -26515,7 +26515,7 @@
           "proxyCredential"
         ]
       },
-      "EgressAdmissionResponseDto": {
+      "EgressAuthorizationResponseDto": {
         "type": "object",
         "properties": {
           "runnerId": {
@@ -26529,18 +26529,18 @@
           "controlPlaneHost": {
             "type": "string",
             "example": "app.usespotlight.ai",
-            "description": "The host of the control plane URL the runner was handed. Before the runner has a run, egress lets it reach only this host"
+            "description": "The host of the control plane URL the runner was handed. Before the runner has a run, egress allows it to connect only to this host"
           },
           "controlPlanePort": {
             "type": "number",
             "example": 443,
-            "description": "The port of the control plane URL the runner was handed. Egress lets a sandbox reach the control plane host only on this port"
+            "description": "The port of the control plane URL the runner was handed. Egress allows a sandbox to connect to the control plane host only on this port"
           },
-          "reaches": {
+          "extraAllowedHosts": {
             "example": [
               "storage.example.com"
             ],
-            "description": "Hosts every sandbox must reach besides the control plane, whatever else the egress allows",
+            "description": "Hosts that every sandbox is allowed to connect to besides the control plane, whatever else the egress allows",
             "type": "array",
             "items": {
               "type": "string"
@@ -26552,7 +26552,7 @@
           "workspaceId",
           "controlPlaneHost",
           "controlPlanePort",
-          "reaches"
+          "extraAllowedHosts"
         ]
       },
       "CheckActiveRunsRequestDto": {
@@ -27297,7 +27297,7 @@
           "briefing": {
             "type": "string",
             "nullable": true,
-            "description": "What the station that opened this conversation was given"
+            "description": "The briefing of the station that opened this conversation"
           },
           "failure": {
             "nullable": true,
@@ -27384,7 +27384,7 @@
           },
           "points": {
             "example": [
-              "Fix the judge: the rubric asks for tests the task never needed."
+              "Fix the judge: the rubric requires tests the task never needed."
             ],
             "description": "What happened, then what it suggests, one point each",
             "type": "array",
@@ -27468,7 +27468,7 @@
             "description": "Where the conversation asks for a tool call to be approved: true lets it run, false rejects it. Left out, the words answer it and the tool call stays undecided. Rejected anywhere else."
           },
           "inputs": {
-            "description": "With approve: true on a tool call, what it runs with instead, as the person changed it. Names exactly the inputs it asked with; a harness asking permission takes no changes.",
+            "description": "With approve: true on a tool call, what it runs with instead, as the person changed it. Names exactly the inputs it was called with; a harness asking permission takes no changes.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/AnswerInboxItemInputRequestDto"
@@ -27946,7 +27946,7 @@
           "taskDescription": {
             "type": "string",
             "nullable": true,
-            "description": "What was asked for, shown before a run has written a note"
+            "description": "What was requested, shown before a run has written a note"
           }
         },
         "required": [
@@ -28156,10 +28156,10 @@
           "to": {
             "type": "string",
             "example": "2026-08-29T12:00:00.000Z",
-            "description": "Where the range ends: when it was asked"
+            "description": "Where the range ends: when it was requested"
           },
           "volume": {
-            "description": "Every trace in the range, counted into evenly long bars from start to end, empty bars kept",
+            "description": "Every trace in the range, counted into evenly long bars from start to end, empty bars included",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/TraceVolumeBucketResponseDto"
@@ -28503,7 +28503,7 @@
           },
           "briefing": {
             "type": "string",
-            "description": "What the run was given, word for word"
+            "description": "The briefing of the run, word for word"
           },
           "working": {
             "type": "boolean",
@@ -28547,7 +28547,7 @@
           "body": {
             "type": "string",
             "example": "Cap the retries at 500 while you are in there.",
-            "description": "Reaches the agent when its current turn ends. May be empty where files are attached."
+            "description": "Goes to the agent when its current turn ends. May be empty where files are attached."
           },
           "attachments": {
             "description": "Uploads to attach, by the id each was granted",
@@ -28702,7 +28702,7 @@
             "type": "string",
             "example": "a17c4e02-9b3d-4f61-8e5a-0c2d7b9f4a13",
             "nullable": true,
-            "description": "The team member to give it to, or null to leave it unclaimed"
+            "description": "The team member to assign it to, or null to leave it unclaimed"
           }
         },
         "required": [
@@ -28849,7 +28849,7 @@
           },
           "briefing": {
             "type": "string",
-            "description": "The briefing that the replay gave its agent when it was dispatched"
+            "description": "The briefing that the replay sent to its agent when it was dispatched"
           },
           "agent": {
             "description": "The harness, model and effort the replay ran its agent on",
@@ -28860,7 +28860,7 @@
             ]
           },
           "repositories": {
-            "description": "The repositories the replay was given",
+            "description": "The repositories of the replay",
             "type": "array",
             "items": {
               "type": "string"
@@ -29039,7 +29039,7 @@
           },
           "briefing": {
             "type": "string",
-            "description": "The briefing that the search gave its agent when it dispatched this iteration"
+            "description": "The briefing that the search sent to its agent when it dispatched this iteration"
           }
         },
         "required": [
@@ -29887,7 +29887,7 @@
             "type": "string",
             "nullable": true,
             "example": "2026-12-31T23:59:59.000Z",
-            "description": "After this it admits nobody; null never expires. Fixed for its life"
+            "description": "After this Spotlight does not accept it; null never expires. Fixed for its life"
           }
         },
         "required": [
@@ -29962,7 +29962,7 @@
           "audience": {
             "type": "string",
             "example": "spotlight",
-            "description": "The audience the workload must ask its issuer for"
+            "description": "The audience the workload must request from its issuer"
           },
           "subject": {
             "type": "string",
@@ -29986,7 +29986,7 @@
               "configure",
               "secrets"
             ],
-            "description": "The scopes every token it issues is given",
+            "description": "The scopes of every token it issues",
             "items": {
               "type": "string",
               "enum": [
@@ -30004,7 +30004,7 @@
             "example": 15,
             "minimum": 1,
             "maximum": 60,
-            "description": "How many minutes a token it issues admits its bearer"
+            "description": "How many minutes a token it issues stays valid"
           },
           "createdBy": {
             "type": "string",
@@ -30068,7 +30068,7 @@
           "token": {
             "type": "string",
             "example": "q3Vd0n8yXbT2c4kPzR7mW1sLhA9eJ5gUfN6oYiC0xEw",
-            "description": "The token to send as Authorization: Bearer until it expires; answered this once, and kept only as a hash"
+            "description": "The token to send as Authorization: Bearer until it expires; answered this once, and stored only as a hash"
           },
           "tokenId": {
             "type": "string",
@@ -30098,7 +30098,7 @@
           "expiresAt": {
             "type": "string",
             "example": "2026-09-25T10:15:00.000Z",
-            "description": "After this it admits nobody"
+            "description": "After this Spotlight does not accept it"
           }
         },
         "required": [
@@ -30470,7 +30470,7 @@
                 "api.linear.app"
               ]
             },
-            "description": "What moved beyond the action itself, where that is worth keeping, as the resource’s kind records it; a secret records the value version it moved to and the hosts it is bound to once changed, never the value"
+            "description": "What moved beyond the action itself, where that is worth recording, as the resource’s kind records it; a secret records the value version it moved to and the hosts it is bound to once changed, never the value"
           },
           "at": {
             "type": "string"
@@ -30601,7 +30601,7 @@
             }
           },
           "invitedBy": {
-            "description": "Who asked them, or null once their account is deleted.",
+            "description": "Who invited them, or null once their account is deleted.",
             "nullable": true,
             "type": "object",
             "allOf": [
@@ -30680,7 +30680,7 @@
           },
           "outcome": {
             "type": "string",
-            "description": "What came of the address: a new invitation, a pending one resent with a fresh link, nothing, since they are already in the workspace, or an invitation kept whose email could not be sent. Resend it to try again.",
+            "description": "What came of the address: a new invitation, a pending one resent with a fresh link, nothing, since they are already in the workspace, or an invitation stored whose email could not be sent. Resend it to try again.",
             "enum": [
               "invited",
               "resent",
@@ -30699,7 +30699,7 @@
         "type": "object",
         "properties": {
           "outcomes": {
-            "description": "One outcome per address asked, in the order asked.",
+            "description": "One outcome per address in the request, in the order of the request.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/InviteOutcomeResponseDto"
@@ -30724,7 +30724,7 @@
           },
           "invitedBy": {
             "type": "string",
-            "description": "Who asked them, or null once their account is deleted.",
+            "description": "Who invited them, or null once their account is deleted.",
             "nullable": true,
             "example": "Leon Liang"
           },
@@ -30791,7 +30791,7 @@
               "aws-secrets-manager"
             ],
             "example": "built-in",
-            "description": "Where the value lives: kept by Spotlight, or read from AWS Secrets Manager when it is used"
+            "description": "Where the value lives: stored by Spotlight, or read from AWS Secrets Manager when it is used"
           },
           "secretId": {
             "type": "string",
@@ -30938,7 +30938,7 @@
           "id": {
             "type": "string",
             "example": "catalog.web-search@1.1.0",
-            "description": "What a station gives it by; it carries the version, so an upgrade shows as a change to the station"
+            "description": "What a station enables it by; it carries the version, so an upgrade shows as a change to the station"
           },
           "name": {
             "type": "string",
@@ -30984,7 +30984,7 @@
           "id": {
             "type": "string",
             "example": "catalog.web-search@1.1.0",
-            "description": "What a station gives it by; it carries the version, so an upgrade shows as a change to the station"
+            "description": "What a station enables it by; it carries the version, so an upgrade shows as a change to the station"
           },
           "name": {
             "type": "string",
@@ -31019,7 +31019,7 @@
               "catalog.web-search@1.1.0",
               "catalog.fetch-page@1.0.0"
             ],
-            "description": "The catalog tools it brings, given wherever the skill is; its files never leave Spotlight except into a run",
+            "description": "The catalog tools it brings, enabled wherever the skill is; its files never leave Spotlight except into a run",
             "type": "array",
             "items": {
               "type": "string"
@@ -31151,7 +31151,7 @@
           "workspace"
         ]
       },
-      "AdmittedThroughResponseDto": {
+      "CredentialSourceResponseDto": {
         "type": "object",
         "properties": {
           "kind": {
@@ -31249,8 +31249,8 @@
             "type": "string",
             "example": "build-box-1"
           },
-          "through": {
-            "$ref": "#/components/schemas/AdmittedThroughResponseDto"
+          "source": {
+            "$ref": "#/components/schemas/CredentialSourceResponseDto"
           },
           "release": {
             "type": "string",
@@ -31302,7 +31302,7 @@
         "required": [
           "id",
           "name",
-          "through",
+          "source",
           "release",
           "containerRuntime",
           "capacity",
@@ -31321,8 +31321,8 @@
             "type": "string",
             "example": "8a1d4e0b-6c72-4f35-9b8a-1e5d3c7f2a49"
           },
-          "through": {
-            "$ref": "#/components/schemas/AdmittedThroughResponseDto"
+          "source": {
+            "$ref": "#/components/schemas/CredentialSourceResponseDto"
           },
           "hostId": {
             "type": "string",
@@ -31356,7 +31356,7 @@
         },
         "required": [
           "id",
-          "through",
+          "source",
           "hostId",
           "image",
           "harnesses",
@@ -31451,7 +31451,7 @@
           "issuer": {
             "type": "string",
             "example": "https://oidc.eks.eu-west-1.amazonaws.com/id/EXAMPLE",
-            "description": "The issuer of the tokens the platform gives its workloads; its keys are found through OIDC discovery"
+            "description": "The issuer of the tokens the platform issues to its workloads; its keys are found through OIDC discovery"
           },
           "subject": {
             "type": "string",
@@ -31822,7 +31822,7 @@
             "type": "string",
             "nullable": true,
             "example": null,
-            "description": "Why it could not be read when it was last asked for; the tools from the last good read stay offered"
+            "description": "Why it could not be read when it was last requested; the tools from the last good read stay offered"
           }
         },
         "required": [
@@ -31989,7 +31989,7 @@
           "key": {
             "type": "string",
             "example": "grafana",
-            "description": "What stations give it by; fixed for its life, so changing it means replacing the skill"
+            "description": "What stations enable it by; fixed for its life, so changing it means replacing the skill"
           },
           "files": {
             "type": "object",
@@ -32007,7 +32007,7 @@
             "description": "What SKILL.md says it is for; not settable"
           },
           "secrets": {
-            "description": "The secrets SKILL.md asks for; not settable",
+            "description": "The secrets SKILL.md requires; not settable",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SkillSecretResponseDto"
@@ -32071,7 +32071,7 @@
             "example": [
               "execute(git push *)"
             ],
-            "description": "What the harness asks a person about first; the ask reaches their inbox as an approval",
+            "description": "What the harness asks a person about first; the ask goes to their inbox as an approval",
             "type": "array",
             "items": {
               "type": "string"
@@ -32881,7 +32881,7 @@
             "format": "date-time"
           },
           "decisions": {
-            "description": "Those bearing on the paths asked about; deviations and limitations first",
+            "description": "Those bearing on the paths in the query; deviations and limitations first",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/DecisionResponseDto"
@@ -33329,7 +33329,7 @@
               "blocked"
             ],
             "example": "needs-approval",
-            "description": "What the caller asks of calls made with their connection: allowed follows the team, needs-approval asks them first, blocked never sends"
+            "description": "What the caller requires of calls made with their connection: allowed follows the team, needs-approval asks them first, blocked never sends"
           }
         },
         "required": [
@@ -33437,7 +33437,7 @@
               "needs-approval",
               "blocked"
             ],
-            "description": "What to ask of calls made with the caller’s connection; it can only make the team’s rule stricter",
+            "description": "What to require of calls made with the caller’s connection; it can only make the team’s rule stricter",
             "example": "needs-approval"
           }
         },
@@ -33462,7 +33462,7 @@
             "type": "string",
             "nullable": true,
             "example": "9f2c4e1a7b3d5f6081a2c3e4f5061728394a5b6c7d8e9f0a1b2c3d4e5f607182",
-            "description": "The sha256 of what was last read, kept while a later read fails; null when it has never been read"
+            "description": "The sha256 of what was last read, unchanged while a later read fails; null when it has never been read"
           },
           "readAt": {
             "type": "string",
@@ -33474,7 +33474,7 @@
             "type": "string",
             "nullable": true,
             "example": null,
-            "description": "Why the description could not be read when it was last asked for, or null when it was; Spotlight reads it again when its url, document, baseUrl, revision or depth changes, on any update after a failed read, and when the integration is connected, and lists an MCP server’s tools again every MCP_RELIST_SECONDS"
+            "description": "Why the description could not be read when it was last requested, or null when it was; Spotlight reads it again when its url, document, baseUrl, revision or depth changes, on any update after a failed read, and when the integration is connected, and lists an MCP server’s tools again every MCP_RELIST_SECONDS"
           },
           "tools": {
             "type": "integer",
@@ -33538,7 +33538,7 @@
             "example": {
               "search": "grafana.search"
             },
-            "description": "Each tool the integration offers, hand-written or generated from its API description, by its name within the integration, to the name a station or hook gives it by; not settable"
+            "description": "Each tool the integration offers, hand-written or generated from its API description, by its name within the integration, to the name that a station or hook uses for it; not settable"
           },
           "described": {
             "nullable": true,
@@ -33934,7 +33934,7 @@
               "channel": "C024BE91L",
               "text": "Agent searched ${{ event.inputs.query }}"
             },
-            "description": "The inputs the step gives its tool"
+            "description": "The inputs the step sends to its tool"
           },
           "request": {
             "description": "The request the step makes",
@@ -34000,7 +34000,7 @@
               "tool.used",
               "run.starting",
               "run.ended",
-              "handover.giving",
+              "handover.submitting",
               "pull-request.opening",
               "pull-request.merged",
               "task.opened",
@@ -34120,7 +34120,7 @@
               "tool.used",
               "run.starting",
               "run.ended",
-              "handover.giving",
+              "handover.submitting",
               "pull-request.opening",
               "pull-request.merged",
               "task.opened",
@@ -34246,7 +34246,7 @@
           },
           "hook": {
             "type": "string",
-            "description": "The hook the token was given to"
+            "description": "The hook that the token was issued to"
           }
         },
         "required": [
@@ -34421,7 +34421,7 @@
               "remembered"
             ],
             "example": "remembered",
-            "description": "drafted: read from the run after it ended; remembered: the agent asked for it with spotlight remember"
+            "description": "drafted: read from the run after it ended; remembered: the agent proposed it with spotlight remember"
           },
           "state": {
             "type": "string",
@@ -34432,7 +34432,7 @@
             ],
             "example": "proposed"
           },
-          "reach": {
+          "scope": {
             "type": "string",
             "enum": [
               "team",
@@ -34499,7 +34499,7 @@
           "source",
           "origin",
           "state",
-          "reach",
+          "scope",
           "repository",
           "paths",
           "supersedes",
@@ -34661,7 +34661,7 @@
             ],
             "example": "active"
           },
-          "reach": {
+          "scope": {
             "type": "string",
             "enum": [
               "team",
@@ -34738,7 +34738,7 @@
           "body",
           "source",
           "status",
-          "reach",
+          "scope",
           "lineId",
           "stationId",
           "repository",
@@ -34864,7 +34864,7 @@
             ],
             "example": "active"
           },
-          "reach": {
+          "scope": {
             "type": "string",
             "enum": [
               "team",
@@ -34977,7 +34977,7 @@
           "body",
           "source",
           "status",
-          "reach",
+          "scope",
           "lineId",
           "stationId",
           "repository",
@@ -35048,7 +35048,7 @@
               "remembered"
             ],
             "example": "remembered",
-            "description": "drafted: read from the run after it ended; remembered: the agent asked for it with spotlight remember"
+            "description": "drafted: read from the run after it ended; remembered: the agent proposed it with spotlight remember"
           },
           "state": {
             "type": "string",
@@ -35059,7 +35059,7 @@
             ],
             "example": "proposed"
           },
-          "reach": {
+          "scope": {
             "type": "string",
             "enum": [
               "team",
@@ -35138,7 +35138,7 @@
           "source",
           "origin",
           "state",
-          "reach",
+          "scope",
           "repository",
           "paths",
           "supersedes",
@@ -35161,7 +35161,7 @@
             }
           },
           "cut": {
-            "description": "What reached the run but was left out of its briefing by the cap, the nearest first",
+            "description": "What applied to the run but was left out of its briefing by the cap, the nearest first",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/TeamMemoryResponseDto"
@@ -35175,7 +35175,7 @@
             }
           },
           "proposed": {
-            "description": "What the run proposed, drafted or asked to remember",
+            "description": "What the run proposed, drafted or remembered",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/RunProposalResponseDto"
@@ -35185,7 +35185,7 @@
             "type": "string",
             "nullable": true,
             "example": "aside_8f2c",
-            "description": "The inbox item where people keep or reject what the run proposed; null where it proposed nothing"
+            "description": "The inbox item where people approve or reject what the run proposed; null where it proposed nothing"
           }
         },
         "required": [
@@ -35228,7 +35228,7 @@
             "type": "string",
             "example": "Uploads retry in the request, not from a queue."
           },
-          "reach": {
+          "scope": {
             "type": "string",
             "enum": [
               "team",
@@ -38429,10 +38429,10 @@
             "example": 14,
             "description": "Runs that ended that week"
           },
-          "given": {
+          "enabled": {
             "type": "number",
             "example": 9,
-            "description": "Of those, the runs given it"
+            "description": "Of those, the runs that had it enabled"
           },
           "used": {
             "type": "number",
@@ -38449,7 +38449,7 @@
         "required": [
           "week",
           "runs",
-          "given",
+          "enabled",
           "used",
           "usedShare"
         ]
@@ -38470,7 +38470,7 @@
             "example": 30,
             "description": "Runs that ended there"
           },
-          "given": {
+          "enabled": {
             "type": "number",
             "example": 30
           },
@@ -38495,7 +38495,7 @@
           "lineId",
           "stationId",
           "runs",
-          "given",
+          "enabled",
           "used",
           "trend"
         ]
@@ -38512,15 +38512,15 @@
             "example": true,
             "description": "Whether the team’s configuration defines it"
           },
-          "given": {
+          "enabled": {
             "type": "number",
             "example": 40,
-            "description": "Runs in the period whose station config gave it"
+            "description": "Runs in the period whose station config enabled it"
           },
           "used": {
             "type": "number",
             "example": 22,
-            "description": "Runs in the period that read it: a tool call touched a file in its folder, or asked the harness for it by name"
+            "description": "Runs in the period that read it: a tool call touched a file in its folder, or requested it from the harness by name"
           },
           "weeks": {
             "description": "Every week of the period, oldest first",
@@ -38542,7 +38542,7 @@
             "description": "spreading or fading where the share of runs that used it moved by the trend rule’s points between the latest weeks and the weeks before; steady where it moved less; none where either side had too few runs"
           },
           "stations": {
-            "description": "Each station whose runs were given it or read it",
+            "description": "Each station that enabled it for its runs or whose runs read it",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SkillAtStationResponseDto"
@@ -38552,7 +38552,7 @@
         "required": [
           "key",
           "defined",
-          "given",
+          "enabled",
           "used",
           "weeks",
           "trend",
@@ -38679,7 +38679,7 @@
             "$ref": "#/components/schemas/TrendRuleResponseDto"
           },
           "skills": {
-            "description": "Every skill a run in the period was given or read, the most used first",
+            "description": "Every skill that a station enabled for a run in the period or that a run read, the most used first",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SkillReportResponseDto"
@@ -39337,7 +39337,7 @@
           "activeCount": {
             "type": "number",
             "example": 14,
-            "description": "Memories the team keeps now"
+            "description": "Approved memories the team has now"
           },
           "memoriesBriefed": {
             "type": "number",
@@ -41878,7 +41878,7 @@
           },
           "checks": {
             "nullable": true,
-            "description": "Whether the station’s check gives the same answer twice, from the set’s newest probe; null until a probe was checked",
+            "description": "Whether the station’s check returns the same answer twice, from the set’s newest probe; null until a probe was checked",
             "type": "object",
             "allOf": [
               {
@@ -42140,14 +42140,14 @@
           },
           "stationGone": {
             "type": "boolean",
-            "description": "Its station is gone from its line: it takes no more runs, starts no replays and keeps no archives; it may still be renamed, have runs taken out, or be deleted"
+            "description": "Its station is gone from its line: it takes no more runs, starts no replays and holds no archives; it may still be renamed, have runs taken out, or be deleted"
           },
           "guardsChanges": {
             "type": "boolean",
-            "description": "Planned changes of its station are checked against it, as `spotlight replay check` asks; a station has at most one such set"
+            "description": "Planned changes of its station are checked against it, as `spotlight replay check` requests; a station has at most one such set"
           },
           "health": {
-            "description": "Whether the set can tell candidates apart, read for the live config as it is now: its noise, how much of it the live config passes already, whether its judge and check give the same answer twice, and how much better the live config does when handed each run’s answer",
+            "description": "Whether the set can tell candidates apart, read for the live config as it is now: its noise, how much of it the live config passes already, whether its judge and check return the same answer twice, and how much better the live config does when handed each run’s answer",
             "allOf": [
               {
                 "$ref": "#/components/schemas/SetHealthResponseDto"
@@ -42657,7 +42657,7 @@
           "kind": {
             "type": "string",
             "nullable": true,
-            "description": "Always null here: a replay keeps no copy of what the judge read"
+            "description": "Always null here: a replay stores no copy of what the judge read"
           },
           "tool": {
             "type": "string",
@@ -42685,7 +42685,7 @@
           "path": {
             "type": "string",
             "nullable": true,
-            "description": "Always null here: a replay keeps no copy of what the judge read"
+            "description": "Always null here: a replay stores no copy of what the judge read"
           },
           "header": {
             "type": "string",
@@ -42772,7 +42772,7 @@
           "state": {
             "type": "string",
             "enum": [
-              "asked",
+              "requested",
               "judged",
               "unjudged"
             ]
@@ -42955,7 +42955,7 @@
           "state": {
             "type": "string",
             "enum": [
-              "asked",
+              "requested",
               "judged",
               "unpaired"
             ]
@@ -43388,7 +43388,7 @@
           },
           "probe": {
             "type": "boolean",
-            "description": "It probes the set: once it finishes, each judged change is judged again and each checked change checked again, to see whether the judge and the check give the same answer twice"
+            "description": "It probes the set: once it finishes, each judged change is judged again and each checked change checked again, to see whether the judge and the check return the same answer twice"
           },
           "startedAt": {
             "type": "string"
@@ -43515,7 +43515,7 @@
             "type": "string"
           },
           "ceiling": {
-            "description": "Its own ceiling, the same as the one asked for",
+            "description": "Its own ceiling, the same as the requested one",
             "allOf": [
               {
                 "$ref": "#/components/schemas/SpendResponseDto"
@@ -43553,7 +43553,7 @@
           },
           "baseline": {
             "nullable": true,
-            "description": "The set’s baseline replay of the live config, when the set had none covering its runs: this replay itself, or one starting beside it under this id. It spends against a ceiling of its own, equal to the one asked for, so the two together may spend up to twice it",
+            "description": "The set’s baseline replay of the live config, when the set had none covering its runs: this replay itself, or one starting beside it under this id. It spends against a ceiling of its own, equal to the requested one, so the two together may spend up to twice it",
             "type": "object",
             "allOf": [
               {
@@ -43740,7 +43740,7 @@
           },
           "probe": {
             "type": "boolean",
-            "description": "It probes the set: once it finishes, each judged change is judged again and each checked change checked again, to see whether the judge and the check give the same answer twice"
+            "description": "It probes the set: once it finishes, each judged change is judged again and each checked change checked again, to see whether the judge and the check return the same answer twice"
           },
           "startedAt": {
             "type": "string"
@@ -44268,7 +44268,7 @@
           "suggestedRepeats": {
             "type": "number",
             "example": 5,
-            "description": "The repeats to ask for: the needed ones, at most 5"
+            "description": "The repeats to request: the needed ones, at most 5"
           }
         },
         "required": [
@@ -44308,7 +44308,7 @@
             "enum": [
               "judge-unstable"
             ],
-            "description": "The judge, asked twice of the same change, passed or failed it alike less than 80% of the time, so its verdicts are partly chance"
+            "description": "The judge, run twice on the same change, passed or failed it alike less than 80% of the time, so its verdicts are partly chance"
           },
           "agreement": {
             "type": "number",
@@ -44511,7 +44511,7 @@
               "success",
               "cost"
             ],
-            "description": "What it would look for, as asked or as the set’s health suggests: success ranks candidates by how often they succeed; cost ranks those that succeed as often as the live config, within noise, by what a run costs"
+            "description": "What it would look for, as requested or as the set’s health suggests: success ranks candidates by how often they succeed; cost ranks those that succeed as often as the live config, within noise, by what a run costs"
           },
           "warnings": {
             "type": "array",
@@ -44941,7 +44941,7 @@
               "github-error"
             ],
             "example": "computed-attribute",
-            "description": "Why Spotlight would not open it: the line names no source; the GitHub App cannot reach the repository; the file is missing or does not parse; the station’s block was not found exactly once; an attribute it would change is computed in Terraform; the file changed since the search began; or GitHub answered with an error"
+            "description": "Why Spotlight would not open it: the line names no source; the GitHub App cannot access the repository; the file is missing or does not parse; the station’s block was not found exactly once; an attribute it would change is computed in Terraform; the file changed since the search began; or GitHub answered with an error"
           },
           "message": {
             "type": "string",
@@ -45599,7 +45599,7 @@
             "description": "The smallest gain in success the live line’s replay_check counts as real, when the check started"
           },
           "ceiling": {
-            "description": "The most each replay of the check may spend: the replay of the planned change and, when the set has no baseline of the live config yet, the baseline replay the check starts, each up to this ceiling on its own; a baseline already there costs the check nothing. A replay reaching its ceiling starts no more runs, though runs already going finish, so it may end a little over it",
+            "description": "The most each replay of the check may spend: the replay of the planned change and, when the set has no baseline of the live config yet, the baseline replay the check starts, each up to this ceiling on its own; a baseline already there costs the check nothing. A replay at its ceiling starts no more runs, though runs already going finish, so it may end a little over it",
             "allOf": [
               {
                 "$ref": "#/components/schemas/SpendResponseDto"
@@ -45820,9 +45820,9 @@
           "candidateFingerprint": {
             "type": "string"
           },
-          "keptLive": {
+          "scoringPinnedToLive": {
             "type": "array",
-            "description": "What the plan changed of how runs are scored, which the check kept as the live station has it",
+            "description": "What the plan changed of how runs are scored, which the check pinned to the live station’s values",
             "items": {
               "type": "string",
               "enum": [
@@ -45924,7 +45924,7 @@
           "reference",
           "liveFingerprint",
           "candidateFingerprint",
-          "keptLive",
+          "scoringPinnedToLive",
           "threshold",
           "repeats",
           "gain",
@@ -46180,7 +46180,7 @@
           },
           "checks": {
             "nullable": true,
-            "description": "Whether the station’s check gives the same answer twice, from the set’s newest probe; null until a probe was checked",
+            "description": "Whether the station’s check returns the same answer twice, from the set’s newest probe; null until a probe was checked",
             "type": "object",
             "allOf": [
               {

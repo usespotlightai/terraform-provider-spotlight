@@ -59,7 +59,7 @@ const (
 )
 
 var hookEvents = []string{
-	"tool.using", "tool.used", "run.starting", "run.ended", "handover.giving",
+	"tool.using", "tool.used", "run.starting", "run.ended", "handover.submitting",
 	"pull-request.opening", "pull-request.merged", "task.opened", "task.moved",
 }
 
@@ -111,7 +111,7 @@ func (r *HookResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 
 func hookSchema() schema.Schema {
 	signing := writeonly.SigningSecret.Attributes("The HMAC secret Spotlight signs each request with, as Standard Webhooks sign: `whsec_` followed by 24 to 64 base64-encoded random bytes, " +
-		"as `\"whsec_${base64encode(random_password.hook.result)}\"` makes. Needed with `secret_wo_version`, and given again whenever it changes.")
+		"as `\"whsec_${base64encode(random_password.hook.result)}\"` makes. Needed with `secret_wo_version`, and sent again whenever it changes.")
 	signing[hookOIDC] = schema.SingleNestedAttribute{
 		Optional:            true,
 		MarkdownDescription: "Signs each request with a short-lived OIDC token Spotlight issues, instead of a secret.",
@@ -136,7 +136,7 @@ func hookSchema() schema.Schema {
 			"on": schema.StringAttribute{
 				Required:            true,
 				Validators:          []validator.String{stringvalidator.OneOf(hookEvents...)},
-				MarkdownDescription: "The event the hook fires on: `" + strings.Join(hookEvents, "`, `") + "`. The `.using`, `.starting`, `.giving` and `.opening` events fire before what they name, so a hook on one may stop it.",
+				MarkdownDescription: "The event the hook fires on: `" + strings.Join(hookEvents, "`, `") + "`. The `.using`, `.starting`, `.submitting` and `.opening` events fire before what they name, so a hook on one may stop it.",
 			},
 			"match": schema.SingleNestedAttribute{
 				Optional:            true,
@@ -164,7 +164,7 @@ func hookSchema() schema.Schema {
 				Required: true,
 				MarkdownDescription: "What the hook does, in order: a list of at least one step, each an object that either calls a tool or sends a request. " +
 					"Every step has a `name`, lowercase words joined by dashes, by which later steps read its outcome as `step.<name>`. " +
-					"A step that calls a tool names it in `call`, as in `spotlight_integration.slack.tools[\"post-message\"]`, and gives it its inputs in `with`, an object of any JSON. " +
+					"A step that calls a tool names it in `call`, as in `spotlight_integration.slack.tools[\"post-message\"]`, and sets its inputs in `with`, an object of any JSON. " +
 					"A step that sends a request sets `request`: its `url`, any `headers` beside the ones Spotlight signs with, its `body`, which is any JSON and, left out, " +
 					"is the event, task and run, and `from`: `spotlight`, the default, to send it from Spotlight, to a host the control plane's `OUTBOUND_ALLOWED_HOSTS` allows, " +
 					"or `network`, to have a host of the workspace send it from inside its network. A hook that sends a request signs it, so it needs `signing`. " +
@@ -270,12 +270,12 @@ func (r *HookResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
-	kept := &state
+	prior := &state
 	if !answerUnchanged(ctx, req.Private, hookSettable(hook)) {
-		kept = nil
+		prior = nil
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, hookModel(hook, kept))...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, hookModel(hook, prior))...)
 	resp.Diagnostics.Append(setIdentity(ctx, resp.Identity, hook.ID)...)
 	resp.Diagnostics.Append(rememberAnswer(ctx, resp.Private, hookSettable(hook))...)
 }
@@ -363,7 +363,7 @@ func hookSigningProblems(signing types.Object) diag.Diagnostics {
 			"signing: signs with an HMAC secret or with an OIDC token, not both. Set secret_wo and secret_wo_version, or oidc.")
 	case oidc.IsNull() && version.IsNull():
 		diags.AddAttributeError(path.Root(hookSigning).AtName(writeonly.SigningSecret.Version), "A signing secret needs its version",
-			"signing.secret_wo_version: says when to send secret_wo again, since Terraform never keeps it; set it to 1, and change it whenever the secret changes. Or sign with oidc instead.")
+			"signing.secret_wo_version: says when to send secret_wo again, since Terraform never stores it; set it to 1, and change it whenever the secret changes. Or sign with oidc instead.")
 	}
 
 	return diags
@@ -582,7 +582,7 @@ func sendHookSecret(ctx context.Context, config tfsdk.Config, plan tfsdk.Plan, s
 	return diags
 }
 
-func hookModel(hook client.Hook, kept *HookResourceModel) HookResourceModel {
+func hookModel(hook client.Hook, prior *HookResourceModel) HookResourceModel {
 	model := HookResourceModel{
 		ID:             types.StringValue(hook.ID),
 		Version:        types.Int64Value(hook.Version),
@@ -599,16 +599,16 @@ func hookModel(hook client.Hook, kept *HookResourceModel) HookResourceModel {
 		TimeoutSeconds: types.Int64Value(hook.TimeoutSeconds),
 	}
 
-	if kept != nil {
-		model.Key = kept.Key
-		model.On = kept.On
-		model.Match = kept.Match
-		model.When = kept.When
-		model.Vars = kept.Vars
-		model.Steps = dynamic.Resolve(kept.Steps, hook.Steps)
-		model.Signing = kept.Signing
-		model.Failure = kept.Failure
-		model.TimeoutSeconds = kept.TimeoutSeconds
+	if prior != nil {
+		model.Key = prior.Key
+		model.On = prior.On
+		model.Match = prior.Match
+		model.When = prior.When
+		model.Vars = prior.Vars
+		model.Steps = dynamic.Resolve(prior.Steps, hook.Steps)
+		model.Signing = prior.Signing
+		model.Failure = prior.Failure
+		model.TimeoutSeconds = prior.TimeoutSeconds
 	}
 
 	return model

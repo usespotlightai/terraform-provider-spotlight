@@ -169,8 +169,8 @@ func mustWorkspace(t *testing.T, fake *fakeapi.Server) string {
 }
 
 type gitHubActions struct {
-	mu    sync.Mutex
-	asked []*http.Request
+	mu       sync.Mutex
+	requests []*http.Request
 }
 
 func (g *gitHubActions) serve(t *testing.T) *httptest.Server {
@@ -178,7 +178,7 @@ func (g *gitHubActions) serve(t *testing.T) *httptest.Server {
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		g.mu.Lock()
-		g.asked = append(g.asked, r.Clone(r.Context()))
+		g.requests = append(g.requests, r.Clone(r.Context()))
 		g.mu.Unlock()
 
 		if r.Header.Get("Authorization") != "Bearer github-request-token" {
@@ -240,9 +240,9 @@ func TestTheProviderAuthenticatesInGitHubActionsThroughATrust(t *testing.T) {
 						github.mu.Lock()
 						defer github.mu.Unlock()
 
-						for _, each := range github.asked {
+						for _, each := range github.requests {
 							if got := each.URL.Query().Get("audience"); got != "spotlight" {
-								return fmt.Errorf("asked GitHub for the audience %q", got)
+								return fmt.Errorf("requested from GitHub the audience %q", got)
 							}
 						}
 
@@ -288,14 +288,14 @@ func TestTheProviderReportsAnOIDCTokenTheTrustDoesNotAccept(t *testing.T) {
 	withoutCredentials(t)
 	t.Setenv(provider.URLEnv, fake.URL)
 	t.Setenv(provider.OIDCTrustEnv, trustedGitHub(t, fake))
-	t.Setenv(provider.OIDCTokenEnv, "a-token-no-trust-admits")
+	t.Setenv(provider.OIDCTokenEnv, "a-token-no-trust-accepts")
 
 	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: providerFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config:      providerWorkspace,
-				ExpectError: regexp.MustCompile(`(?s)did not admit the OIDC\s+token`),
+				ExpectError: regexp.MustCompile(`(?s)did not accept the OIDC\s+token`),
 			},
 		},
 	})

@@ -128,7 +128,7 @@ func TestATokenGivesATrustOnlyScopesItHas(t *testing.T) {
 			{
 				PreConfig:   func() { fake.Grant("configure", "trusts") },
 				Config:      workspaceTokenTrustConfig("github-main", "repo:acme/platform:ref:refs/heads/main", `"configure", "secrets"`, ""),
-				ExpectError: regexp.MustCompile(`(?s)not\s+change\s+it.*lacks\s+the\s+trusts\s+scope.*or\s+a\s+scope\s+the\s+trust\s+gives`),
+				ExpectError: regexp.MustCompile(`(?s)not\s+change\s+it.*lacks\s+the\s+trusts\s+scope.*or\s+a\s+scope\s+the\s+trust\s+grants`),
 			},
 			{
 				PreConfig: func() { fake.Grant("configure", "secrets", "trusts") },

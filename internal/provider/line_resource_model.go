@@ -466,13 +466,13 @@ func lineStationOf(read lineRead) lineStation {
 	return station
 }
 
-func lineModel(answer client.Line, kept *LineResourceModel) LineResourceModel {
+func lineModel(answer client.Line, prior *LineResourceModel) LineResourceModel {
 	full := lineAnswered(answer)
-	if kept == nil {
+	if prior == nil {
 		return full
 	}
 
-	merged := *kept
+	merged := *prior
 	merged.ID = full.ID
 	merged.Version = full.Version
 	merged.Address = full.Address
@@ -483,8 +483,8 @@ func lineModel(answer client.Line, kept *LineResourceModel) LineResourceModel {
 		answered[each.Key.ValueString()] = each
 	}
 
-	merged.Stations = make([]lineStation, len(kept.Stations))
-	for at, each := range kept.Stations {
+	merged.Stations = make([]lineStation, len(prior.Stations))
+	for at, each := range prior.Stations {
 		if found, ok := answered[each.Key.ValueString()]; ok {
 			each.Color = lineOrAnswered(each.Color, found.Color)
 			each.Diffs = lineOrAnsweredFlag(each.Diffs, found.Diffs)

@@ -3,12 +3,12 @@
 page_title: "spotlight_skill Resource - spotlight"
 subcategory: ""
 description: |-
-  A skill a team's stations can give their agents: a folder of files read from SKILL.md. Import it as <workspace id>/<team key>/<key>.
+  A skill that a team's stations can enable for their agents: a folder of files read from SKILL.md. Import it as <workspace id>/<team key>/<key>.
 ---
 
 # spotlight_skill (Resource)
 
-A skill a team's stations can give their agents: a folder of files read from `SKILL.md`. Import it as `<workspace id>/<team key>/<key>`.
+A skill that a team's stations can enable for their agents: a folder of files read from `SKILL.md`. Import it as `<workspace id>/<team key>/<key>`.
 
 ## Example Usage
 
@@ -29,7 +29,7 @@ resource "spotlight_skill" "core_grafana" {
 ### Required
 
 - `files` (Map of String) Each file in the skill's folder, by its path within it, usually read with `file()`. `SKILL.md` is the one the skill is read from.
-- `key` (String) What stations give the skill by. It is fixed for the skill's life, so changing it replaces the skill.
+- `key` (String) What stations enable the skill by. It is fixed for the skill's life, so changing it replaces the skill.
 - `team_id` (String) The team the skill belongs to. Changing it replaces the skill.
 
 ### Read-Only
@@ -37,7 +37,7 @@ resource "spotlight_skill" "core_grafana" {
 - `address` (String) Names the resource within its workspace, as in `core/grafana`.
 - `description` (String) What `SKILL.md` says the skill is for.
 - `id` (String) Issued by Spotlight when the skill is created, and never changed.
-- `secrets` (Attributes List) The secrets `SKILL.md` asks for. (see [below for nested schema](#nestedatt--secrets))
+- `secrets` (Attributes List) The secrets that `SKILL.md` requires. (see [below for nested schema](#nestedatt--secrets))
 - `tools` (List of String) The tools `SKILL.md` uses.
 - `version` (Number) Rises with every change to the skill; each write sends it back so a change made since is not overwritten.
 

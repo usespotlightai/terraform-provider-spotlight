@@ -271,8 +271,8 @@ func repositories(definition map[string]any, errs *[]fieldError) {
 	seen := map[string]bool{}
 
 	for at, each := range listed {
-		given := objectOf(each)
-		name := strings.TrimSpace(textOf(given["name"]))
+		input := objectOf(each)
+		name := strings.TrimSpace(textOf(input["name"]))
 		if owner, rest, ok := strings.Cut(name, "/"); !ok || owner == "" || rest == "" || strings.Contains(rest, "/") {
 			*errs = append(*errs, fieldError{fmt.Sprintf("repositories[%d].name", at), "A repository is named owner/name"})
 		}
@@ -282,7 +282,7 @@ func repositories(definition map[string]any, errs *[]fieldError) {
 		seen[name] = true
 
 		repository := map[string]any{"name": name}
-		if image := strings.TrimSpace(textOf(given["image"])); image != "" {
+		if image := strings.TrimSpace(textOf(input["image"])); image != "" {
 			if len(image) > 255 || !imageReference.MatchString(image) {
 				*errs = append(*errs, fieldError{fmt.Sprintf("repositories[%d].image", at), "A runner image is named by a reference such as ghcr.io/acme/runner:main, in lowercase, with an optional tag or digest"})
 			}
@@ -291,7 +291,7 @@ func repositories(definition map[string]any, errs *[]fieldError) {
 			}
 			repository["image"] = image
 		}
-		if setup := textOf(given["setup"]); setup != "" {
+		if setup := textOf(input["setup"]); setup != "" {
 			if command := strings.TrimSpace(setup); command == "" || len(command) > 500 || strings.ContainsAny(command, "\r\n") {
 				*errs = append(*errs, fieldError{fmt.Sprintf("repositories[%d].setup", at), "Invalid repository setup: is one line of at most 500 characters"})
 			}

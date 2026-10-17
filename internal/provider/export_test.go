@@ -26,7 +26,7 @@ import (
 
 const (
 	exportedWorkspaceID = "00000000-0000-4000-8000-00000000a0a0"
-	exportedSecretValue = "lin_exported_never_kept"
+	exportedSecretValue = "lin_exported_never_stored"
 )
 
 const requiredProviders = `

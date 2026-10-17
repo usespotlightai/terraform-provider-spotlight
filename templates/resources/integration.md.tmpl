@@ -19,7 +19,7 @@ An integration can name an OpenAPI or GraphQL description instead of writing eac
 
 {{ tffile "examples/resources/spotlight_integration/petstore.tf" }}
 
-The generated tools are known only after apply, so `tools` reads `(known after apply)` in the plan. A generated tool named through `tools["…"]` that the description does not offer fails the apply, not the plan. When a later read fails, the tools from the last good read stay offered: `described.hash` keeps that read, and `described.problem` says why the latest one failed.
+The generated tools are known only after apply, so `tools` reads `(known after apply)` in the plan. A generated tool named through `tools["…"]` that the description does not offer fails the apply, not the plan. When a later read fails, the tools from the last good read stay offered: `described.hash` stays the hash of that read, and `described.problem` says why the latest one failed.
 
 ## Tools from a remote MCP server
 
