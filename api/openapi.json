@@ -2589,7 +2589,7 @@
     },
     "/workspaces/{slug}/inbox/{itemId}/read": {
       "post": {
-        "operationId": "readInboxItem",
+        "operationId": "markInboxItemRead",
         "parameters": [
           {
             "name": "itemId",
@@ -2629,7 +2629,7 @@
     },
     "/workspaces/{slug}/inbox/requests/{requestId}/read": {
       "post": {
-        "operationId": "readInboxRequest",
+        "operationId": "markInboxRequestRead",
         "parameters": [
           {
             "name": "requestId",
@@ -19516,19 +19516,19 @@
             }
           },
           {
-            "name": "refusedServer",
+            "name": "dismissedServer",
             "required": false,
             "in": "query",
-            "description": "Only runs a person refused a tool of this MCP server for; none for tools of no server",
+            "description": "Only runs in which a person dismissed an approval for a tool of this MCP server; none for tools of no server",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "refusedTool",
+            "name": "dismissedTool",
             "required": false,
             "in": "query",
-            "description": "Only runs a person refused this tool for",
+            "description": "Only runs in which a person dismissed an approval for this tool",
             "schema": {
               "type": "string"
             }
@@ -25234,7 +25234,7 @@
               "accepted",
               "answered",
               "approved",
-              "refused",
+              "dismissed",
               "sent-back"
             ]
           },
@@ -25861,10 +25861,10 @@
             "enum": [
               "allow",
               "reject",
-              "asked"
+              "pending"
             ],
-            "example": "asked",
-            "description": "allow or reject answers the harness now; asked means a person was asked in their inbox, so the run should end its turn and release the task"
+            "example": "pending",
+            "description": "allow or reject answers the harness now; pending means a person was asked in their inbox, so the run should end its turn and release the task"
           }
         },
         "required": [
@@ -26988,11 +26988,11 @@
           },
           "status": {
             "type": "string",
-            "example": "asked",
+            "example": "pending",
             "enum": [
-              "asked",
-              "granted",
-              "refused"
+              "pending",
+              "approved",
+              "dismissed"
             ]
           },
           "edited": {
@@ -35499,7 +35499,7 @@
           "sentBack": {
             "type": "number",
             "example": 3,
-            "description": "Runs that a person sent back or refused first"
+            "description": "Runs that a person sent back or dismissed first"
           },
           "passed": {
             "type": "number",
@@ -36762,7 +36762,7 @@
           "humanActions": {
             "type": "number",
             "example": 40,
-            "description": "What people did with the tasks worked in the period: moves, answers, approvals, refusals, sends-back"
+            "description": "What people did with the tasks worked in the period: moves, answers, approvals, dismissals, sends-back"
           },
           "humanActionsPerTask": {
             "type": "number",
@@ -37057,7 +37057,7 @@
               "task-failures",
               "cost"
             ],
-            "description": "sent-back: share of runs sent back or refused; checks-failed: share of checked changes that failed; run-failures: share of runs that failed; task-failures: task failures per run; cost: spend per run"
+            "description": "sent-back: share of runs sent back or dismissed; checks-failed: share of checked changes that failed; run-failures: share of runs that failed; task-failures: task failures per run; cost: spend per run"
           },
           "now": {
             "type": "number",
@@ -37895,17 +37895,17 @@
           "sentBack": {
             "type": "number",
             "example": 4,
-            "description": "Runs that a person sent back or refused first"
+            "description": "Runs that a person sent back or dismissed first"
           },
           "sentBackRate": {
             "type": "number",
             "nullable": true,
             "example": 0.12
           },
-          "refused": {
+          "dismissed": {
             "type": "number",
             "example": 2,
-            "description": "Tool approvals and permissions people refused"
+            "description": "Tool approvals and permissions people dismissed"
           },
           "askedTaskIds": {
             "type": "array",
@@ -37913,7 +37913,7 @@
               "type": "string"
             }
           },
-          "refusedTaskIds": {
+          "dismissedTaskIds": {
             "type": "array",
             "items": {
               "type": "string"
@@ -37928,9 +37928,9 @@
           "unanswered",
           "sentBack",
           "sentBackRate",
-          "refused",
+          "dismissed",
           "askedTaskIds",
-          "refusedTaskIds"
+          "dismissedTaskIds"
         ]
       },
       "HumanLoadDeltasResponseDto": {
@@ -37966,9 +37966,9 @@
               }
             ]
           },
-          "refused": {
+          "dismissed": {
             "nullable": true,
-            "description": "Refused approvals against the period before",
+            "description": "Dismissed approvals against the period before",
             "type": "object",
             "allOf": [
               {
@@ -37981,7 +37981,7 @@
           "asksPerTask",
           "toAnswer",
           "sentBackRate",
-          "refused"
+          "dismissed"
         ]
       },
       "PersonUseResponseDto": {
@@ -38003,7 +38003,7 @@
           "actions": {
             "type": "number",
             "example": 12,
-            "description": "Moves, answers, approvals, refusals and sends-back"
+            "description": "Moves, answers, approvals, dismissals and sends-back"
           },
           "chats": {
             "type": "number",
@@ -38484,14 +38484,14 @@
           "trend": {
             "type": "string",
             "enum": [
-              "spreading",
-              "fading",
-              "steady",
+              "rising",
+              "falling",
+              "flat",
               null
             ],
             "nullable": true,
-            "example": "steady",
-            "description": "spreading or fading where the share of runs that used it moved by the trend rule’s points between the latest weeks and the weeks before; steady where it moved less; none where either side had too few runs"
+            "example": "flat",
+            "description": "rising or falling where the share of runs that used it moved by the trend rule’s points between the latest weeks and the weeks before; flat where it moved less; none where either side had too few runs"
           }
         },
         "required": [
@@ -38535,14 +38535,14 @@
           "trend": {
             "type": "string",
             "enum": [
-              "spreading",
-              "fading",
-              "steady",
+              "rising",
+              "falling",
+              "flat",
               null
             ],
             "nullable": true,
-            "example": "spreading",
-            "description": "spreading or fading where the share of runs that used it moved by the trend rule’s points between the latest weeks and the weeks before; steady where it moved less; none where either side had too few runs"
+            "example": "rising",
+            "description": "rising or falling where the share of runs that used it moved by the trend rule’s points between the latest weeks and the weeks before; flat where it moved less; none where either side had too few runs"
           },
           "stations": {
             "description": "Each station that enabled it for its runs or whose runs read it",
@@ -38577,7 +38577,7 @@
           "calls": {
             "type": "number",
             "example": 72,
-            "description": "Calls to it across those runs, leaving out calls a person refused to approve"
+            "description": "Calls to it across those runs, leaving out calls whose approval a person dismissed"
           },
           "callsPerRun": {
             "type": "number",
@@ -38612,10 +38612,10 @@
             "example": 1,
             "description": "Runs that failed where the run’s last call to this server failed"
           },
-          "refused": {
+          "dismissed": {
             "type": "number",
             "example": 2,
-            "description": "Runs in which a person refused one of its tools"
+            "description": "Runs in which a person dismissed an approval for one of its tools"
           }
         },
         "required": [
@@ -38628,10 +38628,10 @@
           "failedCalls",
           "errorRate",
           "failingRuns",
-          "refused"
+          "dismissed"
         ]
       },
-      "ToolRefusalsResponseDto": {
+      "ToolDismissalsResponseDto": {
         "type": "object",
         "properties": {
           "tool": {
@@ -38644,16 +38644,16 @@
             "nullable": true,
             "example": "linear"
           },
-          "refused": {
+          "dismissed": {
             "type": "number",
             "example": 2,
-            "description": "Runs in which a person refused this tool"
+            "description": "Runs in which a person dismissed an approval for this tool"
           }
         },
         "required": [
           "tool",
           "server",
-          "refused"
+          "dismissed"
         ]
       },
       "InsightsToolsResponseDto": {
@@ -38705,11 +38705,11 @@
               "$ref": "#/components/schemas/ServerReportResponseDto"
             }
           },
-          "refusals": {
-            "description": "Each tool a person refused to approve for a run in the period, per server, the most refused first",
+          "dismissals": {
+            "description": "Each tool whose approval a person dismissed for a run in the period, per server, the most dismissed first",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ToolRefusalsResponseDto"
+              "$ref": "#/components/schemas/ToolDismissalsResponseDto"
             }
           }
         },
@@ -38721,7 +38721,7 @@
           "skills",
           "unused",
           "servers",
-          "refusals"
+          "dismissals"
         ]
       },
       "MeasureVerdictResponseDto": {
@@ -39061,7 +39061,7 @@
             "type": "number",
             "nullable": true,
             "example": 0.2,
-            "description": "Share of runs that a person sent back or refused first"
+            "description": "Share of runs that a person sent back or dismissed first"
           },
           "passed": {
             "type": "number",
