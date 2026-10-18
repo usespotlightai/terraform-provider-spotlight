@@ -224,9 +224,9 @@ resource "spotlight_line" "core_delivery" {
         "The change touches only the files the task names.",
         "Every new function has a test.",
       ]
-      pass_share = 1
-      sample     = 0.2
-      trust      = 0.6
+      pass_threshold = 1
+      sample         = 0.2
+      min_agreement  = 0.6
     }
 
     alert {

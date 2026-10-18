@@ -146,9 +146,9 @@ resource "spotlight_line" "core_delivery" {
     passes_to = ["code-review"]
 
     judge {
-      rubric = file("${path.module}/judges/core/delivery/implementation.md")
-      sample = 0.2
-      trust  = 0.6
+      rubric        = file("${path.module}/judges/core/delivery/implementation.md")
+      sample        = 0.2
+      min_agreement = 0.6
     }
 
     alert {

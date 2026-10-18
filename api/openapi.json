@@ -3625,7 +3625,7 @@
             }
           },
           "404": {
-            "description": "No such replay run of the team for a caller who may read its outcomes",
+            "description": "No such replay run of the team for a caller who may read its insights",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -17627,7 +17627,7 @@
             "description": "No such task for this caller"
           }
         },
-        "summary": "The memories a run proposed for the team to approve, each with what it rests on",
+        "summary": "The memories a run proposed for the team to approve, each with what it cites",
         "tags": [
           "memories"
         ]
@@ -17696,7 +17696,7 @@
             "description": "No memories named, one named twice, an edit too long, or one from outside the team approved with others"
           }
         },
-        "summary": "Make proposed memories active, as proposed or as edited, and keep what they rest on",
+        "summary": "Make proposed memories active, as proposed or as edited, and keep what they cite",
         "tags": [
           "memories"
         ]
@@ -17949,7 +17949,7 @@
             "description": "No such memory for this caller"
           }
         },
-        "summary": "One memory with what it rests on, and what it replaced or was replaced by",
+        "summary": "One memory with what it cites, and what it replaced or was replaced by",
         "tags": [
           "memories"
         ]
@@ -18010,7 +18010,7 @@
             "description": "An unknown kind, a body too long, or a line, station or repository the team does not have"
           }
         },
-        "summary": "Correct a memory: a new one replaces it, keeping what it rests on, and it is retired",
+        "summary": "Correct a memory: a new one replaces it, keeping what it cites, and it is retired",
         "tags": [
           "memories"
         ]
@@ -18116,7 +18116,7 @@
             "description": "No such run of this team for this caller"
           }
         },
-        "summary": "What a run remembered: the memories it was briefed with and those the cap cut, what it recalled, and what it proposed",
+        "summary": "What a run remembered: the memories it was briefed with and those the cap omitted, what it recalled, and what it proposed",
         "tags": [
           "memories"
         ]
@@ -18172,7 +18172,7 @@
             "description": "Nothing to look for"
           }
         },
-        "summary": "Search what the run’s team remembers, for an agent that needs more than its briefing, noting what it recalled",
+        "summary": "Search what the run’s team remembers, for an agent that needs more than its briefing. It records what the run recalled",
         "tags": [
           "runners"
         ]
@@ -18224,7 +18224,7 @@
             "description": "Not a handle like M-12"
           }
         },
-        "summary": "Read one of the team’s memories in full, by its handle, noting the run recalled it",
+        "summary": "Read one of the team’s memories in full, by its handle. It records that the run recalled it",
         "tags": [
           "runners"
         ]
@@ -18278,7 +18278,7 @@
             "description": "An unknown kind or scope, a path outside the run’s repositories, or a chat run"
           }
         },
-        "summary": "Propose a memory from inside the run, grounded in the step that proposed it",
+        "summary": "Propose a memory from inside the run that cites the step that proposed it",
         "tags": [
           "runners"
         ]
@@ -18324,9 +18324,9 @@
         ]
       }
     },
-    "/teams/{teamId}/lines/{lineId}/stations/{stationId}/outcomes": {
+    "/teams/{teamId}/lines/{lineId}/stations/{stationId}/insights": {
       "get": {
-        "operationId": "listStationOutcomes",
+        "operationId": "readStationInsights",
         "parameters": [
           {
             "name": "teamId",
@@ -18368,7 +18368,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/StationOutcomesResponseDto"
+                  "$ref": "#/components/schemas/StationInsightsResponseDto"
                 }
               }
             }
@@ -18382,7 +18382,7 @@
         },
         "summary": "How the station’s latest runs turned out, in runs of the same config",
         "tags": [
-          "outcomes"
+          "insights"
         ]
       }
     },
@@ -18435,7 +18435,7 @@
         },
         "summary": "How often the station’s judge agrees with people, under each of its rubrics",
         "tags": [
-          "outcomes"
+          "insights"
         ]
       }
     },
@@ -18480,7 +18480,7 @@
         },
         "summary": "The judge’s score for a run, with the reasons it cites, and the grades people gave it",
         "tags": [
-          "outcomes"
+          "insights"
         ]
       }
     },
@@ -18541,7 +18541,7 @@
         },
         "summary": "Grade a run; a later grade by the same person replaces theirs, and nothing waits on it",
         "tags": [
-          "outcomes"
+          "insights"
         ]
       }
     },
@@ -18952,15 +18952,15 @@
             "bearer": []
           }
         ],
-        "summary": "Every station config change in the period, with how the station’s runs went before and after it, and the judge’s scores where its judge is trusted",
+        "summary": "Every station config change in the period, with how the station’s runs went before and after it, and the judge’s scores where its judge is qualified",
         "tags": [
           "insights"
         ]
       }
     },
-    "/teams/{teamId}/insights/setups": {
+    "/teams/{teamId}/insights/agent-configs": {
       "get": {
-        "operationId": "readInsightsSetups",
+        "operationId": "readInsightsAgentConfigs",
         "parameters": [
           {
             "name": "teamId",
@@ -19014,7 +19014,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/InsightsSetupsResponseDto"
+                  "$ref": "#/components/schemas/InsightsAgentConfigsResponseDto"
                 }
               }
             }
@@ -19126,7 +19126,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/StationAlertCrossingResponseDto"
+                  "$ref": "#/components/schemas/StationAlertFiringResponseDto"
                 }
               }
             }
@@ -19146,7 +19146,7 @@
             "bearer": []
           }
         ],
-        "summary": "A station alert that went off: the threshold it crossed, the run that crossed it, and the measure run by run around it",
+        "summary": "A station alert that fired: the rule that fired, the run whose reading fired it, and the measure run by run around it",
         "tags": [
           "insights"
         ]
@@ -19205,7 +19205,7 @@
             "bearer": []
           }
         ],
-        "summary": "How much of what the team merges Spotlight made or touched, week by week, how Spotlight’s pull requests fare against people’s, and what kinds it ships",
+        "summary": "How much of what the team merges Spotlight authored or reviewed, week by week, how Spotlight’s pull requests fare against people’s, and what kinds it ships",
         "tags": [
           "insights"
         ]
@@ -19377,11 +19377,11 @@
             "name": "author",
             "required": false,
             "in": "query",
-            "description": "spotlight for those a task opened, touched for others’ a Spotlight review task was opened on, bots for bots’ with no such task, people for the rest",
+            "description": "spotlight for those a task opened, reviewed for others’ a Spotlight review task was opened on, bots for bots’ with no such task, people for the rest",
             "schema": {
               "enum": [
                 "spotlight",
-                "touched",
+                "reviewed",
                 "people",
                 "bots"
               ],
@@ -19484,15 +19484,15 @@
             }
           },
           {
-            "name": "next",
+            "name": "humanAction",
             "required": false,
             "in": "query",
-            "description": "Only runs a person next acted on this way",
+            "description": "Only runs that a person acted on first in this way",
             "schema": {
               "enum": [
                 "started",
                 "parked",
-                "closed",
+                "accepted",
                 "answered",
                 "sent-back"
               ],
@@ -19500,7 +19500,7 @@
             }
           },
           {
-            "name": "delivery",
+            "name": "pullRequestState",
             "required": false,
             "in": "query",
             "description": "Only runs of tasks whose pull request has this status",
@@ -21415,9 +21415,9 @@
         ]
       }
     },
-    "/teams/{teamId}/replay-sets/{setId}/guards-changes": {
+    "/teams/{teamId}/replay-sets/{setId}/gates-changes": {
       "post": {
-        "operationId": "guardChanges",
+        "operationId": "gateChanges",
         "parameters": [
           {
             "name": "Spotlight-Api-Version",
@@ -21461,7 +21461,7 @@
         ],
         "responses": {
           "204": {
-            "description": "It guards the station’s changes"
+            "description": "It gates the station’s changes"
           },
           "400": {
             "description": "Malformed, or requests an API version this server does not serve",
@@ -21504,7 +21504,7 @@
             }
           },
           "409": {
-            "description": "Another set guards the station’s changes already, or the set’s station is gone",
+            "description": "Another set gates the station’s changes already, or the set’s station is gone",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -21525,7 +21525,7 @@
         ]
       },
       "delete": {
-        "operationId": "unguardChanges",
+        "operationId": "ungateChanges",
         "parameters": [
           {
             "name": "Spotlight-Api-Version",
@@ -21569,7 +21569,7 @@
         ],
         "responses": {
           "204": {
-            "description": "It no longer guards the station’s changes"
+            "description": "It no longer gates the station’s changes"
           },
           "400": {
             "description": "Malformed, or requests an API version this server does not serve",
@@ -21723,7 +21723,7 @@
         ]
       },
       "post": {
-        "description": "When the set has no baseline covering its runs, a baseline replay of the live config starts beside it; the answer names it and shows its own ceiling. Replaying live when the set has no baseline makes that replay the baseline. On a set of at least 5 runs, the first baseline of a live config also checks the set: it replays each run at least 3 times, with its ceiling raised in step up to 1,000, and judges and checks each change a second time. The set's health then reads its noise, and whether the judge and the check return the same answer twice. Once a whole-set replay of the live config finishes, Spotlight replays the live config again on the runs people accepted or sent back, handing each its answer, with the same ceiling and repeats; the set's health reads the gain as its room to improve.",
+        "description": "When the set has no baseline covering its runs, a baseline replay of the live config starts beside it; the answer names it and shows its own ceiling. Replaying live when the set has no baseline makes that replay the baseline. On a set of at least 5 runs, the first baseline of a live config is also a calibration of the set: it replays each run at least 3 times, with its ceiling raised in step up to 1,000, and judges and checks each change a second time. The set's health then reads its noise, and whether the judge and the check return the same answer twice. Once a whole-set replay of the live config finishes, Spotlight replays the live config again on the runs people accepted or sent back, handing each its answer, with the same ceiling and repeats; the set's health reads the gain as its room to improve.",
         "operationId": "startReplay",
         "parameters": [
           {
@@ -23113,7 +23113,7 @@
             }
           },
           "409": {
-            "description": "The line has no replay_check, no replay set guards the station’s changes, or the plan changes nothing that changes how its runs go (nothing-to-replay)",
+            "description": "The line has no replay_check, no replay set gates the station’s changes, or the plan changes nothing that changes how its runs go (nothing-to-replay)",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -23138,7 +23138,7 @@
             "bearer": []
           }
         ],
-        "summary": "Check a planned change of a station against the replay set that guards its changes, under the live line’s replay_check; a change already checked against the same live config answers its check",
+        "summary": "Check a planned change of a station against the replay set that gates its changes, under the live line’s replay_check; a change already checked against the same live config answers its check",
         "tags": [
           "replays"
         ]
@@ -23256,7 +23256,7 @@
             "bearer": []
           }
         ],
-        "summary": "The checks of planned changes replayed over a replay set, newest first, a page at a time, with each one’s verdict",
+        "summary": "The checks of planned changes replayed over a replay set, newest first, a page at a time, with the result of each",
         "tags": [
           "replays"
         ]
@@ -23353,7 +23353,7 @@
             "bearer": []
           }
         ],
-        "summary": "Read a replay check and its verdict: running, passed, failed or undecided, with the tasks it regressed on and why",
+        "summary": "Read a replay check and its result: running, passed, failed or undecided, with the tasks it regressed on and why",
         "tags": [
           "replays"
         ]
@@ -23434,10 +23434,10 @@
         ]
       }
     },
-    "/runs/{runId}/search-causes": {
+    "/runs/{runId}/failure-causes": {
       "post": {
         "description": "One cause per task: recording a task’s cause again replaces the one before. Only the tasks the reflection’s briefing lists take a cause.",
-        "operationId": "recordSearchCause",
+        "operationId": "recordFailureCause",
         "parameters": [
           {
             "name": "runId",
@@ -23453,7 +23453,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/RecordSearchCauseRequestDto"
+                "$ref": "#/components/schemas/RecordFailureCauseRequestDto"
               }
             }
           }
@@ -23464,7 +23464,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SearchCauseRecordedResponseDto"
+                  "$ref": "#/components/schemas/FailureCauseRecordedResponseDto"
                 }
               }
             }
@@ -23802,7 +23802,7 @@
               "type": "string"
             }
           },
-          "passShare": {
+          "passThreshold": {
             "type": "number",
             "example": 1,
             "description": "The share of claims a run must meet to pass, from 0 to 1. 1 means every claim"
@@ -23812,7 +23812,7 @@
             "example": 0.2,
             "description": "The share of runs judged, from 0 to 1"
           },
-          "trust": {
+          "minAgreement": {
             "type": "number",
             "example": 0.6,
             "description": "How often the judge must agree with people, from 0 to 1, before its scores show"
@@ -23821,9 +23821,9 @@
         "required": [
           "rubric",
           "claims",
-          "passShare",
+          "passThreshold",
           "sample",
-          "trust"
+          "minAgreement"
         ]
       },
       "StationAlertResponseDto": {
@@ -25049,20 +25049,20 @@
             "type": "string",
             "example": "reviewing"
           },
-          "digest": {
+          "hash": {
             "type": "string",
             "description": "The SHA-256 of the skill's files"
           }
         },
         "required": [
           "key",
-          "digest"
+          "hash"
         ]
       },
       "JudgeViewResponseDto": {
         "type": "object",
         "properties": {
-          "rubricDigest": {
+          "rubricHash": {
             "type": "string",
             "description": "The SHA-256 of the judge's rubric"
           },
@@ -25071,16 +25071,16 @@
             "example": 0.2,
             "description": "The share of runs judged"
           },
-          "trust": {
+          "minAgreement": {
             "type": "number",
             "example": 0.6,
             "description": "How often the judge must agree with people"
           }
         },
         "required": [
-          "rubricDigest",
+          "rubricHash",
           "sample",
-          "trust"
+          "minAgreement"
         ]
       },
       "StationConfigResponseDto": {
@@ -25186,7 +25186,7 @@
           "config"
         ]
       },
-      "RunCostResponseDto": {
+      "RunUsageResponseDto": {
         "type": "object",
         "properties": {
           "ms": {
@@ -25196,10 +25196,10 @@
           "steps": {
             "type": "number"
           },
-          "faults": {
+          "errors": {
             "type": "number"
           },
-          "used": {
+          "contextTokens": {
             "type": "number",
             "nullable": true
           },
@@ -25215,21 +25215,21 @@
         "required": [
           "ms",
           "steps",
-          "faults",
-          "used",
+          "errors",
+          "contextTokens",
           "cost",
           "currency"
         ]
       },
-      "PersonActResponseDto": {
+      "TaskHumanActionResponseDto": {
         "type": "object",
         "properties": {
-          "act": {
+          "kind": {
             "type": "string",
             "enum": [
               "started",
               "parked",
-              "closed",
+              "accepted",
               "answered",
               "approved",
               "refused",
@@ -25241,11 +25241,11 @@
           }
         },
         "required": [
-          "act",
+          "kind",
           "at"
         ]
       },
-      "RunTurnedOutResponseDto": {
+      "RunOutcomeResponseDto": {
         "type": "object",
         "properties": {
           "ending": {
@@ -25264,16 +25264,16 @@
             "nullable": true,
             "example": "exited"
           },
-          "round": {
+          "visit": {
             "type": "number",
             "description": "How many runs this station has taken on the task, this one included"
           },
-          "cost": {
+          "usage": {
             "nullable": true,
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/RunCostResponseDto"
+                "$ref": "#/components/schemas/RunUsageResponseDto"
               }
             ]
           },
@@ -25287,16 +25287,16 @@
               null
             ]
           },
-          "next": {
+          "firstHumanAction": {
             "nullable": true,
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/PersonActResponseDto"
+                "$ref": "#/components/schemas/TaskHumanActionResponseDto"
               }
             ]
           },
-          "delivery": {
+          "pullRequestState": {
             "type": "string",
             "nullable": true,
             "enum": [
@@ -25310,11 +25310,11 @@
         "required": [
           "ending",
           "failure",
-          "round",
-          "cost",
+          "visit",
+          "usage",
           "checks",
-          "next",
-          "delivery"
+          "firstHumanAction",
+          "pullRequestState"
         ]
       },
       "FileChangeResponseDto": {
@@ -25380,7 +25380,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/RunTurnedOutResponseDto"
+                "$ref": "#/components/schemas/RunOutcomeResponseDto"
               }
             ]
           },
@@ -25452,13 +25452,13 @@
           "endedAt": {
             "type": "string"
           },
-          "cost": {
+          "usage": {
             "nullable": true,
             "description": "What the replay cost; a replay run has no outcome of its own, so the response shows its cost beside the run",
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/RunCostResponseDto"
+                "$ref": "#/components/schemas/RunUsageResponseDto"
               }
             ]
           },
@@ -25500,7 +25500,7 @@
           "harness",
           "startedAt",
           "endedAt",
-          "cost",
+          "usage",
           "changes",
           "trace",
           "succeeded",
@@ -28518,7 +28518,7 @@
           },
           "spend": {
             "nullable": true,
-            "description": "What the run spent, once it has ended and been digested",
+            "description": "What the run spent, once it has ended and its usage is recorded",
             "type": "object",
             "allOf": [
               {
@@ -34299,7 +34299,7 @@
           "at"
         ]
       },
-      "MemoryGroundStepResponseDto": {
+      "MemoryProvenanceStepResponseDto": {
         "type": "object",
         "properties": {
           "index": {
@@ -34347,7 +34347,7 @@
           "image"
         ]
       },
-      "MemoryGroundNoteResponseDto": {
+      "MemoryProvenanceNoteResponseDto": {
         "type": "object",
         "properties": {
           "position": {
@@ -34415,14 +34415,14 @@
             "example": "person",
             "description": "person: only notes by a teammate; outside: input the team does not control, approved one at a time; run: anything else"
           },
-          "origin": {
+          "proposedBy": {
             "type": "string",
             "enum": [
-              "drafted",
-              "remembered"
+              "drafter",
+              "agent"
             ],
-            "example": "remembered",
-            "description": "drafted: read from the run after it ended; remembered: the agent proposed it with spotlight remember"
+            "example": "agent",
+            "description": "drafter: the drafter read it from the run after the run ended; agent: the agent proposed it with spotlight remember"
           },
           "state": {
             "type": "string",
@@ -34476,20 +34476,20 @@
             "type": "string",
             "nullable": true,
             "example": "claude-code",
-            "description": "The harness the run whose steps it rests on ran on"
+            "description": "The harness of the run whose steps it cites"
           },
           "steps": {
-            "description": "The steps of its run it rests on",
+            "description": "The steps of its run that it cites",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/MemoryGroundStepResponseDto"
+              "$ref": "#/components/schemas/MemoryProvenanceStepResponseDto"
             }
           },
           "notes": {
-            "description": "The notes on the task that it rests on",
+            "description": "The notes on the task that it cites",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/MemoryGroundNoteResponseDto"
+              "$ref": "#/components/schemas/MemoryProvenanceNoteResponseDto"
             }
           }
         },
@@ -34498,7 +34498,7 @@
           "kind",
           "body",
           "source",
-          "origin",
+          "proposedBy",
           "state",
           "scope",
           "repository",
@@ -34600,7 +34600,7 @@
           "supersededBy"
         ]
       },
-      "MemoryGroundsResponseDto": {
+      "MemoryProvenanceResponseDto": {
         "type": "object",
         "properties": {
           "taskId": {
@@ -34716,13 +34716,13 @@
               }
             ]
           },
-          "grounds": {
+          "provenance": {
             "nullable": true,
-            "description": "The task and run it rests on; none where a person wrote it",
+            "description": "The task and run it cites; none where a person wrote it",
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/MemoryGroundsResponseDto"
+                "$ref": "#/components/schemas/MemoryProvenanceResponseDto"
               }
             ]
           },
@@ -34748,7 +34748,7 @@
           "approvedAt",
           "supersedes",
           "retirement",
-          "grounds",
+          "provenance",
           "runs"
         ]
       },
@@ -34919,13 +34919,13 @@
               }
             ]
           },
-          "grounds": {
+          "provenance": {
             "nullable": true,
-            "description": "The task and run it rests on; none where a person wrote it",
+            "description": "The task and run it cites; none where a person wrote it",
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/MemoryGroundsResponseDto"
+                "$ref": "#/components/schemas/MemoryProvenanceResponseDto"
               }
             ]
           },
@@ -34938,18 +34938,18 @@
             "type": "string",
             "nullable": true,
             "example": "claude-code",
-            "description": "The harness the run whose steps it rests on ran on"
+            "description": "The harness of the run whose steps it cites"
           },
           "steps": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/MemoryGroundStepResponseDto"
+              "$ref": "#/components/schemas/MemoryProvenanceStepResponseDto"
             }
           },
           "notes": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/MemoryGroundNoteResponseDto"
+              "$ref": "#/components/schemas/MemoryProvenanceNoteResponseDto"
             }
           },
           "superseded": {
@@ -34987,7 +34987,7 @@
           "approvedAt",
           "supersedes",
           "retirement",
-          "grounds",
+          "provenance",
           "runs",
           "harness",
           "steps",
@@ -35042,14 +35042,14 @@
             "example": "person",
             "description": "person: only notes by a teammate; outside: input the team does not control, approved one at a time; run: anything else"
           },
-          "origin": {
+          "proposedBy": {
             "type": "string",
             "enum": [
-              "drafted",
-              "remembered"
+              "drafter",
+              "agent"
             ],
-            "example": "remembered",
-            "description": "drafted: read from the run after it ended; remembered: the agent proposed it with spotlight remember"
+            "example": "agent",
+            "description": "drafter: the drafter read it from the run after the run ended; agent: the agent proposed it with spotlight remember"
           },
           "state": {
             "type": "string",
@@ -35103,20 +35103,20 @@
             "type": "string",
             "nullable": true,
             "example": "claude-code",
-            "description": "The harness the run whose steps it rests on ran on"
+            "description": "The harness of the run whose steps it cites"
           },
           "steps": {
-            "description": "The steps of its run it rests on",
+            "description": "The steps of its run that it cites",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/MemoryGroundStepResponseDto"
+              "$ref": "#/components/schemas/MemoryProvenanceStepResponseDto"
             }
           },
           "notes": {
-            "description": "The notes on the task that it rests on",
+            "description": "The notes on the task that it cites",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/MemoryGroundNoteResponseDto"
+              "$ref": "#/components/schemas/MemoryProvenanceNoteResponseDto"
             }
           },
           "handle": {
@@ -35137,7 +35137,7 @@
           "kind",
           "body",
           "source",
-          "origin",
+          "proposedBy",
           "state",
           "scope",
           "repository",
@@ -35161,7 +35161,7 @@
               "$ref": "#/components/schemas/TeamMemoryResponseDto"
             }
           },
-          "cut": {
+          "omitted": {
             "description": "What applied to the run but was left out of its briefing by the cap, the nearest first",
             "type": "array",
             "items": {
@@ -35191,7 +35191,7 @@
         },
         "required": [
           "briefed",
-          "cut",
+          "omitted",
           "recalled",
           "proposed",
           "reviewItemId"
@@ -35243,7 +35243,7 @@
             "example": [
               "api/src/uploads"
             ],
-            "description": "Paths it bears on, relative to the run’s workspace, each starting with the checkout folder",
+            "description": "Paths it is about, relative to the run’s workspace, each starting with the checkout folder",
             "type": "array",
             "items": {
               "type": "string"
@@ -35292,15 +35292,15 @@
           "url"
         ]
       },
-      "NextActResponseDto": {
+      "HumanActionResponseDto": {
         "type": "object",
         "properties": {
-          "act": {
+          "kind": {
             "type": "string",
             "enum": [
               "started",
               "parked",
-              "closed",
+              "accepted",
               "answered",
               "sent-back"
             ]
@@ -35311,7 +35311,7 @@
           }
         },
         "required": [
-          "act",
+          "kind",
           "at"
         ]
       },
@@ -35365,17 +35365,17 @@
             "example": "exited",
             "description": "Why it failed, where it did"
           },
-          "round": {
+          "visit": {
             "type": "number",
             "example": 2,
             "description": "How many runs this station has taken on the task, this one included"
           },
-          "cost": {
+          "usage": {
             "nullable": true,
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/RunCostResponseDto"
+                "$ref": "#/components/schemas/RunUsageResponseDto"
               }
             ]
           },
@@ -35390,13 +35390,13 @@
             "nullable": true,
             "description": "How its change fared when checked, if it was"
           },
-          "next": {
+          "firstHumanAction": {
             "nullable": true,
             "description": "The first thing a person did with the task after the run",
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/NextActResponseDto"
+                "$ref": "#/components/schemas/HumanActionResponseDto"
               }
             ]
           },
@@ -35410,7 +35410,7 @@
               }
             ]
           },
-          "delivery": {
+          "pullRequestState": {
             "type": "string",
             "enum": [
               "open",
@@ -35428,15 +35428,15 @@
           "endedAt",
           "ending",
           "failure",
-          "round",
-          "cost",
+          "visit",
+          "usage",
           "checks",
-          "next",
+          "firstHumanAction",
           "passed",
-          "delivery"
+          "pullRequestState"
         ]
       },
-      "SpendResponseDto": {
+      "MoneyResponseDto": {
         "type": "object",
         "properties": {
           "amount": {
@@ -35470,11 +35470,11 @@
             "type": "number",
             "example": 2
           },
-          "failedShare": {
+          "failedRate": {
             "type": "number",
             "nullable": true,
             "example": 0.17,
-            "description": "Failed runs as a share of the runs; none where none ran"
+            "description": "Failed runs as a fraction of the runs; none where none ran"
           },
           "stopped": {
             "type": "number",
@@ -35492,12 +35492,12 @@
           "accepted": {
             "type": "number",
             "example": 6,
-            "description": "Runs a person next closed or approved"
+            "description": "Runs that a person accepted or approved first"
           },
           "sentBack": {
             "type": "number",
             "example": 3,
-            "description": "Runs a person next sent back or refused"
+            "description": "Runs that a person sent back or refused first"
           },
           "passed": {
             "type": "number",
@@ -35515,7 +35515,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/SpendResponseDto"
+                "$ref": "#/components/schemas/MoneyResponseDto"
               }
             ]
           },
@@ -35533,7 +35533,7 @@
             "type": "number",
             "nullable": true,
             "example": 184000,
-            "description": "The median time the runs took, from their digests"
+            "description": "The median time the runs took, from their recorded usage"
           },
           "p90Ms": {
             "type": "number",
@@ -35546,7 +35546,7 @@
           "runs",
           "cancelled",
           "failed",
-          "failedShare",
+          "failedRate",
           "stopped",
           "checksPassed",
           "checksFailed",
@@ -35561,26 +35561,26 @@
           "p90Ms"
         ]
       },
-      "TallySharesResponseDto": {
+      "TallyRatesResponseDto": {
         "type": "object",
         "properties": {
           "checksPassed": {
             "type": "number",
             "nullable": true,
             "example": 0.89,
-            "description": "Runs whose checks passed as a share of the runs checked; none where none were"
+            "description": "Runs whose checks passed as a fraction of the runs checked; none where none were"
           },
           "accepted": {
             "type": "number",
             "nullable": true,
             "example": 0.5,
-            "description": "Runs a person accepted as a share of the runs that ran"
+            "description": "Runs a person accepted as a fraction of the runs that ran"
           },
           "merged": {
             "type": "number",
             "nullable": true,
             "example": 0.33,
-            "description": "Merged tasks as a share of the runs that ran"
+            "description": "Merged tasks as a fraction of the runs that ran"
           }
         },
         "required": [
@@ -35643,8 +35643,8 @@
           "tally": {
             "$ref": "#/components/schemas/RunTallyResponseDto"
           },
-          "shares": {
-            "$ref": "#/components/schemas/TallySharesResponseDto"
+          "rates": {
+            "$ref": "#/components/schemas/TallyRatesResponseDto"
           },
           "firstDay": {
             "type": "string",
@@ -35668,7 +35668,7 @@
           "pullRequest",
           "runs",
           "tally",
-          "shares",
+          "rates",
           "firstDay",
           "lastDay"
         ]
@@ -35677,7 +35677,7 @@
         "type": "object",
         "properties": {
           "tally": {
-            "description": "One tally over the listed runs of the config the station last ran, as of the listed runs, back to its last change to another config it ran; runs meant for a config that never ran them, between, leave the stretch whole and are not counted",
+            "description": "One tally over the listed runs of the config the station last ran, as of the listed runs, back to its last change to another config it ran; runs meant for a config that never ran them, between, leave the config interval whole and are not counted",
             "allOf": [
               {
                 "$ref": "#/components/schemas/RunTallyResponseDto"
@@ -35689,7 +35689,7 @@
           "tally"
         ]
       },
-      "StationOutcomesResponseDto": {
+      "StationInsightsResponseDto": {
         "type": "object",
         "properties": {
           "stationId": {
@@ -35748,7 +35748,7 @@
               "type": "string"
             }
           },
-          "passShare": {
+          "passThreshold": {
             "type": "number",
             "example": 1,
             "description": "The share of claims a run must meet to pass, from 0 to 1"
@@ -35757,7 +35757,7 @@
             "type": "number",
             "example": 0.2
           },
-          "trust": {
+          "minAgreement": {
             "type": "number",
             "example": 0.6
           }
@@ -35766,15 +35766,15 @@
           "rubricVersion",
           "kind",
           "claims",
-          "passShare",
+          "passThreshold",
           "sample",
-          "trust"
+          "minAgreement"
         ]
       },
       "JudgeCalibrationResponseDto": {
         "type": "object",
         "properties": {
-          "trusted": {
+          "qualified": {
             "type": "boolean",
             "description": "Whether the judge agrees with people often enough for its scores to count"
           },
@@ -35798,19 +35798,19 @@
             "example": 24,
             "description": "Runs of the current rubric with both a judge score and people’s"
           },
-          "trust": {
+          "minAgreement": {
             "type": "number",
             "nullable": true,
             "example": 0.6
           },
-          "hiddenBecause": {
+          "hiddenReason": {
             "type": "string",
             "enum": [
               "no-judge",
               "unreadable-rubric",
               "too-few-pairs",
               "no-agreement",
-              "below-trust",
+              "below-min-agreement",
               null
             ],
             "nullable": true,
@@ -35818,12 +35818,12 @@
           }
         },
         "required": [
-          "trusted",
+          "qualified",
           "measure",
           "agreement",
           "pairs",
-          "trust",
-          "hiddenBecause"
+          "minAgreement",
+          "hiddenReason"
         ]
       },
       "AgreementReadingsResponseDto": {
@@ -36069,7 +36069,7 @@
             "type": "number",
             "nullable": true,
             "example": 0.75,
-            "description": "The judge’s mean score, or null while this rubric version is not the current trusted one"
+            "description": "The judge’s mean score, or null while this rubric version is not the current qualified one"
           },
           "labelled": {
             "type": "number",
@@ -36153,7 +36153,7 @@
           "lastAt"
         ]
       },
-      "JudgeCoverageSharesResponseDto": {
+      "JudgeCoverageRatesResponseDto": {
         "type": "object",
         "properties": {
           "both": {
@@ -36208,11 +36208,11 @@
             "type": "number",
             "example": 12
           },
-          "shares": {
-            "description": "Each count as a share of the runs",
+          "rates": {
+            "description": "Each count as a fraction of the runs",
             "allOf": [
               {
-                "$ref": "#/components/schemas/JudgeCoverageSharesResponseDto"
+                "$ref": "#/components/schemas/JudgeCoverageRatesResponseDto"
               }
             ]
           }
@@ -36223,7 +36223,7 @@
           "judgeOnly",
           "peopleOnly",
           "neither",
-          "shares"
+          "rates"
         ]
       },
       "StationJudgeAgreementResponseDto": {
@@ -36406,7 +36406,7 @@
             "example": 1,
             "description": "1 for yes and 0 for no, a whole number from 1 to 5, or the share of claims met"
           },
-          "marks": {
+          "claimResults": {
             "nullable": true,
             "example": [
               true,
@@ -36443,7 +36443,7 @@
         "required": [
           "kind",
           "value",
-          "marks",
+          "claimResults",
           "label",
           "rubricVersion",
           "model",
@@ -36474,7 +36474,7 @@
             "type": "number",
             "example": 1
           },
-          "marks": {
+          "claimResults": {
             "nullable": true,
             "example": [
               true,
@@ -36500,7 +36500,7 @@
           "mine",
           "kind",
           "value",
-          "marks",
+          "claimResults",
           "label",
           "at"
         ]
@@ -36699,7 +36699,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/SpendResponseDto"
+                "$ref": "#/components/schemas/MoneyResponseDto"
               }
             ]
           },
@@ -36745,7 +36745,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/SpendResponseDto"
+                "$ref": "#/components/schemas/MoneyResponseDto"
               }
             ]
           },
@@ -36757,16 +36757,16 @@
               }
             ]
           },
-          "touches": {
+          "humanActions": {
             "type": "number",
             "example": 40,
             "description": "What people did with the tasks worked in the period: moves, answers, approvals, refusals, sends-back"
           },
-          "touchesPerTask": {
+          "humanActionsPerTask": {
             "type": "number",
             "nullable": true,
             "example": 1.9,
-            "description": "Touches per task worked"
+            "description": "Human actions per task worked"
           },
           "activePeople": {
             "type": "number",
@@ -36799,14 +36799,14 @@
           "mergeRate",
           "costPerMerge",
           "taskToMerge",
-          "touches",
-          "touchesPerTask",
+          "humanActions",
+          "humanActionsPerTask",
           "activePeople",
           "mergedTaskIds",
           "peopleIds"
         ]
       },
-      "ChangeResponseDto": {
+      "DeltaResponseDto": {
         "type": "object",
         "properties": {
           "unit": {
@@ -36857,7 +36857,7 @@
           "tone"
         ]
       },
-      "HeadlineChangesResponseDto": {
+      "HeadlineDeltasResponseDto": {
         "type": "object",
         "properties": {
           "spend": {
@@ -36866,7 +36866,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChangeResponseDto"
+                "$ref": "#/components/schemas/DeltaResponseDto"
               }
             ]
           },
@@ -36876,7 +36876,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChangeResponseDto"
+                "$ref": "#/components/schemas/DeltaResponseDto"
               }
             ]
           },
@@ -36886,7 +36886,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChangeResponseDto"
+                "$ref": "#/components/schemas/DeltaResponseDto"
               }
             ]
           },
@@ -36896,7 +36896,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChangeResponseDto"
+                "$ref": "#/components/schemas/DeltaResponseDto"
               }
             ]
           },
@@ -36906,17 +36906,17 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChangeResponseDto"
+                "$ref": "#/components/schemas/DeltaResponseDto"
               }
             ]
           },
-          "touchesPerTask": {
+          "humanActionsPerTask": {
             "nullable": true,
-            "description": "Human touches per task against the period before",
+            "description": "Human actions per task against the period before",
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChangeResponseDto"
+                "$ref": "#/components/schemas/DeltaResponseDto"
               }
             ]
           },
@@ -36926,7 +36926,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChangeResponseDto"
+                "$ref": "#/components/schemas/DeltaResponseDto"
               }
             ]
           }
@@ -36937,7 +36937,7 @@
           "mergeRate",
           "costPerMerge",
           "taskToMerge",
-          "touchesPerTask",
+          "humanActionsPerTask",
           "activePeople"
         ]
       },
@@ -36999,7 +36999,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/SpendResponseDto"
+                "$ref": "#/components/schemas/MoneyResponseDto"
               }
             ]
           },
@@ -37185,7 +37185,7 @@
             "description": "How the headline moved against the period before, as long",
             "allOf": [
               {
-                "$ref": "#/components/schemas/HeadlineChangesResponseDto"
+                "$ref": "#/components/schemas/HeadlineDeltasResponseDto"
               }
             ]
           },
@@ -37259,7 +37259,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChangeResponseDto"
+                "$ref": "#/components/schemas/DeltaResponseDto"
               }
             ]
           },
@@ -37324,7 +37324,7 @@
           "unanswered"
         ]
       },
-      "DeliveryChangesResponseDto": {
+      "DeliveryDeltasResponseDto": {
         "type": "object",
         "properties": {
           "opened": {
@@ -37333,7 +37333,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChangeResponseDto"
+                "$ref": "#/components/schemas/DeltaResponseDto"
               }
             ]
           },
@@ -37343,7 +37343,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChangeResponseDto"
+                "$ref": "#/components/schemas/DeltaResponseDto"
               }
             ]
           },
@@ -37353,7 +37353,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChangeResponseDto"
+                "$ref": "#/components/schemas/DeltaResponseDto"
               }
             ]
           }
@@ -37426,7 +37426,7 @@
             "description": "How each count moved against the period before, as long",
             "allOf": [
               {
-                "$ref": "#/components/schemas/DeliveryChangesResponseDto"
+                "$ref": "#/components/schemas/DeliveryDeltasResponseDto"
               }
             ]
           }
@@ -37488,7 +37488,7 @@
           "flow"
         ]
       },
-      "TallyChangesResponseDto": {
+      "TallyDeltasResponseDto": {
         "type": "object",
         "properties": {
           "runs": {
@@ -37497,7 +37497,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChangeResponseDto"
+                "$ref": "#/components/schemas/DeltaResponseDto"
               }
             ]
           },
@@ -37507,7 +37507,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChangeResponseDto"
+                "$ref": "#/components/schemas/DeltaResponseDto"
               }
             ]
           },
@@ -37517,7 +37517,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChangeResponseDto"
+                "$ref": "#/components/schemas/DeltaResponseDto"
               }
             ]
           },
@@ -37527,7 +37527,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChangeResponseDto"
+                "$ref": "#/components/schemas/DeltaResponseDto"
               }
             ]
           },
@@ -37537,7 +37537,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChangeResponseDto"
+                "$ref": "#/components/schemas/DeltaResponseDto"
               }
             ]
           },
@@ -37547,7 +37547,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChangeResponseDto"
+                "$ref": "#/components/schemas/DeltaResponseDto"
               }
             ]
           },
@@ -37557,7 +37557,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChangeResponseDto"
+                "$ref": "#/components/schemas/DeltaResponseDto"
               }
             ]
           }
@@ -37753,7 +37753,7 @@
             "description": "How its runs moved against the period before",
             "allOf": [
               {
-                "$ref": "#/components/schemas/TallyChangesResponseDto"
+                "$ref": "#/components/schemas/TallyDeltasResponseDto"
               }
             ]
           },
@@ -37816,7 +37816,7 @@
             "description": "How the whole team’s runs moved against the period before",
             "allOf": [
               {
-                "$ref": "#/components/schemas/TallyChangesResponseDto"
+                "$ref": "#/components/schemas/TallyDeltasResponseDto"
               }
             ]
           },
@@ -37893,7 +37893,7 @@
           "sentBack": {
             "type": "number",
             "example": 4,
-            "description": "Runs a person next sent back or refused"
+            "description": "Runs that a person sent back or refused first"
           },
           "sentBackRate": {
             "type": "number",
@@ -37931,7 +37931,7 @@
           "refusedTaskIds"
         ]
       },
-      "HumanLoadChangesResponseDto": {
+      "HumanLoadDeltasResponseDto": {
         "type": "object",
         "properties": {
           "asksPerTask": {
@@ -37940,7 +37940,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChangeResponseDto"
+                "$ref": "#/components/schemas/DeltaResponseDto"
               }
             ]
           },
@@ -37950,7 +37950,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChangeResponseDto"
+                "$ref": "#/components/schemas/DeltaResponseDto"
               }
             ]
           },
@@ -37960,7 +37960,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChangeResponseDto"
+                "$ref": "#/components/schemas/DeltaResponseDto"
               }
             ]
           },
@@ -37970,7 +37970,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChangeResponseDto"
+                "$ref": "#/components/schemas/DeltaResponseDto"
               }
             ]
           }
@@ -37998,7 +37998,7 @@
             "type": "number",
             "example": 3
           },
-          "acts": {
+          "actions": {
             "type": "number",
             "example": 12,
             "description": "Moves, answers, approvals, refusals and sends-back"
@@ -38026,7 +38026,7 @@
           "personId",
           "name",
           "tasksOpened",
-          "acts",
+          "actions",
           "chats",
           "firstSeenAt",
           "lastActiveAt",
@@ -38047,7 +38047,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChangeResponseDto"
+                "$ref": "#/components/schemas/DeltaResponseDto"
               }
             ]
           },
@@ -38108,7 +38108,7 @@
             "description": "How the load moved against the period before, as long",
             "allOf": [
               {
-                "$ref": "#/components/schemas/HumanLoadChangesResponseDto"
+                "$ref": "#/components/schemas/HumanLoadDeltasResponseDto"
               }
             ]
           },
@@ -38221,18 +38221,18 @@
             "example": 80000,
             "description": "Cache-write tokens of those same runs; none where none of them counted any"
           },
-          "cacheShare": {
+          "cacheRate": {
             "type": "number",
             "nullable": true,
             "example": 0.95,
-            "description": "Cache reads as a share of everything the runs read: input, cache reads and cache writes together; none where nothing was counted"
+            "description": "Cache reads as a fraction of everything the runs read: input, cache reads and cache writes together; none where nothing was counted"
           }
         },
         "required": [
           "input",
           "cacheRead",
           "cacheWrite",
-          "cacheShare"
+          "cacheRate"
         ]
       },
       "StationCacheUseResponseDto": {
@@ -38256,11 +38256,11 @@
             "example": 80000,
             "description": "Cache-write tokens of those same runs; none where none of them counted any"
           },
-          "cacheShare": {
+          "cacheRate": {
             "type": "number",
             "nullable": true,
             "example": 0.95,
-            "description": "Cache reads as a share of everything the runs read: input, cache reads and cache writes together; none where nothing was counted"
+            "description": "Cache reads as a fraction of everything the runs read: input, cache reads and cache writes together; none where nothing was counted"
           },
           "stationId": {
             "type": "string",
@@ -38271,7 +38271,7 @@
           "input",
           "cacheRead",
           "cacheWrite",
-          "cacheShare",
+          "cacheRate",
           "stationId"
         ]
       },
@@ -38284,7 +38284,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/SpendResponseDto"
+                "$ref": "#/components/schemas/MoneyResponseDto"
               }
             ]
           },
@@ -38381,7 +38381,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChangeResponseDto"
+                "$ref": "#/components/schemas/DeltaResponseDto"
               }
             ]
           }
@@ -38440,11 +38440,11 @@
             "example": 6,
             "description": "Of those, the runs that read it"
           },
-          "usedShare": {
+          "usedRate": {
             "type": "number",
             "nullable": true,
             "example": 0.43,
-            "description": "The share of that week’s runs that read it; none where no run ended that week"
+            "description": "The fraction of that week’s runs that read it; none where no run ended that week"
           }
         },
         "required": [
@@ -38452,7 +38452,7 @@
           "runs",
           "enabled",
           "used",
-          "usedShare"
+          "usedRate"
         ]
       },
       "SkillAtStationResponseDto": {
@@ -38780,7 +38780,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChangeResponseDto"
+                "$ref": "#/components/schemas/DeltaResponseDto"
               }
             ]
           }
@@ -38796,7 +38796,7 @@
           "change"
         ]
       },
-      "JudgeShareResponseDto": {
+      "JudgeRateResponseDto": {
         "type": "object",
         "properties": {
           "mean": {
@@ -38872,21 +38872,21 @@
           },
           "judgeBefore": {
             "nullable": true,
-            "description": "The judge’s scores of the runs before, only where the station’s judge is trusted",
+            "description": "The judge’s scores of the runs before, only where the station’s judge is qualified",
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/JudgeShareResponseDto"
+                "$ref": "#/components/schemas/JudgeRateResponseDto"
               }
             ]
           },
           "judgeAfter": {
             "nullable": true,
-            "description": "The judge’s scores of the runs after, only where the station’s judge is trusted",
+            "description": "The judge’s scores of the runs after, only where the station’s judge is qualified",
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/JudgeShareResponseDto"
+                "$ref": "#/components/schemas/JudgeRateResponseDto"
               }
             ]
           },
@@ -38896,7 +38896,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChangeResponseDto"
+                "$ref": "#/components/schemas/DeltaResponseDto"
               }
             ]
           },
@@ -38927,7 +38927,7 @@
       "StationJudgeCalibrationResponseDto": {
         "type": "object",
         "properties": {
-          "trusted": {
+          "qualified": {
             "type": "boolean",
             "description": "Whether the judge agrees with people often enough for its scores to count"
           },
@@ -38951,19 +38951,19 @@
             "example": 24,
             "description": "Runs of the current rubric with both a judge score and people’s"
           },
-          "trust": {
+          "minAgreement": {
             "type": "number",
             "nullable": true,
             "example": 0.6
           },
-          "hiddenBecause": {
+          "hiddenReason": {
             "type": "string",
             "enum": [
               "no-judge",
               "unreadable-rubric",
               "too-few-pairs",
               "no-agreement",
-              "below-trust",
+              "below-min-agreement",
               null
             ],
             "nullable": true,
@@ -38979,12 +38979,12 @@
           }
         },
         "required": [
-          "trusted",
+          "qualified",
           "measure",
           "agreement",
           "pairs",
-          "trust",
-          "hiddenBecause",
+          "minAgreement",
+          "hiddenReason",
           "lineId",
           "stationId"
         ]
@@ -39003,7 +39003,7 @@
             }
           },
           "judges": {
-            "description": "How far each changed station’s judge is trusted, where it has one",
+            "description": "The calibration of each changed station’s judge, where it has one",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/StationJudgeCalibrationResponseDto"
@@ -39046,20 +39046,20 @@
           "maxSteps"
         ]
       },
-      "SetupOutcomesResponseDto": {
+      "AgentConfigOutcomesResponseDto": {
         "type": "object",
         "properties": {
           "accepted": {
             "type": "number",
             "nullable": true,
             "example": 0.6,
-            "description": "Share of runs a person next closed or approved"
+            "description": "Share of runs that a person accepted or approved first"
           },
           "sent_back": {
             "type": "number",
             "nullable": true,
             "example": 0.2,
-            "description": "Share of runs a person next sent back or refused"
+            "description": "Share of runs that a person sent back or refused first"
           },
           "passed": {
             "type": "number",
@@ -39083,7 +39083,7 @@
             "type": "number",
             "nullable": true,
             "example": 0.75,
-            "description": "The judge’s mean score as a share of its scale, over runs at stations whose judge is trusted"
+            "description": "The judge’s mean score as a share of its scale, over runs at stations whose judge is qualified"
           }
         },
         "required": [
@@ -39095,7 +39095,7 @@
           "judge"
         ]
       },
-      "SetupOutcomeResponseDto": {
+      "AgentConfigOutcomeResponseDto": {
         "type": "object",
         "properties": {
           "harness": {
@@ -39136,21 +39136,21 @@
             "description": "Whether it has a cost per run in the currency the comparison is drawn in, so it can go on the chart"
           },
           "outcomes": {
-            "$ref": "#/components/schemas/SetupOutcomesResponseDto"
+            "$ref": "#/components/schemas/AgentConfigOutcomesResponseDto"
           },
           "judge": {
             "nullable": true,
-            "description": "The judge’s scores of this setup’s runs; none unless the comparison is narrowed to one station",
+            "description": "The judge’s scores of this agent config’s runs; none unless the comparison is narrowed to one station",
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/JudgeShareResponseDto"
+                "$ref": "#/components/schemas/JudgeRateResponseDto"
               }
             ]
           },
           "frontier": {
             "type": "array",
-            "description": "The outcomes this setup sits on the cost frontier for: no other setup with enough runs did as well or better for less",
+            "description": "The outcomes this agent config sits on the cost frontier for: no other agent config with enough runs did as well or better for less",
             "items": {
               "type": "string",
               "enum": [
@@ -39178,7 +39178,7 @@
           "frontier"
         ]
       },
-      "InsightsSetupsResponseDto": {
+      "InsightsAgentConfigsResponseDto": {
         "type": "object",
         "properties": {
           "period": {
@@ -39210,19 +39210,19 @@
           "minRuns": {
             "type": "number",
             "example": 3,
-            "description": "The minimum number of runs a setup needs to sit on the frontier"
+            "description": "The minimum number of runs an agent config needs to sit on the frontier"
           },
           "currency": {
             "type": "string",
             "nullable": true,
             "example": "USD",
-            "description": "The currency the frontier is drawn in; setups priced in another are left off it"
+            "description": "The currency the frontier is drawn in; agent configs priced in another are left off it"
           },
-          "setups": {
+          "agentConfigs": {
             "description": "How runs went on each harness, model, effort and profile, the most runs first",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/SetupOutcomeResponseDto"
+              "$ref": "#/components/schemas/AgentConfigOutcomeResponseDto"
             }
           },
           "judgeOmitted": {
@@ -39235,7 +39235,7 @@
             "description": "Why no judge scores are compared: no_station where the comparison spans stations, whose judges each score against their own rubric"
           },
           "judges": {
-            "description": "How far the station’s judge is trusted, where one station is picked and it has a judge",
+            "description": "The calibration of the station’s judge, where one station is picked and it has a judge",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/StationJudgeCalibrationResponseDto"
@@ -39249,7 +39249,7 @@
           "sizes",
           "minRuns",
           "currency",
-          "setups",
+          "agentConfigs",
           "judgeOmitted",
           "judges"
         ]
@@ -39415,7 +39415,7 @@
           "benchmark"
         ]
       },
-      "AlertThresholdResponseDto": {
+      "AlertRuleResponseDto": {
         "type": "object",
         "properties": {
           "measure": {
@@ -39460,7 +39460,7 @@
           "over"
         ]
       },
-      "AlertCrossingPointResponseDto": {
+      "AlertFiringPointResponseDto": {
         "type": "object",
         "properties": {
           "runId": {
@@ -39484,7 +39484,7 @@
           "value"
         ]
       },
-      "StationAlertCrossingResponseDto": {
+      "StationAlertFiringResponseDto": {
         "type": "object",
         "properties": {
           "alertId": {
@@ -39499,24 +39499,24 @@
             "type": "string",
             "example": "d41f0a2c-8b7e-4f19-9d3a-6c5e2b1a4f80"
           },
-          "threshold": {
-            "description": "The threshold that was crossed, as set on the station",
+          "rule": {
+            "description": "The alert rule that fired, as set on the station",
             "allOf": [
               {
-                "$ref": "#/components/schemas/AlertThresholdResponseDto"
+                "$ref": "#/components/schemas/AlertRuleResponseDto"
               }
             ]
           },
           "value": {
             "type": "number",
             "example": 0.4,
-            "description": "The measure over the last runs when it crossed"
+            "description": "The measure over the last runs when the alert fired"
           },
           "baseline": {
             "type": "number",
             "nullable": true,
             "example": 0.2,
-            "description": "The measure over the runs before them, for a threshold that watches a rise or fall"
+            "description": "The measure over the runs before them, for a condition that watches a rise or fall"
           },
           "change": {
             "nullable": true,
@@ -39524,20 +39524,20 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChangeResponseDto"
+                "$ref": "#/components/schemas/DeltaResponseDto"
               }
             ]
           },
           "runId": {
             "type": "string",
             "example": "run_1",
-            "description": "The run that crossed it"
+            "description": "The run that fired the alert"
           },
           "taskId": {
             "type": "string",
             "example": "task_1"
           },
-          "raisedAt": {
+          "firedAt": {
             "type": "string",
             "example": "2026-09-30T10:00:00.000Z"
           },
@@ -39549,12 +39549,12 @@
               "90d"
             ],
             "example": "7d",
-            "description": "The shortest Insights period whose days include the moment the alert went off"
+            "description": "The shortest Insights period whose days include the moment the alert fired"
           },
-          "recoveredAt": {
+          "resolvedAt": {
             "type": "string",
             "nullable": true,
-            "description": "When the station came back within the threshold, if it has"
+            "description": "When the alert resolved, if it has"
           },
           "currency": {
             "type": "string",
@@ -39563,10 +39563,10 @@
             "description": "The currency a cost threshold is in"
           },
           "series": {
-            "description": "The measure run by run around the crossing, the oldest first",
+            "description": "The measure run by run around the firing, the oldest first",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/AlertCrossingPointResponseDto"
+              "$ref": "#/components/schemas/AlertFiringPointResponseDto"
             }
           }
         },
@@ -39574,15 +39574,15 @@
           "alertId",
           "lineId",
           "stationId",
-          "threshold",
+          "rule",
           "value",
           "baseline",
           "change",
           "runId",
           "taskId",
-          "raisedAt",
+          "firedAt",
           "insightsPeriod",
-          "recoveredAt",
+          "resolvedAt",
           "currency",
           "series"
         ]
@@ -39600,12 +39600,12 @@
             "example": 12,
             "description": "Pull requests merged that week"
           },
-          "made": {
+          "authored": {
             "type": "number",
             "example": 5,
             "description": "Of those, the ones Spotlight made"
           },
-          "touched": {
+          "reviewed": {
             "type": "number",
             "example": 2,
             "description": "Of those, ones people or bots wrote that a Spotlight review task was opened on"
@@ -39625,25 +39625,25 @@
             "example": 3,
             "description": "Of those, ones bots wrote with no Spotlight review task"
           },
-          "share": {
+          "rate": {
             "type": "number",
             "nullable": true,
             "example": 0.58,
-            "description": "Made and touched over everything merged, bots’ included, from 0 to 1; none where nothing merged"
+            "description": "Authored and reviewed over everything merged, bots’ included, from 0 to 1; none where nothing merged"
           }
         },
         "required": [
           "week",
           "merged",
-          "made",
-          "touched",
+          "authored",
+          "reviewed",
           "spotlight",
           "people",
           "bots",
-          "share"
+          "rate"
         ]
       },
-      "RepositoryPenetrationResponseDto": {
+      "RepositorySpotlightShareResponseDto": {
         "type": "object",
         "properties": {
           "repository": {
@@ -39654,11 +39654,11 @@
             "type": "number",
             "example": 40
           },
-          "made": {
+          "authored": {
             "type": "number",
             "example": 18
           },
-          "touched": {
+          "reviewed": {
             "type": "number",
             "example": 4
           },
@@ -39666,7 +39666,7 @@
             "type": "number",
             "example": 1
           },
-          "share": {
+          "rate": {
             "type": "number",
             "nullable": true,
             "example": 0.55
@@ -39681,14 +39681,14 @@
         "required": [
           "repository",
           "merged",
-          "made",
-          "touched",
+          "authored",
+          "reviewed",
           "bots",
-          "share",
+          "rate",
           "weeks"
         ]
       },
-      "PenetrationResponseDto": {
+      "SpotlightShareResponseDto": {
         "type": "object",
         "properties": {
           "merged": {
@@ -39696,11 +39696,11 @@
             "example": 52,
             "description": "Pull requests merged in the period, across the team, bots’ included"
           },
-          "made": {
+          "authored": {
             "type": "number",
             "example": 21
           },
-          "touched": {
+          "reviewed": {
             "type": "number",
             "example": 6,
             "description": "Merged ones a Spotlight review task was opened on"
@@ -39710,11 +39710,11 @@
             "example": 4,
             "description": "Merged ones bots wrote alone"
           },
-          "share": {
+          "rate": {
             "type": "number",
             "nullable": true,
             "example": 0.52,
-            "description": "Made and touched over everything merged; bots’ pull requests count in the whole"
+            "description": "Authored and reviewed over everything merged; bots’ pull requests count in the whole"
           },
           "weeks": {
             "description": "The team, week by week, oldest first",
@@ -39727,16 +39727,16 @@
             "description": "Each repository the team’s lines work, and any other its tasks merged into, the busiest first",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/RepositoryPenetrationResponseDto"
+              "$ref": "#/components/schemas/RepositorySpotlightShareResponseDto"
             }
           }
         },
         "required": [
           "merged",
-          "made",
-          "touched",
+          "authored",
+          "reviewed",
           "bots",
-          "share",
+          "rate",
           "weeks",
           "repositories"
         ]
@@ -39865,7 +39865,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/SpendResponseDto"
+                "$ref": "#/components/schemas/MoneyResponseDto"
               }
             ]
           },
@@ -39950,11 +39950,11 @@
               "type": "string"
             }
           },
-          "penetration": {
-            "description": "How much of what merged Spotlight made or touched",
+          "spotlightShare": {
+            "description": "How much of what merged Spotlight authored or reviewed",
             "allOf": [
               {
-                "$ref": "#/components/schemas/PenetrationResponseDto"
+                "$ref": "#/components/schemas/SpotlightShareResponseDto"
               }
             ]
           },
@@ -39986,7 +39986,7 @@
           "total",
           "repositories",
           "weeks",
-          "penetration",
+          "spotlightShare",
           "comparison",
           "types",
           "depth"
@@ -40058,7 +40058,7 @@
           "people"
         ]
       },
-      "PercentileChangesResponseDto": {
+      "PercentileDeltasResponseDto": {
         "type": "object",
         "properties": {
           "p50": {
@@ -40067,7 +40067,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChangeResponseDto"
+                "$ref": "#/components/schemas/DeltaResponseDto"
               }
             ]
           },
@@ -40077,7 +40077,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChangeResponseDto"
+                "$ref": "#/components/schemas/DeltaResponseDto"
               }
             ]
           },
@@ -40087,7 +40087,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChangeResponseDto"
+                "$ref": "#/components/schemas/DeltaResponseDto"
               }
             ]
           },
@@ -40097,7 +40097,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChangeResponseDto"
+                "$ref": "#/components/schemas/DeltaResponseDto"
               }
             ]
           }
@@ -40116,7 +40116,7 @@
             "description": "Pull requests Spotlight made",
             "allOf": [
               {
-                "$ref": "#/components/schemas/PercentileChangesResponseDto"
+                "$ref": "#/components/schemas/PercentileDeltasResponseDto"
               }
             ]
           },
@@ -40124,7 +40124,7 @@
             "description": "Pull requests people made alone, in the repositories Spotlight merged into",
             "allOf": [
               {
-                "$ref": "#/components/schemas/PercentileChangesResponseDto"
+                "$ref": "#/components/schemas/PercentileDeltasResponseDto"
               }
             ]
           }
@@ -40285,7 +40285,7 @@
             "example": 15,
             "description": "Merged with that many rounds"
           },
-          "share": {
+          "rate": {
             "type": "number",
             "nullable": true,
             "example": 0.52,
@@ -40295,7 +40295,7 @@
         "required": [
           "rounds",
           "merged",
-          "share"
+          "rate"
         ]
       },
       "DepthWeekResponseDto": {
@@ -40385,18 +40385,18 @@
             "example": 40,
             "description": "Reviews it submitted"
           },
-          "resolvedShare": {
+          "resolvedRate": {
             "type": "number",
             "nullable": true,
             "example": 0.42,
-            "description": "Of the review threads it started, the share now resolved, from 0 to 1; none where it started none"
+            "description": "Of the review threads it started, the fraction now resolved, from 0 to 1; none where it started none"
           }
         },
         "required": [
           "login",
           "comments",
           "reviews",
-          "resolvedShare"
+          "resolvedRate"
         ]
       },
       "PipelineTypeResponseDto": {
@@ -40443,7 +40443,7 @@
           "inbox"
         ]
       },
-      "PercentileJamsResponseDto": {
+      "PercentileBottleneckRatiosResponseDto": {
         "type": "object",
         "properties": {
           "p50": {
@@ -40568,11 +40568,11 @@
               }
             ]
           },
-          "jam": {
+          "bottleneckRatio": {
             "description": "At each percentile, the stage’s time over the longest stage’s in the same layout and for the same kind of pull request, from 0 to 1",
             "allOf": [
               {
-                "$ref": "#/components/schemas/PercentileJamsResponseDto"
+                "$ref": "#/components/schemas/PercentileBottleneckRatiosResponseDto"
               }
             ]
           },
@@ -40598,7 +40598,7 @@
         "required": [
           "total",
           "parts",
-          "jam",
+          "bottleneckRatio",
           "worst",
           "longestPart"
         ]
@@ -40860,12 +40860,12 @@
             "type": "string",
             "enum": [
               "spotlight",
-              "touched",
+              "reviewed",
               "people",
               "bots"
             ],
             "example": "spotlight",
-            "description": "spotlight where a task opened it, touched where someone else wrote it and a Spotlight review task was opened on it, bots where a bot wrote it with no such task, people otherwise"
+            "description": "spotlight where a task opened it, reviewed where someone else wrote it and a Spotlight review task was opened on it, bots where a bot wrote it with no such task, people otherwise"
           },
           "taskId": {
             "type": "string",
@@ -40971,7 +40971,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/SpendResponseDto"
+                "$ref": "#/components/schemas/MoneyResponseDto"
               }
             ]
           },
@@ -41163,20 +41163,20 @@
             "type": "number",
             "nullable": true,
             "example": 184000,
-            "description": "How long it worked, by its digest"
+            "description": "How long it worked, by its recorded usage"
           },
           "cost": {
             "nullable": true,
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/SpendResponseDto"
+                "$ref": "#/components/schemas/MoneyResponseDto"
               }
             ]
           },
           "tokens": {
             "nullable": true,
-            "description": "None until its digest is in",
+            "description": "None until its usage is recorded",
             "type": "object",
             "allOf": [
               {
@@ -41210,12 +41210,12 @@
             ],
             "nullable": true
           },
-          "next": {
+          "firstHumanAction": {
             "nullable": true,
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/NextActResponseDto"
+                "$ref": "#/components/schemas/HumanActionResponseDto"
               }
             ]
           },
@@ -41228,7 +41228,7 @@
               }
             ]
           },
-          "delivery": {
+          "pullRequestState": {
             "type": "string",
             "enum": [
               "open",
@@ -41262,9 +41262,9 @@
           "ending",
           "failure",
           "checks",
-          "next",
+          "firstHumanAction",
           "passed",
-          "delivery"
+          "pullRequestState"
         ]
       },
       "InsightsRunsResponseDto": {
@@ -41321,7 +41321,7 @@
             "type": "string",
             "nullable": true,
             "example": null,
-            "description": "Which one of the part changed: the repository, skill or tool, or the judge’s rubric, sample or trust"
+            "description": "Which one of the part changed: the repository, skill or tool, or the judge’s rubric, sample or minimum agreement"
           },
           "kind": {
             "type": "string",
@@ -41410,7 +41410,7 @@
             "example": "6d1b8f3a-2c49-4e7d-a5f0-9b3e1c7d2a58",
             "description": "The station it is for, as the team’s replay endpoints name it"
           },
-          "stationAddress": {
+          "stationPath": {
             "type": "string",
             "example": "core/delivery/build",
             "description": "The station it is for: team, line and station keys"
@@ -41467,7 +41467,7 @@
           "teamId",
           "lineId",
           "stationId",
-          "stationAddress",
+          "stationPath",
           "name",
           "kind",
           "station",
@@ -41507,7 +41507,7 @@
             "example": 3
           },
           "perRepeat": {
-            "description": "The success rate of each copy of the set, in order",
+            "description": "The success rate of each repeat of the set, in order",
             "type": "array",
             "items": {
               "type": "number"
@@ -41516,10 +41516,10 @@
           "spread": {
             "type": "number",
             "example": 0.1,
-            "description": "The highest copy’s success rate less the lowest’s"
+            "description": "The highest repeat’s success rate less the lowest’s"
           },
           "flippedTasks": {
-            "description": "Tasks whose copies disagree, succeeding in one and failing in another",
+            "description": "Tasks whose repeats disagree, succeeding in one and failing in another",
             "type": "array",
             "items": {
               "type": "string"
@@ -41528,9 +41528,9 @@
           "measuredAt": {
             "type": "string"
           },
-          "noisyInOneCopy": {
+          "noisyInOneRepeat": {
             "type": "boolean",
-            "description": "Whether the spread is too wide for a single copy of each run to tell a gain of the line’s min_gain from chance, by the same rule the search warnings use"
+            "description": "Whether the spread is too wide for a single repeat of each run to tell a gain of the line’s min_gain from chance, by the same rule the search warnings use"
           }
         },
         "required": [
@@ -41541,7 +41541,7 @@
           "spread",
           "flippedTasks",
           "measuredAt",
-          "noisyInOneCopy"
+          "noisyInOneRepeat"
         ]
       },
       "RateIntervalResponseDto": {
@@ -41550,7 +41550,7 @@
           "rate": {
             "type": "number",
             "example": 0.62,
-            "description": "The success rate: per task, the share of its judged copies that succeeded, averaged over the tasks"
+            "description": "The success rate: per task, the share of its judged repeats that succeeded, averaged over the tasks"
           },
           "low": {
             "type": "number",
@@ -41611,7 +41611,7 @@
         "properties": {
           "replayId": {
             "type": "string",
-            "description": "The probe: the newest finished replay of the live config that checked the set"
+            "description": "The calibration: the newest finished replay of the live config that checked the set"
           },
           "compared": {
             "type": "number",
@@ -41657,7 +41657,7 @@
           },
           "runId": {
             "type": "string",
-            "description": "The probe’s replay run whose change flipped"
+            "description": "The calibration’s replay run whose change flipped"
           },
           "first": {
             "type": "string",
@@ -41687,7 +41687,7 @@
         "properties": {
           "replayId": {
             "type": "string",
-            "description": "The probe whose changes were checked again"
+            "description": "The calibration whose changes were checked again"
           },
           "rechecked": {
             "type": "number",
@@ -41712,7 +41712,7 @@
           "flaky"
         ]
       },
-      "GainReadingResponseDto": {
+      "GainEstimateResponseDto": {
         "type": "object",
         "properties": {
           "gain": {
@@ -41730,7 +41730,7 @@
             "example": 0.18,
             "description": "The high end of the 95% interval of the gain"
           },
-          "verdict": {
+          "significance": {
             "type": "string",
             "enum": [
               "better",
@@ -41753,7 +41753,7 @@
           "gain",
           "low",
           "high",
-          "verdict",
+          "significance",
           "minGain",
           "tasks"
         ]
@@ -41778,15 +41778,15 @@
               "running",
               "finished",
               "stopped",
-              "over-budget"
+              "ceiling-reached"
             ]
           },
-          "againstReplayId": {
+          "referenceReplayId": {
             "type": "string",
             "nullable": true,
             "description": "The replay of the live config it is compared with: the one whose finishing started it"
           },
-          "againstState": {
+          "referenceState": {
             "type": "string",
             "nullable": true,
             "enum": [
@@ -41794,11 +41794,11 @@
               "running",
               "finished",
               "stopped",
-              "over-budget",
+              "ceiling-reached",
               "gone",
               null
             ],
-            "description": "The state of the replay that it is compared with: finished once they can be compared; stopped, over-budget or gone means they never will be"
+            "description": "The state of the replay that it is compared with: finished once they can be compared; stopped, ceiling-reached or gone means they never will be"
           },
           "answered": {
             "type": "number",
@@ -41820,7 +41820,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/GainReadingResponseDto"
+                "$ref": "#/components/schemas/GainEstimateResponseDto"
               }
             ]
           },
@@ -41835,8 +41835,8 @@
           "candidateId",
           "repeats",
           "state",
-          "againstReplayId",
-          "againstState",
+          "referenceReplayId",
+          "referenceState",
           "answered",
           "live",
           "withAnswer",
@@ -41849,7 +41849,7 @@
         "properties": {
           "noise": {
             "nullable": true,
-            "description": "How much its success rate moves between copies of the same runs, from the newest finished replay of the live config that replayed each run more than once; null until one has",
+            "description": "How much its success rate moves between repeats of the same runs, from the newest finished replay of the live config that replayed each run more than once; null until one has",
             "type": "object",
             "allOf": [
               {
@@ -41869,7 +41869,7 @@
           },
           "judge": {
             "nullable": true,
-            "description": "How often the judge agrees with itself, from the set’s newest probe; null until a probe was judged",
+            "description": "How often the judge agrees with itself, from the set’s newest calibration; null until a calibration was judged",
             "type": "object",
             "allOf": [
               {
@@ -41879,7 +41879,7 @@
           },
           "checks": {
             "nullable": true,
-            "description": "Whether the station’s check returns the same answer twice, from the set’s newest probe; null until a probe was checked",
+            "description": "Whether the station’s check returns the same answer twice, from the set’s newest calibration; null until a calibration was checked",
             "type": "object",
             "allOf": [
               {
@@ -42143,7 +42143,7 @@
             "type": "boolean",
             "description": "Its station is gone from its line: it takes no more runs, starts no replays and holds no archives; it may still be renamed, have runs taken out, or be deleted"
           },
-          "guardsChanges": {
+          "gatesChanges": {
             "type": "boolean",
             "description": "Planned changes of its station are checked against it, as `spotlight replay check` requests; a station has at most one such set"
           },
@@ -42182,7 +42182,7 @@
           "name",
           "createdAt",
           "stationGone",
-          "guardsChanges",
+          "gatesChanges",
           "health",
           "minGain",
           "composition",
@@ -42451,7 +42451,7 @@
           "successRate": {
             "type": "number",
             "nullable": true,
-            "description": "Per task, the share of its scored copies that succeeded, averaged over the tasks scored"
+            "description": "Per task, the share of its scored repeats that succeeded, averaged over the tasks scored"
           },
           "interval": {
             "nullable": true,
@@ -42473,7 +42473,7 @@
           },
           "tasksScored": {
             "type": "number",
-            "description": "Original runs with at least one scored copy"
+            "description": "Original runs with at least one scored repeat"
           },
           "unscored": {
             "type": "number",
@@ -42483,7 +42483,7 @@
             "description": "What it spent in the ceiling’s currency, counted against it",
             "allOf": [
               {
-                "$ref": "#/components/schemas/SpendResponseDto"
+                "$ref": "#/components/schemas/MoneyResponseDto"
               }
             ]
           },
@@ -42491,7 +42491,7 @@
             "description": "What it spent in other currencies, one sum each; none of it counts against the ceiling",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/SpendResponseDto"
+              "$ref": "#/components/schemas/MoneyResponseDto"
             }
           },
           "unpriced": {
@@ -42543,17 +42543,17 @@
           "medianMs"
         ]
       },
-      "ReplayCounterpartResponseDto": {
+      "ReplayReferenceResponseDto": {
         "type": "object",
         "properties": {
           "replayId": {
             "type": "string",
-            "description": "The replay compared with: pairedWith where set, else for a replay with the answer the live replay it was handed the answer against, else the set’s baseline"
+            "description": "The replay compared with: pairwiseReference where set, else for a replay with the answer the live replay it was handed the answer against, else the set’s baseline"
           },
           "successRate": {
             "type": "number",
             "nullable": true,
-            "description": "Its success rate on the tasks the gain pairs, the tasks both replays scored: per task, the share of its scored copies that succeeded, averaged over those tasks; null with no such task"
+            "description": "Its success rate on the tasks the gain pairs, the tasks both replays scored: per task, the share of its scored repeats that succeeded, averaged over those tasks; null with no such task"
           },
           "interval": {
             "nullable": true,
@@ -42796,9 +42796,9 @@
           "passed": {
             "type": "boolean",
             "nullable": true,
-            "description": "Yes on a yes-no rubric, at least 4 on a number one, or at least the pass share of claims met"
+            "description": "Yes on a yes-no rubric, at least 4 on a number one, or at least the pass threshold of claims met"
           },
-          "marks": {
+          "claimResults": {
             "nullable": true,
             "example": [
               true,
@@ -42811,7 +42811,7 @@
               "type": "boolean"
             }
           },
-          "passShare": {
+          "passThreshold": {
             "type": "number",
             "nullable": true,
             "example": 1,
@@ -42865,8 +42865,8 @@
           "scale",
           "score",
           "passed",
-          "marks",
-          "passShare",
+          "claimResults",
+          "passThreshold",
           "referenced",
           "model",
           "unjudged",
@@ -42881,7 +42881,7 @@
             "description": "One sum per currency the calls were priced in",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/SpendResponseDto"
+              "$ref": "#/components/schemas/MoneyResponseDto"
             }
           },
           "unpriced": {
@@ -42922,7 +42922,7 @@
           "theirHunks"
         ]
       },
-      "EntryPairReadingResponseDto": {
+      "EntryPairPassResponseDto": {
         "type": "object",
         "properties": {
           "ownShownFirst": {
@@ -42961,9 +42961,9 @@
               "unpaired"
             ]
           },
-          "againstRunId": {
+          "otherRunId": {
             "type": "string",
-            "description": "The run of the same task, in the replay in pairedWith, this change was set beside"
+            "description": "The run of the same task, in the replay in pairwiseReference, this change was set beside"
           },
           "outcome": {
             "type": "string",
@@ -42993,25 +42993,25 @@
               "errored",
               "interrupted",
               "other-rubric",
-              "budget",
+              "ceiling-reached",
               null
             ]
           },
-          "readings": {
-            "description": "The two readings, one with each change shown first; where they disagree the outcome is a tie",
+          "passes": {
+            "description": "The two passes, one with each change shown first; where they disagree the outcome is a tie",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/EntryPairReadingResponseDto"
+              "$ref": "#/components/schemas/EntryPairPassResponseDto"
             }
           }
         },
         "required": [
           "state",
-          "againstRunId",
+          "otherRunId",
           "outcome",
           "model",
           "unpaired",
-          "readings"
+          "passes"
         ]
       },
       "EntryReasonResponseDto": {
@@ -43081,7 +43081,7 @@
           "repeat": {
             "type": "number",
             "example": 1,
-            "description": "Which copy of the original run this is, from 1"
+            "description": "Which repeat of the original run this is, from 1"
           },
           "runId": {
             "type": "string",
@@ -43172,7 +43172,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/SpendResponseDto"
+                "$ref": "#/components/schemas/MoneyResponseDto"
               }
             ]
           },
@@ -43210,7 +43210,7 @@
               }
             ]
           },
-          "draftingSpent": {
+          "generationSpent": {
             "nullable": true,
             "description": "What generating and redrafting its change stacks cost, failed calls included; what is in the ceiling’s currency is spent against it",
             "type": "object",
@@ -43232,7 +43232,7 @@
           },
           "secondJudge": {
             "nullable": true,
-            "description": "A probe’s second judging of the same change, to see whether the judge agrees with itself; it never changes the run’s result",
+            "description": "A calibration’s second judging of the same change, to see whether the judge agrees with itself; it never changes the run’s result",
             "type": "object",
             "allOf": [
               {
@@ -43252,7 +43252,7 @@
           },
           "recheck": {
             "nullable": true,
-            "description": "A probe’s second check of the same change, to see whether the check is flaky; it never changes the run’s result",
+            "description": "A calibration’s second check of the same change, to see whether the check is flaky; it never changes the run’s result",
             "type": "object",
             "allOf": [
               {
@@ -43262,7 +43262,7 @@
           },
           "pair": {
             "nullable": true,
-            "description": "Its change set side by side with that of the replay in pairedWith for the same task, judged blind both ways round; it never changes the run’s result",
+            "description": "Its change set side by side with that of the replay in pairwiseReference for the same task, judged blind both ways round; it never changes the run’s result",
             "type": "object",
             "allOf": [
               {
@@ -43323,7 +43323,7 @@
           "cacheWriteTokens",
           "checks",
           "judge",
-          "draftingSpent",
+          "generationSpent",
           "judgingSpent",
           "secondJudge",
           "rejudgingSpent",
@@ -43376,20 +43376,20 @@
               "running",
               "finished",
               "stopped",
-              "over-budget"
+              "ceiling-reached"
             ]
           },
           "ceiling": {
-            "$ref": "#/components/schemas/SpendResponseDto"
+            "$ref": "#/components/schemas/MoneyResponseDto"
           },
           "repeats": {
             "type": "number",
             "example": 1,
             "description": "How many times it replays each run of its set"
           },
-          "probe": {
+          "calibration": {
             "type": "boolean",
-            "description": "It probes the set: once it finishes, each judged change is judged again and each checked change checked again, to see whether the judge and the check return the same answer twice"
+            "description": "It calibrates the set: once it finishes, each judged change is judged again and each checked change checked again, to see whether the judge and the check return the same answer twice"
           },
           "startedAt": {
             "type": "string"
@@ -43401,34 +43401,34 @@
           "totals": {
             "$ref": "#/components/schemas/ReplayTotalsResponseDto"
           },
-          "againstBaseline": {
+          "gainOverReference": {
             "nullable": true,
-            "description": "Its gain in success over the replay in comparedWith, with whether it is within noise; null with none",
+            "description": "Its gain in success over the replay in referenceReplay, with whether it is within noise; null with none",
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/GainReadingResponseDto"
+                "$ref": "#/components/schemas/GainEstimateResponseDto"
               }
             ]
           },
-          "comparedWith": {
+          "referenceReplay": {
             "nullable": true,
             "description": "The replay its gain, comparison rows and deltas are against, with its success rate; null for the baseline itself or with none",
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ReplayCounterpartResponseDto"
+                "$ref": "#/components/schemas/ReplayReferenceResponseDto"
               }
             ]
           },
-          "pairedWith": {
+          "pairwiseReference": {
             "type": "string",
             "nullable": true,
-            "description": "The replay its changes are set beside, judged blind: the current baseline when it started, or its search’s seed; null for a baseline, a probe or a replay that had none"
+            "description": "The replay its changes are set beside, judged blind: the current baseline when it started, or its search’s seed; null for a baseline, a calibration or a replay that had none"
           },
-          "pairsAgainstBaseline": {
+          "referencePairs": {
             "nullable": true,
-            "description": "Tasks whose change the judge, comparing it blind with the change of the replay in pairedWith, found better, worse or as good; null where pairedWith is",
+            "description": "Tasks whose change the judge, comparing it blind with the change of the replay in pairwiseReference, found better, worse or as good; null where pairwiseReference is",
             "type": "object",
             "allOf": [
               {
@@ -43454,14 +43454,14 @@
           "state",
           "ceiling",
           "repeats",
-          "probe",
+          "calibration",
           "startedAt",
           "endedAt",
           "totals",
-          "againstBaseline",
-          "comparedWith",
-          "pairedWith",
-          "pairsAgainstBaseline",
+          "gainOverReference",
+          "referenceReplay",
+          "pairwiseReference",
+          "referencePairs",
           "entries"
         ]
       },
@@ -43501,7 +43501,7 @@
             "example": 1,
             "minimum": 1,
             "maximum": 5,
-            "description": "How many times to replay each run, 1 when left out; more copies measure the set’s noise and narrow the intervals"
+            "description": "How many times to replay each run, 1 when left out; more repeats measure the set’s noise and narrow the intervals"
           }
         },
         "required": [
@@ -43519,7 +43519,7 @@
             "description": "Its own ceiling, the same as the requested one",
             "allOf": [
               {
-                "$ref": "#/components/schemas/SpendResponseDto"
+                "$ref": "#/components/schemas/MoneyResponseDto"
               }
             ]
           },
@@ -43548,7 +43548,7 @@
             "description": "The most this replay may spend, on its own",
             "allOf": [
               {
-                "$ref": "#/components/schemas/SpendResponseDto"
+                "$ref": "#/components/schemas/MoneyResponseDto"
               }
             ]
           },
@@ -43602,14 +43602,14 @@
             "description": "The title of the task the original run worked, as it reads now; null once the task is deleted"
           },
           "candidate": {
-            "description": "Each copy of the task the candidate replayed",
+            "description": "Each repeat of the task the candidate replayed",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ReplayEntryResponseDto"
             }
           },
           "baseline": {
-            "description": "Each copy of the task the baseline replayed; none without one",
+            "description": "Each repeat of the task the baseline replayed; none without one",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ReplayEntryResponseDto"
@@ -43618,17 +43618,17 @@
           "candidateSuccess": {
             "type": "number",
             "nullable": true,
-            "description": "The share of the candidate’s scored copies that succeeded"
+            "description": "The share of the candidate’s scored repeats that succeeded"
           },
           "baselineSuccess": {
             "type": "number",
             "nullable": true,
-            "description": "The share of the baseline’s scored copies that succeeded"
+            "description": "The share of the baseline’s scored repeats that succeeded"
           },
           "costDelta": {
             "type": "number",
             "nullable": true,
-            "description": "Candidate cost less the baseline’s, each averaged over its copies, once both ended"
+            "description": "Candidate cost less the baseline’s, each averaged over its repeats, once both ended"
           },
           "msDelta": {
             "type": "number",
@@ -43656,7 +43656,7 @@
           },
           "regressed": {
             "type": "boolean",
-            "description": "The baseline’s share of copies that succeeded is more than half above the candidate’s (with one copy each: the baseline succeeded and the candidate failed), or its average judge score dropped"
+            "description": "The baseline’s share of repeats that succeeded is more than half above the candidate’s (with one repeat each: the baseline succeeded and the candidate failed), or its average judge score dropped"
           },
           "pair": {
             "type": "string",
@@ -43667,7 +43667,7 @@
               "tie",
               null
             ],
-            "description": "Whether the judge, comparing the candidate’s change blind with that of the replay in pairedWith, found it better (win), worse (loss) or as good (tie), by most of its copies; null where none was compared so"
+            "description": "Whether the judge, comparing the candidate’s change blind with that of the replay in pairwiseReference, found it better (win), worse (loss) or as good (tie), by most of its repeats; null where none was compared so"
           }
         },
         "required": [
@@ -43728,20 +43728,20 @@
               "running",
               "finished",
               "stopped",
-              "over-budget"
+              "ceiling-reached"
             ]
           },
           "ceiling": {
-            "$ref": "#/components/schemas/SpendResponseDto"
+            "$ref": "#/components/schemas/MoneyResponseDto"
           },
           "repeats": {
             "type": "number",
             "example": 1,
             "description": "How many times it replays each run of its set"
           },
-          "probe": {
+          "calibration": {
             "type": "boolean",
-            "description": "It probes the set: once it finishes, each judged change is judged again and each checked change checked again, to see whether the judge and the check return the same answer twice"
+            "description": "It calibrates the set: once it finishes, each judged change is judged again and each checked change checked again, to see whether the judge and the check return the same answer twice"
           },
           "startedAt": {
             "type": "string"
@@ -43753,34 +43753,34 @@
           "totals": {
             "$ref": "#/components/schemas/ReplayTotalsResponseDto"
           },
-          "againstBaseline": {
+          "gainOverReference": {
             "nullable": true,
-            "description": "Its gain in success over the replay in comparedWith, with whether it is within noise; null with none",
+            "description": "Its gain in success over the replay in referenceReplay, with whether it is within noise; null with none",
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/GainReadingResponseDto"
+                "$ref": "#/components/schemas/GainEstimateResponseDto"
               }
             ]
           },
-          "comparedWith": {
+          "referenceReplay": {
             "nullable": true,
             "description": "The replay its gain, comparison rows and deltas are against, with its success rate; null for the baseline itself or with none",
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ReplayCounterpartResponseDto"
+                "$ref": "#/components/schemas/ReplayReferenceResponseDto"
               }
             ]
           },
-          "pairedWith": {
+          "pairwiseReference": {
             "type": "string",
             "nullable": true,
-            "description": "The replay its changes are set beside, judged blind: the current baseline when it started, or its search’s seed; null for a baseline, a probe or a replay that had none"
+            "description": "The replay its changes are set beside, judged blind: the current baseline when it started, or its search’s seed; null for a baseline, a calibration or a replay that had none"
           },
-          "pairsAgainstBaseline": {
+          "referencePairs": {
             "nullable": true,
-            "description": "Tasks whose change the judge, comparing it blind with the change of the replay in pairedWith, found better, worse or as good; null where pairedWith is",
+            "description": "Tasks whose change the judge, comparing it blind with the change of the replay in pairwiseReference, found better, worse or as good; null where pairwiseReference is",
             "type": "object",
             "allOf": [
               {
@@ -43809,7 +43809,7 @@
             ]
           },
           "comparison": {
-            "description": "Per task against the replay it is compared with (comparedWith), regressions first",
+            "description": "Per task against the replay it is compared with (referenceReplay), regressions first",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/EntryComparisonResponseDto"
@@ -43827,14 +43827,14 @@
           "state",
           "ceiling",
           "repeats",
-          "probe",
+          "calibration",
           "startedAt",
           "endedAt",
           "totals",
-          "againstBaseline",
-          "comparedWith",
-          "pairedWith",
-          "pairsAgainstBaseline",
+          "gainOverReference",
+          "referenceReplay",
+          "pairwiseReference",
+          "referencePairs",
           "entries",
           "baselineReplayId",
           "search",
@@ -43886,7 +43886,7 @@
               "running",
               "finished",
               "stopped",
-              "over-budget"
+              "ceiling-reached"
             ]
           },
           "entry": {
@@ -43958,7 +43958,7 @@
             "example": 2
           },
           "ceiling": {
-            "$ref": "#/components/schemas/SpendResponseDto"
+            "$ref": "#/components/schemas/MoneyResponseDto"
           },
           "concurrency": {
             "type": "number",
@@ -43988,7 +43988,7 @@
             "type": "string",
             "example": "terse-prompt"
           },
-          "seed": {
+          "isSeed": {
             "type": "boolean",
             "description": "Whether nothing the search found beat the live config"
           },
@@ -44027,10 +44027,10 @@
             "nullable": true,
             "description": "What it spent per searched run, in the search’s currency; unknown while any of its spend went unpriced or was in another currency"
           },
-          "onlyOnSeenTasks": {
+          "overfit": {
             "type": "string",
             "enum": [
-              "marked",
+              "likely",
               "too-few-held-out",
               null
             ],
@@ -44041,13 +44041,13 @@
         "required": [
           "candidateId",
           "name",
-          "seed",
+          "isSeed",
           "searchScore",
           "searchInterval",
           "heldOutScore",
           "heldOutInterval",
           "costPerRun",
-          "onlyOnSeenTasks"
+          "overfit"
         ]
       },
       "SearchResponseDto": {
@@ -44076,7 +44076,7 @@
             ],
             "description": "seeding while the live config is replayed, searching while its agent proposes candidates, holding-out while the best are replayed on the held-out tasks, then finished or stopped"
           },
-          "ending": {
+          "stopReason": {
             "type": "string",
             "nullable": true,
             "enum": [
@@ -44089,7 +44089,7 @@
               "seed-failed",
               null
             ],
-            "description": "Why it stopped searching: it ran its iterations, reached its ceiling, stalled after two propose iterations in a row found nothing better (with or without a reflection, whose outcome says why), was stopped by a person, lost its station or set, or could not replay the live config"
+            "description": "Why it stopped searching: it ran its iterations, reached its ceiling, stalled after two propose iterations in a row found nothing better (with or without a reflection, whose result says why), was stopped by a person, lost its station or set, or could not replay the live config"
           },
           "agent": {
             "$ref": "#/components/schemas/SearchAgentResponseDto"
@@ -44109,7 +44109,7 @@
             "description": "What it spent so far, in its ceiling’s currency: its replays and its agent’s runs",
             "allOf": [
               {
-                "$ref": "#/components/schemas/SpendResponseDto"
+                "$ref": "#/components/schemas/MoneyResponseDto"
               }
             ]
           },
@@ -44145,7 +44145,7 @@
           "stationId",
           "setId",
           "state",
-          "ending",
+          "stopReason",
           "agent",
           "budget",
           "objective",
@@ -44250,12 +44250,12 @@
             "enum": [
               "noisy"
             ],
-            "description": "The set’s success moves more between copies than the line’s min_gain, so a single copy cannot tell a real gain from noise"
+            "description": "The set’s success moves more between repeats than the line’s min_gain, so a single repeat cannot tell a real gain from noise"
           },
           "spread": {
             "type": "number",
             "example": 0.12,
-            "description": "How far the set’s success moved between copies"
+            "description": "How far the set’s success moved between repeats"
           },
           "minGain": {
             "type": "number",
@@ -44423,14 +44423,14 @@
           "total"
         ]
       },
-      "SearchAllotmentsResponseDto": {
+      "SearchCeilingSplitsResponseDto": {
         "type": "object",
         "properties": {
           "seed": {
             "description": "The ceiling of its replay of the live config",
             "allOf": [
               {
-                "$ref": "#/components/schemas/SpendResponseDto"
+                "$ref": "#/components/schemas/MoneyResponseDto"
               }
             ]
           },
@@ -44438,7 +44438,7 @@
             "description": "The ceiling of each candidate’s replay on searched tasks",
             "allOf": [
               {
-                "$ref": "#/components/schemas/SpendResponseDto"
+                "$ref": "#/components/schemas/MoneyResponseDto"
               }
             ]
           },
@@ -44446,7 +44446,7 @@
             "description": "The ceiling of each candidate’s replay on held-out tasks",
             "allOf": [
               {
-                "$ref": "#/components/schemas/SpendResponseDto"
+                "$ref": "#/components/schemas/MoneyResponseDto"
               }
             ]
           },
@@ -44454,7 +44454,7 @@
             "description": "What each agent run is expected to spend; one may overshoot it",
             "allOf": [
               {
-                "$ref": "#/components/schemas/SpendResponseDto"
+                "$ref": "#/components/schemas/MoneyResponseDto"
               }
             ]
           }
@@ -44489,12 +44489,12 @@
             "description": "The most it may spend",
             "allOf": [
               {
-                "$ref": "#/components/schemas/SpendResponseDto"
+                "$ref": "#/components/schemas/MoneyResponseDto"
               }
             ]
           },
-          "perReplayAllotments": {
-            "$ref": "#/components/schemas/SearchAllotmentsResponseDto"
+          "perReplayLimits": {
+            "$ref": "#/components/schemas/SearchCeilingSplitsResponseDto"
           },
           "estimatedDuration": {
             "type": "number",
@@ -44557,7 +44557,7 @@
           "heldOutTasks",
           "runs",
           "ceiling",
-          "perReplayAllotments",
+          "perReplayLimits",
           "estimatedDuration",
           "minGain",
           "objective",
@@ -44754,7 +44754,7 @@
           "replayRunId"
         ]
       },
-      "SearchCauseResponseDto": {
+      "FailureCauseResponseDto": {
         "type": "object",
         "properties": {
           "taskId": {
@@ -44821,32 +44821,32 @@
             "description": "One cause for each task it recorded one for",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/SearchCauseResponseDto"
+              "$ref": "#/components/schemas/FailureCauseResponseDto"
             }
           },
-          "outcome": {
+          "result": {
             "type": "string",
             "nullable": true,
             "enum": [
-              "went-on",
+              "continued",
               "no-config-cause",
               "no-failures",
               "did-not-run",
-              "out-of-budget",
+              "ceiling-reached",
               null
             ],
-            "description": "How it ended, once it did: went-on when it found a cause the config can fix and the search carried on; no-config-cause when it found none; no-failures when no searched task failed, so it never ran; did-not-run when its run failed before recording a cause; out-of-budget when it found a config cause but the search had no budget left to try it"
+            "description": "How it ended, once it did: continued when it found a cause the config can fix and the search continued; no-config-cause when it found none; no-failures when no searched task failed, so it never ran; did-not-run when its run failed before recording a cause; ceiling-reached when it found a config cause but the search had no budget left to try it"
           },
           "endedSearch": {
             "type": "boolean",
-            "description": "True when the search stopped searching once it ended, for whatever outcome other than went-on"
+            "description": "True when the search stopped searching once it ended, for whatever result other than continued"
           }
         },
         "required": [
           "incumbent",
           "tasks",
           "causes",
-          "outcome",
+          "result",
           "endedSearch"
         ]
       },
@@ -44892,7 +44892,7 @@
           },
           "agentSpent": {
             "nullable": true,
-            "description": "What its agent run spent, once digested",
+            "description": "What its agent run spent, once its usage is recorded",
             "type": "object",
             "allOf": [
               {
@@ -45039,7 +45039,7 @@
             "example": "terse-prompt",
             "description": "The slug its agent named it by (lowercase letters, digits and hyphens, starting with a letter or digit, at most 63 characters); seed for the live config it started from"
           },
-          "seed": {
+          "isSeed": {
             "type": "boolean",
             "description": "Whether it is the live config it started from"
           },
@@ -45076,7 +45076,7 @@
               "running",
               "finished",
               "stopped",
-              "over-budget",
+              "ceiling-reached",
               null
             ]
           },
@@ -45093,7 +45093,7 @@
               "running",
               "finished",
               "stopped",
-              "over-budget",
+              "ceiling-reached",
               null
             ]
           },
@@ -45114,7 +45114,7 @@
           },
           "searchScored": {
             "type": "number",
-            "description": "How many searched replay runs, copies included, it was scored on"
+            "description": "How many searched replay runs, repeats included, it was scored on"
           },
           "heldOutScore": {
             "type": "number",
@@ -45137,7 +45137,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/GainReadingResponseDto"
+                "$ref": "#/components/schemas/GainEstimateResponseDto"
               }
             ]
           },
@@ -45147,7 +45147,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/GainReadingResponseDto"
+                "$ref": "#/components/schemas/GainEstimateResponseDto"
               }
             ]
           },
@@ -45177,16 +45177,16 @@
             "description": "What it spent per searched run; unknown while any of it went unpriced or was in another currency"
           },
           "spent": {
-            "$ref": "#/components/schemas/SpendResponseDto"
+            "$ref": "#/components/schemas/MoneyResponseDto"
           },
           "onFrontier": {
             "type": "boolean",
             "description": "Whether no other candidate, nor the seed, succeeds as often for less"
           },
-          "onlyOnSeenTasks": {
+          "overfit": {
             "type": "string",
             "enum": [
-              "marked",
+              "likely",
               "too-few-held-out",
               null
             ],
@@ -45207,7 +45207,7 @@
         "required": [
           "candidateId",
           "name",
-          "seed",
+          "isSeed",
           "iteration",
           "hypothesis",
           "fingerprint",
@@ -45228,7 +45228,7 @@
           "costPerRun",
           "spent",
           "onFrontier",
-          "onlyOnSeenTasks",
+          "overfit",
           "pullRequest"
         ]
       },
@@ -45258,7 +45258,7 @@
             ],
             "description": "seeding while the live config is replayed, searching while its agent proposes candidates, holding-out while the best are replayed on the held-out tasks, then finished or stopped"
           },
-          "ending": {
+          "stopReason": {
             "type": "string",
             "nullable": true,
             "enum": [
@@ -45271,7 +45271,7 @@
               "seed-failed",
               null
             ],
-            "description": "Why it stopped searching: it ran its iterations, reached its ceiling, stalled after two propose iterations in a row found nothing better (with or without a reflection, whose outcome says why), was stopped by a person, lost its station or set, or could not replay the live config"
+            "description": "Why it stopped searching: it ran its iterations, reached its ceiling, stalled after two propose iterations in a row found nothing better (with or without a reflection, whose result says why), was stopped by a person, lost its station or set, or could not replay the live config"
           },
           "agent": {
             "$ref": "#/components/schemas/SearchAgentResponseDto"
@@ -45291,7 +45291,7 @@
             "description": "What it spent so far, in its ceiling’s currency: its replays and its agent’s runs",
             "allOf": [
               {
-                "$ref": "#/components/schemas/SpendResponseDto"
+                "$ref": "#/components/schemas/MoneyResponseDto"
               }
             ]
           },
@@ -45350,7 +45350,7 @@
               "type": "string"
             }
           },
-          "onlyOnSeenTasks": {
+          "overfitCount": {
             "type": "number",
             "example": 1,
             "description": "How many frontier candidates gained only on the tasks the search could see"
@@ -45367,7 +45367,7 @@
           "stationId",
           "setId",
           "state",
-          "ending",
+          "stopReason",
           "agent",
           "budget",
           "objective",
@@ -45382,7 +45382,7 @@
           "seed",
           "candidates",
           "frontier",
-          "onlyOnSeenTasks",
+          "overfitCount",
           "minGain"
         ]
       },
@@ -45462,10 +45462,10 @@
             "example": "spotlight/search-5d1e2f3a-in-order",
             "description": "The branch Spotlight commits the change to"
           },
-          "attempts": {
+          "generation": {
             "type": "number",
             "example": 1,
-            "description": "How many times a person picked it; each pick after a failure tries again"
+            "description": "How many times a person picked it. Each pick after a failure starts a new generation"
           },
           "createdAt": {
             "type": "string",
@@ -45491,7 +45491,7 @@
           "repository",
           "path",
           "branch",
-          "attempts",
+          "generation",
           "createdAt",
           "updatedAt"
         ]
@@ -45603,7 +45603,7 @@
             "description": "The most each replay of the check may spend: the replay of the planned change and, when the set has no baseline of the live config yet, the baseline replay the check starts, each up to this ceiling on its own; a baseline already there costs the check nothing. A replay at its ceiling starts no more runs, though runs already going finish, so it may end a little over it",
             "allOf": [
               {
-                "$ref": "#/components/schemas/SpendResponseDto"
+                "$ref": "#/components/schemas/MoneyResponseDto"
               }
             ]
           },
@@ -45613,7 +45613,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/SpendResponseDto"
+                "$ref": "#/components/schemas/MoneyResponseDto"
               }
             ]
           }
@@ -45635,7 +45635,7 @@
               "running",
               "finished",
               "stopped",
-              "over-budget",
+              "ceiling-reached",
               null
             ],
             "nullable": true,
@@ -45667,14 +45667,14 @@
           },
           "tasksScored": {
             "type": "number",
-            "description": "Tasks with at least one scored copy"
+            "description": "Tasks with at least one scored repeat"
           },
           "spent": {
             "nullable": true,
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/SpendResponseDto"
+                "$ref": "#/components/schemas/MoneyResponseDto"
               }
             ]
           }
@@ -45722,7 +45722,7 @@
           },
           "candidate": {
             "type": "array",
-            "description": "The result of each copy the candidate replayed",
+            "description": "The result of each repeat the candidate replayed",
             "items": {
               "type": "string",
               "enum": [
@@ -45735,7 +45735,7 @@
           },
           "baseline": {
             "type": "array",
-            "description": "The result of each copy the baseline replayed",
+            "description": "The result of each repeat the baseline replayed",
             "items": {
               "type": "string",
               "enum": [
@@ -45789,7 +45789,7 @@
           },
           "setId": {
             "type": "string",
-            "description": "The replay set that guards the station’s changes"
+            "description": "The replay set that gates the station’s changes"
           },
           "setName": {
             "type": "string",
@@ -45844,15 +45844,15 @@
           },
           "gain": {
             "nullable": true,
-            "description": "The candidate’s gain in success over the baseline and whether it is within noise; it does not decide the verdict",
+            "description": "The candidate’s gain in success over the baseline and whether it is within noise; it does not decide the result",
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/GainReadingResponseDto"
+                "$ref": "#/components/schemas/GainEstimateResponseDto"
               }
             ]
           },
-          "verdict": {
+          "result": {
             "type": "string",
             "enum": [
               "running",
@@ -45877,7 +45877,7 @@
           },
           "tasks": {
             "type": "number",
-            "description": "How many tasks the guarding set replays"
+            "description": "How many tasks the gating set replays"
           },
           "compared": {
             "type": "number",
@@ -45929,7 +45929,7 @@
           "threshold",
           "repeats",
           "gain",
-          "verdict",
+          "result",
           "undecidedBecause",
           "tasks",
           "compared",
@@ -45955,7 +45955,7 @@
             "type": "string",
             "example": "build"
           },
-          "verdict": {
+          "result": {
             "type": "string",
             "enum": [
               "running",
@@ -46002,7 +46002,7 @@
           "id",
           "stationId",
           "stationKey",
-          "verdict",
+          "result",
           "undecidedBecause",
           "regressions",
           "attempt",
@@ -46056,7 +46056,7 @@
           "replayId"
         ]
       },
-      "RecordSearchCauseRequestDto": {
+      "RecordFailureCauseRequestDto": {
         "type": "object",
         "properties": {
           "taskId": {
@@ -46090,7 +46090,7 @@
           "evidence"
         ]
       },
-      "SearchCauseRecordedResponseDto": {
+      "FailureCauseRecordedResponseDto": {
         "type": "object",
         "properties": {
           "taskId": {
@@ -46151,7 +46151,7 @@
         "properties": {
           "noise": {
             "nullable": true,
-            "description": "How much its success rate moves between copies of the same runs, from the newest finished replay of the live config that replayed each run more than once; null until one has",
+            "description": "How much its success rate moves between repeats of the same runs, from the newest finished replay of the live config that replayed each run more than once; null until one has",
             "type": "object",
             "allOf": [
               {
@@ -46171,7 +46171,7 @@
           },
           "judge": {
             "nullable": true,
-            "description": "How often the judge agrees with itself, from the set’s newest probe; null until a probe was judged",
+            "description": "How often the judge agrees with itself, from the set’s newest calibration; null until a calibration was judged",
             "type": "object",
             "allOf": [
               {
@@ -46181,7 +46181,7 @@
           },
           "checks": {
             "nullable": true,
-            "description": "Whether the station’s check returns the same answer twice, from the set’s newest probe; null until a probe was checked",
+            "description": "Whether the station’s check returns the same answer twice, from the set’s newest calibration; null until a calibration was checked",
             "type": "object",
             "allOf": [
               {
@@ -46258,7 +46258,7 @@
               "running",
               "finished",
               "stopped",
-              "over-budget"
+              "ceiling-reached"
             ]
           },
           "fingerprint": {
@@ -46298,7 +46298,7 @@
             "type": "string",
             "nullable": true
           },
-          "charted": {
+          "chartStatus": {
             "type": "string",
             "enum": [
               "priced",
@@ -46320,7 +46320,7 @@
           "costPerRun",
           "currency",
           "endedAt",
-          "charted"
+          "chartStatus"
         ]
       },
       "ReplayedHeldOutResponseDto": {
@@ -46337,7 +46337,7 @@
               "running",
               "finished",
               "stopped",
-              "over-budget",
+              "ceiling-reached",
               null
             ]
           },
@@ -46437,7 +46437,7 @@
             "type": "number",
             "description": "How many searched runs it was scored on"
           },
-          "charted": {
+          "chartStatus": {
             "type": "string",
             "enum": [
               "priced",
@@ -46454,7 +46454,7 @@
           "interval",
           "costPerRun",
           "scored",
-          "charted"
+          "chartStatus"
         ]
       },
       "ReplayedSearchResponseDto": {
@@ -46613,7 +46613,7 @@
               "running",
               "finished",
               "stopped",
-              "over-budget",
+              "ceiling-reached",
               null
             ]
           },
@@ -46708,13 +46708,13 @@
             "type": "number",
             "description": "How many of its runs the baseline replayed too: the runs live and successRateOnCompared cover"
           },
-          "againstLive": {
+          "gainOverLive": {
             "nullable": true,
             "description": "Its gain in success over the baseline on the compared runs, paired task by task, and whether it is within noise; null without a baseline",
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/GainReadingResponseDto"
+                "$ref": "#/components/schemas/GainEstimateResponseDto"
               }
             ]
           },
@@ -46743,7 +46743,7 @@
               }
             ]
           },
-          "charted": {
+          "chartStatus": {
             "type": "string",
             "enum": [
               "priced",
@@ -46787,11 +46787,11 @@
           "costPerRunOnCompared",
           "regressions",
           "compared",
-          "againstLive",
+          "gainOverLive",
           "onFrontier",
           "search",
           "pullRequest",
-          "charted",
+          "chartStatus",
           "shown"
         ]
       },
@@ -46809,7 +46809,7 @@
             "type": "boolean",
             "description": "Whether its station has left its line"
           },
-          "guardsChanges": {
+          "gatesChanges": {
             "type": "boolean",
             "description": "Whether it checks every pull request that changes its station"
           },
@@ -46849,7 +46849,7 @@
           "setId",
           "name",
           "stationGone",
-          "guardsChanges",
+          "gatesChanges",
           "health",
           "baseline",
           "chartCurrency",
