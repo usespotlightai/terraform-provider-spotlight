@@ -39,7 +39,7 @@ type RunnerPoolResource struct {
 }
 
 const (
-	runnerPoolIssuedToken = "Spotlight issued this pool a token, answered only once. Terraform stores no secret in its state, so the token was not stored, and no host can claim with it. " +
+	runnerPoolIssuedToken = "Spotlight issued this pool a token, returned only once. Terraform stores no secret in its state, so the token was not stored, and no host can claim with it. " +
 		"To use a token that you have instead, set `token` (from a sensitive variable, or a write-only ephemeral value) and change `token_version` to send it."
 	runnerPoolPullOnly = "is only for a pool that is pulled from; a pool that provisions is called instead, and has no token."
 )
@@ -124,7 +124,7 @@ func runnerPoolSchema() schema.Schema {
 	return schema.Schema{
 		MarkdownDescription: "A pool of one-run runners: each run the pool serves gets a fresh runner of its own that ends with it. " +
 			"A `spotlight-host` on any machine pulls work from the pool with its token and starts a fresh sandbox for each run; " +
-			"install one with `curl -fsSL <spotlight>/api/install.sh | SPOTLIGHT_URL=<spotlight> SPOTLIGHT_TOKEN=<pool token> sh`. " +
+			"install one with `curl -fsSL <spotlight>/api/install.sh | SPOTLIGHT_URL=<spotlight> SPOTLIGHT_POOL_TOKEN=<pool token> sh`. " +
 			"With `provision`, Spotlight pushes each run to a URL instead, whose call hands a one-run runner its credential. " +
 			"Writing runner pools needs a token granted the `runners` scope. Import it as `<workspace id>/<key>`.",
 		Attributes: attributes,

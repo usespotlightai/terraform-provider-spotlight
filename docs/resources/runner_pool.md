@@ -3,12 +3,12 @@
 page_title: "spotlight_runner_pool Resource - spotlight"
 subcategory: ""
 description: |-
-  A pool of one-run runners: each run the pool serves gets a fresh runner of its own that ends with it. A spotlight-host on any machine pulls work from the pool with its token and starts a fresh sandbox for each run; install one with curl -fsSL <spotlight>/api/install.sh | SPOTLIGHT_URL=<spotlight> SPOTLIGHT_TOKEN=<pool token> sh. With provision, Spotlight pushes each run to a URL instead, whose call hands a one-run runner its credential. Writing runner pools needs a token granted the runners scope. Import it as <workspace id>/<key>.
+  A pool of one-run runners: each run the pool serves gets a fresh runner of its own that ends with it. A spotlight-host on any machine pulls work from the pool with its token and starts a fresh sandbox for each run; install one with curl -fsSL <spotlight>/api/install.sh | SPOTLIGHT_URL=<spotlight> SPOTLIGHT_POOL_TOKEN=<pool token> sh. With provision, Spotlight pushes each run to a URL instead, whose call hands a one-run runner its credential. Writing runner pools needs a token granted the runners scope. Import it as <workspace id>/<key>.
 ---
 
 # spotlight_runner_pool (Resource)
 
-A pool of one-run runners: each run the pool serves gets a fresh runner of its own that ends with it. A `spotlight-host` on any machine pulls work from the pool with its token and starts a fresh sandbox for each run; install one with `curl -fsSL <spotlight>/api/install.sh | SPOTLIGHT_URL=<spotlight> SPOTLIGHT_TOKEN=<pool token> sh`. With `provision`, Spotlight pushes each run to a URL instead, whose call hands a one-run runner its credential. Writing runner pools needs a token granted the `runners` scope. Import it as `<workspace id>/<key>`.
+A pool of one-run runners: each run the pool serves gets a fresh runner of its own that ends with it. A `spotlight-host` on any machine pulls work from the pool with its token and starts a fresh sandbox for each run; install one with `curl -fsSL <spotlight>/api/install.sh | SPOTLIGHT_URL=<spotlight> SPOTLIGHT_POOL_TOKEN=<pool token> sh`. With `provision`, Spotlight pushes each run to a URL instead, whose call hands a one-run runner its credential. Writing runner pools needs a token granted the `runners` scope. Import it as `<workspace id>/<key>`.
 
 ## Example Usage
 

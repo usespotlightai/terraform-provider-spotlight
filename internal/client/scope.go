@@ -24,20 +24,20 @@ const (
 	PermissionRead             Permission = "read"
 	PermissionPlan             Permission = "plan"
 	PermissionConfigure        Permission = "configure"
-	PermissionManageSecrets    Permission = "manage-secrets"
-	PermissionManageRunners    Permission = "manage-runners"
-	PermissionManageTrusts     Permission = "manage-token-trusts"
+	PermissionSecrets          Permission = "secrets"
+	PermissionRunners          Permission = "runners"
+	PermissionTrusts           Permission = "trusts"
 	PermissionAdminister       Permission = "administer"
 	PermissionCreateWorkspaces Permission = "create-workspaces"
 )
 
 var grantedBy = map[Permission]Scope{
-	PermissionRead:          ScopeRead,
-	PermissionPlan:          ScopePlan,
-	PermissionConfigure:     ScopeConfigure,
-	PermissionManageSecrets: ScopeSecrets,
-	PermissionManageRunners: ScopeRunners,
-	PermissionManageTrusts:  ScopeTrusts,
+	PermissionRead:      ScopeRead,
+	PermissionPlan:      ScopePlan,
+	PermissionConfigure: ScopeConfigure,
+	PermissionSecrets:   ScopeSecrets,
+	PermissionRunners:   ScopeRunners,
+	PermissionTrusts:    ScopeTrusts,
 }
 
 // Scope returns the token scope that grants the permission. It returns false

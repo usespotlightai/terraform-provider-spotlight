@@ -93,7 +93,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -125,7 +125,7 @@
           {
             "name": "Idempotency-Key",
             "in": "header",
-            "description": "Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more",
+            "description": "Unique per create; a retry with the same key and body returns the resource that the first attempt created, and creates nothing more",
             "required": true,
             "schema": {
               "type": "string",
@@ -182,17 +182,17 @@
         },
         "responses": {
           "201": {
-            "description": "The line, as a read would answer it",
+            "description": "The line, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
                 }
               },
               "Idempotent-Replayed": {
-                "description": "true when this answers an earlier attempt",
+                "description": "true when this returns the result of an earlier attempt",
                 "schema": {
                   "type": "string",
                   "enum": [
@@ -292,7 +292,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -327,7 +327,7 @@
             "description": "The line, every field of it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -393,7 +393,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -482,10 +482,10 @@
         },
         "responses": {
           "200": {
-            "description": "The line, as a read would answer it",
+            "description": "The line, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -591,7 +591,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -718,7 +718,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -759,10 +759,10 @@
         ],
         "responses": {
           "200": {
-            "description": "The line, as a read would answer it",
+            "description": "The line, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -830,7 +830,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -862,7 +862,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Every line there, each as a read would answer it, in address order",
+            "description": "Every line there, each as a read returns it, in address order",
             "content": {
               "application/json": {
                 "schema": {
@@ -1013,7 +1013,7 @@
     },
     "/runners/harnesses": {
       "get": {
-        "operationId": "installableHarnesses",
+        "operationId": "listHarnessProbes",
         "parameters": [],
         "responses": {
           "200": {
@@ -1023,7 +1023,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/InstallableHarnessResponseDto"
+                    "$ref": "#/components/schemas/HarnessProbeResponseDto"
                   }
                 }
               }
@@ -1354,7 +1354,7 @@
             "description": "The run kept changing while its lease was renewed; renew again on the next heartbeat."
           }
         },
-        "summary": "Say the run is still being worked on",
+        "summary": "Say the run is still in progress",
         "tags": [
           "runners"
         ]
@@ -1412,7 +1412,7 @@
             "description": "The check kept moving on while it was renewed"
           }
         },
-        "summary": "Say the check of a change stack is still being worked on",
+        "summary": "Say the check of a change stack is still in progress",
         "tags": [
           "runners"
         ]
@@ -1801,7 +1801,7 @@
     },
     "/runs/{runId}/suspended": {
       "post": {
-        "description": "The runner has sealed the workspace archive and releases its sandbox. A later answer requeues the same run, and any runner claims it and restores it from the archive. If the answer arrived first, the run is not suspended: it is working again, and the runner delivers the answer to the live session.",
+        "description": "The runner has completed the workspace archive and releases its sandbox. A later answer requeues the same run, and any runner claims it and restores it from the archive. If the answer arrived first, the run is not suspended: it is working again, and the runner delivers the answer to the live session.",
         "operationId": "suspendRun",
         "parameters": [
           {
@@ -1935,9 +1935,9 @@
         ]
       }
     },
-    "/runs/{runId}/workspace-archive/{archiveId}/sealed": {
+    "/runs/{runId}/workspace-archive/{archiveId}/complete": {
       "post": {
-        "operationId": "sealWorkspaceArchive",
+        "operationId": "completeWorkspaceArchive",
         "parameters": [
           {
             "name": "runId",
@@ -2099,7 +2099,7 @@
             "description": "Missing, rotated or unknown pool token, or a workload the trust does not match"
           },
           "409": {
-            "description": "The host has not reported through this pool or trust (`host-unreported`), or has not reported serving the image it claims for (`image-unreported`)"
+            "description": "The host has not reported through this pool or trust (`host-unreported`), or has not reported that it supports the image it claims for (`image-unreported`)"
           }
         },
         "security": [
@@ -2115,7 +2115,7 @@
     },
     "/hosts/calls/claim": {
       "post": {
-        "description": "Assigns the oldest call waiting for this pool’s or trust’s workspace that has not expired. The host sends it once and answers with what came back.",
+        "description": "Assigns the oldest call waiting for this pool’s or trust’s workspace that has not expired. The host sends it once and records the response.",
         "operationId": "claimHostCall",
         "parameters": [
           {
@@ -2170,9 +2170,9 @@
         ]
       }
     },
-    "/hosts/calls/{id}/answer": {
+    "/hosts/calls/{id}/response": {
       "post": {
-        "operationId": "answerHostCall",
+        "operationId": "recordHostCallResponse",
         "parameters": [
           {
             "name": "Spotlight-Trust",
@@ -2197,14 +2197,14 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AnswerHostCallRequestDto"
+                "$ref": "#/components/schemas/RecordHostCallResponseRequestDto"
               }
             }
           }
         },
         "responses": {
           "204": {
-            "description": "The answer was taken"
+            "description": "Spotlight recorded the response"
           },
           "401": {
             "description": "Missing, rotated or unknown pool token, or a workload the trust does not match"
@@ -2213,7 +2213,7 @@
             "description": "No such call waits for this pool’s or trust’s workspace"
           },
           "409": {
-            "description": "The call was already answered, expired before it was answered, or was never claimed (`call-completed`), or another host claimed it (`not-this-hosts-call`)"
+            "description": "The call already has a response, expired before it got a response, or was never claimed (`call-completed`), or another host claimed it (`not-this-hosts-call`)"
           }
         },
         "security": [
@@ -2221,7 +2221,7 @@
             "bearer": []
           }
         ],
-        "summary": "Answer a claimed call with what came back when it was sent",
+        "summary": "Record the response to a claimed call",
         "tags": [
           "runners"
         ]
@@ -2229,7 +2229,7 @@
     },
     "/egress/secrets": {
       "post": {
-        "description": "Called by the egress beside a sandbox with the credential its host was handed for this run alone, or by a shared egress with its egress token and the run proxy credential the runner presented. Each call grants the secrets that egress injects for the run. Values that Spotlight stores come back sealed to the recipient. For a value in an external store, the answer gives the external reference that egress reads.",
+        "description": "Called by an egress sidecar with the credential its host was handed for this run alone, or by a shared egress with its egress token and the run proxy credential the runner presented. Each call grants the secrets that egress injects for the run. Values that Spotlight stores come back sealed to the recipient. For a value in an external store, the response gives the external reference that egress reads.",
         "operationId": "fetchRunSecrets",
         "parameters": [],
         "requestBody": {
@@ -2317,7 +2317,7 @@
     },
     "/egress/active-runs": {
       "post": {
-        "description": "Called by each node of a shared egress about every 30 seconds. The node evicts the secrets of every run that is not in the answer.",
+        "description": "Called by each node of a shared egress about every 30 seconds. The node evicts the secrets of every run that is not in the response.",
         "operationId": "checkActiveRuns",
         "parameters": [],
         "requestBody": {
@@ -2376,7 +2376,7 @@
         },
         "responses": {
           "204": {
-            "description": "The records were taken"
+            "description": "Spotlight accepted the records"
           },
           "401": {
             "description": "Missing or unknown egress token, or its runner no longer has a lease on work"
@@ -2473,7 +2473,7 @@
             "description": "No such workspace for this caller"
           }
         },
-        "summary": "List the harnesses a station can be worked by",
+        "summary": "List the harnesses that can run a station",
         "tags": [
           "harnesses"
         ]
@@ -2627,16 +2627,16 @@
         ]
       }
     },
-    "/workspaces/{slug}/inbox/asides/{asideId}/read": {
+    "/workspaces/{slug}/inbox/requests/{requestId}/read": {
       "post": {
-        "operationId": "readInboxAside",
+        "operationId": "readInboxRequest",
         "parameters": [
           {
-            "name": "asideId",
+            "name": "requestId",
             "required": true,
             "in": "path",
             "schema": {
-              "example": "aside_1",
+              "example": "request_1",
               "type": "string"
             }
           },
@@ -2658,10 +2658,10 @@
             "description": "No valid session"
           },
           "404": {
-            "description": "No such aside for this caller"
+            "description": "No such inbox request for this caller"
           }
         },
-        "summary": "Mark what was put aside for a person as seen",
+        "summary": "Mark an inbox request as seen",
         "tags": [
           "inbox"
         ]
@@ -2926,7 +2926,7 @@
             "description": "No valid session"
           }
         },
-        "summary": "Every run the team has worked, across its stations",
+        "summary": "Every run of the team, across its stations",
         "tags": [
           "tasks"
         ]
@@ -2984,7 +2984,7 @@
             "description": "No such range"
           }
         },
-        "summary": "Every task the team has worked, as one trace each",
+        "summary": "Every task of the team, as one trace each",
         "tags": [
           "tasks"
         ]
@@ -3082,9 +3082,9 @@
         ]
       }
     },
-    "/teams/{teamId}/runs/{runId}/conversation": {
+    "/teams/{teamId}/runs/{runId}/notes": {
       "get": {
-        "operationId": "readRunConversation",
+        "operationId": "readRunNotes",
         "parameters": [
           {
             "name": "runId",
@@ -3110,7 +3110,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RunConversationResponseDto"
+                  "$ref": "#/components/schemas/RunNotesResponseDto"
                 }
               }
             }
@@ -3213,7 +3213,7 @@
             "description": "No such run for this caller"
           },
           "409": {
-            "description": "The run is no longer being worked"
+            "description": "The run is no longer in progress"
           }
         },
         "summary": "Stop the agent working a run",
@@ -3308,7 +3308,7 @@
             "description": "No such task, or not the viewer's"
           }
         },
-        "summary": "Every run that worked a task, as one trace",
+        "summary": "Every run of a task, as one trace",
         "tags": [
           "tasks"
         ]
@@ -3556,7 +3556,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -3653,7 +3653,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -4173,7 +4173,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -4205,10 +4205,10 @@
         ],
         "responses": {
           "200": {
-            "description": "The workspace, as a read would answer it",
+            "description": "The workspace, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -4276,7 +4276,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -4299,7 +4299,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Every workspace there, each as a read would answer it, in address order",
+            "description": "Every workspace there, each as a read returns it, in address order",
             "content": {
               "application/json": {
                 "schema": {
@@ -4349,7 +4349,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -4372,7 +4372,7 @@
           {
             "name": "Idempotency-Key",
             "in": "header",
-            "description": "Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more",
+            "description": "Unique per create; a retry with the same key and body returns the resource that the first attempt created, and creates nothing more",
             "required": true,
             "schema": {
               "type": "string",
@@ -4406,17 +4406,17 @@
         },
         "responses": {
           "201": {
-            "description": "The workspace, as a read would answer it",
+            "description": "The workspace, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
                 }
               },
               "Idempotent-Replayed": {
-                "description": "true when this answers an earlier attempt",
+                "description": "true when this returns the result of an earlier attempt",
                 "schema": {
                   "type": "string",
                   "enum": [
@@ -4516,7 +4516,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -4551,7 +4551,7 @@
             "description": "The workspace, every field of it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -4617,7 +4617,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -4683,10 +4683,10 @@
         },
         "responses": {
           "200": {
-            "description": "The workspace, as a read would answer it",
+            "description": "The workspace, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -4792,7 +4792,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -4919,7 +4919,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -4951,7 +4951,7 @@
           {
             "name": "Idempotency-Key",
             "in": "header",
-            "description": "Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more",
+            "description": "Unique per create; a retry with the same key and body returns the resource that the first attempt created, and creates nothing more",
             "required": true,
             "schema": {
               "type": "string",
@@ -4985,17 +4985,17 @@
         },
         "responses": {
           "201": {
-            "description": "The team, as a read would answer it",
+            "description": "The team, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
                 }
               },
               "Idempotent-Replayed": {
-                "description": "true when this answers an earlier attempt",
+                "description": "true when this returns the result of an earlier attempt",
                 "schema": {
                   "type": "string",
                   "enum": [
@@ -5093,7 +5093,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -5125,7 +5125,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Every team there, each as a read would answer it, in address order",
+            "description": "Every team there, each as a read returns it, in address order",
             "content": {
               "application/json": {
                 "schema": {
@@ -5187,7 +5187,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -5222,7 +5222,7 @@
             "description": "The team, every field of it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -5288,7 +5288,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -5354,10 +5354,10 @@
         },
         "responses": {
           "200": {
-            "description": "The team, as a read would answer it",
+            "description": "The team, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -5463,7 +5463,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -5590,7 +5590,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -5631,10 +5631,10 @@
         ],
         "responses": {
           "200": {
-            "description": "The team, as a read would answer it",
+            "description": "The team, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -5702,7 +5702,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -5734,7 +5734,7 @@
           {
             "name": "Idempotency-Key",
             "in": "header",
-            "description": "Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more",
+            "description": "Unique per create; a retry with the same key and body returns the resource that the first attempt created, and creates nothing more",
             "required": true,
             "schema": {
               "type": "string",
@@ -5795,17 +5795,17 @@
         },
         "responses": {
           "201": {
-            "description": "The workspace-token, as a read would answer it\n\nThe token, as a read would answer it",
+            "description": "The workspace-token, as a read returns it\n\nThe token, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"0\""
                 }
               },
               "Idempotent-Replayed": {
-                "description": "true when this answers an earlier attempt",
+                "description": "true when this returns the result of an earlier attempt",
                 "schema": {
                   "type": "string",
                   "enum": [
@@ -5814,7 +5814,7 @@
                 }
               },
               "Spotlight-Workspace-Token": {
-                "description": "The token to send as Authorization: Bearer; answered this once and never again, not even to a retry, and stored only as a hash",
+                "description": "The token to send as Authorization: Bearer; returned once and never again, not even to a retry, and stored only as a hash",
                 "schema": {
                   "type": "string",
                   "example": "q3Vd0n8yXbT2c4kPzR7mW1sLhA9eJ5gUfN6oYiC0xEw"
@@ -5910,7 +5910,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -5942,7 +5942,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Every workspace-token there, each as a read would answer it, in address order",
+            "description": "Every workspace-token there, each as a read returns it, in address order",
             "content": {
               "application/json": {
                 "schema": {
@@ -6004,7 +6004,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -6039,7 +6039,7 @@
             "description": "The workspace-token, every field of it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -6105,7 +6105,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -6198,10 +6198,10 @@
         },
         "responses": {
           "200": {
-            "description": "The workspace-token, as a read would answer it",
+            "description": "The workspace-token, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -6307,7 +6307,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -6434,7 +6434,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -6475,10 +6475,10 @@
         ],
         "responses": {
           "200": {
-            "description": "The workspace-token, as a read would answer it",
+            "description": "The workspace-token, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -6546,7 +6546,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -6578,7 +6578,7 @@
           {
             "name": "Idempotency-Key",
             "in": "header",
-            "description": "Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more",
+            "description": "Unique per create; a retry with the same key and body returns the resource that the first attempt created, and creates nothing more",
             "required": true,
             "schema": {
               "type": "string",
@@ -6657,17 +6657,17 @@
         },
         "responses": {
           "201": {
-            "description": "The workspace-token-trust, as a read would answer it",
+            "description": "The workspace-token-trust, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
                 }
               },
               "Idempotent-Replayed": {
-                "description": "true when this answers an earlier attempt",
+                "description": "true when this returns the result of an earlier attempt",
                 "schema": {
                   "type": "string",
                   "enum": [
@@ -6765,7 +6765,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -6797,7 +6797,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Every workspace-token-trust there, each as a read would answer it, in address order",
+            "description": "Every workspace-token-trust there, each as a read returns it, in address order",
             "content": {
               "application/json": {
                 "schema": {
@@ -6859,7 +6859,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -6894,7 +6894,7 @@
             "description": "The workspace-token-trust, every field of it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -6960,7 +6960,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -7071,10 +7071,10 @@
         },
         "responses": {
           "200": {
-            "description": "The workspace-token-trust, as a read would answer it",
+            "description": "The workspace-token-trust, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -7180,7 +7180,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -7307,7 +7307,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -7348,10 +7348,10 @@
         ],
         "responses": {
           "200": {
-            "description": "The workspace-token-trust, as a read would answer it",
+            "description": "The workspace-token-trust, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -7646,7 +7646,7 @@
             "description": "No such role"
           }
         },
-        "summary": "Set what somebody is in this workspace",
+        "summary": "Change a member’s role",
         "tags": [
           "workspaces"
         ]
@@ -7751,6 +7751,7 @@
         ]
       },
       "post": {
+        "description": "The person must already be a member of the workspace.",
         "operationId": "addTeamMember",
         "parameters": [
           {
@@ -7789,7 +7790,7 @@
             "description": "They are not in the workspace"
           }
         },
-        "summary": "Put somebody already in the workspace on this team",
+        "summary": "Add a team member",
         "tags": [
           "teams"
         ]
@@ -7943,6 +7944,7 @@
     },
     "/workspaces/{slug}/invites/{inviteId}": {
       "delete": {
+        "description": "The link of the invitation stops working.",
         "operationId": "revokeInvite",
         "parameters": [
           {
@@ -7977,7 +7979,7 @@
             "description": "Already accepted"
           }
         },
-        "summary": "Take an invitation back, so its link stops working",
+        "summary": "Revoke an invitation",
         "tags": [
           "invites"
         ]
@@ -8067,7 +8069,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -8099,7 +8101,7 @@
           {
             "name": "Idempotency-Key",
             "in": "header",
-            "description": "Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more",
+            "description": "Unique per create; a retry with the same key and body returns the resource that the first attempt created, and creates nothing more",
             "required": true,
             "schema": {
               "type": "string",
@@ -8179,7 +8181,7 @@
                   "valueWo": {
                     "type": "string",
                     "writeOnly": true,
-                    "description": "The value to store; accepted on create and whenever valueWoVersion changes, and never answered"
+                    "description": "The value to store; accepted on create and whenever valueWoVersion changes, and never returned"
                   },
                   "valueWoVersion": {
                     "type": "integer",
@@ -8194,17 +8196,17 @@
         },
         "responses": {
           "201": {
-            "description": "The secret, as a read would answer it",
+            "description": "The secret, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
                 }
               },
               "Idempotent-Replayed": {
-                "description": "true when this answers an earlier attempt",
+                "description": "true when this returns the result of an earlier attempt",
                 "schema": {
                   "type": "string",
                   "enum": [
@@ -8302,7 +8304,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -8334,7 +8336,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Every secret there, each as a read would answer it, in address order",
+            "description": "Every secret there, each as a read returns it, in address order",
             "content": {
               "application/json": {
                 "schema": {
@@ -8396,7 +8398,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -8431,7 +8433,7 @@
             "description": "The secret, every field of it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -8497,7 +8499,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -8609,7 +8611,7 @@
                   "valueWo": {
                     "type": "string",
                     "writeOnly": true,
-                    "description": "The value to store; accepted on create and whenever valueWoVersion changes, and never answered"
+                    "description": "The value to store; accepted on create and whenever valueWoVersion changes, and never returned"
                   },
                   "valueWoVersion": {
                     "type": "integer",
@@ -8624,10 +8626,10 @@
         },
         "responses": {
           "200": {
-            "description": "The secret, as a read would answer it",
+            "description": "The secret, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -8733,7 +8735,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -8860,7 +8862,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -8901,10 +8903,10 @@
         ],
         "responses": {
           "200": {
-            "description": "The secret, as a read would answer it",
+            "description": "The secret, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -8972,7 +8974,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -9014,7 +9016,7 @@
             "name": "version",
             "required": true,
             "in": "query",
-            "description": "The versions you accept, as Terraform writes a constraint; the newest it accepts is answered",
+            "description": "The versions you accept, as Terraform writes a constraint; Spotlight returns the newest version that matches",
             "schema": {
               "example": "~> 1.0"
             }
@@ -9103,7 +9105,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -9145,7 +9147,7 @@
             "name": "version",
             "required": true,
             "in": "query",
-            "description": "The versions you accept, as Terraform writes a constraint; the newest it accepts is answered",
+            "description": "The versions you accept, as Terraform writes a constraint; Spotlight returns the newest version that matches",
             "schema": {
               "example": "~> 1.0"
             }
@@ -9262,7 +9264,7 @@
             "description": "No such workspace for this caller"
           }
         },
-        "summary": "List the repositories a task can be raised against",
+        "summary": "List the repositories a task can be created against",
         "tags": [
           "repositories"
         ]
@@ -9533,7 +9535,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -9565,7 +9567,7 @@
           {
             "name": "Idempotency-Key",
             "in": "header",
-            "description": "Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more",
+            "description": "Unique per create; a retry with the same key and body returns the resource that the first attempt created, and creates nothing more",
             "required": true,
             "schema": {
               "type": "string",
@@ -9617,17 +9619,17 @@
         },
         "responses": {
           "201": {
-            "description": "The runner-trust, as a read would answer it",
+            "description": "The runner-trust, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
                 }
               },
               "Idempotent-Replayed": {
-                "description": "true when this answers an earlier attempt",
+                "description": "true when this returns the result of an earlier attempt",
                 "schema": {
                   "type": "string",
                   "enum": [
@@ -9725,7 +9727,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -9757,7 +9759,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Every runner-trust there, each as a read would answer it, in address order",
+            "description": "Every runner-trust there, each as a read returns it, in address order",
             "content": {
               "application/json": {
                 "schema": {
@@ -9819,7 +9821,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -9854,7 +9856,7 @@
             "description": "The runner-trust, every field of it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -9920,7 +9922,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -10004,10 +10006,10 @@
         },
         "responses": {
           "200": {
-            "description": "The runner-trust, as a read would answer it",
+            "description": "The runner-trust, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -10113,7 +10115,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -10240,7 +10242,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -10281,10 +10283,10 @@
         ],
         "responses": {
           "200": {
-            "description": "The runner-trust, as a read would answer it",
+            "description": "The runner-trust, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -10352,7 +10354,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -10384,7 +10386,7 @@
           {
             "name": "Idempotency-Key",
             "in": "header",
-            "description": "Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more",
+            "description": "Unique per create; a retry with the same key and body returns the resource that the first attempt created, and creates nothing more",
             "required": true,
             "schema": {
               "type": "string",
@@ -10427,7 +10429,7 @@
                     "writeOnly": true,
                     "minLength": 32,
                     "maxLength": 255,
-                    "description": "Write-only, and only for a pool without provision: the token its hosts claim with, stored only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Pool-Token"
+                    "description": "Write-only, and only for a pool without provision: the token its hosts claim with, stored only as a hash and never returned. Left out on create, Spotlight issues one and returns it once in Spotlight-Pool-Token"
                   },
                   "tokenVersion": {
                     "type": "integer",
@@ -10482,17 +10484,17 @@
         },
         "responses": {
           "201": {
-            "description": "The runner-pool, as a read would answer it\n\nThe runner pool, as a read would answer it",
+            "description": "The runner-pool, as a read returns it\n\nThe runner pool, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The version returned, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"0\""
                 }
               },
               "Idempotent-Replayed": {
-                "description": "true when this answers an earlier attempt",
+                "description": "true when this returns the result of an earlier attempt",
                 "schema": {
                   "type": "string",
                   "enum": [
@@ -10501,7 +10503,7 @@
                 }
               },
               "Spotlight-Pool-Token": {
-                "description": "The pool token Spotlight issued, when none was given; answered this once and never again, not even to a retry",
+                "description": "The pool token Spotlight issued, when none was given; returned once and never again, not even to a retry",
                 "schema": {
                   "type": "string"
                 }
@@ -10596,7 +10598,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -10628,7 +10630,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Every runner-pool there, each as a read would answer it, in address order",
+            "description": "Every runner-pool there, each as a read returns it, in address order",
             "content": {
               "application/json": {
                 "schema": {
@@ -10690,7 +10692,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -10725,7 +10727,7 @@
             "description": "The runner-pool, every field of it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -10791,7 +10793,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -10866,7 +10868,7 @@
                     "writeOnly": true,
                     "minLength": 32,
                     "maxLength": 255,
-                    "description": "Write-only, and only for a pool without provision: the token its hosts claim with, stored only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Pool-Token"
+                    "description": "Write-only, and only for a pool without provision: the token its hosts claim with, stored only as a hash and never returned. Left out on create, Spotlight issues one and returns it once in Spotlight-Pool-Token"
                   },
                   "tokenVersion": {
                     "type": "integer",
@@ -10921,10 +10923,10 @@
         },
         "responses": {
           "200": {
-            "description": "The runner-pool, as a read would answer it",
+            "description": "The runner-pool, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -11030,7 +11032,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -11157,7 +11159,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -11198,10 +11200,10 @@
         ],
         "responses": {
           "200": {
-            "description": "The runner-pool, as a read would answer it",
+            "description": "The runner-pool, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -11269,7 +11271,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -11301,7 +11303,7 @@
           {
             "name": "Idempotency-Key",
             "in": "header",
-            "description": "Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more",
+            "description": "Unique per create; a retry with the same key and body returns the resource that the first attempt created, and creates nothing more",
             "required": true,
             "schema": {
               "type": "string",
@@ -11334,7 +11336,7 @@
                     "writeOnly": true,
                     "minLength": 32,
                     "maxLength": 255,
-                    "description": "Write-only: the token the egress calls Spotlight with, stored only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Egress-Token"
+                    "description": "Write-only: the token the egress calls Spotlight with, stored only as a hash and never returned. Left out on create, Spotlight issues one and returns it once in Spotlight-Egress-Token"
                   },
                   "tokenVersion": {
                     "type": "integer",
@@ -11349,17 +11351,17 @@
         },
         "responses": {
           "201": {
-            "description": "The egress, as a read would answer it\n\nThe egress, as a read would answer it",
+            "description": "The egress, as a read returns it\n\nThe egress, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The version returned, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"0\""
                 }
               },
               "Idempotent-Replayed": {
-                "description": "true when this answers an earlier attempt",
+                "description": "true when this returns the result of an earlier attempt",
                 "schema": {
                   "type": "string",
                   "enum": [
@@ -11368,7 +11370,7 @@
                 }
               },
               "Spotlight-Egress-Token": {
-                "description": "The egress token Spotlight issued, when none was given; answered this once and never again, not even to a retry",
+                "description": "The egress token Spotlight issued, when none was given; returned once and never again, not even to a retry",
                 "schema": {
                   "type": "string"
                 }
@@ -11463,7 +11465,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -11495,7 +11497,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Every egress there, each as a read would answer it, in address order",
+            "description": "Every egress there, each as a read returns it, in address order",
             "content": {
               "application/json": {
                 "schema": {
@@ -11557,7 +11559,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -11592,7 +11594,7 @@
             "description": "The egress, every field of it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -11658,7 +11660,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -11723,7 +11725,7 @@
                     "writeOnly": true,
                     "minLength": 32,
                     "maxLength": 255,
-                    "description": "Write-only: the token the egress calls Spotlight with, stored only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Egress-Token"
+                    "description": "Write-only: the token the egress calls Spotlight with, stored only as a hash and never returned. Left out on create, Spotlight issues one and returns it once in Spotlight-Egress-Token"
                   },
                   "tokenVersion": {
                     "type": "integer",
@@ -11738,10 +11740,10 @@
         },
         "responses": {
           "200": {
-            "description": "The egress, as a read would answer it",
+            "description": "The egress, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -11847,7 +11849,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -11974,7 +11976,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -12015,10 +12017,10 @@
         ],
         "responses": {
           "200": {
-            "description": "The egress, as a read would answer it",
+            "description": "The egress, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -12086,7 +12088,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -12118,7 +12120,7 @@
           {
             "name": "Idempotency-Key",
             "in": "header",
-            "description": "Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more",
+            "description": "Unique per create; a retry with the same key and body returns the resource that the first attempt created, and creates nothing more",
             "required": true,
             "schema": {
               "type": "string",
@@ -12167,17 +12169,17 @@
         },
         "responses": {
           "201": {
-            "description": "The workspace-runners, as a read would answer it",
+            "description": "The workspace-runners, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
                 }
               },
               "Idempotent-Replayed": {
-                "description": "true when this answers an earlier attempt",
+                "description": "true when this returns the result of an earlier attempt",
                 "schema": {
                   "type": "string",
                   "enum": [
@@ -12275,7 +12277,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -12307,7 +12309,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Every workspace-runners there, each as a read would answer it, in address order",
+            "description": "Every workspace-runners there, each as a read returns it, in address order",
             "content": {
               "application/json": {
                 "schema": {
@@ -12369,7 +12371,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -12404,7 +12406,7 @@
             "description": "The workspace-runners, every field of it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -12470,7 +12472,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -12551,10 +12553,10 @@
         },
         "responses": {
           "200": {
-            "description": "The workspace-runners, as a read would answer it",
+            "description": "The workspace-runners, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -12660,7 +12662,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -12787,7 +12789,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -12828,10 +12830,10 @@
         ],
         "responses": {
           "200": {
-            "description": "The workspace-runners, as a read would answer it",
+            "description": "The workspace-runners, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -12975,7 +12977,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -13007,7 +13009,7 @@
           {
             "name": "Idempotency-Key",
             "in": "header",
-            "description": "Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more",
+            "description": "Unique per create; a retry with the same key and body returns the resource that the first attempt created, and creates nothing more",
             "required": true,
             "schema": {
               "type": "string",
@@ -13046,17 +13048,17 @@
         },
         "responses": {
           "201": {
-            "description": "The skill, as a read would answer it",
+            "description": "The skill, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
                 }
               },
               "Idempotent-Replayed": {
-                "description": "true when this answers an earlier attempt",
+                "description": "true when this returns the result of an earlier attempt",
                 "schema": {
                   "type": "string",
                   "enum": [
@@ -13156,7 +13158,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -13191,7 +13193,7 @@
             "description": "The skill, every field of it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -13257,7 +13259,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -13328,10 +13330,10 @@
         },
         "responses": {
           "200": {
-            "description": "The skill, as a read would answer it",
+            "description": "The skill, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -13437,7 +13439,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -13564,7 +13566,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -13605,10 +13607,10 @@
         ],
         "responses": {
           "200": {
-            "description": "The skill, as a read would answer it",
+            "description": "The skill, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -13676,7 +13678,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -13708,7 +13710,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Every skill there, each as a read would answer it, in address order",
+            "description": "Every skill there, each as a read returns it, in address order",
             "content": {
               "application/json": {
                 "schema": {
@@ -13770,7 +13772,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -13802,7 +13804,7 @@
           {
             "name": "Idempotency-Key",
             "in": "header",
-            "description": "Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more",
+            "description": "Unique per create; a retry with the same key and body returns the resource that the first attempt created, and creates nothing more",
             "required": true,
             "schema": {
               "type": "string",
@@ -13909,17 +13911,17 @@
         },
         "responses": {
           "201": {
-            "description": "The harness-profile, as a read would answer it",
+            "description": "The harness-profile, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
                 }
               },
               "Idempotent-Replayed": {
-                "description": "true when this answers an earlier attempt",
+                "description": "true when this returns the result of an earlier attempt",
                 "schema": {
                   "type": "string",
                   "enum": [
@@ -14019,7 +14021,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -14054,7 +14056,7 @@
             "description": "The harness-profile, every field of it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -14120,7 +14122,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -14259,10 +14261,10 @@
         },
         "responses": {
           "200": {
-            "description": "The harness-profile, as a read would answer it",
+            "description": "The harness-profile, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -14368,7 +14370,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -14495,7 +14497,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -14536,10 +14538,10 @@
         ],
         "responses": {
           "200": {
-            "description": "The harness-profile, as a read would answer it",
+            "description": "The harness-profile, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -14607,7 +14609,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -14639,7 +14641,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Every harness-profile there, each as a read would answer it, in address order",
+            "description": "Every harness-profile there, each as a read returns it, in address order",
             "content": {
               "application/json": {
                 "schema": {
@@ -14701,7 +14703,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -14791,7 +14793,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -15206,7 +15208,7 @@
             "description": "Missing, no longer valid or wrong runner token"
           },
           "404": {
-            "description": "Not a run this runner worked"
+            "description": "Not a run this runner claimed"
           },
           "409": {
             "description": "The run is a search, which changes no repository"
@@ -15266,7 +15268,7 @@
             "description": "Missing, no longer valid or wrong runner token"
           },
           "404": {
-            "description": "Not a run this runner worked, or no such stack of it"
+            "description": "Not a run this runner claimed, or no such stack of it"
           },
           "409": {
             "description": "This runner does not have the lease on the check of that stack"
@@ -15730,7 +15732,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -15762,7 +15764,7 @@
           {
             "name": "Idempotency-Key",
             "in": "header",
-            "description": "Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more",
+            "description": "Unique per create; a retry with the same key and body returns the resource that the first attempt created, and creates nothing more",
             "required": true,
             "schema": {
               "type": "string",
@@ -15794,17 +15796,17 @@
         },
         "responses": {
           "201": {
-            "description": "The integration, as a read would answer it",
+            "description": "The integration, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
                 }
               },
               "Idempotent-Replayed": {
-                "description": "true when this answers an earlier attempt",
+                "description": "true when this returns the result of an earlier attempt",
                 "schema": {
                   "type": "string",
                   "enum": [
@@ -15904,7 +15906,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -15939,7 +15941,7 @@
             "description": "The integration, every field of it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -16005,7 +16007,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -16069,10 +16071,10 @@
         },
         "responses": {
           "200": {
-            "description": "The integration, as a read would answer it",
+            "description": "The integration, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -16178,7 +16180,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -16305,7 +16307,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -16346,10 +16348,10 @@
         ],
         "responses": {
           "200": {
-            "description": "The integration, as a read would answer it",
+            "description": "The integration, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -16417,7 +16419,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -16449,7 +16451,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Every integration there, each as a read would answer it, in address order",
+            "description": "Every integration there, each as a read returns it, in address order",
             "content": {
               "application/json": {
                 "schema": {
@@ -16511,7 +16513,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -16612,7 +16614,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -16727,7 +16729,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -16759,7 +16761,7 @@
           {
             "name": "Idempotency-Key",
             "in": "header",
-            "description": "Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more",
+            "description": "Unique per create; a retry with the same key and body returns the resource that the first attempt created, and creates nothing more",
             "required": true,
             "schema": {
               "type": "string",
@@ -16779,17 +16781,17 @@
         },
         "responses": {
           "201": {
-            "description": "The hook, as a read would answer it",
+            "description": "The hook, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
                 }
               },
               "Idempotent-Replayed": {
-                "description": "true when this answers an earlier attempt",
+                "description": "true when this returns the result of an earlier attempt",
                 "schema": {
                   "type": "string",
                   "enum": [
@@ -16889,7 +16891,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -16924,7 +16926,7 @@
             "description": "The hook, every field of it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -16990,7 +16992,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -17042,10 +17044,10 @@
         },
         "responses": {
           "200": {
-            "description": "The hook, as a read would answer it",
+            "description": "The hook, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -17151,7 +17153,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -17278,7 +17280,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -17319,10 +17321,10 @@
         ],
         "responses": {
           "200": {
-            "description": "The hook, as a read would answer it",
+            "description": "The hook, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -17390,7 +17392,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -17422,7 +17424,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Every hook there, each as a read would answer it, in address order",
+            "description": "Every hook there, each as a read returns it, in address order",
             "content": {
               "application/json": {
                 "schema": {
@@ -18318,7 +18320,7 @@
             "description": "No such run leased by this runner"
           }
         },
-        "summary": "Every active memory that applies to the run, as files to lay in its workspace",
+        "summary": "Every active memory that applies to the run, as files to write into its workspace",
         "tags": [
           "runners"
         ]
@@ -19746,7 +19748,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -19787,7 +19789,7 @@
           {
             "name": "Idempotency-Key",
             "in": "header",
-            "description": "Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more",
+            "description": "Unique per create; a retry with the same key and body returns the resource that the first attempt created, and creates nothing more",
             "required": true,
             "schema": {
               "type": "string",
@@ -19834,17 +19836,17 @@
         },
         "responses": {
           "201": {
-            "description": "The replay-candidate, as a read would answer it",
+            "description": "The replay-candidate, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
                 }
               },
               "Idempotent-Replayed": {
-                "description": "true when this answers an earlier attempt",
+                "description": "true when this returns the result of an earlier attempt",
                 "schema": {
                   "type": "string",
                   "enum": [
@@ -19944,7 +19946,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -19979,7 +19981,7 @@
             "description": "The replay-candidate, every field of it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -20045,7 +20047,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -20172,7 +20174,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -20213,10 +20215,10 @@
         ],
         "responses": {
           "200": {
-            "description": "The replay-candidate, as a read would answer it",
+            "description": "The replay-candidate, as a read returns it",
             "headers": {
               "ETag": {
-                "description": "The version answered, to send back as If-Match",
+                "description": "The returned version, to send back as If-Match",
                 "schema": {
                   "type": "string",
                   "example": "\"3\""
@@ -20284,7 +20286,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -20325,7 +20327,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Every replay-candidate there, each as a read would answer it, in address order",
+            "description": "Every replay-candidate there, each as a read returns it, in address order",
             "content": {
               "application/json": {
                 "schema": {
@@ -20387,7 +20389,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -20493,7 +20495,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -20628,7 +20630,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -20748,7 +20750,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -20856,7 +20858,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -20956,7 +20958,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -21074,7 +21076,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -21184,7 +21186,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -21314,7 +21316,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -21422,7 +21424,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -21530,7 +21532,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -21630,7 +21632,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -21729,7 +21731,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -21856,7 +21858,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -21953,7 +21955,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -22050,7 +22052,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -22160,7 +22162,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -22267,7 +22269,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -22413,7 +22415,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -22538,7 +22540,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -22648,7 +22650,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -22746,7 +22748,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -22881,7 +22883,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -22991,7 +22993,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -23052,10 +23054,10 @@
             }
           },
           "201": {
-            "description": "The check started, as a read would answer it; or, on a retry with the same Idempotency-Key, the check the first attempt answered",
+            "description": "The check started, as a read returns it; or, on a retry with the same Idempotency-Key, the check that the first attempt returned",
             "headers": {
               "Idempotent-Replayed": {
-                "description": "true when this answers an earlier attempt",
+                "description": "true when this returns the result of an earlier attempt",
                 "schema": {
                   "type": "string",
                   "enum": [
@@ -23151,7 +23153,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -23269,7 +23271,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -23516,7 +23518,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -23614,7 +23616,7 @@
           {
             "name": "Spotlight-Api-Version",
             "in": "header",
-            "description": "The API version the client was written against; every response names the version it was answered in",
+            "description": "The API version the client was written against; every response names the version that it uses",
             "required": false,
             "schema": {
               "type": "string",
@@ -23723,7 +23725,7 @@
   },
   "info": {
     "title": "Spotlight Control Plane",
-    "description": "HTTP API for the Spotlight Control Plane.\n\n## Resource conventions\n\nOperations marked `x-spotlight-resource` manage configuration resources, the ones the Terraform provider writes. They live under `/resources` and address everything by id. Every resource follows these rules, and a conformance suite checks each one against them.\n\n- **Stable ids.** Spotlight issues a resource's `id` when it is created. It never changes for the resource's life, whatever else does.\n- **Reads return every field.** A read answers the whole resource, defaults filled in, so a client comparing it with what it wrote sees any drift. A write answers exactly what a read would.\n- **Versions.** Every resource carries a `version` that rises with each change, and each answer carries it as a strong `ETag` (`\"3\"`). An update or delete must send it back as `If-Match`: without one it fails with 428, and against a version that is no longer current with 409, whose body gives the `currentVersion` and whose `ETag` names it. A write that would remove something another resource still uses fails with 409 `in-use`.\n- **Idempotent creates.** A create must carry an `Idempotency-Key`. Retrying with the same key and body within 24 hours answers the resource the first attempt created, marked `Idempotent-Replayed: true`, and creates nothing more; the same key with a different body fails with 422.\n- **Problems name fields.** Errors are `application/problem+json` (RFC 9457). `type` is stable and safe to branch on. An invalid request lists `errors`, each with the `path` of the attribute it is about, as in `stations[2].check`; a key that is not a plain name is quoted, as Terraform addresses it: `on[\"task.opened\"].to.thread`.\n- **API versions.** A client may send `Spotlight-Api-Version`; every response names the version it was answered in, currently `2026-09-23`. Changes within a version are additive only: fields and operations are added, never removed, renamed or given a new meaning.\n- **Expression checks.** `POST /expressions/check` type-checks one CEL expression at the attribute that contains it, named within the resource's whole definition (`integration.webhook.events[0].when`), as `terraform plan` needs. What the expression may read is worked out from that definition exactly as applying it would, so a plan fails where an apply would; a definition that has an error fails with 422, each error under `definition`. It answers the type and any errors, each with the span it is about and a suggestion where a declared name is near, and warnings about the definition, such as a capture shadowing a built-in name. `GET /expressions/positions` lists every position, with `[*]` for any index or key, and the variables an expression there can read. They follow these headers and problems, but are not resources.\n- **Credentials.** A client calls with a person's session or with a workspace token, sent as `Authorization: Bearer <token>`. A token acts only within its own workspace and only as its scopes allow. `read`, `plan` and `configure` are a ladder: `read` reads, `plan` also checks expressions, and `configure` also creates, updates and deletes configuration as a workspace admin may, except secrets, runners and token trusts. `secrets` is granted beside one of them and lets the token create, rebind, rotate and delete secrets; Terraform that manages secrets uses `[\"configure\", \"secrets\"]`. `runners` is granted the same way and lets the token create, rekey and delete runners and runner trusts and create, update and delete the workspace's runners, since a runner claims runs, checks out repositories and keeps git credentials; Terraform that manages runners uses `[\"configure\", \"runners\"]`. `trusts` is granted the same way and lets the token create, update and delete workspace token trusts, since a trust hands out tokens; a token can only create a trust that grants scopes it has itself, so bootstrap the trusts once with a token that has `trusts` and every scope they grant, as in `[\"configure\", \"secrets\", \"trusts\"]`, and revoke it. No token manages members or tokens, or reads the audit.\n- **CI without a stored token.** A workspace admin, or a token granted `trusts`, creates a workspace token trust naming an OIDC issuer, audience, subject and claims, and the scopes and lifetime (at most an hour) of the tokens it issues. A CI job exchanges the OIDC token its platform issues it at `POST /api/workspace-tokens/exchange` with `{ \"trust\": <trust id>, \"token\": <OIDC token> }`, and calls with the short-lived token it gets back. Deleting the trust stops every token that it issued at once, and the audit names the trust and the workload's subject beside each exchange and each change made with an issued token.\n- **Forbidden changes.** A change by someone who may read the resource but not change it, person or token, fails with 403 `forbidden`, whose `permission` names what the caller lacks, one of `configure`, `manage-secrets`, `manage-runners`, `manage-token-trusts`, `administer`, `create-workspaces`, `plan`. Anything they may not see at all answers 404.\n- **Who changed what.** A client names itself in `Spotlight-Client` (`terraform-provider/<version>` or `web`), and every configuration change is recorded with who made it, person or token, and through which client. A secret's change also records the value version it moved to and the hosts it is bound to, never its value.\n- **Import by address.** Each resource has an `address` that names it within its workspace, such as `core/linear`, and an import operation that answers the resource at that address, as `terraform import` needs. A workspace's address is its slug; a team's is its key; anything a team owns is the team's key and its own, as in `core/delivery`.",
+    "description": "HTTP API for the Spotlight Control Plane.\n\n## Resource conventions\n\nOperations marked `x-spotlight-resource` manage configuration resources, the ones the Terraform provider writes. They live under `/resources` and address everything by id. Every resource follows these rules, and a conformance suite checks each one against them.\n\n- **Stable ids.** Spotlight issues a resource's `id` when it is created. It never changes for the resource's life, whatever else does.\n- **Reads return every field.** A read returns the whole resource, defaults filled in, so a client comparing it with what it wrote sees any drift. A write returns exactly what a read returns.\n- **Versions.** Every resource carries a `version` that rises with each change, and each response carries it as a strong `ETag` (`\"3\"`). An update or delete must send it back as `If-Match`: without one it fails with 428, and against a version that is no longer current with 409, whose body gives the `currentVersion` and whose `ETag` names it. A write that would remove something another resource still uses fails with 409 `in-use`.\n- **Idempotent creates.** A create must carry an `Idempotency-Key`. Retrying with the same key and body within 24 hours returns the resource that the first attempt created, marked `Idempotent-Replayed: true`, and creates nothing more; the same key with a different body fails with 422.\n- **Problems name fields.** Errors are `application/problem+json` (RFC 9457). `type` is stable and safe to branch on. An invalid request lists `errors`, each with the `path` of the attribute it is about, as in `stations[2].check`; a key that is not a plain name is quoted, as Terraform addresses it: `on[\"task.opened\"].to.thread`.\n- **API versions.** A client may send `Spotlight-Api-Version`; every response names the version that it uses, currently `2026-09-23`. Changes within a version are additive only: fields and operations are added, never removed, renamed or given a new meaning.\n- **Expression checks.** `POST /expressions/check` type-checks one CEL expression at the attribute that contains it, named within the resource's whole definition (`integration.webhook.events[0].when`), as `terraform plan` needs. What the expression may read is worked out from that definition exactly as applying it would, so a plan fails where an apply would; a definition that has an error fails with 422, each error under `definition`. It returns the type and any errors, each with the span it is about and a suggestion where a declared name is near, and warnings about the definition, such as a capture shadowing a built-in name. `GET /expressions/positions` lists every position, with `[*]` for any index or key, and the variables an expression there can read. They follow these headers and problems, but are not resources.\n- **Credentials.** A client calls with a person's session or with a workspace token, sent as `Authorization: Bearer <token>`. A token acts only within its own workspace and only as its scopes allow. `read`, `plan` and `configure` are a ladder: `read` reads, `plan` also checks expressions, and `configure` also creates, updates and deletes configuration as a workspace admin may, except secrets, runners and token trusts. `secrets` is granted beside one of them and lets the token create, rebind, rotate and delete secrets; Terraform that manages secrets uses `[\"configure\", \"secrets\"]`. `runners` is granted the same way and lets the token create, rekey and delete runners and runner trusts and create, update and delete the workspace's runners, since a runner claims runs, checks out repositories and keeps git credentials; Terraform that manages runners uses `[\"configure\", \"runners\"]`. `trusts` is granted the same way and lets the token create, update and delete workspace token trusts, since a trust hands out tokens; a token can only create a trust that grants scopes it has itself, so bootstrap the trusts once with a token that has `trusts` and every scope they grant, as in `[\"configure\", \"secrets\", \"trusts\"]`, and revoke it. No token manages members or tokens, or reads the audit.\n- **CI without a stored token.** A workspace admin, or a token granted `trusts`, creates a workspace token trust naming an OIDC issuer, audience, subject and claims, and the scopes and lifetime (at most an hour) of the tokens it issues. A CI job exchanges the OIDC token its platform issues it at `POST /api/workspace-tokens/exchange` with `{ \"trust\": <trust id>, \"token\": <OIDC token> }`, and calls with the short-lived token it gets back. Deleting the trust stops every token that it issued at once, and the audit names the trust and the workload's subject beside each exchange and each change made with an issued token.\n- **Forbidden changes.** A change by someone who may read the resource but not change it, person or token, fails with 403 `forbidden`, whose `permission` names what the caller lacks, one of `configure`, `secrets`, `runners`, `trusts`, `administer`, `create-workspaces`, `plan`. Anything they may not see at all returns 404.\n- **Who changed what.** A client names itself in `Spotlight-Client` (`terraform-provider/<version>` or `web`), and every configuration change is recorded with who made it, person or token, and through which client. A secret's change also records the value version it moved to and the hosts it is bound to, never its value.\n- **Import by address.** Each resource has an `address` that names it within its workspace, such as `core/linear`, and an import operation that returns the resource at that address, as `terraform import` needs. A workspace's address is its slug; a team's is its key; anything a team owns is the team's key and its own, as in `core/delivery`.",
     "version": "2026-09-23",
     "contact": {}
   },
@@ -24195,14 +24197,14 @@
             "type": "string",
             "enum": [
               "configure",
-              "manage-secrets",
-              "manage-runners",
-              "manage-token-trusts",
+              "secrets",
+              "runners",
+              "trusts",
               "administer",
               "create-workspaces",
               "plan"
             ],
-            "example": "manage-secrets",
+            "example": "secrets",
             "description": "The permission the caller lacks, when the request is forbidden: one its role in the workspace, or its token’s scopes, do not grant"
           }
         },
@@ -24298,7 +24300,7 @@
         "type": "object",
         "properties": {
           "items": {
-            "description": "Every one there is, each as a read would answer it, in address order",
+            "description": "Every one there is, each as a read returns it, in address order",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/LineResourceResponseDto"
@@ -24319,7 +24321,7 @@
           },
           "spec": {
             "type": "object",
-            "description": "Sent to the runner unchanged: checkouts, briefing, handover and continuity. The command is filled in from the harness, so it is not sent here.",
+            "description": "Sent to the runner unchanged: checkouts, briefing, handover and resume. The command is filled in from the harness, so it is not sent here.",
             "example": {
               "checkouts": [
                 {
@@ -24357,7 +24359,7 @@
           "state"
         ]
       },
-      "InstallableHarnessResponseDto": {
+      "HarnessProbeResponseDto": {
         "type": "object",
         "properties": {
           "id": {
@@ -24872,7 +24874,7 @@
             "example": 143000,
             "description": "How long it took, in ms"
           },
-          "tone": {
+          "category": {
             "type": "string",
             "enum": [
               "agent",
@@ -24880,7 +24882,7 @@
               "failed"
             ],
             "example": "agent",
-            "description": "The agent working, the overhead around it, or a fault"
+            "description": "The agent working, the overhead around it, or an error"
           },
           "cost": {
             "type": "number",
@@ -24943,7 +24945,7 @@
           "name",
           "startedAt",
           "ms",
-          "tone",
+          "category",
           "cost",
           "currency",
           "step",
@@ -24970,7 +24972,7 @@
             "example": 454,
             "description": "How many rows it draws"
           },
-          "faults": {
+          "errors": {
             "type": "number",
             "example": 21
           },
@@ -24985,7 +24987,7 @@
           "startedAt",
           "ms",
           "rows",
-          "faults",
+          "errors",
           "roots"
         ]
       },
@@ -25921,7 +25923,7 @@
             "type": "boolean",
             "example": false
           },
-          "unprepared": {
+          "setupFailed": {
             "type": "boolean",
             "example": false,
             "description": "With failed: it failed before the agent was handed the run, while the runner made its workspace ready"
@@ -25950,7 +25952,7 @@
           "archived": {
             "type": "boolean",
             "example": true,
-            "description": "The workspace archive is sealed as this turn left it. A run waits for a person only when it is, so a later runner can take it up from there."
+            "description": "The workspace archive is complete as this turn left it. A run waits for a person only when it is, so a later runner can take it up from there."
           }
         },
         "required": [
@@ -26142,7 +26144,7 @@
             "description": "What a host looks for in each runner image",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/InstallableHarnessResponseDto"
+              "$ref": "#/components/schemas/HarnessProbeResponseDto"
             }
           },
           "images": {
@@ -26173,7 +26175,7 @@
           "image": {
             "type": "string",
             "example": "ghcr.io/acme/api-runner:main",
-            "description": "The runner image this claim will run in, one the host reported serving; what it contains and whether it is the default come from that report"
+            "description": "The runner image this claim will run in, one the host reported that it supports; what it contains and whether it is the default come from that report"
           }
         },
         "required": [
@@ -26195,7 +26197,7 @@
           },
           "egressToken": {
             "type": "string",
-            "description": "The credential the egress beside the sandbox fetches the run’s secrets with; the host hands it to egress alone, never into the sandbox"
+            "description": "The credential the egress sidecar fetches the run’s secrets with; the host hands it to egress alone, never into the sandbox"
           },
           "work": {
             "$ref": "#/components/schemas/ClaimedWorkResponseDto"
@@ -26269,18 +26271,18 @@
           "timeoutMs"
         ]
       },
-      "AnswerHostCallRequestDto": {
+      "RecordHostCallResponseRequestDto": {
         "type": "object",
         "properties": {
           "host": {
             "type": "string",
             "example": "K7Q2M4ZC3VYH6N5RB8WX1TDJ9P",
-            "description": "The host answering, the one that claimed the call"
+            "description": "The host that records the response, the one that claimed the call"
           },
           "status": {
             "type": "number",
             "example": 200,
-            "description": "The HTTP status the call was answered with, or 0 when nothing answered"
+            "description": "The HTTP status of the response, or 0 when no response came"
           },
           "headers": {
             "type": "object",
@@ -26290,22 +26292,22 @@
             "example": {
               "content-type": "application/json"
             },
-            "description": "The headers the call was answered with"
+            "description": "The headers of the response"
           },
           "body": {
             "type": "string",
             "example": "eyJyZWZ1c2UiOiAibm90IHRvZGF5In0=",
-            "description": "The body the call was answered with, base64, at most 16 KiB"
+            "description": "The body of the response, base64, at most 16 KiB"
           },
           "ms": {
             "type": "number",
             "example": 184,
-            "description": "How long the call took to answer, in milliseconds"
+            "description": "How long the call took to get a response, in milliseconds"
           },
           "error": {
             "type": "string",
             "example": "dial tcp 10.0.4.2:443: connection refused",
-            "description": "Why nothing answered, when the status is 0"
+            "description": "Why no response came, when the status is 0"
           }
         },
         "required": [
@@ -26324,7 +26326,7 @@
           },
           "proxyCredential": {
             "type": "string",
-            "description": "The run proxy credential a runner presented to a shared egress. A shared egress sends it with its own egress token; the egress beside a sandbox leaves it out"
+            "description": "The run proxy credential a runner presented to a shared egress. A shared egress sends it with its own egress token; an egress sidecar leaves it out"
           }
         },
         "required": [
@@ -26875,7 +26877,7 @@
           "occurrences"
         ]
       },
-      "InboxAsideResponseDto": {
+      "InboxRequestResponseDto": {
         "type": "object",
         "properties": {
           "form": {
@@ -26886,7 +26888,7 @@
               "alert"
             ],
             "example": "memories",
-            "description": "What is put aside for a person to resolve, beside the task’s conversation: memories are proposed memories to approve or reject; grade asks a person to grade a judged run"
+            "description": "The kind of inbox request: memories are proposed memories to approve or reject; grade asks a person to grade a judged run"
           },
           "about": {
             "type": "string",
@@ -27202,7 +27204,7 @@
             "enum": [
               "task"
             ],
-            "description": "A task’s conversation or what was put aside beside it"
+            "description": "A task’s conversation or an inbox request on the task"
           },
           "id": {
             "type": "string",
@@ -27226,7 +27228,7 @@
             "nullable": true
           },
           "attachments": {
-            "description": "The files the task was raised with",
+            "description": "The files the task was created with",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/AttachmentResponseDto"
@@ -27250,8 +27252,8 @@
             "example": 4,
             "description": "How many stations the line has"
           },
-          "raisedAt": {
-            "description": "Where it was raised, which it keeps as it moves",
+          "originStation": {
+            "description": "The station where it was created. It keeps this station when it moves",
             "allOf": [
               {
                 "$ref": "#/components/schemas/InboxStationResponseDto"
@@ -27309,13 +27311,13 @@
               }
             ]
           },
-          "aside": {
+          "inboxRequest": {
             "nullable": true,
-            "description": "What this item puts aside for a person to resolve, where it is not a conversation; it never blocks the task",
+            "description": "The inbox request of this item, where it is not a conversation. It never blocks the task",
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/InboxAsideResponseDto"
+                "$ref": "#/components/schemas/InboxRequestResponseDto"
               }
             ]
           },
@@ -27338,7 +27340,7 @@
           "stationColor",
           "stationPosition",
           "stationCount",
-          "raisedAt",
+          "originStation",
           "currentStation",
           "createdAt",
           "askedAt",
@@ -27348,7 +27350,7 @@
           "unread",
           "briefing",
           "failure",
-          "aside",
+          "inboxRequest",
           "notes"
         ]
       },
@@ -27734,7 +27736,7 @@
             "description": "Markdown"
           },
           "attachments": {
-            "description": "The files it was raised with",
+            "description": "The files it was created with",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/AttachmentResponseDto"
@@ -27765,9 +27767,9 @@
             "nullable": true,
             "description": "The pull request this task ended in, once one is open"
           },
-          "raisedBy": {
+          "createdBy": {
             "nullable": true,
-            "description": "Who raised it, and so who it comes back to",
+            "description": "The person who created it. The task comes back to this person",
             "type": "object",
             "allOf": [
               {
@@ -27807,7 +27809,7 @@
           "running",
           "awaitingReview",
           "pullRequest",
-          "raisedBy",
+          "createdBy",
           "assignee",
           "note"
         ]
@@ -27983,17 +27985,17 @@
             "example": 4,
             "description": "How many traces started in it"
           },
-          "faults": {
+          "errors": {
             "type": "number",
             "example": 1,
-            "description": "Every fault the traces that started in it came to"
+            "description": "Every error in the traces that started in it"
           }
         },
         "required": [
           "from",
           "to",
           "count",
-          "faults"
+          "errors"
         ]
       },
       "TraceStationResponseDto": {
@@ -28045,7 +28047,7 @@
             ]
           },
           "stations": {
-            "description": "Every station that has worked it, in the line’s own order",
+            "description": "Every station that has run it, in the line’s order",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/TraceStationResponseDto"
@@ -28076,7 +28078,7 @@
           "runs": {
             "type": "number",
             "example": 3,
-            "description": "How many runs worked the task"
+            "description": "How many runs the task has had"
           },
           "input": {
             "type": "string",
@@ -28097,7 +28099,7 @@
             "type": "number",
             "example": 128
           },
-          "faults": {
+          "errors": {
             "type": "number",
             "example": 2
           },
@@ -28125,7 +28127,7 @@
           "output",
           "ms",
           "steps",
-          "faults",
+          "errors",
           "cost",
           "currency"
         ]
@@ -28462,7 +28464,7 @@
           "cacheWriteTokens"
         ]
       },
-      "RunConversationResponseDto": {
+      "RunNotesResponseDto": {
         "type": "object",
         "properties": {
           "runId": {
@@ -28482,7 +28484,7 @@
             "nullable": true
           },
           "attachments": {
-            "description": "The files the task was raised with",
+            "description": "The files the task was created with",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/AttachmentResponseDto"
@@ -28724,7 +28726,7 @@
             "type": "string",
             "nullable": true,
             "example": "Drain the retry queue on restart",
-            "description": "The title of the task it worked, as it reads now; null once the task is deleted"
+            "description": "The title of the task of the run, as it reads now; null once the task is deleted"
           }
         },
         "required": [
@@ -29064,7 +29066,7 @@
           "briefing"
         ]
       },
-      "ChatImprovingResponseDto": {
+      "ChatTargetStationResponseDto": {
         "type": "object",
         "properties": {
           "lineId": {
@@ -29157,13 +29159,13 @@
               "type": "string"
             }
           },
-          "improving": {
+          "targetStation": {
             "nullable": true,
-            "description": "The station the chat is about improving, if any",
+            "description": "The station that the chat must improve, if any",
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChatImprovingResponseDto"
+                "$ref": "#/components/schemas/ChatTargetStationResponseDto"
               }
             ]
           },
@@ -29198,7 +29200,7 @@
           "model",
           "effort",
           "repositories",
-          "improving",
+          "targetStation",
           "setup",
           "createdAt",
           "updatedAt",
@@ -29273,9 +29275,9 @@
               "type": "string"
             }
           },
-          "improving": {
+          "targetStation": {
             "type": "string",
-            "description": "A station the chat is about improving, by its id; the agent is briefed to study its recent runs"
+            "description": "The id of the station that the chat must improve. The agent gets an instruction to study the recent runs of the station"
           },
           "setup": {
             "description": "Makes this the team’s setup chat: the agent surveys the team’s tools and opens a pull request with its configuration as code there",
@@ -29490,13 +29492,13 @@
               "type": "string"
             }
           },
-          "improving": {
+          "targetStation": {
             "nullable": true,
-            "description": "The station the chat is about improving, if any",
+            "description": "The station that the chat must improve, if any",
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ChatImprovingResponseDto"
+                "$ref": "#/components/schemas/ChatTargetStationResponseDto"
               }
             ]
           },
@@ -29542,7 +29544,7 @@
           "model",
           "effort",
           "repositories",
-          "improving",
+          "targetStation",
           "setup",
           "createdAt",
           "updatedAt",
@@ -29738,7 +29740,7 @@
         "type": "object",
         "properties": {
           "items": {
-            "description": "Every one there is, each as a read would answer it, in address order",
+            "description": "Every one there is, each as a read returns it, in address order",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/WorkspaceResourceResponseDto"
@@ -29804,7 +29806,7 @@
         "type": "object",
         "properties": {
           "items": {
-            "description": "Every one there is, each as a read would answer it, in address order",
+            "description": "Every one there is, each as a read returns it, in address order",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/TeamResourceResponseDto"
@@ -29908,7 +29910,7 @@
         "type": "object",
         "properties": {
           "items": {
-            "description": "Every one there is, each as a read would answer it, in address order",
+            "description": "Every one there is, each as a read returns it, in address order",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/WorkspaceTokenResourceResponseDto"
@@ -30032,7 +30034,7 @@
         "type": "object",
         "properties": {
           "items": {
-            "description": "Every one there is, each as a read would answer it, in address order",
+            "description": "Every one there is, each as a read returns it, in address order",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/WorkspaceTokenTrustResourceResponseDto"
@@ -30068,7 +30070,7 @@
           "token": {
             "type": "string",
             "example": "q3Vd0n8yXbT2c4kPzR7mW1sLhA9eJ5gUfN6oYiC0xEw",
-            "description": "The token to send as Authorization: Bearer until it expires; answered this once, and stored only as a hash"
+            "description": "The token to send as Authorization: Bearer until it expires; returned once, and stored only as a hash"
           },
           "tokenId": {
             "type": "string",
@@ -30245,7 +30247,7 @@
               "member"
             ]
           },
-          "provisioning": {
+          "setupStatus": {
             "type": "string",
             "description": "Whether Spotlight has created the first team of the workspace. The value is failed after Spotlight stopped its attempts.",
             "enum": [
@@ -30262,7 +30264,7 @@
           "slug",
           "teams",
           "role",
-          "provisioning"
+          "setupStatus"
         ]
       },
       "TeamReferenceResponseDto": {
@@ -30307,9 +30309,9 @@
               "member"
             ]
           },
-          "mayBeSetTo": {
+          "assignableRoles": {
             "type": "array",
-            "description": "What the caller may set them to, which is empty where that is not theirs to do. Worked out by the same rule the workspace enforces.",
+            "description": "The roles that the caller can assign to this member. The list is empty when the caller cannot change the role of this member. The workspace uses the same rule when it changes a role.",
             "example": [
               "admin",
               "member"
@@ -30345,7 +30347,7 @@
           "name",
           "image",
           "role",
-          "mayBeSetTo",
+          "assignableRoles",
           "email",
           "teams",
           "joinedAt"
@@ -30466,7 +30468,7 @@
             "additionalProperties": true,
             "example": {
               "valueVersion": 2,
-              "boundTo": [
+              "targets": [
                 "api.linear.app"
               ]
             },
@@ -30513,9 +30515,9 @@
               "member"
             ]
           },
-          "mayBeSetTo": {
+          "assignableRoles": {
             "type": "array",
-            "description": "What the caller may set them to, which is empty where that is not theirs to do. Worked out by the same rule the workspace enforces.",
+            "description": "The roles that the caller can assign to this member. The list is empty when the caller cannot change the role of this member. The workspace uses the same rule when it changes a role.",
             "example": [
               "admin",
               "member"
@@ -30535,7 +30537,7 @@
           "name",
           "image",
           "role",
-          "mayBeSetTo"
+          "assignableRoles"
         ]
       },
       "AddTeamMemberRequestDto": {
@@ -30896,7 +30898,7 @@
             "type": "number",
             "nullable": true,
             "example": 1,
-            "description": "Changing it rotates the value to the valueWo sent with it; the value itself is write-only and never answered"
+            "description": "Changing it rotates the value to the valueWo sent with it; the value itself is write-only and never returned"
           },
           "rotatedAt": {
             "type": "string",
@@ -30921,7 +30923,7 @@
         "type": "object",
         "properties": {
           "items": {
-            "description": "Every one there is, each as a read would answer it, in address order",
+            "description": "Every one there is, each as a read returns it, in address order",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SecretResourceResponseDto"
@@ -31120,7 +31122,7 @@
             }
           },
           "images": {
-            "description": "The runner images it serves or cannot use, each with what it found inside",
+            "description": "The runner images it supports or cannot use, each with what it found inside",
             "items": {
               "type": "array",
               "items": {
@@ -31274,7 +31276,7 @@
             }
           },
           "images": {
-            "description": "The runner images it serves or cannot use, and what each contains",
+            "description": "The runner images it supports or cannot use, and what each contains",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/HostImageResponseDto"
@@ -31491,7 +31493,7 @@
         "type": "object",
         "properties": {
           "items": {
-            "description": "Every one there is, each as a read would answer it, in address order",
+            "description": "Every one there is, each as a read returns it, in address order",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/RunnerTrustResourceResponseDto"
@@ -31514,7 +31516,7 @@
             "type": "integer",
             "nullable": true,
             "example": 1,
-            "description": "Changed to rotate provision.secret, which is write-only and never answered"
+            "description": "Changed to rotate provision.secret, which is write-only and never returned"
           },
           "egress": {
             "type": "string",
@@ -31603,7 +31605,7 @@
             "type": "integer",
             "nullable": true,
             "example": 1,
-            "description": "Changed, with a new token, to rotate the pool token of a pull pool, which is write-only and never answered"
+            "description": "Changed, with a new token, to rotate the pool token of a pull pool, which is write-only and never returned"
           },
           "provision": {
             "nullable": true,
@@ -31634,7 +31636,7 @@
         "type": "object",
         "properties": {
           "items": {
-            "description": "Every one there is, each as a read would answer it, in address order",
+            "description": "Every one there is, each as a read returns it, in address order",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/RunnerPoolResourceResponseDto"
@@ -31689,7 +31691,7 @@
             "type": "integer",
             "nullable": true,
             "example": 1,
-            "description": "Changed, with a new token, to rotate the egress token, which is write-only and never answered"
+            "description": "Changed, with a new token, to rotate the egress token, which is write-only and never returned"
           }
         },
         "required": [
@@ -31707,7 +31709,7 @@
         "type": "object",
         "properties": {
           "items": {
-            "description": "Every one there is, each as a read would answer it, in address order",
+            "description": "Every one there is, each as a read returns it, in address order",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/EgressResourceResponseDto"
@@ -31783,7 +31785,7 @@
         "type": "object",
         "properties": {
           "items": {
-            "description": "Every one there is, each as a read would answer it, in address order",
+            "description": "Every one there is, each as a read returns it, in address order",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/WorkspaceRunnersResourceResponseDto"
@@ -32042,7 +32044,7 @@
         "type": "object",
         "properties": {
           "items": {
-            "description": "Every one there is, each as a read would answer it, in address order",
+            "description": "Every one there is, each as a read returns it, in address order",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SkillResourceResponseDto"
@@ -32218,7 +32220,7 @@
         "type": "object",
         "properties": {
           "items": {
-            "description": "Every one there is, each as a read would answer it, in address order",
+            "description": "Every one there is, each as a read returns it, in address order",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/HarnessProfileResourceResponseDto"
@@ -32251,7 +32253,7 @@
         "type": "object",
         "properties": {
           "files": {
-            "description": "main.tf, with an import block beside each resource and references between them; variables.tf, declaring a sensitive variable for each value Spotlight never answers (secret values, runner tokens); and every prompt and skill file main.tf reads with file(), byte for byte; ordered by path",
+            "description": "main.tf, with an import block beside each resource and references between them; variables.tf, declaring a sensitive variable for each value Spotlight never returns (secret values, runner tokens); and every prompt and skill file main.tf reads with file(), byte for byte; ordered by path",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/TerraformFileResponseDto"
@@ -33475,7 +33477,7 @@
             "type": "string",
             "nullable": true,
             "example": null,
-            "description": "Why Spotlight could not fetch the spec the last time, or null when it could. Spotlight fetches the spec again when its url, document, baseUrl, revision or depth changes, on each update after a failed fetch, and when the integration is connected. Spotlight lists the tools of an MCP server again every MCP_RELIST_SECONDS"
+            "description": "Why Spotlight could not fetch the spec the last time, or null when it could. Spotlight fetches the spec again when its url, document, baseUrl, revision or depth changes, on each update after a failed fetch, and when the integration is connected. Spotlight lists the tools of an MCP server again every SPOTLIGHT_MCP_RELIST_SECONDS"
           },
           "tools": {
             "type": "integer",
@@ -33568,7 +33570,7 @@
         "type": "object",
         "properties": {
           "items": {
-            "description": "Every one there is, each as a read would answer it, in address order",
+            "description": "Every one there is, each as a read returns it, in address order",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/IntegrationResourceResponseDto"
@@ -34067,7 +34069,7 @@
           "secretVersion": {
             "type": "number",
             "example": 1,
-            "description": "The version of the HMAC secret; changed to rotate secret, which is write-only and never answered"
+            "description": "The version of the HMAC secret; changed to rotate secret, which is write-only and never returned"
           },
           "oidc": {
             "description": "Sign each request with a short-lived OIDC token instead",
@@ -34197,7 +34199,7 @@
         "type": "object",
         "properties": {
           "items": {
-            "description": "Every one there is, each as a read would answer it, in address order",
+            "description": "Every one there is, each as a read returns it, in address order",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/HookResourceResponseDto"
@@ -35185,7 +35187,7 @@
           "reviewItemId": {
             "type": "string",
             "nullable": true,
-            "example": "aside_8f2c",
+            "example": "request_8f2c",
             "description": "The inbox item where people approve or reject what the run proposed; null where it proposed nothing"
           }
         },
@@ -35267,7 +35269,7 @@
           "path": {
             "type": "string",
             "example": ".spotlight/memory/repositories/acme/api/src/uploads/M-18.md",
-            "description": "Where to lay it, relative to the run’s workspace"
+            "description": "Where to write it, relative to the run’s workspace"
           },
           "body": {
             "type": "string",
@@ -41480,7 +41482,7 @@
         "type": "object",
         "properties": {
           "items": {
-            "description": "Every one there is, each as a read would answer it, in address order",
+            "description": "Every one there is, each as a read returns it, in address order",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ReplayCandidateResourceResponseDto"
@@ -42102,7 +42104,7 @@
             "type": "string",
             "nullable": true,
             "example": "slack",
-            "description": "Where its task came from: person when a person raised it at this station, the integration whose happening opened it here, as in slack or github, or station when another station passed it on; null once the task is deleted"
+            "description": "Where its task came from: person when a person created it at this station, the integration whose happening opened it here, as in slack or github, or station when another station passed it on; null once the task is deleted"
           }
         },
         "required": [

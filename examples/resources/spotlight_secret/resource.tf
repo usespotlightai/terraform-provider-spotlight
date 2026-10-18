@@ -1,11 +1,11 @@
 variable "secret_linear_api_key" {
-  description = "The value of the secret LINEAR_API_KEY, which Spotlight stores and never answers"
+  description = "The value of the secret LINEAR_API_KEY, which Spotlight stores and never returns"
   type        = string
   sensitive   = true
 }
 
 variable "secret_google_maps_key" {
-  description = "The value of the secret GOOGLE_MAPS_KEY, which Spotlight stores and never answers"
+  description = "The value of the secret GOOGLE_MAPS_KEY, which Spotlight stores and never returns"
   type        = string
   sensitive   = true
 }

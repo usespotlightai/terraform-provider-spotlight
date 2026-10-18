@@ -308,13 +308,13 @@ func (e PoolProvisionResponseDtoEgressTraffic) Valid() bool {
 
 // Defines values for ProblemResponseDtoPermission.
 const (
-	ProblemResponseDtoPermissionAdminister        ProblemResponseDtoPermission = "administer"
-	ProblemResponseDtoPermissionConfigure         ProblemResponseDtoPermission = "configure"
-	ProblemResponseDtoPermissionCreateWorkspaces  ProblemResponseDtoPermission = "create-workspaces"
-	ProblemResponseDtoPermissionManageRunners     ProblemResponseDtoPermission = "manage-runners"
-	ProblemResponseDtoPermissionManageSecrets     ProblemResponseDtoPermission = "manage-secrets"
-	ProblemResponseDtoPermissionManageTokenTrusts ProblemResponseDtoPermission = "manage-token-trusts"
-	ProblemResponseDtoPermissionPlan              ProblemResponseDtoPermission = "plan"
+	ProblemResponseDtoPermissionAdminister       ProblemResponseDtoPermission = "administer"
+	ProblemResponseDtoPermissionConfigure        ProblemResponseDtoPermission = "configure"
+	ProblemResponseDtoPermissionCreateWorkspaces ProblemResponseDtoPermission = "create-workspaces"
+	ProblemResponseDtoPermissionPlan             ProblemResponseDtoPermission = "plan"
+	ProblemResponseDtoPermissionRunners          ProblemResponseDtoPermission = "runners"
+	ProblemResponseDtoPermissionSecrets          ProblemResponseDtoPermission = "secrets"
+	ProblemResponseDtoPermissionTrusts           ProblemResponseDtoPermission = "trusts"
 )
 
 // Valid indicates whether the value is a known member of the ProblemResponseDtoPermission enum.
@@ -326,13 +326,13 @@ func (e ProblemResponseDtoPermission) Valid() bool {
 		return true
 	case ProblemResponseDtoPermissionCreateWorkspaces:
 		return true
-	case ProblemResponseDtoPermissionManageRunners:
-		return true
-	case ProblemResponseDtoPermissionManageSecrets:
-		return true
-	case ProblemResponseDtoPermissionManageTokenTrusts:
-		return true
 	case ProblemResponseDtoPermissionPlan:
+		return true
+	case ProblemResponseDtoPermissionRunners:
+		return true
+	case ProblemResponseDtoPermissionSecrets:
+		return true
+	case ProblemResponseDtoPermissionTrusts:
 		return true
 	default:
 		return false
@@ -480,6 +480,27 @@ func (e TraceConnectionResponseDtoReason) Valid() bool {
 	}
 }
 
+// Defines values for TraceNodeResponseDtoCategory.
+const (
+	Agent    TraceNodeResponseDtoCategory = "agent"
+	Failed   TraceNodeResponseDtoCategory = "failed"
+	Overhead TraceNodeResponseDtoCategory = "overhead"
+)
+
+// Valid indicates whether the value is a known member of the TraceNodeResponseDtoCategory enum.
+func (e TraceNodeResponseDtoCategory) Valid() bool {
+	switch e {
+	case Agent:
+		return true
+	case Failed:
+		return true
+	case Overhead:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for TraceNodeResponseDtoEgressEnforcement.
 const (
 	TraceNodeResponseDtoEgressEnforcementEnforced    TraceNodeResponseDtoEgressEnforcement = "enforced"
@@ -522,27 +543,6 @@ func (e TraceNodeResponseDtoKind) Valid() bool {
 	case Span:
 		return true
 	case Step:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for TraceNodeResponseDtoTone.
-const (
-	Agent    TraceNodeResponseDtoTone = "agent"
-	Failed   TraceNodeResponseDtoTone = "failed"
-	Overhead TraceNodeResponseDtoTone = "overhead"
-)
-
-// Valid indicates whether the value is a known member of the TraceNodeResponseDtoTone enum.
-func (e TraceNodeResponseDtoTone) Valid() bool {
-	switch e {
-	case Agent:
-		return true
-	case Failed:
-		return true
-	case Overhead:
 		return true
 	default:
 		return false
@@ -1955,7 +1955,7 @@ type ApiSpecResponseDto struct {
 	// Kind The kind of API spec that its tools are generated from: an OpenAPI document, a GraphQL schema or an MCP server
 	Kind ApiSpecResponseDtoKind `json:"kind"`
 
-	// Problem Why Spotlight could not fetch the spec the last time, or null when it could. Spotlight fetches the spec again when its url, document, baseUrl, revision or depth changes, on each update after a failed fetch, and when the integration is connected. Spotlight lists the tools of an MCP server again every MCP_RELIST_SECONDS
+	// Problem Why Spotlight could not fetch the spec the last time, or null when it could. Spotlight fetches the spec again when its url, document, baseUrl, revision or depth changes, on each update after a failed fetch, and when the integration is connected. Spotlight lists the tools of an MCP server again every SPOTLIGHT_MCP_RELIST_SECONDS
 	Problem *string `json:"problem"`
 
 	// ReadAt When Spotlight last fetched the spec
@@ -1982,7 +1982,7 @@ type CheckExpressionRequestDto struct {
 
 // EgressResourceListResponseDto defines model for EgressResourceListResponseDto.
 type EgressResourceListResponseDto struct {
-	// Items Every one there is, each as a read would answer it, in address order
+	// Items Every one there is, each as a read returns it, in address order
 	Items []EgressResourceResponseDto `json:"items"`
 }
 
@@ -1997,7 +1997,7 @@ type EgressResourceResponseDto struct {
 	// Key Names the egress, and is its address; fixed for its life
 	Key string `json:"key"`
 
-	// TokenVersion Changed, with a new token, to rotate the egress token, which is write-only and never answered
+	// TokenVersion Changed, with a new token, to rotate the egress token, which is write-only and never returned
 	TokenVersion *int `json:"tokenVersion"`
 
 	// Url Where the runners of a pool that names this egress send their traffic
@@ -2106,7 +2106,7 @@ type FieldErrorResponseDtoSeverity string
 
 // HarnessProfileResourceListResponseDto defines model for HarnessProfileResourceListResponseDto.
 type HarnessProfileResourceListResponseDto struct {
-	// Items Every one there is, each as a read would answer it, in address order
+	// Items Every one there is, each as a read returns it, in address order
 	Items []HarnessProfileResourceResponseDto `json:"items"`
 }
 
@@ -2223,7 +2223,7 @@ type HookRequestDtoFrom string
 
 // HookResourceListResponseDto defines model for HookResourceListResponseDto.
 type HookResourceListResponseDto struct {
-	// Items Every one there is, each as a read would answer it, in address order
+	// Items Every one there is, each as a read returns it, in address order
 	Items []HookResourceResponseDto `json:"items"`
 }
 
@@ -2277,7 +2277,7 @@ type HookSigningDto struct {
 	// Oidc Sign each request with a short-lived OIDC token instead
 	Oidc *HookOidcDto `json:"oidc,omitempty"`
 
-	// SecretVersion The version of the HMAC secret; changed to rotate secret, which is write-only and never answered
+	// SecretVersion The version of the HMAC secret; changed to rotate secret, which is write-only and never returned
 	SecretVersion *float32 `json:"secretVersion,omitempty"`
 }
 
@@ -2310,7 +2310,7 @@ type HookStepDto struct {
 
 // IntegrationResourceListResponseDto defines model for IntegrationResourceListResponseDto.
 type IntegrationResourceListResponseDto struct {
-	// Items Every one there is, each as a read would answer it, in address order
+	// Items Every one there is, each as a read returns it, in address order
 	Items []IntegrationResourceResponseDto `json:"items"`
 }
 
@@ -2350,7 +2350,7 @@ type IssuedTokenResponseDto struct {
 	ExpiresAt string                         `json:"expiresAt"`
 	Scopes    []IssuedTokenResponseDtoScopes `json:"scopes"`
 
-	// Token The token to send as Authorization: Bearer until it expires; answered this once, and stored only as a hash
+	// Token The token to send as Authorization: Bearer until it expires; returned once, and stored only as a hash
 	Token       string `json:"token"`
 	TokenId     string `json:"tokenId"`
 	WorkspaceId string `json:"workspaceId"`
@@ -2391,7 +2391,7 @@ type JournalStepResponseDtoKind string
 
 // LineResourceListResponseDto defines model for LineResourceListResponseDto.
 type LineResourceListResponseDto struct {
-	// Items Every one there is, each as a read would answer it, in address order
+	// Items Every one there is, each as a read returns it, in address order
 	Items []LineResourceResponseDto `json:"items"`
 }
 
@@ -2449,7 +2449,7 @@ type PoolProvisionResponseDto struct {
 	// EgressTraffic Which traffic of a run goes through the egress: all, or only the traffic to bound hosts. all when the pool names no egress
 	EgressTraffic PoolProvisionResponseDtoEgressTraffic `json:"egressTraffic"`
 
-	// SecretVersion Changed to rotate provision.secret, which is write-only and never answered
+	// SecretVersion Changed to rotate provision.secret, which is write-only and never returned
 	SecretVersion *int `json:"secretVersion"`
 
 	// Url Called with every run the pool is to serve, signed as Standard Webhooks sign
@@ -2493,7 +2493,7 @@ type RunSpanResponseDto struct {
 
 // RunnerPoolResourceListResponseDto defines model for RunnerPoolResourceListResponseDto.
 type RunnerPoolResourceListResponseDto struct {
-	// Items Every one there is, each as a read would answer it, in address order
+	// Items Every one there is, each as a read returns it, in address order
 	Items []RunnerPoolResourceResponseDto `json:"items"`
 }
 
@@ -2520,7 +2520,7 @@ type RunnerPoolResourceResponseDto struct {
 	// Provision How Spotlight starts a runner for each run, for a push pool
 	Provision *PoolProvisionResponseDto `json:"provision"`
 
-	// TokenVersion Changed, with a new token, to rotate the pool token of a pull pool, which is write-only and never answered
+	// TokenVersion Changed, with a new token, to rotate the pool token of a pull pool, which is write-only and never returned
 	TokenVersion *int `json:"tokenVersion"`
 
 	// Version Rises with every change; the ETag carries it, and a write sends it back as If-Match
@@ -2538,7 +2538,7 @@ type RunnerPoolResourceResponseDtoMode string
 
 // RunnerTrustResourceListResponseDto defines model for RunnerTrustResourceListResponseDto.
 type RunnerTrustResourceListResponseDto struct {
-	// Items Every one there is, each as a read would answer it, in address order
+	// Items Every one there is, each as a read returns it, in address order
 	Items []RunnerTrustResourceResponseDto `json:"items"`
 }
 
@@ -2595,7 +2595,7 @@ type SecretBindingResponseDtoLocation string
 
 // SecretResourceListResponseDto defines model for SecretResourceListResponseDto.
 type SecretResourceListResponseDto struct {
-	// Items Every one there is, each as a read would answer it, in address order
+	// Items Every one there is, each as a read returns it, in address order
 	Items []SecretResourceResponseDto `json:"items"`
 }
 
@@ -2617,7 +2617,7 @@ type SecretResourceResponseDto struct {
 	RotatedAt string                  `json:"rotatedAt"`
 	Source    SecretSourceResponseDto `json:"source"`
 
-	// ValueWoVersion Changing it rotates the value to the valueWo sent with it; the value itself is write-only and never answered
+	// ValueWoVersion Changing it rotates the value to the valueWo sent with it; the value itself is write-only and never returned
 	ValueWoVersion *float32 `json:"valueWoVersion"`
 
 	// Version Rises with every change; the ETag carries it, and a write sends it back as If-Match
@@ -2647,7 +2647,7 @@ type SecretSourceResponseDtoKind string
 
 // SkillResourceListResponseDto defines model for SkillResourceListResponseDto.
 type SkillResourceListResponseDto struct {
-	// Items Every one there is, each as a read would answer it, in address order
+	// Items Every one there is, each as a read returns it, in address order
 	Items []SkillResourceResponseDto `json:"items"`
 }
 
@@ -2714,7 +2714,7 @@ type StepLocationResponseDto struct {
 
 // TeamResourceListResponseDto defines model for TeamResourceListResponseDto.
 type TeamResourceListResponseDto struct {
-	// Items Every one there is, each as a read would answer it, in address order
+	// Items Every one there is, each as a read returns it, in address order
 	Items []TeamResourceResponseDto `json:"items"`
 }
 
@@ -2773,7 +2773,9 @@ type TraceConnectionResponseDtoReason string
 
 // TraceNodeResponseDto defines model for TraceNodeResponseDto.
 type TraceNodeResponseDto struct {
-	Children []TraceNodeResponseDto `json:"children"`
+	// Category The agent working, the overhead around it, or an error
+	Category TraceNodeResponseDtoCategory `json:"category"`
+	Children []TraceNodeResponseDto       `json:"children"`
 
 	// Connection On a connection row: a connection of the run with an error, as a shared egress recorded it
 	Connection *TraceConnectionResponseDto `json:"connection"`
@@ -2791,10 +2793,10 @@ type TraceNodeResponseDto struct {
 	Span      *RunSpanResponseDto     `json:"span"`
 	StartedAt string                  `json:"startedAt"`
 	Step      *JournalStepResponseDto `json:"step"`
-
-	// Tone The agent working, the overhead around it, or a fault
-	Tone TraceNodeResponseDtoTone `json:"tone"`
 }
+
+// TraceNodeResponseDtoCategory The agent working, the overhead around it, or an error
+type TraceNodeResponseDtoCategory string
 
 // TraceNodeResponseDtoEgressEnforcement On a run row: what the runner in the sandbox reported before the harness started. enforced: a direct connection around egress failed. not-enforced: it operated. null: the runner did not check
 type TraceNodeResponseDtoEgressEnforcement string
@@ -2802,12 +2804,9 @@ type TraceNodeResponseDtoEgressEnforcement string
 // TraceNodeResponseDtoKind defines model for TraceNodeResponseDto.Kind.
 type TraceNodeResponseDtoKind string
 
-// TraceNodeResponseDtoTone The agent working, the overhead around it, or a fault
-type TraceNodeResponseDtoTone string
-
 // WorkspaceResourceListResponseDto defines model for WorkspaceResourceListResponseDto.
 type WorkspaceResourceListResponseDto struct {
-	// Items Every one there is, each as a read would answer it, in address order
+	// Items Every one there is, each as a read returns it, in address order
 	Items []WorkspaceResourceResponseDto `json:"items"`
 }
 
@@ -2834,7 +2833,7 @@ type WorkspaceResourceResponseDto struct {
 
 // WorkspaceRunnersResourceListResponseDto defines model for WorkspaceRunnersResourceListResponseDto.
 type WorkspaceRunnersResourceListResponseDto struct {
-	// Items Every one there is, each as a read would answer it, in address order
+	// Items Every one there is, each as a read returns it, in address order
 	Items []WorkspaceRunnersResourceResponseDto `json:"items"`
 }
 
@@ -2864,7 +2863,7 @@ type WorkspaceRunnersResourceResponseDto struct {
 
 // WorkspaceTokenTrustResourceListResponseDto defines model for WorkspaceTokenTrustResourceListResponseDto.
 type WorkspaceTokenTrustResourceListResponseDto struct {
-	// Items Every one there is, each as a read would answer it, in address order
+	// Items Every one there is, each as a read returns it, in address order
 	Items []WorkspaceTokenTrustResourceResponseDto `json:"items"`
 }
 
@@ -2918,7 +2917,7 @@ type bearerContextKey string
 
 // CheckExpressionParams defines parameters for CheckExpression.
 type CheckExpressionParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *CheckExpressionParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -2930,7 +2929,7 @@ type CheckExpressionParamsSpotlightApiVersion string
 
 // ListExpressionPositionsParams defines parameters for ListExpressionPositions.
 type ListExpressionPositionsParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ListExpressionPositionsParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -2942,7 +2941,7 @@ type ListExpressionPositionsParamsSpotlightApiVersion string
 
 // DeleteEgressParams defines parameters for DeleteEgress.
 type DeleteEgressParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *DeleteEgressParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -2957,7 +2956,7 @@ type DeleteEgressParamsSpotlightApiVersion string
 
 // ReadEgressParams defines parameters for ReadEgress.
 type ReadEgressParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ReadEgressParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -2971,7 +2970,7 @@ type ReadEgressParamsSpotlightApiVersion string
 type UpdateEgressJSONBody struct {
 	Key string `json:"key"`
 
-	// Token Write-only: the token the egress calls Spotlight with, stored only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Egress-Token
+	// Token Write-only: the token the egress calls Spotlight with, stored only as a hash and never returned. Left out on create, Spotlight issues one and returns it once in Spotlight-Egress-Token
 	Token *string `json:"token,omitempty"`
 
 	// TokenVersion Changed, with a new token, to rotate the egress token in place: the old token stops working at once
@@ -2983,7 +2982,7 @@ type UpdateEgressJSONBody struct {
 
 // UpdateEgressParams defines parameters for UpdateEgress.
 type UpdateEgressParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *UpdateEgressParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -2998,7 +2997,7 @@ type UpdateEgressParamsSpotlightApiVersion string
 
 // DeleteHarnessProfileParams defines parameters for DeleteHarnessProfile.
 type DeleteHarnessProfileParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *DeleteHarnessProfileParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3013,7 +3012,7 @@ type DeleteHarnessProfileParamsSpotlightApiVersion string
 
 // ReadHarnessProfileParams defines parameters for ReadHarnessProfile.
 type ReadHarnessProfileParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ReadHarnessProfileParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3044,7 +3043,7 @@ type UpdateHarnessProfileJSONBody struct {
 
 // UpdateHarnessProfileParams defines parameters for UpdateHarnessProfile.
 type UpdateHarnessProfileParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *UpdateHarnessProfileParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3059,7 +3058,7 @@ type UpdateHarnessProfileParamsSpotlightApiVersion string
 
 // DeleteHookParams defines parameters for DeleteHook.
 type DeleteHookParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *DeleteHookParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3074,7 +3073,7 @@ type DeleteHookParamsSpotlightApiVersion string
 
 // ReadHookParams defines parameters for ReadHook.
 type ReadHookParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ReadHookParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3086,7 +3085,7 @@ type ReadHookParamsSpotlightApiVersion string
 
 // UpdateHookParams defines parameters for UpdateHook.
 type UpdateHookParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *UpdateHookParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3101,7 +3100,7 @@ type UpdateHookParamsSpotlightApiVersion string
 
 // DeleteIntegrationParams defines parameters for DeleteIntegration.
 type DeleteIntegrationParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *DeleteIntegrationParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3116,7 +3115,7 @@ type DeleteIntegrationParamsSpotlightApiVersion string
 
 // ReadIntegrationParams defines parameters for ReadIntegration.
 type ReadIntegrationParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ReadIntegrationParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3131,7 +3130,7 @@ type UpdateIntegrationJSONBody map[string]interface{}
 
 // UpdateIntegrationParams defines parameters for UpdateIntegration.
 type UpdateIntegrationParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *UpdateIntegrationParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3146,7 +3145,7 @@ type UpdateIntegrationParamsSpotlightApiVersion string
 
 // DeleteLineParams defines parameters for DeleteLine.
 type DeleteLineParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *DeleteLineParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3161,7 +3160,7 @@ type DeleteLineParamsSpotlightApiVersion string
 
 // ReadLineParams defines parameters for ReadLine.
 type ReadLineParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ReadLineParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3176,7 +3175,7 @@ type UpdateLineJSONBody map[string]interface{}
 
 // UpdateLineParams defines parameters for UpdateLine.
 type UpdateLineParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *UpdateLineParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3191,7 +3190,7 @@ type UpdateLineParamsSpotlightApiVersion string
 
 // DeleteRunnerPoolParams defines parameters for DeleteRunnerPool.
 type DeleteRunnerPoolParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *DeleteRunnerPoolParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3206,7 +3205,7 @@ type DeleteRunnerPoolParamsSpotlightApiVersion string
 
 // ReadRunnerPoolParams defines parameters for ReadRunnerPool.
 type ReadRunnerPoolParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ReadRunnerPoolParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3240,7 +3239,7 @@ type UpdateRunnerPoolJSONBody struct {
 		Url           string `json:"url"`
 	} `json:"provision,omitempty"`
 
-	// Token Write-only, and only for a pool without provision: the token its hosts claim with, stored only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Pool-Token
+	// Token Write-only, and only for a pool without provision: the token its hosts claim with, stored only as a hash and never returned. Left out on create, Spotlight issues one and returns it once in Spotlight-Pool-Token
 	Token *string `json:"token,omitempty"`
 
 	// TokenVersion Changed, with a new token, to rotate the pool token in place: the old token stops working at once, while runs already claimed keep their own one-run credentials
@@ -3249,7 +3248,7 @@ type UpdateRunnerPoolJSONBody struct {
 
 // UpdateRunnerPoolParams defines parameters for UpdateRunnerPool.
 type UpdateRunnerPoolParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *UpdateRunnerPoolParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3267,7 +3266,7 @@ type UpdateRunnerPoolJSONBodyProvisionEgressTraffic string
 
 // DeleteRunnerTrustParams defines parameters for DeleteRunnerTrust.
 type DeleteRunnerTrustParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *DeleteRunnerTrustParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3282,7 +3281,7 @@ type DeleteRunnerTrustParamsSpotlightApiVersion string
 
 // ReadRunnerTrustParams defines parameters for ReadRunnerTrust.
 type ReadRunnerTrustParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ReadRunnerTrustParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3303,7 +3302,7 @@ type UpdateRunnerTrustJSONBody struct {
 
 // UpdateRunnerTrustParams defines parameters for UpdateRunnerTrust.
 type UpdateRunnerTrustParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *UpdateRunnerTrustParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3318,7 +3317,7 @@ type UpdateRunnerTrustParamsSpotlightApiVersion string
 
 // DeleteSecretParams defines parameters for DeleteSecret.
 type DeleteSecretParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *DeleteSecretParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3333,7 +3332,7 @@ type DeleteSecretParamsSpotlightApiVersion string
 
 // ReadSecretParams defines parameters for ReadSecret.
 type ReadSecretParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ReadSecretParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3360,7 +3359,7 @@ type UpdateSecretJSONBody struct {
 		SecretId *string                        `json:"secretId,omitempty"`
 	} `json:"source,omitempty"`
 
-	// ValueWo The value to store; accepted on create and whenever valueWoVersion changes, and never answered
+	// ValueWo The value to store; accepted on create and whenever valueWoVersion changes, and never returned
 	ValueWo *string `json:"valueWo,omitempty"`
 
 	// ValueWoVersion Change it to rotate the value to the valueWo sent with it
@@ -3369,7 +3368,7 @@ type UpdateSecretJSONBody struct {
 
 // UpdateSecretParams defines parameters for UpdateSecret.
 type UpdateSecretParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *UpdateSecretParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3390,7 +3389,7 @@ type UpdateSecretJSONBodySourceKind string
 
 // DeleteSkillParams defines parameters for DeleteSkill.
 type DeleteSkillParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *DeleteSkillParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3405,7 +3404,7 @@ type DeleteSkillParamsSpotlightApiVersion string
 
 // ReadSkillParams defines parameters for ReadSkill.
 type ReadSkillParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ReadSkillParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3423,7 +3422,7 @@ type UpdateSkillJSONBody struct {
 
 // UpdateSkillParams defines parameters for UpdateSkill.
 type UpdateSkillParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *UpdateSkillParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3438,7 +3437,7 @@ type UpdateSkillParamsSpotlightApiVersion string
 
 // DeleteTeamParams defines parameters for DeleteTeam.
 type DeleteTeamParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *DeleteTeamParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3453,7 +3452,7 @@ type DeleteTeamParamsSpotlightApiVersion string
 
 // ReadTeamParams defines parameters for ReadTeam.
 type ReadTeamParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ReadTeamParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3471,7 +3470,7 @@ type UpdateTeamJSONBody struct {
 
 // UpdateTeamParams defines parameters for UpdateTeam.
 type UpdateTeamParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *UpdateTeamParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3505,13 +3504,13 @@ type CreateHarnessProfileJSONBody struct {
 
 // CreateHarnessProfileParams defines parameters for CreateHarnessProfile.
 type CreateHarnessProfileParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *CreateHarnessProfileParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IdempotencyKey Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more
+	// IdempotencyKey Unique per create; a retry with the same key and body returns the resource that the first attempt created, and creates nothing more
 	IdempotencyKey string `json:"Idempotency-Key"`
 }
 
@@ -3520,13 +3519,13 @@ type CreateHarnessProfileParamsSpotlightApiVersion string
 
 // CreateHookParams defines parameters for CreateHook.
 type CreateHookParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *CreateHookParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IdempotencyKey Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more
+	// IdempotencyKey Unique per create; a retry with the same key and body returns the resource that the first attempt created, and creates nothing more
 	IdempotencyKey string `json:"Idempotency-Key"`
 }
 
@@ -3538,13 +3537,13 @@ type CreateIntegrationJSONBody map[string]interface{}
 
 // CreateIntegrationParams defines parameters for CreateIntegration.
 type CreateIntegrationParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *CreateIntegrationParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IdempotencyKey Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more
+	// IdempotencyKey Unique per create; a retry with the same key and body returns the resource that the first attempt created, and creates nothing more
 	IdempotencyKey string `json:"Idempotency-Key"`
 }
 
@@ -3556,13 +3555,13 @@ type CreateLineJSONBody map[string]interface{}
 
 // CreateLineParams defines parameters for CreateLine.
 type CreateLineParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *CreateLineParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IdempotencyKey Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more
+	// IdempotencyKey Unique per create; a retry with the same key and body returns the resource that the first attempt created, and creates nothing more
 	IdempotencyKey string `json:"Idempotency-Key"`
 }
 
@@ -3577,13 +3576,13 @@ type CreateSkillJSONBody struct {
 
 // CreateSkillParams defines parameters for CreateSkill.
 type CreateSkillParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *CreateSkillParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IdempotencyKey Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more
+	// IdempotencyKey Unique per create; a retry with the same key and body returns the resource that the first attempt created, and creates nothing more
 	IdempotencyKey string `json:"Idempotency-Key"`
 }
 
@@ -3592,7 +3591,7 @@ type CreateSkillParamsSpotlightApiVersion string
 
 // DeleteWorkspaceTokenTrustParams defines parameters for DeleteWorkspaceTokenTrust.
 type DeleteWorkspaceTokenTrustParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *DeleteWorkspaceTokenTrustParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3607,7 +3606,7 @@ type DeleteWorkspaceTokenTrustParamsSpotlightApiVersion string
 
 // ReadWorkspaceTokenTrustParams defines parameters for ReadWorkspaceTokenTrust.
 type ReadWorkspaceTokenTrustParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ReadWorkspaceTokenTrustParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3630,7 +3629,7 @@ type UpdateWorkspaceTokenTrustJSONBody struct {
 
 // UpdateWorkspaceTokenTrustParams defines parameters for UpdateWorkspaceTokenTrust.
 type UpdateWorkspaceTokenTrustParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *UpdateWorkspaceTokenTrustParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3648,7 +3647,7 @@ type UpdateWorkspaceTokenTrustJSONBodyScopes string
 
 // DeleteWorkspaceRunnersParams defines parameters for DeleteWorkspaceRunners.
 type DeleteWorkspaceRunnersParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *DeleteWorkspaceRunnersParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3663,7 +3662,7 @@ type DeleteWorkspaceRunnersParamsSpotlightApiVersion string
 
 // ReadWorkspaceRunnersParams defines parameters for ReadWorkspaceRunners.
 type ReadWorkspaceRunnersParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ReadWorkspaceRunnersParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3682,7 +3681,7 @@ type UpdateWorkspaceRunnersJSONBody struct {
 
 // UpdateWorkspaceRunnersParams defines parameters for UpdateWorkspaceRunners.
 type UpdateWorkspaceRunnersParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *UpdateWorkspaceRunnersParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3697,7 +3696,7 @@ type UpdateWorkspaceRunnersParamsSpotlightApiVersion string
 
 // ListWorkspacesParams defines parameters for ListWorkspaces.
 type ListWorkspacesParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ListWorkspacesParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3715,13 +3714,13 @@ type CreateWorkspaceJSONBody struct {
 
 // CreateWorkspaceParams defines parameters for CreateWorkspace.
 type CreateWorkspaceParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *CreateWorkspaceParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IdempotencyKey Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more
+	// IdempotencyKey Unique per create; a retry with the same key and body returns the resource that the first attempt created, and creates nothing more
 	IdempotencyKey string `json:"Idempotency-Key"`
 }
 
@@ -3733,7 +3732,7 @@ type ImportWorkspaceParams struct {
 	// Address The workspace's address within the workspace
 	Address interface{} `form:"address" json:"address"`
 
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ImportWorkspaceParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3745,7 +3744,7 @@ type ImportWorkspaceParamsSpotlightApiVersion string
 
 // DeleteWorkspaceParams defines parameters for DeleteWorkspace.
 type DeleteWorkspaceParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *DeleteWorkspaceParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3760,7 +3759,7 @@ type DeleteWorkspaceParamsSpotlightApiVersion string
 
 // ReadWorkspaceParams defines parameters for ReadWorkspace.
 type ReadWorkspaceParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ReadWorkspaceParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3778,7 +3777,7 @@ type UpdateWorkspaceJSONBody struct {
 
 // UpdateWorkspaceParams defines parameters for UpdateWorkspace.
 type UpdateWorkspaceParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *UpdateWorkspaceParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3793,7 +3792,7 @@ type UpdateWorkspaceParamsSpotlightApiVersion string
 
 // ListEgressesParams defines parameters for ListEgresses.
 type ListEgressesParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ListEgressesParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3807,7 +3806,7 @@ type ListEgressesParamsSpotlightApiVersion string
 type CreateEgressJSONBody struct {
 	Key string `json:"key"`
 
-	// Token Write-only: the token the egress calls Spotlight with, stored only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Egress-Token
+	// Token Write-only: the token the egress calls Spotlight with, stored only as a hash and never returned. Left out on create, Spotlight issues one and returns it once in Spotlight-Egress-Token
 	Token *string `json:"token,omitempty"`
 
 	// TokenVersion Changed, with a new token, to rotate the egress token in place: the old token stops working at once
@@ -3819,13 +3818,13 @@ type CreateEgressJSONBody struct {
 
 // CreateEgressParams defines parameters for CreateEgress.
 type CreateEgressParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *CreateEgressParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IdempotencyKey Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more
+	// IdempotencyKey Unique per create; a retry with the same key and body returns the resource that the first attempt created, and creates nothing more
 	IdempotencyKey string `json:"Idempotency-Key"`
 }
 
@@ -3837,7 +3836,7 @@ type ImportEgressParams struct {
 	// Address The egress's address within the workspace
 	Address interface{} `form:"address" json:"address"`
 
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ImportEgressParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3849,7 +3848,7 @@ type ImportEgressParamsSpotlightApiVersion string
 
 // ListHarnessProfilesParams defines parameters for ListHarnessProfiles.
 type ListHarnessProfilesParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ListHarnessProfilesParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3864,7 +3863,7 @@ type ImportHarnessProfileParams struct {
 	// Address The harness-profile's address within the workspace
 	Address interface{} `form:"address" json:"address"`
 
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ImportHarnessProfileParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3876,7 +3875,7 @@ type ImportHarnessProfileParamsSpotlightApiVersion string
 
 // ListHooksParams defines parameters for ListHooks.
 type ListHooksParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ListHooksParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3891,7 +3890,7 @@ type ImportHookParams struct {
 	// Address The hook's address within the workspace
 	Address interface{} `form:"address" json:"address"`
 
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ImportHookParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3903,7 +3902,7 @@ type ImportHookParamsSpotlightApiVersion string
 
 // ListIntegrationsParams defines parameters for ListIntegrations.
 type ListIntegrationsParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ListIntegrationsParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3918,7 +3917,7 @@ type ImportIntegrationParams struct {
 	// Address The integration's address within the workspace
 	Address interface{} `form:"address" json:"address"`
 
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ImportIntegrationParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3930,7 +3929,7 @@ type ImportIntegrationParamsSpotlightApiVersion string
 
 // ListLinesParams defines parameters for ListLines.
 type ListLinesParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ListLinesParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3945,7 +3944,7 @@ type ImportLineParams struct {
 	// Address The line's address within the workspace
 	Address interface{} `form:"address" json:"address"`
 
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ImportLineParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3957,7 +3956,7 @@ type ImportLineParamsSpotlightApiVersion string
 
 // ListRunnerPoolsParams defines parameters for ListRunnerPools.
 type ListRunnerPoolsParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ListRunnerPoolsParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -3991,7 +3990,7 @@ type CreateRunnerPoolJSONBody struct {
 		Url           string `json:"url"`
 	} `json:"provision,omitempty"`
 
-	// Token Write-only, and only for a pool without provision: the token its hosts claim with, stored only as a hash and never answered. Left out on create, Spotlight issues one and answers it once in Spotlight-Pool-Token
+	// Token Write-only, and only for a pool without provision: the token its hosts claim with, stored only as a hash and never returned. Left out on create, Spotlight issues one and returns it once in Spotlight-Pool-Token
 	Token *string `json:"token,omitempty"`
 
 	// TokenVersion Changed, with a new token, to rotate the pool token in place: the old token stops working at once, while runs already claimed keep their own one-run credentials
@@ -4000,13 +3999,13 @@ type CreateRunnerPoolJSONBody struct {
 
 // CreateRunnerPoolParams defines parameters for CreateRunnerPool.
 type CreateRunnerPoolParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *CreateRunnerPoolParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IdempotencyKey Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more
+	// IdempotencyKey Unique per create; a retry with the same key and body returns the resource that the first attempt created, and creates nothing more
 	IdempotencyKey string `json:"Idempotency-Key"`
 }
 
@@ -4021,7 +4020,7 @@ type ImportRunnerPoolParams struct {
 	// Address The runner-pool's address within the workspace
 	Address interface{} `form:"address" json:"address"`
 
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ImportRunnerPoolParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -4033,7 +4032,7 @@ type ImportRunnerPoolParamsSpotlightApiVersion string
 
 // ListRunnerTrustsParams defines parameters for ListRunnerTrusts.
 type ListRunnerTrustsParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ListRunnerTrustsParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -4054,13 +4053,13 @@ type CreateRunnerTrustJSONBody struct {
 
 // CreateRunnerTrustParams defines parameters for CreateRunnerTrust.
 type CreateRunnerTrustParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *CreateRunnerTrustParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IdempotencyKey Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more
+	// IdempotencyKey Unique per create; a retry with the same key and body returns the resource that the first attempt created, and creates nothing more
 	IdempotencyKey string `json:"Idempotency-Key"`
 }
 
@@ -4072,7 +4071,7 @@ type ImportRunnerTrustParams struct {
 	// Address The runner-trust's address within the workspace
 	Address interface{} `form:"address" json:"address"`
 
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ImportRunnerTrustParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -4084,7 +4083,7 @@ type ImportRunnerTrustParamsSpotlightApiVersion string
 
 // ListSecretsParams defines parameters for ListSecrets.
 type ListSecretsParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ListSecretsParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -4111,7 +4110,7 @@ type CreateSecretJSONBody struct {
 		SecretId *string                        `json:"secretId,omitempty"`
 	} `json:"source,omitempty"`
 
-	// ValueWo The value to store; accepted on create and whenever valueWoVersion changes, and never answered
+	// ValueWo The value to store; accepted on create and whenever valueWoVersion changes, and never returned
 	ValueWo *string `json:"valueWo,omitempty"`
 
 	// ValueWoVersion Change it to rotate the value to the valueWo sent with it
@@ -4120,13 +4119,13 @@ type CreateSecretJSONBody struct {
 
 // CreateSecretParams defines parameters for CreateSecret.
 type CreateSecretParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *CreateSecretParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IdempotencyKey Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more
+	// IdempotencyKey Unique per create; a retry with the same key and body returns the resource that the first attempt created, and creates nothing more
 	IdempotencyKey string `json:"Idempotency-Key"`
 }
 
@@ -4144,7 +4143,7 @@ type ImportSecretParams struct {
 	// Address The secret's address within the workspace
 	Address interface{} `form:"address" json:"address"`
 
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ImportSecretParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -4156,7 +4155,7 @@ type ImportSecretParamsSpotlightApiVersion string
 
 // ListSkillsParams defines parameters for ListSkills.
 type ListSkillsParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ListSkillsParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -4171,7 +4170,7 @@ type ImportSkillParams struct {
 	// Address The skill's address within the workspace
 	Address interface{} `form:"address" json:"address"`
 
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ImportSkillParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -4183,7 +4182,7 @@ type ImportSkillParamsSpotlightApiVersion string
 
 // ListTeamsParams defines parameters for ListTeams.
 type ListTeamsParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ListTeamsParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -4201,13 +4200,13 @@ type CreateTeamJSONBody struct {
 
 // CreateTeamParams defines parameters for CreateTeam.
 type CreateTeamParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *CreateTeamParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IdempotencyKey Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more
+	// IdempotencyKey Unique per create; a retry with the same key and body returns the resource that the first attempt created, and creates nothing more
 	IdempotencyKey string `json:"Idempotency-Key"`
 }
 
@@ -4219,7 +4218,7 @@ type ImportTeamParams struct {
 	// Address The team's address within the workspace
 	Address interface{} `form:"address" json:"address"`
 
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ImportTeamParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -4231,7 +4230,7 @@ type ImportTeamParamsSpotlightApiVersion string
 
 // ListWorkspaceTokenTrustsParams defines parameters for ListWorkspaceTokenTrusts.
 type ListWorkspaceTokenTrustsParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ListWorkspaceTokenTrustsParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -4254,13 +4253,13 @@ type CreateWorkspaceTokenTrustJSONBody struct {
 
 // CreateWorkspaceTokenTrustParams defines parameters for CreateWorkspaceTokenTrust.
 type CreateWorkspaceTokenTrustParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *CreateWorkspaceTokenTrustParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IdempotencyKey Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more
+	// IdempotencyKey Unique per create; a retry with the same key and body returns the resource that the first attempt created, and creates nothing more
 	IdempotencyKey string `json:"Idempotency-Key"`
 }
 
@@ -4275,7 +4274,7 @@ type ImportWorkspaceTokenTrustParams struct {
 	// Address The workspace-token-trust's address within the workspace
 	Address interface{} `form:"address" json:"address"`
 
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ImportWorkspaceTokenTrustParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -4287,7 +4286,7 @@ type ImportWorkspaceTokenTrustParamsSpotlightApiVersion string
 
 // ListWorkspaceRunnersParams defines parameters for ListWorkspaceRunners.
 type ListWorkspaceRunnersParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ListWorkspaceRunnersParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
@@ -4306,13 +4305,13 @@ type CreateWorkspaceRunnersJSONBody struct {
 
 // CreateWorkspaceRunnersParams defines parameters for CreateWorkspaceRunners.
 type CreateWorkspaceRunnersParams struct {
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *CreateWorkspaceRunnersParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
-	// IdempotencyKey Unique per create; a retry with the same key and body answers the resource the first attempt created, and creates nothing more
+	// IdempotencyKey Unique per create; a retry with the same key and body returns the resource that the first attempt created, and creates nothing more
 	IdempotencyKey string `json:"Idempotency-Key"`
 }
 
@@ -4324,7 +4323,7 @@ type ImportWorkspaceRunnersParams struct {
 	// Address The workspace-runners's address within the workspace
 	Address interface{} `form:"address" json:"address"`
 
-	// SpotlightApiVersion The API version the client was written against; every response names the version it was answered in
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
 	SpotlightApiVersion *ImportWorkspaceRunnersParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown

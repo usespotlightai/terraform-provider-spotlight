@@ -164,7 +164,7 @@ func secretSchema() schema.Schema {
 	}
 
 	return schema.Schema{
-		MarkdownDescription: "A secret that Spotlight injects into requests, for the hosts it is bound to. Spotlight stores its value and never answers it, so the value is write-only and never enters the plan or the state. " +
+		MarkdownDescription: "A secret that Spotlight injects into requests, for the hosts it is bound to. Spotlight stores its value and never returns it, so the value is write-only and never enters the plan or the state. " +
 			"Writing secrets needs a token granted the `secrets` scope. Import it as `<workspace id>/<name>`.",
 		Attributes: attributes,
 	}

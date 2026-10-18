@@ -31,7 +31,7 @@ type EgressResource struct {
 	client *client.Client
 }
 
-const egressIssuedToken = "Spotlight issued this egress a token, answered only once. Terraform stores no secret in its state, so the token was not stored, and the egress cannot call Spotlight with it. " +
+const egressIssuedToken = "Spotlight issued this egress a token, returned only once. Terraform stores no secret in its state, so the token was not stored, and the egress cannot call Spotlight with it. " +
 	"To use a token that you have instead, set `token` (from a sensitive variable, or a write-only ephemeral value) and change `token_version` to send it."
 
 // EgressResourceModel is a spotlight_egress as Terraform stores it.

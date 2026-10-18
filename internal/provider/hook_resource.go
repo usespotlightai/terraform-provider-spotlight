@@ -166,7 +166,7 @@ func hookSchema() schema.Schema {
 					"Every step has a `name`, lowercase words joined by dashes, by which later steps read its outcome as `step.<name>`. " +
 					"A step that calls a tool names it in `call`, as in `spotlight_integration.slack.tools[\"post-message\"]`, and sets its inputs in `with`, an object of any JSON. " +
 					"A step that sends a request sets `request`: its `url`, any `headers` beside the ones Spotlight signs with, its `body`, which is any JSON and, left out, " +
-					"is the event, task and run, and `from`: `spotlight`, the default, to send it from Spotlight, to a host the control plane's `OUTBOUND_ALLOWED_HOSTS` allows, " +
+					"is the event, task and run, and `from`: `spotlight`, the default, to send it from Spotlight, to a host the control plane's `SPOTLIGHT_OUTBOUND_ALLOWED_HOSTS` allows, " +
 					"or `network`, to have a host of the workspace send it from inside its network. A hook that sends a request signs it, so it needs `signing`. " +
 					"Strings in `with`, and a request's `url`, `headers` and `body`, may contain `$${{ ... }}` expressions, which read what `when` does and `step`.",
 			},

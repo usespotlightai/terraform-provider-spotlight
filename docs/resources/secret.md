@@ -3,24 +3,24 @@
 page_title: "spotlight_secret Resource - spotlight"
 subcategory: ""
 description: |-
-  A secret that Spotlight injects into requests, for the hosts it is bound to. Spotlight stores its value and never answers it, so the value is write-only and never enters the plan or the state. Writing secrets needs a token granted the secrets scope. Import it as <workspace id>/<name>.
+  A secret that Spotlight injects into requests, for the hosts it is bound to. Spotlight stores its value and never returns it, so the value is write-only and never enters the plan or the state. Writing secrets needs a token granted the secrets scope. Import it as <workspace id>/<name>.
 ---
 
 # spotlight_secret (Resource)
 
-A secret that Spotlight injects into requests, for the hosts it is bound to. Spotlight stores its value and never answers it, so the value is write-only and never enters the plan or the state. Writing secrets needs a token granted the `secrets` scope. Import it as `<workspace id>/<name>`.
+A secret that Spotlight injects into requests, for the hosts it is bound to. Spotlight stores its value and never returns it, so the value is write-only and never enters the plan or the state. Writing secrets needs a token granted the `secrets` scope. Import it as `<workspace id>/<name>`.
 
 ## Example Usage
 
 ```terraform
 variable "secret_linear_api_key" {
-  description = "The value of the secret LINEAR_API_KEY, which Spotlight stores and never answers"
+  description = "The value of the secret LINEAR_API_KEY, which Spotlight stores and never returns"
   type        = string
   sensitive   = true
 }
 
 variable "secret_google_maps_key" {
-  description = "The value of the secret GOOGLE_MAPS_KEY, which Spotlight stores and never answers"
+  description = "The value of the secret GOOGLE_MAPS_KEY, which Spotlight stores and never returns"
   type        = string
   sensitive   = true
 }

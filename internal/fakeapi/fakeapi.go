@@ -413,7 +413,7 @@ func forbidTrust(w http.ResponseWriter, detail string) {
 		"title":      "Not allowed to change the workspace-token-trust",
 		"status":     http.StatusForbidden,
 		"detail":     detail,
-		"permission": "manage-token-trusts",
+		"permission": "trusts",
 	})
 }
 
