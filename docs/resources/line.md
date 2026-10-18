@@ -224,7 +224,7 @@ Optional:
 - `color` (String) A six digit hex colour, as in `#6d78d5`. Spotlight picks one when it is left out.
 - `decisions` (Boolean) Whether the station records the agent's decisions for review.
 - `description` (String) What the station is for.
-- `diffs` (Boolean) Whether the station's runs draft a change stack from their diff.
+- `diffs` (Boolean) Whether Spotlight generates a change stack from the diff of each run of the station.
 - `effort` (String) How hard the agent thinks: `low`, `medium`, `high`, `xhigh` or `max`.
 - `ends` (Boolean) Whether a task that arrives at the station is finished.
 - `harness` (String) The agent harness that works tasks here, as in `claude-code`.

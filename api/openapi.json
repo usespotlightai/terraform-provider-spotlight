@@ -9052,7 +9052,7 @@
             }
           },
           "403": {
-            "description": "The workspace’s plan does not include the catalog-tool; the detail names the plan it needs",
+            "description": "The workspace’s plan does not include the catalog-tool; the detail names the plan that it requires",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -9183,7 +9183,7 @@
             }
           },
           "403": {
-            "description": "The workspace’s plan does not include the catalog-skill; the detail names the plan it needs",
+            "description": "The workspace’s plan does not include the catalog-skill; the detail names the plan that it requires",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -9336,7 +9336,7 @@
             "description": "No valid session"
           },
           "403": {
-            "description": "Not an owner or admin, or not your installation"
+            "description": "Not an owner or admin, or not an admin of the installation"
           },
           "404": {
             "description": "No such workspace for this caller"
@@ -14936,7 +14936,7 @@
             "description": "No such run for this caller"
           }
         },
-        "summary": "The change stacks drafted of what a run changed, newest first",
+        "summary": "The change stacks that Spotlight generated from what a run changed, newest first",
         "tags": [
           "change-stacks"
         ]
@@ -14978,7 +14978,7 @@
             "description": "No valid session"
           }
         },
-        "summary": "The newest change stack drafted for a task",
+        "summary": "The newest change stack generated for a task",
         "tags": [
           "change-stacks"
         ]
@@ -15023,7 +15023,7 @@
             "description": "No such task for this caller"
           }
         },
-        "summary": "The decisions the agent made in the task’s latest drafted run, for review",
+        "summary": "The decisions that Spotlight generated for review from the latest run of the task",
         "tags": [
           "decisions"
         ]
@@ -15176,8 +15176,8 @@
     },
     "/runs/{runId}/change-stacks": {
       "post": {
-        "description": "A station that says it wants changes has its runs drafted into a change stack: the runner hands over the diff of each checkout.",
-        "operationId": "draftChangeStack",
+        "description": "Spotlight generates a change stack for each run of a station that asks for diffs: the runner hands over the diff of each checkout.",
+        "operationId": "generateChangeStack",
         "parameters": [
           {
             "name": "runId",
@@ -15193,7 +15193,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/DraftChangeStackRequestDto"
+                "$ref": "#/components/schemas/GenerateChangeStackRequestDto"
               }
             }
           }
@@ -15212,7 +15212,7 @@
             "description": "The run is a search, which changes no repository"
           }
         },
-        "summary": "Hand over what a run changed, to be drafted into a change stack",
+        "summary": "Hand over what a run changed, so that Spotlight generates a change stack from it",
         "tags": [
           "runners"
         ]
@@ -15475,7 +15475,7 @@
             "description": "Someone else wrote it"
           }
         },
-        "summary": "Rewrite a comment of your own, on GitHub too once it is there",
+        "summary": "Edit a comment of your own, on GitHub too once it is there",
         "tags": [
           "reviews"
         ]
@@ -30962,7 +30962,7 @@
               "team",
               "enterprise"
             ],
-            "description": "The plan it needs"
+            "description": "The lowest plan that includes the item"
           },
           "description": {
             "type": "string",
@@ -31008,7 +31008,7 @@
               "team",
               "enterprise"
             ],
-            "description": "The plan it needs"
+            "description": "The lowest plan that includes the item"
           },
           "description": {
             "type": "string",
@@ -31019,7 +31019,7 @@
               "catalog.web-search@1.1.0",
               "catalog.fetch-page@1.0.0"
             ],
-            "description": "The catalog tools it brings, enabled wherever the skill is; its files never leave Spotlight except into a run",
+            "description": "The catalog tools that the skill uses, enabled wherever the skill is; its files never leave Spotlight except into a run",
             "type": "array",
             "items": {
               "type": "string"
@@ -32358,13 +32358,13 @@
           "hunks"
         ]
       },
-      "StackRangeResponseDto": {
+      "StackHunkResponseDto": {
         "type": "object",
         "properties": {
           "hunk": {
             "type": "string",
             "example": "h3",
-            "description": "The hunk it places"
+            "description": "A hunk of the layer"
           }
         },
         "required": [
@@ -32403,10 +32403,10 @@
           "summary": {
             "type": "string"
           },
-          "ranges": {
+          "hunks": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/StackRangeResponseDto"
+              "$ref": "#/components/schemas/StackHunkResponseDto"
             }
           },
           "notes": {
@@ -32421,7 +32421,7 @@
           "id",
           "title",
           "summary",
-          "ranges",
+          "hunks",
           "notes"
         ]
       },
@@ -32476,7 +32476,7 @@
             "type": "string",
             "description": "The end of what the check printed"
           },
-          "tookMs": {
+          "durationMs": {
             "type": "number",
             "example": 41000
           }
@@ -32485,7 +32485,7 @@
           "step",
           "passed",
           "output",
-          "tookMs"
+          "durationMs"
         ]
       },
       "StackCheckResponseDto": {
@@ -32495,7 +32495,7 @@
             "type": "string",
             "example": "npm test"
           },
-          "state": {
+          "status": {
             "type": "string",
             "enum": [
               "waiting",
@@ -32526,7 +32526,7 @@
         },
         "required": [
           "command",
-          "state",
+          "status",
           "reason",
           "whole",
           "layers"
@@ -32545,7 +32545,7 @@
           "state": {
             "type": "string",
             "enum": [
-              "drafting",
+              "generating",
               "ready",
               "failed"
             ]
@@ -32616,12 +32616,12 @@
           "state": {
             "type": "string",
             "enum": [
-              "drafting",
+              "generating",
               "ready",
               "failed"
             ]
           },
-          "checkState": {
+          "checkStatus": {
             "type": "string",
             "enum": [
               "waiting",
@@ -32646,7 +32646,7 @@
           "runId",
           "repository",
           "state",
-          "checkState",
+          "checkStatus",
           "added",
           "removed"
         ]
@@ -32656,7 +32656,7 @@
         "properties": {
           "latest": {
             "nullable": true,
-            "description": "The newest change stack drafted, if any",
+            "description": "The newest change stack generated, if any",
             "type": "object",
             "allOf": [
               {
@@ -32763,13 +32763,13 @@
             "example": [
               "api/src/uploads.ts"
             ],
-            "description": "The changed files it bears on, from the workspace root",
+            "description": "The changed files it covers, from the workspace root",
             "type": "array",
             "items": {
               "type": "string"
             }
           },
-          "steps": {
+          "journalSteps": {
             "description": "Where the agent reasoned it, as steps of the run’s journal",
             "type": "array",
             "items": {
@@ -32791,7 +32791,7 @@
           "why",
           "alternatives",
           "paths",
-          "steps",
+          "journalSteps",
           "disputes"
         ]
       },
@@ -32801,11 +32801,11 @@
           "runId": {
             "type": "string",
             "nullable": true,
-            "description": "The run the decisions were drafted from, if any was"
+            "description": "The run the decisions were generated from, if there is one"
           },
-          "drafting": {
+          "generating": {
             "type": "boolean",
-            "description": "Whether a later run’s decisions are being drafted"
+            "description": "Whether decisions for a later run are being generated"
           },
           "status": {
             "type": "string",
@@ -32834,7 +32834,7 @@
         },
         "required": [
           "runId",
-          "drafting",
+          "generating",
           "status",
           "merge",
           "decisions"
@@ -32882,7 +32882,7 @@
             "format": "date-time"
           },
           "decisions": {
-            "description": "Those bearing on the paths in the query; deviations and limitations first",
+            "description": "Those that cover the paths in the query; deviations and limitations first",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/DecisionResponseDto"
@@ -32913,7 +32913,7 @@
           "merges"
         ]
       },
-      "DraftChangeStackRequestDto": {
+      "GenerateChangeStackRequestDto": {
         "type": "object",
         "properties": {
           "diff": {
@@ -32947,7 +32947,7 @@
               "no-checkout",
               "checkout-failed",
               "setup-failed",
-              "no-room",
+              "workspace-failed",
               "out-of-time",
               "no-image"
             ],
@@ -32978,7 +32978,7 @@
             "type": "string",
             "description": "The end of what the check printed"
           },
-          "tookMs": {
+          "durationMs": {
             "type": "number",
             "example": 42000
           }
@@ -32987,7 +32987,7 @@
           "step",
           "passed",
           "output",
-          "tookMs"
+          "durationMs"
         ]
       },
       "RecordChangeStackCheckRequestDto": {
@@ -33059,11 +33059,11 @@
             "nullable": true,
             "description": "Their picture"
           },
-          "yours": {
+          "viewerIsAuthor": {
             "type": "boolean",
             "description": "Whether the caller wrote it"
           },
-          "byAgent": {
+          "isAgentAuthored": {
             "type": "boolean",
             "description": "Whether an agent wrote it, reviewing"
           },
@@ -33108,8 +33108,8 @@
           "authorName",
           "authorLogin",
           "authorImage",
-          "yours",
-          "byAgent",
+          "viewerIsAuthor",
+          "isAgentAuthored",
           "replyTo",
           "state",
           "failure",
@@ -33127,10 +33127,10 @@
           "authorName": {
             "type": "string"
           },
-          "yours": {
+          "viewerIsAuthor": {
             "type": "boolean"
           },
-          "byAgent": {
+          "isAgentAuthored": {
             "type": "boolean",
             "description": "Whether an agent submitted it"
           },
@@ -33165,8 +33165,8 @@
         "required": [
           "id",
           "authorName",
-          "yours",
-          "byAgent",
+          "viewerIsAuthor",
+          "isAgentAuthored",
           "verdict",
           "body",
           "state",
@@ -42500,7 +42500,7 @@
           },
           "unpricedCalls": {
             "type": "number",
-            "description": "Model calls, for drafting change stacks or judging, that came back with no price"
+            "description": "Model calls, for generating change stacks or judging, that came back with no price"
           },
           "steps": {
             "type": "number"
@@ -42604,14 +42604,14 @@
             "type": "string",
             "enum": [
               "absent",
-              "drafting",
+              "generating",
               "checking",
               "passed",
               "failed",
               "none",
               "unchecked"
             ],
-            "description": "drafting or checking until its change stacks complete and their checks end; absent when its run left no change stack; none when its stacks are checked by nothing"
+            "description": "generating or checking until its change stacks complete and their checks end; absent when its run left no change stack; none when its stacks are checked by nothing"
           },
           "failedAt": {
             "description": "The steps or layers that failed",
@@ -42628,17 +42628,17 @@
               "no-checkout",
               "checkout-failed",
               "setup-failed",
-              "no-room",
+              "workspace-failed",
               "out-of-time",
               "no-image",
-              "unprovisioned",
-              "nobody-checked",
+              "provision-failed",
+              "queue-timeout",
               "skipped",
-              "undrafted",
+              "not-generated",
               "no-check-asked",
               null
             ],
-            "description": "Why it went unchecked: what stopped the runner checking it, undrafted when its change was never drafted, or skipped for anything else"
+            "description": "Why it went unchecked: what stopped the runner checking it, not-generated when Spotlight never generated a change stack for its change, or skipped for anything else"
           }
         },
         "required": [
@@ -43027,7 +43027,7 @@
               "asked-a-person",
               "check-failed",
               "check-skipped",
-              "change-undrafted",
+              "change-not-generated",
               "no-change",
               "no-change-stack",
               "judged",
@@ -43035,7 +43035,7 @@
               "unjudged",
               "nothing-judges"
             ],
-            "description": "run-failed (detail: how; exited, refused or timed-out, the run failed through the candidate), asked-a-person, check-failed and judge-failed count against the replay; run-failed with unprepared, unprovisioned, hooks-unanswered, runner-lost or superseded (what ran it failed), unreplayable (detail: why it could not be replayed or started), run-stopped (the replay was stopped or ran over its ceiling), not-run, check-skipped (detail: why, as in no-check-asked), change-undrafted, no-change (it changed nothing for its check to run on), no-change-stack (it changed files, but no stack of them reached Spotlight), unjudged and nothing-judges leave it unscored; judged says why the judge passed it"
+            "description": "run-failed (detail: how; exited, refused or timed-out, the run failed through the candidate), asked-a-person, check-failed and judge-failed count against the replay; run-failed with unprepared, unprovisioned, hooks-unanswered, runner-lost or superseded (what ran it failed), unreplayable (detail: why it could not be replayed or started), run-stopped (the replay was stopped or ran over its ceiling), not-run, check-skipped (detail: why, as in no-check-asked), change-not-generated, no-change (it changed nothing for its check to run on), no-change-stack (it changed files, but no stack of them reached Spotlight), unjudged and nothing-judges leave it unscored; judged says why the judge passed it"
           },
           "detail": {
             "type": "string",
@@ -43212,7 +43212,7 @@
           },
           "draftingSpent": {
             "nullable": true,
-            "description": "What drafting and reordering its change stacks cost, failed calls included; what is in the ceiling’s currency is spent against it",
+            "description": "What generating and redrafting its change stacks cost, failed calls included; what is in the ceiling’s currency is spent against it",
             "type": "object",
             "allOf": [
               {

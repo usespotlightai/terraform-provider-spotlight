@@ -213,7 +213,7 @@ func lineSchema() schema.Schema {
 						"profile":     lineOptional("The harness profile the station's agent runs with, by key, as in `careful`."),
 						"prompt":      lineOptional("The instructions for the agent, usually read with `file()`."),
 						"check":       lineOptional("A command that must pass before a task moves on, as in `npm test`."),
-						"diffs":       lineDerived("Whether the station's runs draft a change stack from their diff."),
+						"diffs":       lineDerived("Whether Spotlight generates a change stack from the diff of each run of the station."),
 						"decisions":   lineDerived("Whether the station records the agent's decisions for review."),
 						"memories":    lineDerived("Whether the station drafts proposed team memories from each run it completes, for people to approve."),
 						"tools":       stringListAttribute("The tools the station enables for its agent, as in `linear.comment`."),
