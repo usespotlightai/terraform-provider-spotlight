@@ -1994,7 +1994,7 @@ type EgressResourceResponseDto struct {
 	// Id Issued by Spotlight when the resource is created, and never changed
 	Id string `json:"id"`
 
-	// Key Names the egress, and is its address; fixed for its life
+	// Key Names the egress, and is its address. Immutable
 	Key string `json:"key"`
 
 	// TokenVersion Changed, with a new token, to rotate the egress token, which is write-only and never returned
@@ -2118,7 +2118,7 @@ type HarnessProfileResourceResponseDto struct {
 	// Id Issued by Spotlight when the resource is created, and never changed
 	Id string `json:"id"`
 
-	// Key What stations name it by; fixed for its life, so changing it means replacing the profile
+	// Key What stations name it by. Immutable: changing it means replacing the profile
 	Key string `json:"key"`
 
 	// McpServers Stdio MCP servers, handed to each harness in its own format
@@ -2238,7 +2238,7 @@ type HookResourceResponseDto struct {
 	// Id Issued by Spotlight when the resource is created, and never changed
 	Id string `json:"id"`
 
-	// Key Names the hook within its team; fixed for its life, so changing it means replacing the hook
+	// Key Names the hook within its team. Immutable: changing it means replacing the hook
 	Key   string       `json:"key"`
 	Match HookMatchDto `json:"match"`
 
@@ -2406,7 +2406,7 @@ type LineResourceResponseDto struct {
 	// Id Issued by Spotlight when the resource is created, and never changed
 	Id string `json:"id"`
 
-	// Key Names the line within its team; fixed for its life, so changing it means replacing the line
+	// Key Names the line within its team. Immutable: changing it means replacing the line
 	Key string `json:"key"`
 
 	// TeamId The team it belongs to
@@ -2505,7 +2505,7 @@ type RunnerPoolResourceResponseDto struct {
 	// Id Issued by Spotlight when the resource is created, and never changed
 	Id string `json:"id"`
 
-	// Key Names the pool, and is its address; fixed for its life
+	// Key Names the pool, and is its address. Immutable
 	Key string `json:"key"`
 
 	// Labels What a line or station may name in runners to place its work here
@@ -2514,7 +2514,7 @@ type RunnerPoolResourceResponseDto struct {
 	// MaxRuns The most runs the pool serves at once, or null for no limit
 	MaxRuns *int `json:"maxRuns"`
 
-	// Mode pull when hosts claim with the pool token, push when Spotlight calls provision; fixed for its life, and not settable
+	// Mode pull when hosts claim with the pool token, push when Spotlight calls provision. Immutable, and not settable
 	Mode RunnerPoolResourceResponseDtoMode `json:"mode"`
 
 	// Provision How Spotlight starts a runner for each run, for a push pool
@@ -2533,7 +2533,7 @@ type RunnerPoolResourceResponseDto struct {
 	WorkspaceId string `json:"workspaceId"`
 }
 
-// RunnerPoolResourceResponseDtoMode pull when hosts claim with the pool token, push when Spotlight calls provision; fixed for its life, and not settable
+// RunnerPoolResourceResponseDtoMode pull when hosts claim with the pool token, push when Spotlight calls provision. Immutable, and not settable
 type RunnerPoolResourceResponseDtoMode string
 
 // RunnerTrustResourceListResponseDto defines model for RunnerTrustResourceListResponseDto.
@@ -2556,7 +2556,7 @@ type RunnerTrustResourceResponseDto struct {
 	// Issuer The issuer of the tokens the platform issues to its workloads; its keys are found through OIDC discovery
 	Issuer string `json:"issuer"`
 
-	// Key Names the trust; fixed for its life
+	// Key Names the trust. Immutable
 	Key string `json:"key"`
 
 	// Labels What a line or station may name in runners to place its work here
@@ -2610,7 +2610,7 @@ type SecretResourceResponseDto struct {
 	// Id Issued by Spotlight when the resource is created, and never changed
 	Id string `json:"id"`
 
-	// Name What integrations call it; fixed for its life, so changing it means replacing the secret
+	// Name What integrations call it. Immutable: changing it means replacing the secret
 	Name string `json:"name"`
 
 	// RotatedAt When the value was last set; not settable
@@ -2665,7 +2665,7 @@ type SkillResourceResponseDto struct {
 	// Id Issued by Spotlight when the resource is created, and never changed
 	Id string `json:"id"`
 
-	// Key What stations enable it by; fixed for its life, so changing it means replacing the skill
+	// Key What stations enable it by. Immutable: changing it means replacing the skill
 	Key string `json:"key"`
 
 	// Secrets The secrets SKILL.md requires; not settable
@@ -2726,7 +2726,7 @@ type TeamResourceResponseDto struct {
 	// Id Issued by Spotlight when the resource is created, and never changed
 	Id string `json:"id"`
 
-	// Key Names the team in the addresses of everything it has; fixed for its life, so changing it means replacing the team
+	// Key Names the team in the addresses of everything it has. Immutable: changing it means replacing the team
 	Key string `json:"key"`
 
 	// Name What the team is called
@@ -2821,7 +2821,7 @@ type WorkspaceResourceResponseDto struct {
 	// Name What the workspace is called
 	Name string `json:"name"`
 
-	// Slug Where the workspace lives in the web app; fixed for its life, so changing it means replacing the workspace
+	// Slug Where the workspace lives in the web app. Immutable: changing it means replacing the workspace
 	Slug string `json:"slug"`
 
 	// Version Rises with every change; the ETag carries it, and a write sends it back as If-Match
@@ -2887,7 +2887,7 @@ type WorkspaceTokenTrustResourceResponseDto struct {
 	// Issuer The OIDC issuer whose signed tokens the trust accepts
 	Issuer string `json:"issuer"`
 
-	// Key Names the trust within its workspace, and every token it issues; fixed for its life
+	// Key Names the trust within its workspace, and every token it issues. Immutable
 	Key string `json:"key"`
 
 	// LifetimeMinutes How many minutes a token it issues stays valid
@@ -3223,7 +3223,7 @@ type UpdateRunnerPoolJSONBody struct {
 	// MaxRuns The most runs the pool serves at once; left out, no limit
 	MaxRuns *int `json:"maxRuns,omitempty"`
 
-	// Provision Makes the pool push: Spotlight calls url with each run it is to serve, and the pool has no token. Fixed for the pool’s life
+	// Provision Makes the pool push: Spotlight calls url with each run it is to serve, and the pool has no token. Immutable
 	Provision *struct {
 		// Egress The egress the pool’s runners send their traffic through: spotlight for the platform egress, or the id of an egress in the workspace. Left out, the runners have no egress, and runs that use secrets or the Spotlight API do not go to the pool
 		Egress *string `json:"egress,omitempty"`
@@ -3974,7 +3974,7 @@ type CreateRunnerPoolJSONBody struct {
 	// MaxRuns The most runs the pool serves at once; left out, no limit
 	MaxRuns *int `json:"maxRuns,omitempty"`
 
-	// Provision Makes the pool push: Spotlight calls url with each run it is to serve, and the pool has no token. Fixed for the pool’s life
+	// Provision Makes the pool push: Spotlight calls url with each run it is to serve, and the pool has no token. Immutable
 	Provision *struct {
 		// Egress The egress the pool’s runners send their traffic through: spotlight for the platform egress, or the id of an egress in the workspace. Left out, the runners have no egress, and runs that use secrets or the Spotlight API do not go to the pool
 		Egress *string `json:"egress,omitempty"`

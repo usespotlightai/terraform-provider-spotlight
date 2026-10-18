@@ -103,7 +103,7 @@ func secretSchema() schema.Schema {
 	attributes["version"] = versionAttribute("secret")
 	attributes["address"] = addressAttribute("LINEAR_API_KEY")
 	attributes["workspace_id"] = ownerAttribute("workspace", "secret")
-	attributes["name"] = fixedAttribute("What integrations call the secret, as in `LINEAR_API_KEY`, written `secret.LINEAR_API_KEY` where an integration or a harness profile names it.", "secret")
+	attributes["name"] = immutableAttribute("What integrations call the secret, as in `LINEAR_API_KEY`, written `secret.LINEAR_API_KEY` where an integration or a harness profile names it.", "secret")
 	attributes["source"] = schema.SingleNestedAttribute{
 		Optional:            true,
 		Computed:            true,

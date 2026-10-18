@@ -28,7 +28,7 @@ resource "spotlight_runner_trust" "production_cluster" {
 ### Required
 
 - `issuer` (String) The https URL the platform signs its workloads' tokens as; its keys are found through OIDC discovery.
-- `key` (String) Names the trust, as in `production-cluster`. It is fixed for the runner trust's life, so changing it replaces the runner trust.
+- `key` (String) Names the trust, as in `production-cluster`. It is immutable, so changing it replaces the runner trust.
 - `subject` (String) The workload a token must be issued to, exactly, as in `system:serviceaccount:spotlight:runner`.
 - `workspace_id` (String) The workspace the runner trust belongs to. Changing it replaces the runner trust.
 

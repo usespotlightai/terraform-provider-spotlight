@@ -132,7 +132,7 @@ func hookSchema() schema.Schema {
 			"version": versionAttribute("hook"),
 			"address": addressAttribute("core/migrations-need-a-dba"),
 			"team_id": ownerAttribute("team", "hook"),
-			"key":     fixedAttribute("Names the hook within its team, as in `migrations-need-a-dba`.", "hook"),
+			"key":     immutableAttribute("Names the hook within its team, as in `migrations-need-a-dba`.", "hook"),
 			"on": schema.StringAttribute{
 				Required:            true,
 				Validators:          []validator.String{stringvalidator.OneOf(hookEvents...)},

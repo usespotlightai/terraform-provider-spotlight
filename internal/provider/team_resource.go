@@ -56,7 +56,7 @@ func teamSchema() schema.Schema {
 			"version":      versionAttribute("team"),
 			"address":      addressAttribute("core"),
 			"workspace_id": ownerAttribute("workspace", "team"),
-			"key":          fixedAttribute("Names the team in the addresses of everything it has.", "team"),
+			"key":          immutableAttribute("Names the team in the addresses of everything it has.", "team"),
 			"name": schema.StringAttribute{
 				Required:            true,
 				MarkdownDescription: "What the team is called.",

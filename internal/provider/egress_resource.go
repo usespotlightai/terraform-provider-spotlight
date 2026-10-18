@@ -66,7 +66,7 @@ func egressSchema() schema.Schema {
 	attributes["version"] = versionAttribute("egress")
 	attributes["address"] = addressAttribute("shared")
 	attributes["workspace_id"] = ownerAttribute("workspace", "egress")
-	attributes["key"] = fixedAttribute("Names the egress, as in `shared`.", "egress")
+	attributes["key"] = immutableAttribute("Names the egress, as in `shared`.", "egress")
 	attributes["url"] = schema.StringAttribute{
 		Required: true,
 		MarkdownDescription: "Where the runners of a pool that names the egress send their traffic, as in `https://egress.example.com`. " +

@@ -63,7 +63,7 @@ func runnerTrustSchema() schema.Schema {
 			"version":      versionAttribute("runner trust"),
 			"address":      addressAttribute("production-cluster"),
 			"workspace_id": ownerAttribute("workspace", "runner trust"),
-			"key":          fixedAttribute("Names the trust, as in `production-cluster`.", "runner trust"),
+			"key":          immutableAttribute("Names the trust, as in `production-cluster`.", "runner trust"),
 			"issuer": schema.StringAttribute{
 				Required:            true,
 				MarkdownDescription: "The https URL the platform signs its workloads' tokens as; its keys are found through OIDC discovery.",

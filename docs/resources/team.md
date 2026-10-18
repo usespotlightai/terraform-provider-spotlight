@@ -25,7 +25,7 @@ resource "spotlight_team" "core" {
 
 ### Required
 
-- `key` (String) Names the team in the addresses of everything it has. It is fixed for the team's life, so changing it replaces the team.
+- `key` (String) Names the team in the addresses of everything it has. It is immutable, so changing it replaces the team.
 - `name` (String) What the team is called.
 - `workspace_id` (String) The workspace the team belongs to. Changing it replaces the team.
 

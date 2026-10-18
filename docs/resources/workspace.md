@@ -52,7 +52,7 @@ removed {
 ### Required
 
 - `name` (String) What the workspace is called.
-- `slug` (String) Where the workspace lives in the web app. It is fixed for the workspace's life, so changing it replaces the workspace.
+- `slug` (String) Where the workspace lives in the web app. It is immutable, so changing it replaces the workspace.
 
 ### Read-Only
 

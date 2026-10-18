@@ -113,7 +113,7 @@ resource "spotlight_integration" "core_linear_mcp" {
 
 - `address` (String) Names the resource within its workspace, as in `core/linear`.
 - `id` (String) Issued by Spotlight when the integration is created, and never changed.
-- `integration` (String) The name of the integration, from `definition.integration`. It is fixed for the integration's life, so changing it replaces the integration.
+- `integration` (String) The name of the integration, from `definition.integration`. It is immutable, so changing it replaces the integration.
 - `spec` (Attributes) The API spec or MCP server the integration's tools are generated from, as Spotlight last read it; null when the definition names none. (see [below for nested schema](#nestedatt--spec))
 - `tools` (Map of String) Each tool the integration provides, by its name in `definition.tools` or as generated from its API spec or MCP server, to the name that a station or hook uses for it, as in `{ search = "grafana.search" }`. Name a tool through it, as in `spotlight_integration.grafana.tools["search"]`, so a tool renamed or removed fails the plan where it is named. When the definition names an API spec or an MCP server the tools are known only after apply, so a generated tool named through it that is not there fails the apply, not the plan.
 - `version` (Number) Rises with every change to the integration; each write sends it back so a change made since is not overwritten.

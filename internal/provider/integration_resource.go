@@ -87,7 +87,7 @@ func integrationSchema() schema.Schema {
 			"team_id": ownerAttribute("team", "integration"),
 			integrationKey: schema.StringAttribute{
 				Computed:            true,
-				MarkdownDescription: "The name of the integration, from `definition.integration`. It is fixed for the integration's life, so changing it replaces the integration.",
+				MarkdownDescription: "The name of the integration, from `definition.integration`. It is immutable, so changing it replaces the integration.",
 			},
 			expressions.Attribute: schema.DynamicAttribute{
 				Required:            true,

@@ -121,7 +121,7 @@ resource "spotlight_line" "core_delivery" {
 
 ### Required
 
-- `key` (String) Names the line within its team. It is fixed for the line's life, so changing it replaces the line.
+- `key` (String) Names the line within its team. It is immutable, so changing it replaces the line.
 - `name` (String) What the line is called.
 - `team_id` (String) The team the line belongs to. Changing it replaces the line.
 

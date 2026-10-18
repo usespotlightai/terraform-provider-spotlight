@@ -96,7 +96,7 @@ func harnessProfileSchema() schema.Schema {
 			"version": versionAttribute("harness profile"),
 			"address": addressAttribute("core/careful"),
 			"team_id": ownerAttribute("team", "harness profile"),
-			"key":     fixedAttribute("What stations name the profile by, as in `careful`.", "harness profile"),
+			"key":     immutableAttribute("What stations name the profile by, as in `careful`.", "harness profile"),
 			"permissions": schema.SingleNestedAttribute{
 				Optional: true,
 				Computed: true,

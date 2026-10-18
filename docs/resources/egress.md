@@ -41,7 +41,7 @@ resource "spotlight_egress" "shared" {
 
 ### Required
 
-- `key` (String) Names the egress, as in `shared`. It is fixed for the egress's life, so changing it replaces the egress.
+- `key` (String) Names the egress, as in `shared`. It is immutable, so changing it replaces the egress.
 - `url` (String) Where the runners of a pool that names the egress send their traffic, as in `https://egress.example.com`. It has no credentials, no query and no fragment. An http URL gets a warning: the runners send their proxy credential to it, and a production deployment does not provision runners that use it.
 - `workspace_id` (String) The workspace the egress belongs to. Changing it replaces the egress.
 

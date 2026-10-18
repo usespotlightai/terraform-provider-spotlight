@@ -29,7 +29,7 @@ resource "spotlight_skill" "core_grafana" {
 ### Required
 
 - `files` (Map of String) Each file in the skill's folder, by its path within it, usually read with `file()`. `SKILL.md` is the one the skill is read from.
-- `key` (String) What stations enable the skill by. It is fixed for the skill's life, so changing it replaces the skill.
+- `key` (String) What stations enable the skill by. It is immutable, so changing it replaces the skill.
 - `team_id` (String) The team the skill belongs to. Changing it replaces the skill.
 
 ### Read-Only

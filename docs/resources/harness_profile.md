@@ -43,7 +43,7 @@ resource "spotlight_harness_profile" "core_careful" {
 
 ### Required
 
-- `key` (String) What stations name the profile by, as in `careful`. It is fixed for the harness profile's life, so changing it replaces the harness profile.
+- `key` (String) What stations name the profile by, as in `careful`. It is immutable, so changing it replaces the harness profile.
 - `team_id` (String) The team the harness profile belongs to. Changing it replaces the harness profile.
 
 ### Optional

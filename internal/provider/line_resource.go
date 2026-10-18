@@ -161,7 +161,7 @@ func lineSchema() schema.Schema {
 			"version": versionAttribute("line"),
 			"address": addressAttribute("core/delivery"),
 			"team_id": ownerAttribute("team", "line"),
-			"key":     fixedAttribute("Names the line within its team.", "line"),
+			"key":     immutableAttribute("Names the line within its team.", "line"),
 			"name": schema.StringAttribute{
 				Required:            true,
 				MarkdownDescription: "What the line is called.",

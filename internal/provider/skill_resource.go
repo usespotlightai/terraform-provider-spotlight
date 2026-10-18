@@ -66,7 +66,7 @@ func skillSchema() schema.Schema {
 			"version": versionAttribute("skill"),
 			"address": addressAttribute("core/grafana"),
 			"team_id": ownerAttribute("team", "skill"),
-			"key":     fixedAttribute("What stations enable the skill by.", "skill"),
+			"key":     immutableAttribute("What stations enable the skill by.", "skill"),
 			"files": schema.MapAttribute{
 				Required:            true,
 				ElementType:         types.StringType,

@@ -79,7 +79,7 @@ func workspaceTokenTrustSchema() schema.Schema {
 			"version":      versionAttribute("workspace token trust"),
 			"address":      addressAttribute("github-main"),
 			"workspace_id": ownerAttribute("workspace", "workspace token trust"),
-			"key":          fixedAttribute("Names the trust, and every token it issues, as in `github-main`.", "workspace token trust"),
+			"key":          immutableAttribute("Names the trust, and every token it issues, as in `github-main`.", "workspace token trust"),
 			"issuer": schema.StringAttribute{
 				Required:            true,
 				MarkdownDescription: "The https URL of the OIDC issuer whose signed tokens the trust accepts, as in `https://token.actions.githubusercontent.com`; its keys are found through OIDC discovery.",

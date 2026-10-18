@@ -67,7 +67,7 @@ func workspaceSchema() schema.Schema {
 			},
 			"slug": schema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "Where the workspace lives in the web app. It is fixed for the workspace's life, so changing it replaces the workspace.",
+				MarkdownDescription: "Where the workspace lives in the web app. It is immutable, so changing it replaces the workspace.",
 				PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 		},

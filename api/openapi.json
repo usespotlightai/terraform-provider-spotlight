@@ -10443,7 +10443,7 @@
                     "required": [
                       "url"
                     ],
-                    "description": "Makes the pool push: Spotlight calls url with each run it is to serve, and the pool has no token. Fixed for the pool’s life",
+                    "description": "Makes the pool push: Spotlight calls url with each run it is to serve, and the pool has no token. Immutable",
                     "properties": {
                       "url": {
                         "type": "string",
@@ -10882,7 +10882,7 @@
                     "required": [
                       "url"
                     ],
-                    "description": "Makes the pool push: Spotlight calls url with each run it is to serve, and the pool has no token. Fixed for the pool’s life",
+                    "description": "Makes the pool push: Spotlight calls url with each run it is to serve, and the pool has no token. Immutable",
                     "properties": {
                       "url": {
                         "type": "string",
@@ -24248,7 +24248,7 @@
           "key": {
             "type": "string",
             "example": "delivery",
-            "description": "Names the line within its team; fixed for its life, so changing it means replacing the line"
+            "description": "Names the line within its team. Immutable: changing it means replacing the line"
           },
           "definition": {
             "type": "object",
@@ -29724,7 +29724,7 @@
           "slug": {
             "type": "string",
             "example": "acme",
-            "description": "Where the workspace lives in the web app; fixed for its life, so changing it means replacing the workspace"
+            "description": "Where the workspace lives in the web app. Immutable: changing it means replacing the workspace"
           }
         },
         "required": [
@@ -29784,7 +29784,7 @@
           "key": {
             "type": "string",
             "example": "core",
-            "description": "Names the team in the addresses of everything it has; fixed for its life, so changing it means replacing the team"
+            "description": "Names the team in the addresses of everything it has. Immutable: changing it means replacing the team"
           },
           "name": {
             "type": "string",
@@ -29850,7 +29850,7 @@
           "name": {
             "type": "string",
             "example": "ci",
-            "description": "Names the token within its workspace; fixed for its life, so changing it means replacing the token"
+            "description": "Names the token within its workspace. Immutable: changing it means replacing the token"
           },
           "description": {
             "type": "string",
@@ -29863,7 +29863,7 @@
               "configure",
               "secrets"
             ],
-            "description": "What it may do: read reads; plan also checks expressions; configure also changes configuration as a workspace admin may, except secrets, runners and token trusts; secrets, granted beside one of those, manages secrets; runners, granted the same way, manages runners, runner trusts and the workspace’s runners; trusts, granted the same way, manages workspace token trusts. Fixed for its life",
+            "description": "What it may do: read reads; plan also checks expressions; configure also changes configuration as a workspace admin may, except secrets, runners and token trusts; secrets, granted beside one of those, manages secrets; runners, granted the same way, manages runners, runner trusts and the workspace’s runners; trusts, granted the same way, manages workspace token trusts. Immutable",
             "items": {
               "type": "string",
               "enum": [
@@ -29889,7 +29889,7 @@
             "type": "string",
             "nullable": true,
             "example": "2026-12-31T23:59:59.000Z",
-            "description": "After this Spotlight does not accept it; null never expires. Fixed for its life"
+            "description": "After this Spotlight does not accept it; null never expires. Immutable"
           }
         },
         "required": [
@@ -29954,7 +29954,7 @@
           "key": {
             "type": "string",
             "example": "github-main",
-            "description": "Names the trust within its workspace, and every token it issues; fixed for its life"
+            "description": "Names the trust within its workspace, and every token it issues. Immutable"
           },
           "issuer": {
             "type": "string",
@@ -30882,7 +30882,7 @@
           "name": {
             "type": "string",
             "example": "LINEAR_API_KEY",
-            "description": "What integrations call it; fixed for its life, so changing it means replacing the secret"
+            "description": "What integrations call it. Immutable: changing it means replacing the secret"
           },
           "source": {
             "$ref": "#/components/schemas/SecretSourceResponseDto"
@@ -31448,7 +31448,7 @@
           "key": {
             "type": "string",
             "example": "production-cluster",
-            "description": "Names the trust; fixed for its life"
+            "description": "Names the trust. Immutable"
           },
           "issuer": {
             "type": "string",
@@ -31574,7 +31574,7 @@
           "key": {
             "type": "string",
             "example": "ephemeral",
-            "description": "Names the pool, and is its address; fixed for its life"
+            "description": "Names the pool, and is its address. Immutable"
           },
           "labels": {
             "example": [
@@ -31599,7 +31599,7 @@
               "push"
             ],
             "example": "pull",
-            "description": "pull when hosts claim with the pool token, push when Spotlight calls provision; fixed for its life, and not settable"
+            "description": "pull when hosts claim with the pool token, push when Spotlight calls provision. Immutable, and not settable"
           },
           "tokenVersion": {
             "type": "integer",
@@ -31680,7 +31680,7 @@
           "key": {
             "type": "string",
             "example": "shared",
-            "description": "Names the egress, and is its address; fixed for its life"
+            "description": "Names the egress, and is its address. Immutable"
           },
           "url": {
             "type": "string",
@@ -31992,7 +31992,7 @@
           "key": {
             "type": "string",
             "example": "grafana",
-            "description": "What stations enable it by; fixed for its life, so changing it means replacing the skill"
+            "description": "What stations enable it by. Immutable: changing it means replacing the skill"
           },
           "files": {
             "type": "object",
@@ -32170,7 +32170,7 @@
           "key": {
             "type": "string",
             "example": "careful",
-            "description": "What stations name it by; fixed for its life, so changing it means replacing the profile"
+            "description": "What stations name it by. Immutable: changing it means replacing the profile"
           },
           "permissions": {
             "description": "Coarse rules every harness is told in its own terms; where one cannot say a rule, warnings name the approximation",
@@ -34114,7 +34114,7 @@
           "key": {
             "type": "string",
             "example": "migrations-need-a-dba",
-            "description": "Names the hook within its team; fixed for its life, so changing it means replacing the hook"
+            "description": "Names the hook within its team. Immutable: changing it means replacing the hook"
           },
           "on": {
             "type": "string",
@@ -35499,7 +35499,7 @@
           "sentBack": {
             "type": "number",
             "example": 3,
-            "description": "Runs that a person sent back or dismissed first"
+            "description": "Runs that a person sent back first"
           },
           "passed": {
             "type": "number",
@@ -37057,7 +37057,7 @@
               "task-failures",
               "cost"
             ],
-            "description": "sent-back: share of runs sent back or dismissed; checks-failed: share of checked changes that failed; run-failures: share of runs that failed; task-failures: task failures per run; cost: spend per run"
+            "description": "sent-back: share of runs that a person sent back first; checks-failed: share of checked changes that failed; run-failures: share of runs that failed; task-failures: task failures per run; cost: spend per run"
           },
           "now": {
             "type": "number",
@@ -37895,7 +37895,7 @@
           "sentBack": {
             "type": "number",
             "example": 4,
-            "description": "Runs that a person sent back or dismissed first"
+            "description": "Runs that a person sent back first"
           },
           "sentBackRate": {
             "type": "number",
@@ -39061,7 +39061,7 @@
             "type": "number",
             "nullable": true,
             "example": 0.2,
-            "description": "Share of runs that a person sent back or dismissed first"
+            "description": "Share of runs that a person sent back first"
           },
           "passed": {
             "type": "number",

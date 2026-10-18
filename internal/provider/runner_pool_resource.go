@@ -86,7 +86,7 @@ func runnerPoolSchema() schema.Schema {
 	attributes["version"] = versionAttribute("runner pool")
 	attributes["address"] = addressAttribute("ephemeral")
 	attributes["workspace_id"] = ownerAttribute("workspace", "runner pool")
-	attributes["key"] = fixedAttribute("Names the pool, as in `ephemeral`. Placement ignores it: a line or station places its work on the pool by its `labels`.", "runner pool")
+	attributes["key"] = immutableAttribute("Names the pool, as in `ephemeral`. Placement ignores it: a line or station places its work on the pool by its `labels`.", "runner pool")
 	attributes["labels"] = stringSetAttribute("What a line or station may name in `runners` to place its work on the pool's runners, as in `linux`.")
 	attributes["max_runs"] = schema.Int64Attribute{
 		Optional:            true,
@@ -116,7 +116,7 @@ func runnerPoolSchema() schema.Schema {
 	attributes["provision"] = schema.SingleNestedAttribute{
 		Optional: true,
 		MarkdownDescription: "Makes the pool one Spotlight pushes to: it calls `url` to start a runner for each run, and the pool has no token. " +
-			"Left out, a `spotlight-host` pulls work from the pool with its token. Which of the two a pool does is fixed for its life, so adding or removing `provision` replaces the pool.",
+			"Left out, a `spotlight-host` pulls work from the pool with its token. Which of the two a pool does is immutable, so adding or removing `provision` replaces the pool.",
 		Attributes:    provision,
 		PlanModifiers: []planmodifier.Object{objectplanmodifier.RequiresReplaceIf(provisionAddedOrRemoved, "Adding or removing provision replaces the pool.", "Adding or removing `provision` replaces the pool.")},
 	}

@@ -49,10 +49,10 @@ func ownerAttribute(owner, kind string) schema.StringAttribute {
 	}
 }
 
-func fixedAttribute(description, kind string) schema.StringAttribute {
+func immutableAttribute(description, kind string) schema.StringAttribute {
 	return schema.StringAttribute{
 		Required:            true,
-		MarkdownDescription: fmt.Sprintf("%s It is fixed for the %s's life, so changing it replaces the %s.", description, kind, kind),
+		MarkdownDescription: fmt.Sprintf("%s It is immutable, so changing it replaces the %s.", description, kind),
 		PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
 	}
 }

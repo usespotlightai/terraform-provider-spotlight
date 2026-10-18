@@ -68,7 +68,7 @@ resource "spotlight_secret" "linear_signing" {
 
 ### Required
 
-- `name` (String) What integrations call the secret, as in `LINEAR_API_KEY`, written `secret.LINEAR_API_KEY` where an integration or a harness profile names it. It is fixed for the secret's life, so changing it replaces the secret.
+- `name` (String) What integrations call the secret, as in `LINEAR_API_KEY`, written `secret.LINEAR_API_KEY` where an integration or a harness profile names it. It is immutable, so changing it replaces the secret.
 - `workspace_id` (String) The workspace the secret belongs to. Changing it replaces the secret.
 
 ### Optional
