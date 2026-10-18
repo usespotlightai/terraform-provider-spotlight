@@ -1,6 +1,6 @@
 // Package expressions type-checks the CEL expressions in the definition of
 // an integration or in a hook during a plan. It uses the check endpoint of
-// the control plane. It attaches each result to the attribute that holds the
+// the control plane. It attaches each result to the attribute that contains the
 // expression.
 package expressions
 
@@ -23,7 +23,7 @@ import (
 
 const integration = "integration"
 
-// Attribute is the Terraform attribute that holds the definition of an
+// Attribute is the Terraform attribute that contains the definition of an
 // integration.
 const Attribute = "definition"
 
@@ -77,8 +77,8 @@ func (c *Checker) Check(ctx context.Context, definition types.Dynamic) diag.Diag
 		return nil
 	}
 
-	held, complete := dynamic.ToJSONKnown(definition)
-	document, ok := held.(map[string]any)
+	decoded, complete := dynamic.ToJSONKnown(definition)
+	document, ok := decoded.(map[string]any)
 	if !ok {
 		return nil
 	}
@@ -110,14 +110,14 @@ func (c *Checker) CheckSubject(ctx context.Context, subject Subject) diag.Diagno
 
 	for _, written := range subject.Written {
 		position := head.Then(written.At...)
-		if !anyHolds(positions, position) {
+		if !anyContains(positions, position) {
 			continue
 		}
 
 		for _, expression := range written.Expressions {
 			check, err := c.api.CheckExpression(ctx, position.String(), expression, subject.Definition)
 			if err != nil {
-				stop := refused(ctx, err, subject, written, &diags)
+				stop := failedCheck(ctx, err, subject, written, &diags)
 				if stop {
 					return diags
 				}
@@ -146,7 +146,7 @@ func (c *Checker) CheckSubject(ctx context.Context, subject Subject) diag.Diagno
 	return diags
 }
 
-func refused(ctx context.Context, err error, subject Subject, written Written, diags *diag.Diagnostics) bool {
+func failedCheck(ctx context.Context, err error, subject Subject, written Written, diags *diag.Diagnostics) bool {
 	if client.IsForbidden(err) {
 		diags.AddWarning("Expressions were not checked", "The API token's scope does not allow checking expressions. Checking is planning, which needs the plan scope or above; the apply checks them instead.")
 
@@ -236,7 +236,7 @@ func TemplatesIn(value attr.Value, at fieldpath.Path) []Written {
 	return found
 }
 
-func anyHolds(positions []fieldpath.Path, at fieldpath.Path) bool {
+func anyContains(positions []fieldpath.Path, at fieldpath.Path) bool {
 	for _, position := range positions {
 		if at.Within(position) {
 			return true
@@ -269,20 +269,20 @@ func walk(value attr.Value, at fieldpath.Path, visit func(fieldpath.Path, string
 	}
 }
 
-func walkNamed(held map[string]attr.Value, at fieldpath.Path, visit func(fieldpath.Path, string)) {
-	names := make([]string, 0, len(held))
-	for name := range held {
+func walkNamed(items map[string]attr.Value, at fieldpath.Path, visit func(fieldpath.Path, string)) {
+	names := make([]string, 0, len(items))
+	for name := range items {
 		names = append(names, name)
 	}
 	sort.Strings(names)
 
 	for _, name := range names {
-		walk(held[name], at.Then(fieldpath.Key(name)), visit)
+		walk(items[name], at.Then(fieldpath.Key(name)), visit)
 	}
 }
 
-func walkIndexed(held []attr.Value, at fieldpath.Path, visit func(fieldpath.Path, string)) {
-	for index, each := range held {
+func walkIndexed(items []attr.Value, at fieldpath.Path, visit func(fieldpath.Path, string)) {
+	for index, each := range items {
 		walk(each, at.Then(fieldpath.Index(index)), visit)
 	}
 }

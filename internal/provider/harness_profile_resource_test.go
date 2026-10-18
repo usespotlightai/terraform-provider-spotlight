@@ -142,7 +142,7 @@ func TestHarnessProfileFillsWhatItLeavesOut(t *testing.T) {
 	})
 }
 
-func TestHarnessProfileRefusalNamesTheAttribute(t *testing.T) {
+func TestHarnessProfileProblemNamesTheAttribute(t *testing.T) {
 	fake := fakeapi.New(t)
 
 	resource.UnitTest(t, resource.TestCase{
@@ -178,7 +178,7 @@ func TestHarnessProfileWritesNeedTheConfigureScope(t *testing.T) {
 	})
 }
 
-func TestHarnessProfileRefusalsInsideMapsAndNativeNameTheirKeys(t *testing.T) {
+func TestHarnessProfileProblemsInsideMapsAndNativeNameTheirKeys(t *testing.T) {
 	fake := fakeapi.New(t)
 
 	for written, says := range map[string]string{

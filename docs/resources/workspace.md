@@ -30,7 +30,7 @@ resource "spotlight_workspace" "acme" {
 
 ## Creating a workspace
 
-Creating a workspace from Terraform needs a caller allowed to open workspaces. API tokens are not: a token acts only inside its own workspace, and opening one is refused with `403 Forbidden`. The provider reports that refusal with the `import` block to write instead.
+Creating a workspace from Terraform needs a caller allowed to open workspaces. API tokens are not: a token acts only inside its own workspace, and opening one fails with `403 Forbidden`. The provider reports that error with the `import` block to write instead.
 
 ## Stop managing a workspace
 

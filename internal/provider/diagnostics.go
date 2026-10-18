@@ -22,8 +22,8 @@ var lacking = map[client.Scope]string{
 	client.ScopeConfigure: "The API token lacks the configure scope, which changing the workspace's configuration needs.",
 	client.ScopeSecrets:   "The API token lacks the secrets scope, which setting, rebinding, rotating and deleting secrets needs; grant it secrets beside configure.",
 	client.ScopeRunners:   "The API token lacks the runners scope, which creating, rekeying and deleting runner pools and runner trusts, and declaring the workspace's runners, needs; grant it runners beside configure.",
-	client.ScopeTrusts: "The API token lacks the trusts scope, which creating, changing and deleting workspace token trusts needs, or a scope the trust gives: " +
-		"a token may give a trust only scopes it holds itself, and change one only while it holds both the trust's scopes and the new ones. Grant it trusts beside configure and every scope the trusts give.",
+	client.ScopeTrusts: "The API token lacks the trusts scope, which creating, changing and deleting workspace token trusts needs, or a scope the trust gives. " +
+		"A token can give a trust only the scopes that it has. A token can change a trust only when it has the current scopes and the new scopes of the trust. Grant it trusts beside configure and every scope the trusts give.",
 }
 
 var beyondTokens = map[client.Permission]string{
@@ -40,7 +40,7 @@ var titled = []struct {
 	{"Not allowed to open a workspace", client.PermissionOpenWorkspaces},
 }
 
-func refusal(problem *client.Problem, needs client.Scope) string {
+func forbiddenDetail(problem *client.Problem, needs client.Scope) string {
 	return withDetail(problem, lacked(permissionOf(problem), needs)+" "+oneTokenForAll)
 }
 
@@ -91,7 +91,7 @@ func addAPIError(diags *diag.Diagnostics, doing string, err error, at fieldpath.
 	}
 
 	if client.IsForbidden(problem) {
-		diags.AddError(doing+": "+problem.Title, refusal(problem, needs))
+		diags.AddError(doing+": "+problem.Title, forbiddenDetail(problem, needs))
 
 		return
 	}

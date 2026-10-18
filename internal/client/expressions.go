@@ -14,13 +14,13 @@ func (c *Client) ExpressionPositions(ctx context.Context) ([]Position, error) {
 		return nil, err
 	}
 
-	held, err := answered(resp.HTTPResponse, resp.Body, resp.JSON200)
+	answer, err := answered(resp.HTTPResponse, resp.Body, resp.JSON200)
 	if err != nil {
 		return nil, err
 	}
 
-	positions := make([]Position, 0, len(held))
-	for _, each := range held {
+	positions := make([]Position, 0, len(answer))
+	for _, each := range answer {
 		position := Position{Position: each.Position}
 		if each.Returns != nil {
 			position.Returns = string(*each.Returns)
@@ -42,17 +42,17 @@ func (c *Client) CheckExpression(ctx context.Context, position, expression strin
 		return ExpressionCheck{}, err
 	}
 
-	held, err := answered(resp.HTTPResponse, resp.Body, resp.JSON200)
+	answer, err := answered(resp.HTTPResponse, resp.Body, resp.JSON200)
 	if err != nil {
 		return ExpressionCheck{}, err
 	}
 
 	check := ExpressionCheck{}
-	if held.Type != nil {
-		check.Type = *held.Type
+	if answer.Type != nil {
+		check.Type = *answer.Type
 	}
 
-	for _, each := range held.Errors {
+	for _, each := range answer.Errors {
 		found := ExpressionError{Message: each.Message}
 		if each.Span != nil {
 			found.Span = &Span{Start: int(each.Span.Start), End: int(each.Span.End)}
@@ -63,7 +63,7 @@ func (c *Client) CheckExpression(ctx context.Context, position, expression strin
 		check.Errors = append(check.Errors, found)
 	}
 
-	for _, each := range held.Warnings {
+	for _, each := range answer.Warnings {
 		check.Warnings = append(check.Warnings, ExpressionWarning{Position: each.Position, Message: each.Message})
 	}
 

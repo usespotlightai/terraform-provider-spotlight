@@ -14,12 +14,12 @@ import (
 // read it.
 const PoolTokenHeader = "Spotlight-Pool-Token"
 
-func wholeOrNone(held *int) *int64 {
-	if held == nil {
+func wholeOrNone(value *int) *int64 {
+	if value == nil {
 		return nil
 	}
 
-	whole := int64(*held)
+	whole := int64(*value)
 
 	return &whole
 }

@@ -65,7 +65,7 @@ func (r *LineListResource) List(ctx context.Context, req list.ListRequest, strea
 	}
 
 	stream.Results = func(push func(list.ListResult) bool) {
-		for _, line := range limited(heldBy(lines, config.TeamID.ValueString(), func(each client.Line) string { return each.TeamID }), req.Limit) {
+		for _, line := range limited(ofTeam(lines, config.TeamID.ValueString(), func(each client.Line) string { return each.TeamID }), req.Limit) {
 			if !push(listResult(ctx, req, line.ID, line.Address, lineModel(line, nil))) {
 				return
 			}

@@ -63,7 +63,7 @@ var hookEvents = []string{
 	"pull-request.opening", "pull-request.merged", "task.opened", "task.moved",
 }
 
-// HookResourceModel is a spotlight_hook as Terraform holds it.
+// HookResourceModel is a spotlight_hook as Terraform stores it.
 type HookResourceModel struct {
 	ID             types.String  `tfsdk:"id"`
 	Version        types.Int64   `tfsdk:"version"`
@@ -90,13 +90,13 @@ var (
 	hookOIDCTypes    = attributeTypesAt(hookSchema().Type(), hookSigning, hookOIDC)
 )
 
-func attributeTypesAt(held attr.Type, names ...string) map[string]attr.Type {
+func attributeTypesAt(attrType attr.Type, names ...string) map[string]attr.Type {
 	for _, name := range names {
-		object, _ := held.(types.ObjectType)
-		held = object.AttrTypes[name]
+		object, _ := attrType.(types.ObjectType)
+		attrType = object.AttrTypes[name]
 	}
 
-	object, _ := held.(types.ObjectType)
+	object, _ := attrType.(types.ObjectType)
 
 	return object.AttrTypes
 }
@@ -168,7 +168,7 @@ func hookSchema() schema.Schema {
 					"A step that sends a request sets `request`: its `url`, any `headers` beside the ones Spotlight signs with, its `body`, which is any JSON and, left out, " +
 					"is the event, task and run, and `from`: `spotlight`, the default, to send it from Spotlight, to a host the control plane's `OUTBOUND_ALLOWED_HOSTS` allows, " +
 					"or `network`, to have a host of the workspace send it from inside its network. A hook that sends a request signs it, so it needs `signing`. " +
-					"Strings in `with`, and a request's `url`, `headers` and `body`, may hold `$${{ ... }}` expressions, which read what `when` does and `step`.",
+					"Strings in `with`, and a request's `url`, `headers` and `body`, may contain `$${{ ... }}` expressions, which read what `when` does and `step`.",
 			},
 			hookSigning: schema.SingleNestedAttribute{
 				Optional:            true,
@@ -354,8 +354,8 @@ func hookSigningProblems(signing types.Object) diag.Diagnostics {
 		return diags
 	}
 
-	held := signing.Attributes()
-	oidc, secret, version := held[hookOIDC], held[writeonly.SigningSecret.Name], held[writeonly.SigningSecret.Version]
+	attributes := signing.Attributes()
+	oidc, secret, version := attributes[hookOIDC], attributes[writeonly.SigningSecret.Name], attributes[writeonly.SigningSecret.Version]
 
 	switch {
 	case !oidc.IsNull() && (!secret.IsNull() || !version.IsNull()):
@@ -385,8 +385,8 @@ func hookStepsProblems(steps types.Dynamic, signing types.Object) diag.Diagnosti
 		return diags
 	}
 
-	held, _ := dynamic.ToJSONKnown(steps)
-	listed, _ := held.([]any)
+	decoded, _ := dynamic.ToJSONKnown(steps)
+	listed, _ := decoded.([]any)
 	for _, each := range stepsWithoutNulls(listed) {
 		step, _ := each.(map[string]any)
 		if _, requests := step["request"]; requests && signing.IsNull() {
@@ -453,21 +453,21 @@ type knownOnly struct {
 	left bool
 }
 
-func (k *knownOnly) json(held attr.Value) any {
-	value, complete := dynamic.ToJSONKnown(held)
+func (k *knownOnly) json(input attr.Value) any {
+	value, complete := dynamic.ToJSONKnown(input)
 	k.left = k.left || !complete
 
 	return value
 }
 
-func (k *knownOnly) text(held types.String) string {
-	k.left = k.left || held.IsUnknown()
+func (k *knownOnly) text(input types.String) string {
+	k.left = k.left || input.IsUnknown()
 
-	return held.ValueString()
+	return input.ValueString()
 }
 
-func (k *knownOnly) texts(held attr.Value) []string {
-	listed, _ := k.json(held).([]any)
+func (k *knownOnly) texts(input attr.Value) []string {
+	listed, _ := k.json(input).([]any)
 
 	out := []string{}
 	for _, each := range listed {
@@ -512,13 +512,13 @@ func hookDefinition(model HookResourceModel) (client.HookInput, bool) {
 	}
 
 	if !model.Match.IsNull() && !model.Match.IsUnknown() {
-		held := model.Match.Attributes()
+		matchAttributes := model.Match.Attributes()
 		in.Match = client.HookMatch{
-			Tools:        known.texts(held["tools"]),
-			Lines:        known.texts(held["lines"]),
-			Stations:     known.texts(held["stations"]),
-			Repositories: known.texts(held["repositories"]),
-			Paths:        known.texts(held["paths"]),
+			Tools:        known.texts(matchAttributes["tools"]),
+			Lines:        known.texts(matchAttributes["lines"]),
+			Stations:     known.texts(matchAttributes["stations"]),
+			Repositories: known.texts(matchAttributes["repositories"]),
+			Paths:        known.texts(matchAttributes["paths"]),
 		}
 	}
 	known.left = known.left || model.Match.IsUnknown()
@@ -535,15 +535,15 @@ func hookSigningOf(signing types.Object, known *knownOnly) *client.HookSigning {
 		return nil
 	}
 
-	held := signing.Attributes()
+	attributes := signing.Attributes()
 	out := &client.HookSigning{}
 
-	if version, ok := held[writeonly.SigningSecret.Version].(types.Int64); ok {
+	if version, ok := attributes[writeonly.SigningSecret.Version].(types.Int64); ok {
 		known.left = known.left || version.IsUnknown()
 		out.SecretVersion = version.ValueInt64Pointer()
 	}
 
-	if oidc, ok := held[hookOIDC].(types.Object); ok && !oidc.IsNull() {
+	if oidc, ok := attributes[hookOIDC].(types.Object); ok && !oidc.IsNull() {
 		audience, _ := oidc.Attributes()["audience"].(types.String)
 		out.OIDC = &client.HookOIDC{Audience: known.text(audience)}
 		known.left = known.left || oidc.IsUnknown()
@@ -615,7 +615,7 @@ func hookModel(hook client.Hook, kept *HookResourceModel) HookResourceModel {
 }
 
 func hookMatchValue(match client.HookMatch) types.Object {
-	held := map[string][]string{
+	sets := map[string][]string{
 		"tools":        match.Tools,
 		"lines":        match.Lines,
 		"stations":     match.Stations,
@@ -624,8 +624,8 @@ func hookMatchValue(match client.HookMatch) types.Object {
 	}
 
 	narrows := false
-	values := make(map[string]attr.Value, len(held))
-	for name, each := range held {
+	values := make(map[string]attr.Value, len(sets))
+	for name, each := range sets {
 		narrows = narrows || len(each) > 0
 		values[name] = stringSet(each)
 	}
@@ -655,7 +655,7 @@ func hookSigningValue(signing *client.HookSigning) types.Object {
 }
 
 // stepsWithoutNulls removes the null values from each step and from its
-// request. In a list of objects, each step holds the attributes that it does
+// request. In a list of objects, each step contains the attributes that it does
 // not set as null.
 func stepsWithoutNulls(steps []any) []any {
 	out := make([]any, 0, len(steps))
@@ -678,9 +678,9 @@ func stepsWithoutNulls(steps []any) []any {
 	return out
 }
 
-func withoutNulls(held map[string]any) map[string]any {
-	out := make(map[string]any, len(held))
-	for name, value := range held {
+func withoutNulls(object map[string]any) map[string]any {
+	out := make(map[string]any, len(object))
+	for name, value := range object {
 		if value != nil {
 			out[name] = value
 		}

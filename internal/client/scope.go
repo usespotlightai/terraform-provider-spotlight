@@ -15,7 +15,7 @@ const (
 	ScopeTrusts    Scope = "trusts"
 )
 
-// Permission is the permission that a refused caller did not have, as a 403
+// Permission is the permission that a forbidden caller did not have, as a 403
 // problem identifies it.
 type Permission string
 

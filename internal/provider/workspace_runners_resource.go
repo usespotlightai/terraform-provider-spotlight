@@ -29,7 +29,7 @@ type WorkspaceRunnersResource struct {
 	client *client.Client
 }
 
-// WorkspaceRunnersResourceModel is a spotlight_workspace_runners as Terraform holds it.
+// WorkspaceRunnersResourceModel is a spotlight_workspace_runners as Terraform stores it.
 type WorkspaceRunnersResourceModel struct {
 	ID          types.String `tfsdk:"id"`
 	Version     types.Int64  `tfsdk:"version"`

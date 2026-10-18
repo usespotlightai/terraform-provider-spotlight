@@ -37,11 +37,11 @@ func (c *clock) pass(d time.Duration) {
 type issuing struct {
 	recorder
 
-	clock    *clock
-	lifetime time.Duration
-	refuse   map[string]bool
-	admit    string
-	minted   int
+	clock        *clock
+	lifetime     time.Duration
+	unauthorized map[string]bool
+	admit        string
+	minted       int
 }
 
 func (i *issuing) serve(w http.ResponseWriter, r *http.Request) {
@@ -80,10 +80,10 @@ func (i *issuing) serve(w http.ResponseWriter, r *http.Request) {
 		})
 	default:
 		i.mu.Lock()
-		refused := i.refuse[strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")]
+		unauthorized := i.unauthorized[strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")]
 		i.mu.Unlock()
 
-		if refused {
+		if unauthorized {
 			reply(w, http.StatusUnauthorized, "application/problem+json", map[string]any{
 				"type": "urn:spotlight:problem:unauthenticated", "title": "No valid credentials", "status": 401, "detail": "Send a Spotlight API token as a bearer token",
 			})
@@ -128,19 +128,19 @@ func (i *issuing) at(path string) []seen {
 	return out
 }
 
-func (i *issuing) refusing(tokens ...string) {
+func (i *issuing) unauthorize(tokens ...string) {
 	i.mu.Lock()
 	defer i.mu.Unlock()
 
 	for _, each := range tokens {
-		i.refuse[each] = true
+		i.unauthorized[each] = true
 	}
 }
 
 func exchangingClient(t *testing.T, workload func(serverURL string) client.WorkloadTokens) (*client.Client, *issuing) {
 	t.Helper()
 
-	issued := &issuing{clock: &clock{now: time.Date(2026, 9, 25, 10, 0, 0, 0, time.UTC)}, lifetime: 15 * time.Minute, refuse: map[string]bool{}}
+	issued := &issuing{clock: &clock{now: time.Date(2026, 9, 25, 10, 0, 0, 0, time.UTC)}, lifetime: 15 * time.Minute, unauthorized: map[string]bool{}}
 	server := httptest.NewServer(http.HandlerFunc(issued.serve))
 	t.Cleanup(server.Close)
 
@@ -291,9 +291,9 @@ func TestAShortLivedTokenIsRenewedHalfwayThroughItsLife(t *testing.T) {
 	}
 }
 
-func TestARefusedMintedTokenIsRenewedAndTheCallRepeated(t *testing.T) {
+func TestAnUnauthorizedMintedTokenIsRenewedAndTheCallRepeated(t *testing.T) {
 	api, issued := exchangingClient(t, fromGitHub)
-	issued.refusing("minted-1")
+	issued.unauthorize("minted-1")
 
 	created, err := api.CreateWorkspace(context.Background(), client.WorkspaceInput{Name: "Acme", Slug: "acme"})
 	if err != nil {
@@ -319,9 +319,9 @@ func TestARefusedMintedTokenIsRenewedAndTheCallRepeated(t *testing.T) {
 	}
 }
 
-func TestATokenRefusedAgainIsNotRenewedForever(t *testing.T) {
+func TestATokenUnauthorizedAgainIsNotRenewedForever(t *testing.T) {
 	api, issued := exchangingClient(t, fromGitHub)
-	issued.refusing("minted-1", "minted-2", "minted-3")
+	issued.unauthorize("minted-1", "minted-2", "minted-3")
 
 	_, err := api.ReadWorkspace(context.Background(), "ws-1")
 
@@ -335,7 +335,7 @@ func TestATokenRefusedAgainIsNotRenewedForever(t *testing.T) {
 	}
 }
 
-func TestAStoredTokenRefusedIsNotRetried(t *testing.T) {
+func TestAnUnauthorizedStoredTokenIsNotRetried(t *testing.T) {
 	api, recorded := serve(t, func(w http.ResponseWriter, _ *http.Request, _ int) {
 		reply(w, http.StatusUnauthorized, "application/problem+json", map[string]any{
 			"type": "urn:spotlight:problem:unauthenticated", "title": "No valid credentials", "status": 401, "detail": "Send a Spotlight API token as a bearer token",
@@ -351,7 +351,7 @@ func TestAStoredTokenRefusedIsNotRetried(t *testing.T) {
 	}
 }
 
-func TestARefusedExchangeNamesTheTrust(t *testing.T) {
+func TestAFailedExchangeNamesTheTrust(t *testing.T) {
 	api, issued := exchangingClient(t, fromGitHub)
 	issued.admit = "nothing"
 
@@ -365,7 +365,7 @@ func TestARefusedExchangeNamesTheTrust(t *testing.T) {
 	}
 }
 
-func TestGitHubActionsRefusalSaysWhatTheJobNeeds(t *testing.T) {
+func TestGitHubActionsErrorSaysWhatTheJobNeeds(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		http.Error(w, "Unable to get ACTIONS_ID_TOKEN_REQUEST_URL env variable", http.StatusForbidden)
 	}))
@@ -473,7 +473,7 @@ func TestAChangeToTheTrustMidApplyIsRecoveredFrom(t *testing.T) {
 
 	if len(creates) != 2 || creates[0].Headers.Get("Authorization") == creates[1].Headers.Get("Authorization") ||
 		creates[0].Headers.Get("Idempotency-Key") != creates[1].Headers.Get("Idempotency-Key") {
-		t.Errorf("the refused create was not repeated once with a new token and the same key: %d attempts", len(creates))
+		t.Errorf("the unauthorized create was not repeated once with a new token and the same key: %d attempts", len(creates))
 	}
 
 	if teams := fake.Count("team"); teams != 2 {

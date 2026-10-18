@@ -77,13 +77,13 @@ func (s *Server) check(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if refused := definitionRefused(at[0].Key, body.Definition); refused != nil {
-		problem(w, http.StatusUnprocessableEntity, "invalid", "The request is not valid", "", refused)
+	if problems := definitionProblems(at[0].Key, body.Definition); problems != nil {
+		problem(w, http.StatusUnprocessableEntity, "invalid", "The request is not valid", "", problems)
 		return
 	}
 
-	if !holdsText(body.Definition, at[1:]) {
-		problem(w, http.StatusUnprocessableEntity, "invalid", "The request is not valid", "", []fieldError{{"position", "holds no expression in the definition. Nothing is written there to check"}})
+	if !containsText(body.Definition, at[1:]) {
+		problem(w, http.StatusUnprocessableEntity, "invalid", "The request is not valid", "", []fieldError{{"position", "contains no expression in the definition. Nothing is written there to check"}})
 		return
 	}
 
@@ -115,7 +115,7 @@ func (s *Server) check(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, "application/json", map[string]any{"type": "bool", "errors": errs, "warnings": []any{}})
 }
 
-func definitionRefused(resource string, definition map[string]any) []fieldError {
+func definitionProblems(resource string, definition map[string]any) []fieldError {
 	if resource == "integration" {
 		if source, _ := definition["integration"].(string); source == "" {
 			return []fieldError{{"definition.integration", "names the host this integration defines, as in linear"}}
@@ -132,31 +132,31 @@ func definitionRefused(resource string, definition map[string]any) []fieldError 
 	return errs
 }
 
-func holdsText(held any, at fieldpath.Path) bool {
+func containsText(value any, at fieldpath.Path) bool {
 	for _, step := range at {
-		switch typed := held.(type) {
+		switch typed := value.(type) {
 		case map[string]any:
 			if step.IsIndex() {
 				return false
 			}
-			held = typed[step.Key]
+			value = typed[step.Key]
 		case []any:
 			if !step.IsIndex() || step.Index >= len(typed) {
 				return false
 			}
-			held = typed[step.Index]
+			value = typed[step.Index]
 		default:
 			return false
 		}
 	}
 
-	_, ok := held.(string)
+	_, ok := value.(string)
 
 	return ok
 }
 
-func contains(held []string, want string) bool {
-	for _, each := range held {
+func contains(values []string, want string) bool {
+	for _, each := range values {
 		if each == want {
 			return true
 		}
@@ -165,10 +165,10 @@ func contains(held []string, want string) bool {
 	return false
 }
 
-func nearest(held []string, want string) string {
-	best, score := held[0], -1
+func nearest(values []string, want string) string {
+	best, score := values[0], -1
 
-	for _, each := range held {
+	for _, each := range values {
 		shared := 0
 		for _, r := range want {
 			if strings.ContainsRune(each, r) {

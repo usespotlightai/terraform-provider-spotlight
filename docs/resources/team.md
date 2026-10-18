@@ -3,12 +3,12 @@
 page_title: "spotlight_team Resource - spotlight"
 subcategory: ""
 description: |-
-  A team in a Spotlight workspace, holding its lines, skills and integrations. Import it as <workspace id>/<key>.
+  A team in a Spotlight workspace, with its lines, skills and integrations. Import it as <workspace id>/<key>.
 ---
 
 # spotlight_team (Resource)
 
-A team in a Spotlight workspace, holding its lines, skills and integrations. Import it as `<workspace id>/<key>`.
+A team in a Spotlight workspace, with its lines, skills and integrations. Import it as `<workspace id>/<key>`.
 
 ## Example Usage
 
@@ -25,7 +25,7 @@ resource "spotlight_team" "core" {
 
 ### Required
 
-- `key` (String) Names the team in the addresses of everything it holds. It is fixed for the team's life, so changing it replaces the team.
+- `key` (String) Names the team in the addresses of everything it has. It is fixed for the team's life, so changing it replaces the team.
 - `name` (String) What the team is called.
 - `workspace_id` (String) The workspace the team belongs to. Changing it replaces the team.
 

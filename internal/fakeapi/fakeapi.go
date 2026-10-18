@@ -62,7 +62,7 @@ type Server struct {
 
 	mu         sync.Mutex
 	next       int
-	held       map[string]*resource
+	stored     map[string]*resource
 	idempotent map[string]string
 	requests   []Request
 	failNext   []int
@@ -85,7 +85,7 @@ type resource struct {
 // when the test ends.
 func New(t interface{ Cleanup(func()) }) *Server {
 	s := &Server{
-		held:       map[string]*resource{},
+		stored:     map[string]*resource{},
 		idempotent: map[string]string{},
 		kept:       map[string]string{},
 		given:      map[givenToken]struct{}{},
@@ -101,13 +101,13 @@ func New(t interface{ Cleanup(func()) }) *Server {
 	mux.HandleFunc("GET /api/resources/workspaces/{id}", s.read("workspace"))
 	mux.HandleFunc("PUT /api/resources/workspaces/{id}", s.update("workspace"))
 	mux.HandleFunc("DELETE /api/resources/workspaces/{id}", s.remove("workspace"))
-	mux.HandleFunc("POST /api/resources/workspaces/{owner}/{kinds}", s.createHeld("workspace"))
-	mux.HandleFunc("GET /api/resources/workspaces/{workspace}/{kinds}", s.listHeld)
-	mux.HandleFunc("GET /api/resources/workspaces/{workspace}/{kinds}/import", s.importHeld)
-	mux.HandleFunc("POST /api/resources/teams/{owner}/{kinds}", s.createHeld("team"))
-	mux.HandleFunc("GET /api/resources/{kinds}/{id}", s.readHeld)
-	mux.HandleFunc("PUT /api/resources/{kinds}/{id}", s.updateHeld)
-	mux.HandleFunc("DELETE /api/resources/{kinds}/{id}", s.removeHeld)
+	mux.HandleFunc("POST /api/resources/workspaces/{owner}/{kinds}", s.createByKind("workspace"))
+	mux.HandleFunc("GET /api/resources/workspaces/{workspace}/{kinds}", s.listByKind)
+	mux.HandleFunc("GET /api/resources/workspaces/{workspace}/{kinds}/import", s.importByKind)
+	mux.HandleFunc("POST /api/resources/teams/{owner}/{kinds}", s.createByKind("team"))
+	mux.HandleFunc("GET /api/resources/{kinds}/{id}", s.readByKind)
+	mux.HandleFunc("PUT /api/resources/{kinds}/{id}", s.updateByKind)
+	mux.HandleFunc("DELETE /api/resources/{kinds}/{id}", s.removeByKind)
 	mux.HandleFunc("GET /api/expressions/positions", s.positions)
 	mux.HandleFunc("POST /api/expressions/check", s.check)
 	mux.HandleFunc("POST /api/workspace-tokens/exchange", s.exchange)
@@ -156,13 +156,13 @@ func (s *Server) FailNext(statuses ...int) {
 	s.failNext = append(s.failNext, statuses...)
 }
 
-// Count reports the number of resources of a kind that the fake holds.
+// Count reports the number of resources of a kind that the fake stores.
 func (s *Server) Count(kind string) int {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	count := 0
-	for _, each := range s.held {
+	for _, each := range s.stored {
 		if each.kind == kind {
 			count++
 		}
@@ -176,7 +176,7 @@ func (s *Server) IDOf(kind, address string) string {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	for _, each := range s.held {
+	for _, each := range s.stored {
 		if each.kind == kind && s.addressOf(each) == address {
 			return each.id
 		}
@@ -204,9 +204,9 @@ func (s *Server) Change(id string, change func(fields map[string]any)) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	held := s.held[id]
-	change(held.fields)
-	held.version++
+	stored := s.stored[id]
+	change(stored.fields)
+	stored.version++
 }
 
 // Forget removes a resource without Terraform.
@@ -214,7 +214,7 @@ func (s *Server) Forget(id string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	delete(s.held, id)
+	delete(s.stored, id)
 }
 
 func (s *Server) guard(next http.Handler) http.Handler {
@@ -297,7 +297,7 @@ func (s *Server) exchange(w http.ResponseWriter, r *http.Request) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	trust, ok := s.held[body.Trust]
+	trust, ok := s.stored[body.Trust]
 	if !ok || trust.kind != "workspace-token-trust" || body.Token != WorkloadToken {
 		problem(w, http.StatusUnauthorized, "unauthenticated", "The workload token was not admitted", "No trust here admits that workload", nil)
 		return
@@ -358,7 +358,7 @@ func (s *Server) allowed(w http.ResponseWriter, kind string) bool {
 			return true
 		}
 
-		refuseTrust(w, "You may read this workspace-token-trust, but your role in its workspace, or your token’s scopes, do not let you change it")
+		forbidTrust(w, cannotChange("workspace-token-trust"))
 
 		return false
 	}
@@ -373,7 +373,7 @@ func (s *Server) allowed(w http.ResponseWriter, kind string) bool {
 	}
 
 	problem(w, http.StatusForbidden, "forbidden", "Not allowed to change the "+kind,
-		"You may read this "+kind+", but your role in its workspace, or your token’s scopes, do not let you change it", nil)
+		cannotChange(kind), nil)
 
 	return false
 }
@@ -388,17 +388,17 @@ var implied = map[string][]string{
 }
 
 func (s *Server) grants(w http.ResponseWriter, scopes ...any) bool {
-	held := map[string]bool{}
+	owned := map[string]bool{}
 	for granted := range s.scopes {
 		for _, each := range implied[granted] {
-			held[each] = true
+			owned[each] = true
 		}
 	}
 
 	for _, listed := range scopes {
 		for _, each := range texts(listed) {
-			if !held[textOf(each)] {
-				refuseTrust(w, fmt.Sprintf("A token may give a trust only scopes it holds itself, and it does not hold %s", each))
+			if !owned[textOf(each)] {
+				forbidTrust(w, cannotChange("workspace-token-trust"))
 				return false
 			}
 		}
@@ -407,7 +407,7 @@ func (s *Server) grants(w http.ResponseWriter, scopes ...any) bool {
 	return true
 }
 
-func refuseTrust(w http.ResponseWriter, detail string) {
+func forbidTrust(w http.ResponseWriter, detail string) {
 	writeJSON(w, http.StatusForbidden, "application/problem+json", map[string]any{
 		"type":       "urn:spotlight:problem:forbidden",
 		"title":      "Not allowed to change the workspace-token-trust",
@@ -417,7 +417,7 @@ func refuseTrust(w http.ResponseWriter, detail string) {
 	})
 }
 
-func (s *Server) createHeld(owner string) http.HandlerFunc {
+func (s *Server) createByKind(owner string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		kind, ok := kinds[r.PathValue("kinds")]
 		if !ok || ownerKind(kind) != owner {
@@ -429,7 +429,7 @@ func (s *Server) createHeld(owner string) http.HandlerFunc {
 	}
 }
 
-func (s *Server) readHeld(w http.ResponseWriter, r *http.Request) {
+func (s *Server) readByKind(w http.ResponseWriter, r *http.Request) {
 	if kind, ok := kinds[r.PathValue("kinds")]; ok {
 		s.read(kind)(w, r)
 		return
@@ -438,7 +438,7 @@ func (s *Server) readHeld(w http.ResponseWriter, r *http.Request) {
 	noRoute(w, r)
 }
 
-func (s *Server) updateHeld(w http.ResponseWriter, r *http.Request) {
+func (s *Server) updateByKind(w http.ResponseWriter, r *http.Request) {
 	if kind, ok := kinds[r.PathValue("kinds")]; ok {
 		s.update(kind)(w, r)
 		return
@@ -447,7 +447,7 @@ func (s *Server) updateHeld(w http.ResponseWriter, r *http.Request) {
 	noRoute(w, r)
 }
 
-func (s *Server) removeHeld(w http.ResponseWriter, r *http.Request) {
+func (s *Server) removeByKind(w http.ResponseWriter, r *http.Request) {
 	if kind, ok := kinds[r.PathValue("kinds")]; ok {
 		s.remove(kind)(w, r)
 		return
@@ -475,12 +475,12 @@ func (s *Server) create(kind string) http.HandlerFunc {
 
 		if id, ok := s.idempotent[key]; ok {
 			w.Header().Set("Idempotent-Replayed", "true")
-			s.answer(w, http.StatusCreated, s.held[id])
+			s.answer(w, http.StatusCreated, s.stored[id])
 			return
 		}
 
 		owner := r.PathValue("owner")
-		if kind != "workspace" && !s.holds(owner, ownerKind(kind)) {
+		if kind != "workspace" && !s.exists(owner, ownerKind(kind)) {
 			problem(w, http.StatusNotFound, "not-found", "No such "+kind, "There is no "+kind+" here that you may see", nil)
 			return
 		}
@@ -494,7 +494,7 @@ func (s *Server) create(kind string) http.HandlerFunc {
 		value, more := written(kind, nil, fields, body)
 		errs = append(errs, more...)
 		if len(errs) == 0 {
-			errs = s.refusedToken(kind, "", value)
+			errs = s.tokenProblems(kind, "", value)
 		}
 		if len(errs) > 0 {
 			invalid(w, kind, errs)
@@ -506,23 +506,23 @@ func (s *Server) create(kind string) http.HandlerFunc {
 		}
 
 		s.next++
-		held := &resource{kind: kind, id: fmt.Sprintf("%s-%04d", kind, s.next), version: 1, owner: owner, fields: fields}
+		created := &resource{kind: kind, id: fmt.Sprintf("%s-%04d", kind, s.next), version: 1, owner: owner, fields: fields}
 
-		for _, each := range s.held {
-			if each.kind == kind && each.owner == owner && s.addressOf(each) == s.addressOf(held) {
-				problem(w, http.StatusConflict, "already-exists", "The "+kind+" already exists", "There is already a "+kind+" at "+s.addressOf(held), nil)
+		for _, each := range s.stored {
+			if each.kind == kind && each.owner == owner && s.addressOf(each) == s.addressOf(created) {
+				problem(w, http.StatusConflict, "already-exists", "The "+kind+" already exists", "There is already a "+kind+" at "+s.addressOf(created), nil)
 				return
 			}
 		}
 
 		if value == "" && givesToken(kind, fields) {
-			value = issue(w, held)
+			value = issue(w, created)
 		}
 
-		s.keep(held, value)
-		s.held[held.id] = held
-		s.idempotent[key] = held.id
-		s.answer(w, http.StatusCreated, held)
+		s.keep(created, value)
+		s.stored[created.id] = created
+		s.idempotent[key] = created.id
+		s.answer(w, http.StatusCreated, created)
 	}
 }
 
@@ -531,9 +531,9 @@ func (s *Server) read(kind string) http.HandlerFunc {
 		s.mu.Lock()
 		defer s.mu.Unlock()
 
-		held, ok := s.found(w, kind, r.PathValue("id"))
+		existing, ok := s.found(w, kind, r.PathValue("id"))
 		if ok {
-			s.answer(w, http.StatusOK, held)
+			s.answer(w, http.StatusOK, existing)
 		}
 	}
 }
@@ -549,26 +549,26 @@ func (s *Server) update(kind string) http.HandlerFunc {
 		s.mu.Lock()
 		defer s.mu.Unlock()
 
-		held, ok := s.found(w, kind, r.PathValue("id"))
-		if !ok || !s.allowed(w, kind) || !s.current(w, r, held) {
+		existing, ok := s.found(w, kind, r.PathValue("id"))
+		if !ok || !s.allowed(w, kind) || !s.current(w, r, existing) {
 			return
 		}
 
 		fields, errs := normalized(kind, body)
 		for _, fixed := range fixedFields[kind] {
-			if fields[fixed] != held.fields[fixed] {
+			if fields[fixed] != existing.fields[fixed] {
 				errs = append(errs, fieldError{fixed, "is fixed for the " + kind + "'s life; replace the " + kind + " to change it"})
 			}
 		}
 
-		errs = append(errs, s.unknownEgress(kind, held.owner, fields)...)
-		value, more := written(kind, held, fields, body)
+		errs = append(errs, s.unknownEgress(kind, existing.owner, fields)...)
+		value, more := written(kind, existing, fields, body)
 		errs = append(errs, more...)
 		if len(errs) == 0 {
-			errs = s.refusedToken(kind, held.id, value)
+			errs = s.tokenProblems(kind, existing.id, value)
 		}
 
-		if len(errs) == 0 && kind == "workspace-token-trust" && !s.grants(w, held.fields["scopes"], fields["scopes"]) {
+		if len(errs) == 0 && kind == "workspace-token-trust" && !s.grants(w, existing.fields["scopes"], fields["scopes"]) {
 			return
 		}
 
@@ -577,16 +577,16 @@ func (s *Server) update(kind string) http.HandlerFunc {
 			return
 		}
 
-		s.keep(held, value)
+		s.keep(existing, value)
 
 		if kind == "secret" && objectOf(fields["source"])["kind"] != "built-in" {
-			delete(s.kept, held.id)
+			delete(s.kept, existing.id)
 		}
 
-		held.fields = fields
-		held.version++
-		s.lapse(held.id)
-		s.answer(w, http.StatusOK, held)
+		existing.fields = fields
+		existing.version++
+		s.lapse(existing.id)
+		s.answer(w, http.StatusOK, existing)
 	}
 }
 
@@ -595,45 +595,51 @@ func (s *Server) remove(kind string) http.HandlerFunc {
 		s.mu.Lock()
 		defer s.mu.Unlock()
 
-		held, ok := s.found(w, kind, r.PathValue("id"))
-		if !ok || !s.allowed(w, kind) || !s.current(w, r, held) {
+		existing, ok := s.found(w, kind, r.PathValue("id"))
+		if !ok || !s.allowed(w, kind) || !s.current(w, r, existing) {
 			return
 		}
 
-		for _, each := range s.held {
-			if each.owner == held.id {
-				problem(w, http.StatusConflict, "in-use", "The "+kind+" is still in use", "It still holds a "+each.kind, nil)
-				return
+		var dependents []string
+		for _, each := range s.stored {
+			if each.owner == existing.id {
+				dependents = append(dependents, dependentName(each))
 			}
 		}
 
-		if naming := s.poolsNaming(held); len(naming) > 0 {
-			problem(w, http.StatusConflict, "in-use", "The "+kind+" is still in use",
-				fmt.Sprintf("Egress %s is in use. Runner pools that name it: %s. Please remove provision.egress from these pools first.", textOf(held.fields["key"]), strings.Join(naming, ", ")), nil)
+		if len(dependents) > 0 {
+			slices.Sort(dependents)
+			problem(w, http.StatusConflict, "in-use", "The "+kind+" is still in use", notEmpty(kind, existing)+" It still has: "+strings.Join(dependents, ", "), nil)
 			return
 		}
 
-		delete(s.held, held.id)
-		delete(s.kept, held.id)
-		s.lapse(held.id)
+		if naming := s.poolsNaming(existing); len(naming) > 0 {
+			problem(w, http.StatusConflict, "in-use", "The "+kind+" is still in use",
+				fmt.Sprintf("Egress %s is in use. Runner pools that name it: %s. Please remove provision.egress from these pools first.", textOf(existing.fields["key"]), strings.Join(naming, ", ")), nil)
+			return
+		}
+
+		delete(s.stored, existing.id)
+		delete(s.kept, existing.id)
+		s.lapse(existing.id)
 		w.WriteHeader(http.StatusNoContent)
 	}
 }
 
-func (s *Server) keep(held *resource, value string) {
+func (s *Server) keep(stored *resource, value string) {
 	if value == "" {
 		return
 	}
 
-	s.kept[held.id] = value
-	if givesToken(held.kind, held.fields) {
-		s.given[givenToken{held.kind, value}] = struct{}{}
+	s.kept[stored.id] = value
+	if givesToken(stored.kind, stored.fields) {
+		s.given[givenToken{stored.kind, value}] = struct{}{}
 	}
 }
 
 type givenToken struct{ kind, token string }
 
-func (s *Server) refusedToken(kind, claimant, value string) []fieldError {
+func (s *Server) tokenProblems(kind, claimant, value string) []fieldError {
 	if (kind != "runner-pool" && kind != "egress") || value == "" {
 		return nil
 	}
@@ -643,7 +649,7 @@ func (s *Server) refusedToken(kind, claimant, value string) []fieldError {
 	}
 
 	for id, kept := range s.kept {
-		if held := s.held[id]; kept == value && held != nil && held.kind == kind && givesToken(held.kind, held.fields) {
+		if stored := s.stored[id]; kept == value && stored != nil && stored.kind == kind && givesToken(stored.kind, stored.fields) {
 			if id == claimant {
 				return nil
 			}
@@ -665,21 +671,21 @@ func (s *Server) unknownEgress(kind, workspace string, fields map[string]any) []
 		return nil
 	}
 
-	if held, found := s.held[named]; found && held.kind == "egress" && held.owner == workspace {
+	if stored, found := s.stored[named]; found && stored.kind == "egress" && stored.owner == workspace {
 		return nil
 	}
 
 	return []fieldError{{"provision.egress", fmt.Sprintf("names %s. Egress %s doesn't exist in this workspace", named, named)}}
 }
 
-func (s *Server) poolsNaming(held *resource) []string {
-	if held.kind != "egress" {
+func (s *Server) poolsNaming(stored *resource) []string {
+	if stored.kind != "egress" {
 		return nil
 	}
 
 	var naming []string
-	for _, each := range s.held {
-		if each.kind == "runner-pool" && objectOf(each.fields["provision"])["egress"] == held.id {
+	for _, each := range s.stored {
+		if each.kind == "runner-pool" && objectOf(each.fields["provision"])["egress"] == stored.id {
 			naming = append(naming, textOf(each.fields["key"]))
 		}
 	}
@@ -693,7 +699,7 @@ func (s *Server) importWorkspace(w http.ResponseWriter, r *http.Request) {
 	defer s.mu.Unlock()
 
 	address := r.URL.Query().Get("address")
-	for _, each := range s.held {
+	for _, each := range s.stored {
 		if each.kind == "workspace" && s.addressOf(each) == address {
 			s.answer(w, http.StatusOK, each)
 			return
@@ -703,7 +709,7 @@ func (s *Server) importWorkspace(w http.ResponseWriter, r *http.Request) {
 	problem(w, http.StatusNotFound, "not-found", "No such workspace", "There is no workspace here that you may see", nil)
 }
 
-func (s *Server) importHeld(w http.ResponseWriter, r *http.Request) {
+func (s *Server) importByKind(w http.ResponseWriter, r *http.Request) {
 	kind, ok := kinds[r.PathValue("kinds")]
 	if !ok {
 		noRoute(w, r)
@@ -714,7 +720,7 @@ func (s *Server) importHeld(w http.ResponseWriter, r *http.Request) {
 	defer s.mu.Unlock()
 
 	workspace, address := r.PathValue("workspace"), r.URL.Query().Get("address")
-	for _, each := range s.held {
+	for _, each := range s.stored {
 		if each.kind == kind && s.workspaceOf(each) == workspace && s.addressOf(each) == address {
 			s.answer(w, http.StatusOK, each)
 			return
@@ -728,10 +734,10 @@ func (s *Server) listWorkspaces(w http.ResponseWriter, _ *http.Request) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	s.list(w, func(held *resource) bool { return held.kind == "workspace" })
+	s.list(w, func(stored *resource) bool { return stored.kind == "workspace" })
 }
 
-func (s *Server) listHeld(w http.ResponseWriter, r *http.Request) {
+func (s *Server) listByKind(w http.ResponseWriter, r *http.Request) {
 	kind, ok := kinds[r.PathValue("kinds")]
 	if !ok {
 		noRoute(w, r)
@@ -742,17 +748,17 @@ func (s *Server) listHeld(w http.ResponseWriter, r *http.Request) {
 	defer s.mu.Unlock()
 
 	workspace := r.PathValue("workspace")
-	if !s.holds(workspace, "workspace") {
+	if !s.exists(workspace, "workspace") {
 		problem(w, http.StatusNotFound, "not-found", "No such workspace", "There is no workspace here that you may see", nil)
 		return
 	}
 
-	s.list(w, func(held *resource) bool { return held.kind == kind && s.workspaceOf(held) == workspace })
+	s.list(w, func(stored *resource) bool { return stored.kind == kind && s.workspaceOf(stored) == workspace })
 }
 
 func (s *Server) list(w http.ResponseWriter, listed func(*resource) bool) {
 	var found []*resource
-	for _, each := range s.held {
+	for _, each := range s.stored {
 		if listed(each) {
 			found = append(found, each)
 		}
@@ -769,16 +775,16 @@ func (s *Server) list(w http.ResponseWriter, listed func(*resource) bool) {
 }
 
 func (s *Server) found(w http.ResponseWriter, kind, id string) (*resource, bool) {
-	held, ok := s.held[id]
-	if !ok || held.kind != kind {
+	stored, ok := s.stored[id]
+	if !ok || stored.kind != kind {
 		problem(w, http.StatusNotFound, "not-found", "No such "+kind, "There is no "+kind+" here that you may see", nil)
 		return nil, false
 	}
 
-	return held, true
+	return stored, true
 }
 
-func (s *Server) current(w http.ResponseWriter, r *http.Request, held *resource) bool {
+func (s *Server) current(w http.ResponseWriter, r *http.Request, stored *resource) bool {
 	tag := r.Header.Get("If-Match")
 	if tag == "" {
 		problem(w, http.StatusPreconditionRequired, "precondition-required", "The request must say which version it changes", "Send If-Match", nil)
@@ -791,14 +797,14 @@ func (s *Server) current(w http.ResponseWriter, r *http.Request, held *resource)
 		return false
 	}
 
-	if version != held.version {
-		w.Header().Set("ETag", fmt.Sprintf(`"%d"`, held.version))
+	if version != stored.version {
+		w.Header().Set("ETag", fmt.Sprintf(`"%d"`, stored.version))
 		writeJSON(w, http.StatusConflict, "application/problem+json", map[string]any{
 			"type":           "urn:spotlight:problem:version-conflict",
-			"title":          "The " + held.kind + " changed since it was read",
+			"title":          "The " + stored.kind + " changed since it was read",
 			"status":         http.StatusConflict,
-			"detail":         fmt.Sprintf("The %s is at version %d", held.kind, held.version),
-			"currentVersion": held.version,
+			"detail":         fmt.Sprintf("The %s is at version %d", stored.kind, stored.version),
+			"currentVersion": stored.version,
 		})
 		return false
 	}
@@ -806,10 +812,10 @@ func (s *Server) current(w http.ResponseWriter, r *http.Request, held *resource)
 	return true
 }
 
-func (s *Server) holds(id, kind string) bool {
-	held, ok := s.held[id]
+func (s *Server) exists(id, kind string) bool {
+	stored, ok := s.stored[id]
 
-	return ok && held.kind == kind
+	return ok && stored.kind == kind
 }
 
 var fixedFields = map[string][]string{
@@ -831,10 +837,10 @@ func givesToken(kind string, fields map[string]any) bool {
 	return kind == "egress" || (kind == "runner-pool" && fields["mode"] == "pull")
 }
 
-func issue(w http.ResponseWriter, held *resource) string {
-	issued := fmt.Sprintf("issued-%s-%s", held.id, strings.Repeat("x", 32))
+func issue(w http.ResponseWriter, stored *resource) string {
+	issued := fmt.Sprintf("issued-%s-%s", stored.id, strings.Repeat("x", 32))
 	header := PoolTokenHeader
-	if held.kind == "egress" {
+	if stored.kind == "egress" {
 		header = EgressTokenHeader
 	}
 	w.Header().Set(header, issued)
@@ -842,89 +848,89 @@ func issue(w http.ResponseWriter, held *resource) string {
 	return issued
 }
 
-func (s *Server) addressOf(held *resource) string {
-	switch held.kind {
+func (s *Server) addressOf(stored *resource) string {
+	switch stored.kind {
 	case "workspace":
-		return textOf(held.fields["slug"])
+		return textOf(stored.fields["slug"])
 	case "team", "runner-trust", "runner-pool", "egress", "workspace-token-trust":
-		return textOf(held.fields["key"])
+		return textOf(stored.fields["key"])
 	case "secret":
-		return textOf(held.fields["name"])
+		return textOf(stored.fields["name"])
 	case "workspace-runners":
-		return s.slugOf(held.owner)
+		return s.slugOf(stored.owner)
 	case "integration":
-		return s.teamKeyOf(held) + "/" + textOf(held.fields["source"])
+		return s.teamKeyOf(stored) + "/" + textOf(stored.fields["source"])
 	default:
-		return s.teamKeyOf(held) + "/" + textOf(held.fields["key"])
+		return s.teamKeyOf(stored) + "/" + textOf(stored.fields["key"])
 	}
 }
 
 func (s *Server) slugOf(workspaceID string) string {
-	if workspace, ok := s.held[workspaceID]; ok {
+	if workspace, ok := s.stored[workspaceID]; ok {
 		return textOf(workspace.fields["slug"])
 	}
 
 	return ""
 }
 
-func (s *Server) teamKeyOf(held *resource) string {
-	if team, ok := s.held[held.owner]; ok {
+func (s *Server) teamKeyOf(stored *resource) string {
+	if team, ok := s.stored[stored.owner]; ok {
 		return textOf(team.fields["key"])
 	}
 
 	return ""
 }
 
-func (s *Server) workspaceOf(held *resource) string {
+func (s *Server) workspaceOf(stored *resource) string {
 	switch {
-	case held.kind == "workspace":
-		return held.id
-	case ownerKind(held.kind) == "workspace":
-		return held.owner
+	case stored.kind == "workspace":
+		return stored.id
+	case ownerKind(stored.kind) == "workspace":
+		return stored.owner
 	default:
-		if team, ok := s.held[held.owner]; ok {
+		if team, ok := s.stored[stored.owner]; ok {
 			return team.owner
 		}
 		return ""
 	}
 }
 
-func (s *Server) answer(w http.ResponseWriter, status int, held *resource) {
-	w.Header().Set("ETag", fmt.Sprintf(`"%d"`, held.version))
-	writeJSON(w, status, "application/json", roundTripped(s.bodyOf(held)))
+func (s *Server) answer(w http.ResponseWriter, status int, stored *resource) {
+	w.Header().Set("ETag", fmt.Sprintf(`"%d"`, stored.version))
+	writeJSON(w, status, "application/json", roundTripped(s.bodyOf(stored)))
 }
 
-func (s *Server) bodyOf(held *resource) map[string]any {
-	body := maps.Clone(held.fields)
-	body["id"] = held.id
-	body["version"] = held.version
-	body["address"] = s.addressOf(held)
+func (s *Server) bodyOf(stored *resource) map[string]any {
+	body := maps.Clone(stored.fields)
+	body["id"] = stored.id
+	body["version"] = stored.version
+	body["address"] = s.addressOf(stored)
 	body["warnings"] = []any{}
 
-	switch ownerKind(held.kind) {
+	switch ownerKind(stored.kind) {
 	case "team":
-		body["teamId"] = held.owner
+		body["teamId"] = stored.owner
 	default:
-		if held.kind != "workspace" {
-			body["workspaceId"] = held.owner
+		if stored.kind != "workspace" {
+			body["workspaceId"] = stored.owner
 		}
 	}
 
-	if held.kind == "workspace-runners" {
-		body["warnings"] = s.unansweredOf(held)
+	if stored.kind == "workspace-runners" {
+		body["warnings"] = s.unansweredOf(stored)
 	}
 
-	if held.kind == "workspace-token-trust" {
+	if stored.kind == "workspace-token-trust" {
 		body["definedBy"] = Admin
 	}
 
-	if held.kind == "egress" && strings.HasPrefix(textOf(held.fields["url"]), "http:") {
-		body["warnings"] = []any{warned("url", "is not https. Runners send their proxy credential to it. A production deployment refuses to provision runners that use it")}
+	if stored.kind == "egress" && strings.HasPrefix(textOf(stored.fields["url"]), "http:") {
+		body["warnings"] = []any{warned("url", "is not https. Runners send their proxy credential to it. A production deployment does not provision runners that use it")}
 	}
 
-	if held.kind == "integration" {
-		body["tools"] = offered(held.fields)
-		body["described"] = described(held.fields)
+	if stored.kind == "integration" {
+		body["tools"] = offered(stored.fields)
+		body["described"] = described(stored.fields)
 	}
 
 	return body
@@ -984,4 +990,29 @@ func writeJSON(w http.ResponseWriter, status int, contentType string, body any) 
 
 func noRoute(w http.ResponseWriter, r *http.Request) {
 	problem(w, http.StatusNotFound, "not-found", "No such resource", "Cannot "+r.Method+" "+r.URL.Path, nil)
+}
+
+func notEmpty(kind string, existing *resource) string {
+	switch kind {
+	case "team":
+		return "Team " + textOf(existing.fields["key"]) + " is not empty."
+	case "workspace":
+		return "Workspace " + textOf(existing.fields["slug"]) + " is not empty."
+	default:
+		return "The " + kind + " is not empty."
+	}
+}
+
+func cannotChange(kind string) string {
+	return "You can read this " + kind + " but not change it. Your workspace role or token scopes do not allow it."
+}
+
+func dependentName(each *resource) string {
+	for _, field := range []string{"key", "slug", "name"} {
+		if named := textOf(each.fields[field]); named != "" {
+			return strings.ReplaceAll(each.kind, "-", " ") + " " + named
+		}
+	}
+
+	return strings.ReplaceAll(each.kind, "-", " ")
 }

@@ -79,7 +79,7 @@ provider "spotlight" {
 	})
 }
 
-func TestTheProviderReportsATokenTheControlPlaneRefuses(t *testing.T) {
+func TestTheProviderReportsATokenTheControlPlaneDoesNotAccept(t *testing.T) {
 	fake := fakeapi.New(t)
 	t.Setenv(provider.URLEnv, fake.URL)
 	t.Setenv(provider.TokenEnv, "not-a-token-it-knows")
@@ -283,7 +283,7 @@ provider "spotlight" {
 	})
 }
 
-func TestTheProviderReportsAnOIDCTokenTheTrustRefuses(t *testing.T) {
+func TestTheProviderReportsAnOIDCTokenTheTrustDoesNotAccept(t *testing.T) {
 	fake := fakeapi.New(t)
 	withoutCredentials(t)
 	t.Setenv(provider.URLEnv, fake.URL)

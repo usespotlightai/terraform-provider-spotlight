@@ -65,7 +65,7 @@ func (r *IntegrationListResource) List(ctx context.Context, req list.ListRequest
 	}
 
 	stream.Results = func(push func(list.ListResult) bool) {
-		for _, integration := range limited(heldBy(integrations, config.TeamID.ValueString(), func(each client.Integration) string { return each.TeamID }), req.Limit) {
+		for _, integration := range limited(ofTeam(integrations, config.TeamID.ValueString(), func(each client.Integration) string { return each.TeamID }), req.Limit) {
 			if !push(listResult(ctx, req, integration.ID, integration.Address, integrationModel(integration, nil))) {
 				return
 			}

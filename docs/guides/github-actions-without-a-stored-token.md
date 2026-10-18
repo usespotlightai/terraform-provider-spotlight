@@ -7,9 +7,9 @@ description: |-
 
 # GitHub Actions without a stored token
 
-A pipeline that holds a Spotlight API token as a repository secret holds a credential that works from anywhere until someone rotates it. A `spotlight_workspace_token_trust` removes it. The trust names an OIDC issuer and the workloads it admits, and each job exchanges the OIDC token its CI platform issues it for a workspace token with the trust's scopes, lasting the trust's `lifetime_minutes` (15 by default, an hour at most). Nothing is stored in GitHub, and a token that leaks from a job's logs stops working within minutes.
+A pipeline that keeps a Spotlight API token as a repository secret has a credential that works from anywhere until someone rotates it. A `spotlight_workspace_token_trust` removes it. The trust names an OIDC issuer and the workloads it admits, and each job exchanges the OIDC token its CI platform issues it for a workspace token with the trust's scopes, lasting the trust's `lifetime_minutes` (15 by default, an hour at most). Nothing is stored in GitHub, and a token that leaks from a job's logs stops working within minutes.
 
-The provider does the exchange itself: given a trust, it asks GitHub for an OIDC token, exchanges it, sends the token it gets back as `Authorization: Bearer`, and repeats the exchange a minute before that token expires, so an apply that outlives one token carries on with the next. Changing or deleting a trust stops every token it minted at once; a job whose token is refused that way exchanges again and carries on if the trust still admits it.
+The provider does the exchange itself: given a trust, it asks GitHub for an OIDC token, exchanges it, sends the token it gets back as `Authorization: Bearer`, and repeats the exchange a minute before that token expires, so an apply that outlives one token carries on with the next. Changing or deleting a trust stops every token it minted at once; a job whose token stops working that way exchanges again and carries on if the trust still admits it.
 
 ## 1. Define the trusts
 
@@ -45,14 +45,14 @@ output "apply_trust" {
 }
 ```
 
-`subject` is matched against the `sub` claim of the job's OIDC token, which GitHub writes as `repo:<owner>/<repository>:pull_request` for a pull request, `repo:<owner>/<repository>:ref:refs/heads/<branch>` for a push, and `repo:<owner>/<repository>:environment:<name>` for a job that deploys to an environment. A job with `environment: production` could use `subject = "repo:acme/platform:environment:production"` instead, so that the environment's protection rules gate every apply. A `*` in `subject` stands for any run of characters, colons included, but a subject with one must name its owner before the first, so `repo:acme/*` is accepted and `repo:*` is refused. `claims` narrows the trust further by any other claim in the token, as in `claims = { repository_owner = "acme" }`.
+`subject` is matched against the `sub` claim of the job's OIDC token, which GitHub writes as `repo:<owner>/<repository>:pull_request` for a pull request, `repo:<owner>/<repository>:ref:refs/heads/<branch>` for a push, and `repo:<owner>/<repository>:environment:<name>` for a job that deploys to an environment. A job with `environment: production` could use `subject = "repo:acme/platform:environment:production"` instead, so that the environment's protection rules gate every apply. A `*` in `subject` matches any run of characters, colons included, but a subject with one must name its owner before the first, so `repo:acme/*` is accepted and `repo:*` is rejected. `claims` narrows the trust further by any other claim in the token, as in `claims = { repository_owner = "acme" }`.
 
 ### Bootstrap once, then store nothing
 
-Creating, changing and deleting a trust needs a workspace admin, or a token granted the `trusts` scope that also holds every scope the trust gives: a token may give a trust only scopes it holds itself, and change one only while it holds both the trust's current scopes and its new ones. Any other token is refused with `403`. The trusts that let CI in cannot come from CI before they exist, so an admin applies them once:
+Creating, changing and deleting a trust needs a workspace admin, or a token granted the `trusts` scope that also has every scope the trust gives. A token can give a trust only the scopes that it has. A token can change a trust only when it has the current scopes and the new scopes of the trust. A write with any other token fails with `403`. The trusts that let CI in cannot come from CI before they exist, so an admin applies them once:
 
 1. Keep the trusts in a small Terraform root of their own, apart from the configuration CI applies.
-2. Create an API token in the web app with `trusts` and every scope the trusts give, here `["configure", "secrets", "trusts"]` (`configure` holds `plan`), and the shortest expiry it offers. Add `runners` if a trust gives it.
+2. Create an API token in the web app with `trusts` and every scope the trusts give, here `["configure", "secrets", "trusts"]` (`configure` includes `plan`), and the shortest expiry it offers. Add `runners` if a trust gives it.
 3. Apply that root with it, as in `SPOTLIGHT_API_TOKEN=<token> terraform apply`, and note each trust's `id`, which `terraform output` shows.
 4. Revoke the token.
 

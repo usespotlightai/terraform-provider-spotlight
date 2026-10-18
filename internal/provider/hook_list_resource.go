@@ -65,7 +65,7 @@ func (r *HookListResource) List(ctx context.Context, req list.ListRequest, strea
 	}
 
 	stream.Results = func(push func(list.ListResult) bool) {
-		for _, hook := range limited(heldBy(hooks, config.TeamID.ValueString(), func(each client.Hook) string { return each.TeamID }), req.Limit) {
+		for _, hook := range limited(ofTeam(hooks, config.TeamID.ValueString(), func(each client.Hook) string { return each.TeamID }), req.Limit) {
 			if !push(listResult(ctx, req, hook.ID, hook.Address, hookModel(hook, nil))) {
 				return
 			}

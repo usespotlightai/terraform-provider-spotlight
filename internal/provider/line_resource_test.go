@@ -432,7 +432,7 @@ func TestLineDriftIsPlannedBack(t *testing.T) {
 					fake.Change(fake.IDOf("line", "core/delivery"), func(fields map[string]any) {
 						definition, ok := fields["definition"].(map[string]any)
 						if !ok {
-							t.Fatalf("the fake holds no definition: %v", fields)
+							t.Fatalf("the fake stores no definition: %v", fields)
 						}
 						definition["name"] = "Renamed in the web app"
 					})
@@ -456,7 +456,7 @@ func TestLineDriftIsPlannedBack(t *testing.T) {
 	})
 }
 
-func TestLineRefusalNamesTheStationAttribute(t *testing.T) {
+func TestLineProblemNamesTheStationAttribute(t *testing.T) {
 	fake := fakeapi.New(t)
 
 	resource.UnitTest(t, resource.TestCase{
@@ -488,7 +488,7 @@ resource "spotlight_line" "core_delivery" {
 	})
 }
 
-func lineRefused(t *testing.T, stations string, want *regexp.Regexp) {
+func lineRejected(t *testing.T, stations string, want *regexp.Regexp) {
 	t.Helper()
 
 	fake := fakeapi.New(t)
@@ -511,8 +511,8 @@ resource "spotlight_line" "core_delivery" {
 	})
 }
 
-func TestLineRefusesAStationKeyRunsSayToHandOver(t *testing.T) {
-	lineRefused(t, `
+func TestLineRejectsAStationKeyRunsSayToHandOver(t *testing.T) {
+	lineRejected(t, `
   station {
     key       = "backlog"
     name      = "Backlog"
@@ -528,7 +528,7 @@ func TestLineRefusesAStationKeyRunsSayToHandOver(t *testing.T) {
 }
 
 func TestLineHandsOnOnlyToStationsWorkIsDoneAt(t *testing.T) {
-	lineRefused(t, `
+	lineRejected(t, `
   station {
     key       = "backlog"
     name      = "Backlog"
@@ -551,7 +551,7 @@ func TestLineHandsOnOnlyToStationsWorkIsDoneAt(t *testing.T) {
 }
 
 func TestLineReviewsOnlyInTheReviewRole(t *testing.T) {
-	lineRefused(t, `
+	lineRejected(t, `
   role = "delivery"
 
   station {
@@ -672,7 +672,7 @@ func TestLineRepositoriesCarryTheImageAndSetup(t *testing.T) {
 }
 
 func TestLineRunsInOneImage(t *testing.T) {
-	lineRefused(t, `
+	lineRejected(t, `
   repository {
     name  = "acme/api"
     image = "ghcr.io/acme/api-runner:main"
@@ -690,8 +690,8 @@ func TestLineRunsInOneImage(t *testing.T) {
 `, regexp.MustCompile(`(?s)repository: The delivery line works in repositories that A line runs every\s+station in one image`))
 }
 
-func TestLineRefusesAnImageThatIsNoReference(t *testing.T) {
-	lineRefused(t, `
+func TestLineRejectsAnImageThatIsNoReference(t *testing.T) {
+	lineRejected(t, `
   repository {
     name  = "acme/api"
     image = "GHCR.io/Acme/API"
@@ -705,7 +705,7 @@ func TestLineRefusesAnImageThatIsNoReference(t *testing.T) {
 }
 
 func TestLineThatChecksLayersSetsUpEveryRepository(t *testing.T) {
-	lineRefused(t, `
+	lineRejected(t, `
   repository {
     name = "acme/api"
   }
@@ -987,7 +987,7 @@ func TestLineJudgePassShareIsAShare(t *testing.T) {
 func TestLineJudgeClaimsAreFew(t *testing.T) {
 	claims := make([]string, 21)
 	for at := range claims {
-		claims[at] = fmt.Sprintf("%q", fmt.Sprintf("Claim %d holds.", at))
+		claims[at] = fmt.Sprintf("%q", fmt.Sprintf("Claim %d is true.", at))
 	}
 
 	lineInvalid(t, `
@@ -1402,7 +1402,7 @@ func TestLineSourcePathIsATerraformFileInTheRepository(t *testing.T) {
 	}
 }
 
-func TestLineSourcePathMayHoldDots(t *testing.T) {
+func TestLineSourcePathMayContainDots(t *testing.T) {
 	fake := fakeapi.New(t)
 
 	dotted := lineChecked(`

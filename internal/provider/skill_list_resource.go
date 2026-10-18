@@ -65,7 +65,7 @@ func (r *SkillListResource) List(ctx context.Context, req list.ListRequest, stre
 	}
 
 	stream.Results = func(push func(list.ListResult) bool) {
-		for _, skill := range limited(heldBy(skills, config.TeamID.ValueString(), func(each client.Skill) string { return each.TeamID }), req.Limit) {
+		for _, skill := range limited(ofTeam(skills, config.TeamID.ValueString(), func(each client.Skill) string { return each.TeamID }), req.Limit) {
 			if !push(listResult(ctx, req, skill.ID, skill.Address, skillModel(skill, nil))) {
 				return
 			}

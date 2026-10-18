@@ -14,7 +14,7 @@ import (
 func seededSecrets(t *testing.T, seeded acctest.Seeded) (first, second acctest.Listed) {
 	t.Helper()
 
-	held := func(workspace client.Workspace, name string) acctest.Listed {
+	create := func(workspace client.Workspace, name string) acctest.Listed {
 		t.Helper()
 
 		created, err := seeded.Client.CreateSecret(t.Context(), workspace.ID, client.SecretInput{
@@ -27,10 +27,10 @@ func seededSecrets(t *testing.T, seeded acctest.Seeded) (first, second acctest.L
 		return acctest.ListedAs(created.Meta)
 	}
 
-	held(seeded.Other, "GITHUB_TOKEN")
-	later := held(seeded.Workspace, "LINEAR_API_KEY")
+	create(seeded.Other, "GITHUB_TOKEN")
+	later := create(seeded.Workspace, "LINEAR_API_KEY")
 
-	return held(seeded.Workspace, "GITHUB_TOKEN"), later
+	return create(seeded.Workspace, "GITHUB_TOKEN"), later
 }
 
 func TestSecretListResource(t *testing.T) {

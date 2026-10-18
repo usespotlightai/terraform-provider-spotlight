@@ -3,12 +3,12 @@
 page_title: "spotlight_egress Resource - spotlight"
 subcategory: ""
 description: |-
-  An egress that the runners of push pools send their traffic through. A spotlight_runner_pool names it in provision.egress. For each run, the egress adds the secrets of the run to the requests that go to their bound hosts. A bound host is a host that a secret of the run is bound to. The egress calls Spotlight with its token. Spotlight refuses to delete an egress while a pool names it. Terraform can delete the egress before it updates the pools, so first remove provision.egress from the pools and apply, then remove the egress. Writing egresses needs a token granted the runners scope. Import it as <workspace id>/<key>.
+  An egress that the runners of push pools send their traffic through. A spotlight_runner_pool names it in provision.egress. For each run, the egress adds the secrets of the run to the requests that go to their bound hosts. A bound host is a host that a secret of the run is bound to. The egress calls Spotlight with its token. Spotlight does not delete an egress while a pool names it. Terraform can delete the egress before it updates the pools, so first remove provision.egress from the pools and apply, then remove the egress. Writing egresses needs a token granted the runners scope. Import it as <workspace id>/<key>.
 ---
 
 # spotlight_egress (Resource)
 
-An egress that the runners of push pools send their traffic through. A `spotlight_runner_pool` names it in `provision.egress`. For each run, the egress adds the secrets of the run to the requests that go to their bound hosts. A bound host is a host that a secret of the run is bound to. The egress calls Spotlight with its token. Spotlight refuses to delete an egress while a pool names it. Terraform can delete the egress before it updates the pools, so first remove `provision.egress` from the pools and apply, then remove the egress. Writing egresses needs a token granted the `runners` scope. Import it as `<workspace id>/<key>`.
+An egress that the runners of push pools send their traffic through. A `spotlight_runner_pool` names it in `provision.egress`. For each run, the egress adds the secrets of the run to the requests that go to their bound hosts. A bound host is a host that a secret of the run is bound to. The egress calls Spotlight with its token. Spotlight does not delete an egress while a pool names it. Terraform can delete the egress before it updates the pools, so first remove `provision.egress` from the pools and apply, then remove the egress. Writing egresses needs a token granted the `runners` scope. Import it as `<workspace id>/<key>`.
 
 ## Example Usage
 
@@ -49,7 +49,7 @@ resource "spotlight_egress" "shared" {
 
 > **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
 
-- `token` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The token the egress calls Spotlight with: 32 to 255 URL-safe characters, as a generated password would be. Spotlight keeps only its hash. Left out, Spotlight issues one when it creates the egress, which Terraform does not keep; a change to `token_version` must come with a token. A token is given once, ever: another egress's token is refused, and one rotated away, or held by an egress since deleted or replaced, is spent and refused to every egress, the same one included, so rotating or replacing an egress always needs a new token. It is sent to Spotlight and never stored in the plan or the state, so it needs Terraform 1.11 or later; change `token_version` to send it again.
+- `token` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The token the egress calls Spotlight with: 32 to 255 URL-safe characters, as a generated password would be. Spotlight keeps only its hash. Left out, Spotlight issues one when it creates the egress, which Terraform does not keep; a change to `token_version` must come with a token. A token is given once, ever: another egress's token is not accepted, and one rotated away, or used by an egress that was deleted or replaced, is spent and no egress accepts it, the same one included, so rotating or replacing an egress always needs a new token. It is sent to Spotlight and never stored in the plan or the state, so it needs Terraform 1.11 or later; change `token_version` to send it again.
 - `token_version` (Number) Any number; change it whenever `token` changes, so Terraform sends the new value.
 
 ### Read-Only

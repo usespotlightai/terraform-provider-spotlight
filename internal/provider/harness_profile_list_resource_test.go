@@ -14,7 +14,7 @@ import (
 func seededHarnessProfiles(t *testing.T, seeded acctest.Seeded) (core, platform acctest.Listed) {
 	t.Helper()
 
-	held := func(team client.Team, key string) acctest.Listed {
+	create := func(team client.Team, key string) acctest.Listed {
 		t.Helper()
 
 		created, err := seeded.Client.CreateHarnessProfile(t.Context(), team.ID, client.HarnessProfileInput{Key: key})
@@ -23,9 +23,9 @@ func seededHarnessProfiles(t *testing.T, seeded acctest.Seeded) (core, platform 
 		return acctest.ListedAs(created.Meta)
 	}
 
-	held(seeded.OtherCore, "careful")
+	create(seeded.OtherCore, "careful")
 
-	return held(seeded.Core, "careful"), held(seeded.Platform, "relaxed")
+	return create(seeded.Core, "careful"), create(seeded.Platform, "relaxed")
 }
 
 func TestHarnessProfileListResource(t *testing.T) {
@@ -38,9 +38,9 @@ func TestHarnessProfileListResource(t *testing.T) {
 		t.Errorf("listed %v, want %v", all, want)
 	}
 
-	held := acctest.List(t, fake, "spotlight_harness_profile", map[string]string{"workspace_id": seeded.Workspace.ID, "team_id": seeded.Core.ID})
-	if want := []acctest.Listed{core}; !slices.Equal(held, want) {
-		t.Errorf("listed %v in the core team, want %v", held, want)
+	inCore := acctest.List(t, fake, "spotlight_harness_profile", map[string]string{"workspace_id": seeded.Workspace.ID, "team_id": seeded.Core.ID})
+	if want := []acctest.Listed{core}; !slices.Equal(inCore, want) {
+		t.Errorf("listed %v in the core team, want %v", inCore, want)
 	}
 }
 

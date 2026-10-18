@@ -36,7 +36,7 @@ type HarnessProfileResource struct {
 	client *client.Client
 }
 
-// HarnessProfileResourceModel is a spotlight_harness_profile as Terraform holds it.
+// HarnessProfileResourceModel is a spotlight_harness_profile as Terraform stores it.
 type HarnessProfileResourceModel struct {
 	ID          types.String              `tfsdk:"id"`
 	Version     types.Int64               `tfsdk:"version"`
@@ -133,7 +133,7 @@ func harnessProfileSchema() schema.Schema {
 							Computed:            true,
 							ElementType:         types.StringType,
 							Default:             mapdefault.StaticValue(types.MapValueMust(types.StringType, map[string]attr.Value{})),
-							MarkdownDescription: "The server's environment. A value is plain text, stored and shown as written, or a reference to a workspace secret such as `secret.LINEAR_API_KEY`: the secret must exist, cannot be deleted while referenced, and reaches the server only as a stand-in, since egress wears its value on the server's requests to the hosts it is bound to.",
+							MarkdownDescription: "The server's environment. A value is plain text, stored and shown as written, or a reference to a workspace secret such as `secret.LINEAR_API_KEY`: the secret must exist, cannot be deleted while referenced, and reaches the server only as a stand-in, since egress injects its value into the server's requests to the hosts it is bound to.",
 						},
 					},
 				},
@@ -306,14 +306,14 @@ func harnessProfileInput(plan HarnessProfileResourceModel) (client.HarnessProfil
 		return in, diags
 	}
 
-	held, err := dynamic.ToJSON(plan.Native)
+	decoded, err := dynamic.ToJSON(plan.Native)
 	if err != nil {
 		diags.AddAttributeError(path.Root("native"), "Native settings not known", err.Error())
 
 		return in, diags
 	}
 
-	native, ok := held.(map[string]any)
+	native, ok := decoded.(map[string]any)
 	if !ok {
 		diags.AddAttributeError(path.Root("native"), "Native settings are not an object", "Write each harness's settings under its name, as in { claude-code = { includeCoAuthoredBy = false } }.")
 

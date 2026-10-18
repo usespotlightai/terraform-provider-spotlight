@@ -41,7 +41,7 @@ type WorkspaceTokenTrustResource struct {
 }
 
 // WorkspaceTokenTrustResourceModel is a spotlight_workspace_token_trust as
-// Terraform holds it.
+// Terraform stores it.
 type WorkspaceTokenTrustResourceModel struct {
 	ID              types.String `tfsdk:"id"`
 	Version         types.Int64  `tfsdk:"version"`
@@ -72,8 +72,8 @@ func workspaceTokenTrustSchema() schema.Schema {
 		MarkdownDescription: "A CI workload whose OIDC tokens are exchanged for short-lived workspace tokens, so the CI platform stores no Spotlight token: " +
 			"a job whose token the trust admits calls `POST /api/workspace-tokens/exchange`, as the provider's `oidc` block does, and is given a token with the trust's scopes for its lifetime. " +
 			"Changing or deleting the trust stops every token it minted at once. " +
-			"Writing workspace token trusts needs a workspace admin, or a token granted the `trusts` scope that holds every scope the trust gives: " +
-			"a token may give a trust only scopes it holds itself, and change one only while it holds both the trust's current scopes and its new ones. Import it as `<workspace id>/<key>`.",
+			"Writing workspace token trusts needs a workspace admin, or a token granted the `trusts` scope that has every scope the trust gives. " +
+			"A token can give a trust only the scopes that it has. A token can change a trust only when it has the current scopes and the new scopes of the trust. Import it as `<workspace id>/<key>`.",
 		Attributes: map[string]schema.Attribute{
 			"id":           idAttribute("workspace token trust"),
 			"version":      versionAttribute("workspace token trust"),
@@ -93,8 +93,8 @@ func workspaceTokenTrustSchema() schema.Schema {
 			"subject": schema.StringAttribute{
 				Required: true,
 				MarkdownDescription: "The subject the workload's token must carry, as in `repo:acme/platform:ref:refs/heads/main`. " +
-					"`*` stands for any run of characters, colons included, as in `repo:acme/platform:*`; a subject with one names its owner before the first, " +
-					"so `repo:acme/*` is accepted but `repo:*` and `*` are refused.",
+					"`*` matches any run of characters, colons included, as in `repo:acme/platform:*`; a subject with one names its owner before the first, " +
+					"so `repo:acme/*` is accepted but `repo:*` and `*` are rejected.",
 			},
 			"claims": schema.MapAttribute{
 				Optional:            true,

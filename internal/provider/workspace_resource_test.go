@@ -136,7 +136,7 @@ func TestWorkspaceImportUnknown(t *testing.T) {
 	})
 }
 
-func TestWorkspaceRefusalNamesTheAttribute(t *testing.T) {
+func TestWorkspaceProblemNamesTheAttribute(t *testing.T) {
 	fake := fakeapi.New(t)
 
 	resource.UnitTest(t, resource.TestCase{

@@ -378,7 +378,7 @@
             "bearer": []
           }
         ],
-        "summary": "Read a line as it stands",
+        "summary": "Read the current form of a line",
         "tags": [
           "lines"
         ],
@@ -425,7 +425,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -623,7 +623,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -701,7 +701,7 @@
             "bearer": []
           }
         ],
-        "summary": "Delete a line no task stands on",
+        "summary": "Delete a line that has no tasks",
         "tags": [
           "lines"
         ],
@@ -907,7 +907,7 @@
             "bearer": []
           }
         ],
-        "summary": "List every line in a workspace, across its teams, each as it stands",
+        "summary": "List every line in a workspace, across its teams, each in its current form",
         "tags": [
           "lines"
         ],
@@ -1099,7 +1099,7 @@
             "description": "Missing, spent or wrong runner token"
           },
           "404": {
-            "description": "No such run held by this runner"
+            "description": "No such run leased by this runner"
           }
         },
         "summary": "What a person has said to the agent working this run",
@@ -1310,7 +1310,7 @@
             "description": "Missing, spent or wrong runner token"
           },
           "409": {
-            "description": "The run is not held by this runner"
+            "description": "The run is not leased by this runner"
           }
         },
         "summary": "Say what the agent has been given",
@@ -1348,7 +1348,7 @@
             "description": "Missing, spent or wrong runner token"
           },
           "404": {
-            "description": "The run is no longer held by this runner: it ended, was parked, or its task let it go. The runner lets its sandbox go."
+            "description": "The run is no longer leased by this runner: it ended, was parked, or its task let it go. The runner lets its sandbox go."
           },
           "409": {
             "description": "The run kept changing while its lease was renewed; renew again on the next heartbeat."
@@ -1362,7 +1362,7 @@
     },
     "/runs/{runId}/change-stack-checks/{stackId}/lease": {
       "post": {
-        "description": "The runner holding a check renews its lease while the check runs, so a long check is not handed to a second runner. The answer carries back whether the runner should stop checking.",
+        "description": "The runner with the lease on a check renews that lease while the check runs, so a long check is not handed to a second runner. The answer carries back whether the runner should stop checking.",
         "operationId": "renewCheckLease",
         "parameters": [
           {
@@ -1406,7 +1406,7 @@
             "description": "Missing, spent or wrong runner token"
           },
           "404": {
-            "description": "No such runner, or the check this runner holds is of another run"
+            "description": "No such runner, or the check this runner leases is of another run"
           },
           "409": {
             "description": "The check kept moving on while it was renewed"
@@ -1450,7 +1450,7 @@
             "description": "Missing, spent or wrong runner token"
           },
           "409": {
-            "description": "The run is not held by this runner"
+            "description": "The run is not leased by this runner"
           }
         },
         "summary": "Say which image, by digest, the run’s sandbox started from",
@@ -1494,7 +1494,7 @@
             "description": "No such run"
           },
           "409": {
-            "description": "The run is not held by this runner on that attempt, works no task, or already started from somewhere else"
+            "description": "The run is not leased by this runner on that attempt, works no task, or already started from somewhere else"
           },
           "422": {
             "description": "An archive the run could not have restored, a commit that is not a full SHA, or checkouts other than the ones the run was given"
@@ -1537,7 +1537,7 @@
             "description": "Missing, spent or wrong runner token"
           },
           "409": {
-            "description": "The run is not held by this runner"
+            "description": "The run is not leased by this runner"
           }
         },
         "summary": "Add to the run’s journal",
@@ -1611,7 +1611,7 @@
             "description": "What the agent handed the tool is not what it takes"
           },
           "502": {
-            "description": "The integration the tool calls refused"
+            "description": "The integration the tool calls answered with an error"
           }
         },
         "summary": "Do what a tool the run was given does",
@@ -1622,7 +1622,7 @@
     },
     "/runs/{runId}/permissions": {
       "post": {
-        "description": "Only for a run whose station names a harness profile. An approval the task already holds for this exact call is spent on it; otherwise a person is asked in their inbox, and the run waits for their answer once its turn ends.",
+        "description": "Only for a run whose station names a harness profile. An approval the task already has for this exact call is spent on it; otherwise a person is asked in their inbox, and the run waits for their answer once its turn ends.",
         "operationId": "askPermission",
         "parameters": [
           {
@@ -1659,7 +1659,7 @@
             "description": "Missing, spent or wrong runner token"
           },
           "409": {
-            "description": "The run is not held by this runner"
+            "description": "The run is not leased by this runner"
           }
         },
         "summary": "Ask whether the harness may do what it asked to",
@@ -1790,7 +1790,7 @@
             "description": "Missing, spent or wrong runner token"
           },
           "404": {
-            "description": "No such run held by this runner"
+            "description": "No such run leased by this runner"
           }
         },
         "summary": "Whether a turn reported like this would wait for a person",
@@ -1838,7 +1838,7 @@
             "description": "Missing, spent or wrong runner token"
           },
           "409": {
-            "description": "The run is not held by this runner"
+            "description": "The run is not leased by this runner"
           }
         },
         "summary": "Park a run whose person did not answer within the grace period",
@@ -1866,7 +1866,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HeldArchiveResponseDto"
+                  "$ref": "#/components/schemas/StoredArchiveResponseDto"
                 }
               }
             }
@@ -2213,7 +2213,7 @@
             "description": "No such call waits for this pool’s or trust’s workspace"
           },
           "409": {
-            "description": "The call was already answered, lapsed before it was answered, or was never claimed (`call-settled`), or another host claimed it (`not-this-hosts-call`)"
+            "description": "The call was already answered, lapsed before it was answered, or was never claimed (`call-completed`), or another host claimed it (`not-this-hosts-call`)"
           }
         },
         "security": [
@@ -2227,17 +2227,17 @@
         ]
       }
     },
-    "/egress/redeem": {
+    "/egress/secrets": {
       "post": {
-        "description": "Called by the egress beside a sandbox with the credential its host was handed for this run alone, or by a shared egress with its egress token and the run proxy credential the runner presented. Each call grants the secrets the run wears; values Spotlight keeps come back sealed to the recipient, and values read from an external store come back as where egress reads them.",
-        "operationId": "redeemEgress",
+        "description": "Called by the egress beside a sandbox with the credential its host was handed for this run alone, or by a shared egress with its egress token and the run proxy credential the runner presented. Each call grants the secrets that egress injects for the run. Values that Spotlight keeps come back sealed to the recipient. For a value in an external store, the answer gives the external reference that egress reads.",
+        "operationId": "fetchRunSecrets",
         "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SharedRedeemEgressRequestDto"
+                "$ref": "#/components/schemas/FetchRunSecretsRequestDto"
               }
             }
           }
@@ -2248,16 +2248,16 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/EgressRedemptionResponseDto"
+                  "$ref": "#/components/schemas/EgressSecretsResponseDto"
                 }
               }
             }
           },
           "401": {
-            "description": "Missing or unknown egress token, or its runner no longer holds work"
+            "description": "Missing or unknown egress token, or its runner no longer has a lease on work"
           },
           "409": {
-            "description": "The runner of this proxy credential holds no run yet. Please redeem again after it claims one"
+            "description": "The runner of this proxy credential has no lease on a run yet. Please fetch the secrets again after it claims one"
           },
           "422": {
             "description": "The recipient is not an X25519 public key"
@@ -2268,7 +2268,7 @@
             "bearer": []
           }
         ],
-        "summary": "The secrets the run a sandbox holds may wear, for the egress beside it to inject toward their hosts",
+        "summary": "The secrets that egress injects into the run’s requests, for their bound hosts",
         "tags": [
           "runners"
         ]
@@ -2301,7 +2301,7 @@
             }
           },
           "401": {
-            "description": "Missing or unknown egress token, or its runner no longer holds work"
+            "description": "Missing or unknown egress token, or its runner no longer has a lease on work"
           }
         },
         "security": [
@@ -2315,17 +2315,17 @@
         ]
       }
     },
-    "/egress/holds": {
+    "/egress/active-runs": {
       "post": {
         "description": "Called by each node of a shared egress about every 30 seconds. The node forgets the secrets of every run that is not in the answer.",
-        "operationId": "keepEgressHolds",
+        "operationId": "checkActiveRuns",
         "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/KeepEgressHoldsRequestDto"
+                "$ref": "#/components/schemas/CheckActiveRunsRequestDto"
               }
             }
           }
@@ -2336,16 +2336,16 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/EgressHoldsResponseDto"
+                  "$ref": "#/components/schemas/EgressActiveRunsResponseDto"
                 }
               }
             }
           },
           "401": {
-            "description": "Missing or unknown egress token, or its runner no longer holds work"
+            "description": "Missing or unknown egress token, or its runner no longer has a lease on work"
           },
           "422": {
-            "description": "The call holds more than 500 proxy credentials"
+            "description": "The request has more than 500 proxy credentials"
           }
         },
         "security": [
@@ -2353,7 +2353,7 @@
             "bearer": []
           }
         ],
-        "summary": "The runs a shared egress serves whose runner still holds its work",
+        "summary": "The runs of a shared egress that their runners still lease",
         "tags": [
           "runners"
         ]
@@ -2361,7 +2361,7 @@
     },
     "/egress/connections": {
       "post": {
-        "description": "Called by a shared egress with its egress token. Spotlight keeps each record with its run for 30 days. It keeps a record only when the run still names the runner of the proxy credential, and that runner stands or ended at most 2 minutes before.",
+        "description": "Called by a shared egress with its egress token. Spotlight keeps each record with its run for 30 days. It keeps a record only when the run still names the runner of the proxy credential, and that runner is active, or ended at most 2 minutes before.",
         "operationId": "recordEgressConnections",
         "parameters": [],
         "requestBody": {
@@ -2379,10 +2379,10 @@
             "description": "The records were taken"
           },
           "401": {
-            "description": "Missing or unknown egress token, or its runner no longer holds work"
+            "description": "Missing or unknown egress token, or its runner no longer has a lease on work"
           },
           "422": {
-            "description": "The call holds more than 2000 records"
+            "description": "The request has more than 2000 records"
           }
         },
         "security": [
@@ -2398,7 +2398,7 @@
     },
     "/workspaces/{slug}/runner-activity": {
       "get": {
-        "description": "A runner that holds no run is idle, and is not listed.",
+        "description": "A runner with no lease on a run is idle, and is not listed.",
         "operationId": "listRunnerActivity",
         "parameters": [
           {
@@ -2667,9 +2667,9 @@
         ]
       }
     },
-    "/workspaces/{slug}/inbox/notices/{noticeId}/settle": {
+    "/workspaces/{slug}/inbox/notices/{noticeId}/resolve": {
       "post": {
-        "operationId": "settleInboxNotice",
+        "operationId": "resolveInboxNotice",
         "parameters": [
           {
             "name": "slug",
@@ -2691,7 +2691,7 @@
         ],
         "responses": {
           "204": {
-            "description": "It is settled"
+            "description": "It is resolved"
           },
           "401": {
             "description": "No valid session"
@@ -2700,7 +2700,7 @@
             "description": "No such notice for this caller"
           }
         },
-        "summary": "Settle a notice, once its person has dealt with it",
+        "summary": "Resolve a notice, once its person has dealt with it",
         "tags": [
           "inbox"
         ]
@@ -2888,7 +2888,7 @@
             "description": "No such team for this caller"
           }
         },
-        "summary": "List the tasks standing at a team’s stations, oldest first",
+        "summary": "List the tasks at a team’s stations, oldest first",
         "tags": [
           "tasks"
         ]
@@ -3162,7 +3162,7 @@
         },
         "responses": {
           "204": {
-            "description": "It joined the task’s trail, and starts the station again if the task stood idle there"
+            "description": "It joined the task’s trail, and starts the station again if the task was idle there"
           },
           "401": {
             "description": "No valid session"
@@ -4069,7 +4069,7 @@
             "description": "No such chat for this caller"
           },
           "409": {
-            "description": "The proposal is already settled"
+            "description": "The proposal is already decided"
           }
         },
         "summary": "Accept a task the agent proposed, so it is created",
@@ -4119,7 +4119,7 @@
             "description": "No such chat for this caller"
           },
           "409": {
-            "description": "The proposal is already settled"
+            "description": "The proposal is already decided"
           }
         },
         "summary": "Turn down a task the agent proposed",
@@ -4649,7 +4649,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -4824,7 +4824,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -4902,7 +4902,7 @@
             "bearer": []
           }
         ],
-        "summary": "Delete a workspace that holds no teams",
+        "summary": "Delete a workspace that has no teams",
         "tags": [
           "workspaces"
         ],
@@ -5078,7 +5078,7 @@
             "bearer": []
           }
         ],
-        "summary": "Create a team in a workspace, holding nothing yet",
+        "summary": "Create a team in a workspace, with nothing in it yet",
         "tags": [
           "teams"
         ],
@@ -5320,7 +5320,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -5495,7 +5495,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -5573,7 +5573,7 @@
             "bearer": []
           }
         ],
-        "summary": "Delete a team that holds no lines, skills or integrations",
+        "summary": "Delete a team that has no lines, skills or integrations",
         "tags": [
           "teams"
         ],
@@ -6137,7 +6137,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -6339,7 +6339,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -6992,7 +6992,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -7212,7 +7212,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -7438,7 +7438,7 @@
             }
           },
           "401": {
-            "description": "Spotlight refused the exchange. Possible causes: an unknown trust, a token its issuer did not sign for the trust’s audience, a workload the trust does not admit, or a closed workspace"
+            "description": "Spotlight did not accept the exchange. Possible causes: an unknown trust, a token its issuer did not sign for the trust’s audience, a workload the trust does not admit, or a closed workspace"
           }
         },
         "summary": "Exchange the OIDC token a CI platform issued a workload for a short-lived workspace token, through a workspace token trust that admits it",
@@ -7595,7 +7595,7 @@
     },
     "/workspaces/{slug}/members/{userId}": {
       "patch": {
-        "description": "Roles are given downwards: an owner may set anyone’s, an admin only those of people they outrank, and nobody may hand out a rank they do not hold. The last owner keeps the workspace.",
+        "description": "Roles are given downwards: an owner may set anyone’s, an admin only those of people they outrank, and nobody may hand out a rank they do not have. The last owner keeps the workspace.",
         "operationId": "changeMemberRole",
         "parameters": [
           {
@@ -7883,7 +7883,7 @@
             "description": "Another invitation was just sent"
           },
           "422": {
-            "description": "An address, role or team that does not hold"
+            "description": "An address, role or team that is not valid"
           }
         },
         "summary": "Invite people to this workspace by email, with a role and teams",
@@ -8155,7 +8155,7 @@
                           "type": "string",
                           "example": "api.linear.app"
                         },
-                        "carrier": {
+                        "location": {
                           "type": "string",
                           "enum": [
                             "header",
@@ -8165,7 +8165,7 @@
                         },
                         "name": {
                           "type": "string",
-                          "description": "The header or query parameter it is worn in; authorization when a header is not named",
+                          "description": "The header or query parameter that Spotlight injects it in. The default header is authorization",
                           "example": "authorization"
                         },
                         "prefix": {
@@ -8529,7 +8529,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -8585,7 +8585,7 @@
                           "type": "string",
                           "example": "api.linear.app"
                         },
-                        "carrier": {
+                        "location": {
                           "type": "string",
                           "enum": [
                             "header",
@@ -8595,7 +8595,7 @@
                         },
                         "name": {
                           "type": "string",
-                          "description": "The header or query parameter it is worn in; authorization when a header is not named",
+                          "description": "The header or query parameter that Spotlight injects it in. The default header is authorization",
                           "example": "authorization"
                         },
                         "prefix": {
@@ -8765,7 +8765,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -9288,7 +9288,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GitHubStandingResponseDto"
+                  "$ref": "#/components/schemas/GitHubConnectionStatusResponseDto"
                 }
               }
             }
@@ -9390,7 +9390,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HostStandingResponseDto"
+                  "$ref": "#/components/schemas/HostHeartbeatResponseDto"
                 }
               }
             }
@@ -9407,7 +9407,7 @@
             "bearer": []
           }
         ],
-        "summary": "A host says it is here, what it holds and what it runs, so the Runners page can show it",
+        "summary": "A host says it is here, what it has and what it runs, so the Runners page can show it",
         "tags": [
           "runners"
         ]
@@ -9952,7 +9952,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -10145,7 +10145,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -10433,7 +10433,7 @@
                     "type": "integer",
                     "minimum": 0,
                     "nullable": true,
-                    "description": "Changed, with a new token, to rotate the pool token in place: the old token is refused at once, while runs already claimed keep their own one-run credentials"
+                    "description": "Changed, with a new token, to rotate the pool token in place: the old token stops working at once, while runs already claimed keep their own one-run credentials"
                   },
                   "provision": {
                     "type": "object",
@@ -10823,7 +10823,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -10872,7 +10872,7 @@
                     "type": "integer",
                     "minimum": 0,
                     "nullable": true,
-                    "description": "Changed, with a new token, to rotate the pool token in place: the old token is refused at once, while runs already claimed keep their own one-run credentials"
+                    "description": "Changed, with a new token, to rotate the pool token in place: the old token stops working at once, while runs already claimed keep their own one-run credentials"
                   },
                   "provision": {
                     "type": "object",
@@ -11062,7 +11062,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -11140,7 +11140,7 @@
             "bearer": []
           }
         ],
-        "summary": "Retire a runner pool; runs its runners already hold carry on to their end",
+        "summary": "Retire a runner pool. Runs that its runners already have a lease on continue until they end",
         "tags": [
           "runners"
         ],
@@ -11340,7 +11340,7 @@
                     "type": "integer",
                     "minimum": 0,
                     "nullable": true,
-                    "description": "Changed, with a new token, to rotate the egress token in place: the old token is refused at once"
+                    "description": "Changed, with a new token, to rotate the egress token in place: the old token stops working at once"
                   }
                 }
               }
@@ -11690,7 +11690,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -11729,7 +11729,7 @@
                     "type": "integer",
                     "minimum": 0,
                     "nullable": true,
-                    "description": "Changed, with a new token, to rotate the egress token in place: the old token is refused at once"
+                    "description": "Changed, with a new token, to rotate the egress token in place: the old token stops working at once"
                   }
                 }
               }
@@ -11879,7 +11879,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -12502,7 +12502,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -12692,7 +12692,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -13289,7 +13289,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -13469,7 +13469,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -13888,7 +13888,7 @@
                           "additionalProperties": {
                             "type": "string"
                           },
-                          "description": "Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace holds, and the server gets only a stand-in, since egress wears the value on its requests to the hosts the secret is bound to."
+                          "description": "Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace has, and the server gets only a stand-in, since egress injects the value into its requests to the hosts the secret is bound to."
                         }
                       }
                     }
@@ -14152,7 +14152,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -14238,7 +14238,7 @@
                           "additionalProperties": {
                             "type": "string"
                           },
-                          "description": "Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace holds, and the server gets only a stand-in, since egress wears the value on its requests to the hosts the secret is bound to."
+                          "description": "Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace has, and the server gets only a stand-in, since egress injects the value into its requests to the hosts the secret is bound to."
                         }
                       }
                     }
@@ -14400,7 +14400,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -15097,7 +15097,7 @@
     },
     "/workspaces/{slug}/decisions": {
       "get": {
-        "operationId": "listStandingDecisions",
+        "operationId": "listMergedDecisions",
         "parameters": [
           {
             "name": "slug",
@@ -15153,7 +15153,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/StandingDecisionListResponseDto"
+                  "$ref": "#/components/schemas/MergedDecisionListResponseDto"
                 }
               }
             }
@@ -15269,7 +15269,7 @@
             "description": "Not a run this runner worked, or no such stack of it"
           },
           "409": {
-            "description": "This runner does not hold the check of that stack"
+            "description": "This runner does not have the lease on the check of that stack"
           },
           "422": {
             "description": "The stack was already checked, or names steps it has not"
@@ -16037,7 +16037,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -16210,7 +16210,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -16584,7 +16584,7 @@
             }
           },
           "422": {
-            "description": "The request is not shaped as a check, the definition holds errors, each listed under definition, or the position names no expression in it",
+            "description": "The request is not shaped as a check, the definition has errors, each listed under definition, or the position names no expression in it",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -17022,7 +17022,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -17183,7 +17183,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -17696,7 +17696,7 @@
             "description": "No memories named, one named twice, an edit too long, or one from outside the team approved with others"
           }
         },
-        "summary": "Let proposed memories stand, as proposed or as edited, keeping what they rest on",
+        "summary": "Make proposed memories active, as proposed or as edited, and keep what they rest on",
         "tags": [
           "memories"
         ]
@@ -17820,12 +17820,12 @@
             }
           },
           {
-            "name": "standing",
+            "name": "status",
             "required": false,
             "in": "query",
             "schema": {
               "enum": [
-                "stands",
+                "active",
                 "retired"
               ],
               "type": "string"
@@ -17853,7 +17853,7 @@
             "description": "No such team for this caller"
           },
           "422": {
-            "description": "A standing or kind no memory has"
+            "description": "A status or kind that no memory has"
           }
         },
         "summary": "What the team remembers, narrowed by where it applies and its kind",
@@ -17904,7 +17904,7 @@
             "description": "An unknown kind, a body too long, or a line, station or repository the team does not have"
           }
         },
-        "summary": "Tell the team something to remember; it stands at once",
+        "summary": "Tell the team something to remember. It is active at once",
         "tags": [
           "memories"
         ]
@@ -18163,7 +18163,7 @@
             "description": "Missing, spent or wrong runner token"
           },
           "404": {
-            "description": "No such run held by this runner"
+            "description": "No such run leased by this runner"
           },
           "409": {
             "description": "The run is a search, which recalls nothing the team remembers"
@@ -18215,7 +18215,7 @@
             "description": "Missing, spent or wrong runner token"
           },
           "404": {
-            "description": "No such run held by this runner"
+            "description": "No such run leased by this runner"
           },
           "409": {
             "description": "The run is a search, which recalls nothing the team remembers"
@@ -18269,7 +18269,7 @@
             "description": "Missing, spent or wrong runner token"
           },
           "404": {
-            "description": "No such run held by this runner"
+            "description": "No such run leased by this runner"
           },
           "409": {
             "description": "The run is a replay or a search, which remembers nothing for the team"
@@ -18315,10 +18315,10 @@
             "description": "Missing, spent or wrong runner token"
           },
           "404": {
-            "description": "No such run held by this runner"
+            "description": "No such run leased by this runner"
           }
         },
-        "summary": "Every standing memory that applies to the run, as files to lay in its workspace",
+        "summary": "Every active memory that applies to the run, as files to lay in its workspace",
         "tags": [
           "runners"
         ]
@@ -19093,7 +19093,7 @@
             "bearer": []
           }
         ],
-        "summary": "The team’s standing memories, how many runs were briefed or read them, which were flagged wrong, and how runs with memories went against runs without",
+        "summary": "The team’s active memories, how many runs were briefed or read them, which were flagged wrong, and how runs with memories went against runs without",
         "tags": [
           "insights"
         ]
@@ -19503,7 +19503,7 @@
             "name": "delivery",
             "required": false,
             "in": "query",
-            "description": "Only runs of tasks whose pull request stands this way",
+            "description": "Only runs of tasks whose pull request has this status",
             "schema": {
               "enum": [
                 "open",
@@ -19815,7 +19815,7 @@
                   "station": {
                     "type": "object",
                     "additionalProperties": true,
-                    "description": "The station block to replay under, as the line resource holds a station: it keeps the station’s key, and is checked as a line with it in place would be",
+                    "description": "The station block to replay under, as the line resource stores a station: it keeps the station’s key, and is checked as a line with it in place would be",
                     "example": {
                       "key": "build",
                       "name": "Build",
@@ -20077,7 +20077,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "The ETag of the version this write was based on; a write to any other version is refused with 409",
+            "description": "The ETag of the version this write was based on; a write to any other version fails with 409",
             "required": true,
             "schema": {
               "type": "string",
@@ -20660,7 +20660,7 @@
             "name": "station",
             "required": false,
             "in": "query",
-            "description": "With line: the key of the station whose sets to list; a line or station the team does not hold is not found",
+            "description": "With line: the key of the station whose sets to list; a line or station that the team does not own is not found",
             "schema": {
               "example": "build"
             }
@@ -22579,7 +22579,7 @@
             "name": "before",
             "required": false,
             "in": "query",
-            "description": "Only searches started before this one, by its id; a search the team does not hold answers an empty page",
+            "description": "Only searches started before this one, by its id; a search that the team does not own answers an empty page",
             "schema": {
               "type": "string"
             }
@@ -22740,7 +22740,7 @@
     },
     "/teams/{teamId}/searches/{searchId}/candidates/{candidateId}/pick": {
       "post": {
-        "description": "Spotlight never applies the change itself. It edits the station block of the line’s spotlight_line resource (and a prompt file read with file()), commits to its own branch and opens the pull request; until then the pull request is opening. Picking it again answers the same one, unless it was refused, which tries again.",
+        "description": "Spotlight never applies the change itself. It edits the station block of the line’s spotlight_line resource (and a prompt file read with file()), commits to its own branch and opens the pull request; until then the pull request is opening. Picking it again answers the same one, unless it failed, which tries again.",
         "operationId": "pickSearchCandidate",
         "parameters": [
           {
@@ -22803,7 +22803,7 @@
             }
           },
           "201": {
-            "description": "Picked, or tried again after a refusal",
+            "description": "Picked, or tried again after a failure",
             "content": {
               "application/json": {
                 "schema": {
@@ -23200,7 +23200,7 @@
             "name": "before",
             "required": false,
             "in": "query",
-            "description": "Only checks started before this one, by its id; a check the set does not hold answers an empty page",
+            "description": "Only checks started before this one, by its id; a check that the set does not contain answers an empty page",
             "schema": {
               "type": "string"
             }
@@ -23361,7 +23361,7 @@
     },
     "/runs/{runId}/search-candidates": {
       "post": {
-        "description": "Proposing the same name again from the same run answers with the candidate it proposed. A refused proposal does not count towards the iteration’s candidates, but the run may only try so often.",
+        "description": "Proposing the same name again from the same run answers with the candidate it proposed. A rejected proposal does not count as one of the iteration’s candidates, but the run may only try so often.",
         "operationId": "proposeSearchCandidate",
         "parameters": [
           {
@@ -23398,7 +23398,7 @@
             "description": "Missing, spent or wrong runner token"
           },
           "404": {
-            "description": "The search no longer holds this run, or it is no search run this runner holds",
+            "description": "This run is no longer the active run of the search, or it is not a search run that this runner leases",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -23418,7 +23418,7 @@
             }
           },
           "422": {
-            "description": "A name that is no slug, no hypothesis, or a station block the line refuses or that changes what a search may not; errors name each problem’s path",
+            "description": "A name that is no slug, no hypothesis, or a station block the line rejects or that changes what a search may not; errors name each problem’s path",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -23473,7 +23473,7 @@
             "description": "Missing, spent or wrong runner token"
           },
           "404": {
-            "description": "The search no longer holds this run, it is no search run this runner holds, or the task is none the reflection looks into",
+            "description": "This run is no longer the active run of the search, it is not a search run that this runner leases, or the reflection does not look into the task",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -23600,7 +23600,7 @@
             "bearer": []
           }
         ],
-        "summary": "Read the pull request a picked search candidate opens in the line’s config repository: opening, opened with its link, or refused and why",
+        "summary": "Read the pull request a picked search candidate opens in the line’s config repository: opening, opened with its link, or failed and why",
         "tags": [
           "replays"
         ]
@@ -23723,7 +23723,7 @@
   },
   "info": {
     "title": "Spotlight Control Plane",
-    "description": "HTTP API for the Spotlight Control Plane.\n\n## Resource conventions\n\nOperations marked `x-spotlight-resource` manage configuration resources, the ones the Terraform provider writes. They live under `/resources` and address everything by id. Every resource follows these rules, and a conformance suite holds each one to them.\n\n- **Stable ids.** Spotlight issues a resource's `id` when it is created. It never changes for the resource's life, whatever else does.\n- **Reads return every field.** A read answers the whole resource, defaults filled in, so a client comparing it with what it wrote sees any drift. A write answers exactly what a read would.\n- **Versions.** Every resource carries a `version` that rises with each change, and each answer carries it as a strong `ETag` (`\"3\"`). An update or delete must send it back as `If-Match`: without one it is refused with 428, and against a version that is no longer current with 409, whose body gives the `currentVersion` and whose `ETag` names it. A write that would remove something another resource still uses is refused with 409 `in-use`.\n- **Idempotent creates.** A create must carry an `Idempotency-Key`. Retrying with the same key and body within 24 hours answers the resource the first attempt created, marked `Idempotent-Replayed: true`, and creates nothing more; the same key with a different body is refused with 422.\n- **Problems name fields.** Errors are `application/problem+json` (RFC 9457). `type` is stable and safe to branch on. An invalid request lists `errors`, each with the `path` of the attribute it is about, as in `stations[2].check`; a key that is not a plain name is quoted, as Terraform addresses it: `on[\"task.opened\"].to.thread`.\n- **API versions.** A client may send `Spotlight-Api-Version`; every response names the version it was answered in, currently `2026-09-23`. Changes within a version are additive only: fields and operations are added, never removed, renamed or given a new meaning.\n- **Expression checks.** `POST /expressions/check` type-checks one CEL expression at the attribute that holds it, named within the resource's whole definition (`integration.webhook.events[0].when`), as `terraform plan` needs. What the expression may read is worked out from that definition exactly as applying it would, so a plan fails where an apply would; a definition holding any error is refused with 422, each error under `definition`. It answers the type and any errors, each with the span it is about and a suggestion where a declared name is near, and warnings about the definition, such as a capture shadowing a built-in name. `GET /expressions/positions` lists every position, with `[*]` for any index or key, and what an expression there sees. They follow these headers and problems, but are not resources.\n- **Credentials.** A client calls with a person's session or with a workspace token, sent as `Authorization: Bearer <token>`. A token acts only within its own workspace and only as its scopes allow. `read`, `plan` and `configure` are a ladder: `read` reads, `plan` also checks expressions, and `configure` also creates, changes and deletes configuration as a workspace admin may, except secrets, runners and token trusts. `secrets` is granted beside one of them and lets the token set, rebind, rotate and delete secrets; Terraform that manages secrets uses `[\"configure\", \"secrets\"]`. `runners` is granted the same way and lets the token create, rekey and delete runners and runner trusts and declare the workspace's runners, since a runner claims runs, checks out repositories and holds git credentials; Terraform that manages runners uses `[\"configure\", \"runners\"]`. `trusts` is granted the same way and lets the token create, change and delete workspace token trusts, since a trust hands out tokens; a token can only define a trust granting scopes it holds itself, so bootstrap the trusts once with a token holding `trusts` and every scope they grant, as in `[\"configure\", \"secrets\", \"trusts\"]`, and revoke it. No token manages members or tokens, or reads the audit.\n- **CI without a stored token.** A workspace admin, or a token granted `trusts`, defines a workspace token trust naming an OIDC issuer, audience, subject and claims, and the scopes and lifetime (at most an hour) of the tokens it mints. A CI job exchanges the OIDC token its platform issues it at `POST /api/workspace-tokens/exchange` with `{ \"trust\": <trust id>, \"token\": <OIDC token> }`, and calls with the short-lived token it gets back. Deleting the trust stops every token it minted at once, and the audit names the trust and the workload's subject beside each exchange and each change made with a minted token.\n- **Refusals.** A change by someone who may read the resource but not change it, person or token, is refused with 403 `forbidden`, whose `permission` names what the caller lacks, one of `configure`, `manage-secrets`, `manage-runners`, `manage-token-trusts`, `administer`, `open-workspaces`, `plan`. Anything they may not see at all answers 404.\n- **Who changed what.** A client names itself in `Spotlight-Client` (`terraform-provider/<version>` or `web`), and every configuration change is recorded with who made it, person or token, and through which client. A secret's change also records the value version it moved to and the hosts it is bound to, never its value.\n- **Import by address.** Each resource has an `address` that names it within its workspace, such as `core/linear`, and an import operation that answers the resource at that address, as `terraform import` needs. A workspace's address is its slug; a team's is its key; anything a team holds is the team's key and its own, as in `core/delivery`.",
+    "description": "HTTP API for the Spotlight Control Plane.\n\n## Resource conventions\n\nOperations marked `x-spotlight-resource` manage configuration resources, the ones the Terraform provider writes. They live under `/resources` and address everything by id. Every resource follows these rules, and a conformance suite checks each one against them.\n\n- **Stable ids.** Spotlight issues a resource's `id` when it is created. It never changes for the resource's life, whatever else does.\n- **Reads return every field.** A read answers the whole resource, defaults filled in, so a client comparing it with what it wrote sees any drift. A write answers exactly what a read would.\n- **Versions.** Every resource carries a `version` that rises with each change, and each answer carries it as a strong `ETag` (`\"3\"`). An update or delete must send it back as `If-Match`: without one it fails with 428, and against a version that is no longer current with 409, whose body gives the `currentVersion` and whose `ETag` names it. A write that would remove something another resource still uses fails with 409 `in-use`.\n- **Idempotent creates.** A create must carry an `Idempotency-Key`. Retrying with the same key and body within 24 hours answers the resource the first attempt created, marked `Idempotent-Replayed: true`, and creates nothing more; the same key with a different body fails with 422.\n- **Problems name fields.** Errors are `application/problem+json` (RFC 9457). `type` is stable and safe to branch on. An invalid request lists `errors`, each with the `path` of the attribute it is about, as in `stations[2].check`; a key that is not a plain name is quoted, as Terraform addresses it: `on[\"task.opened\"].to.thread`.\n- **API versions.** A client may send `Spotlight-Api-Version`; every response names the version it was answered in, currently `2026-09-23`. Changes within a version are additive only: fields and operations are added, never removed, renamed or given a new meaning.\n- **Expression checks.** `POST /expressions/check` type-checks one CEL expression at the attribute that contains it, named within the resource's whole definition (`integration.webhook.events[0].when`), as `terraform plan` needs. What the expression may read is worked out from that definition exactly as applying it would, so a plan fails where an apply would; a definition that has an error fails with 422, each error under `definition`. It answers the type and any errors, each with the span it is about and a suggestion where a declared name is near, and warnings about the definition, such as a capture shadowing a built-in name. `GET /expressions/positions` lists every position, with `[*]` for any index or key, and what an expression there sees. They follow these headers and problems, but are not resources.\n- **Credentials.** A client calls with a person's session or with a workspace token, sent as `Authorization: Bearer <token>`. A token acts only within its own workspace and only as its scopes allow. `read`, `plan` and `configure` are a ladder: `read` reads, `plan` also checks expressions, and `configure` also creates, changes and deletes configuration as a workspace admin may, except secrets, runners and token trusts. `secrets` is granted beside one of them and lets the token set, rebind, rotate and delete secrets; Terraform that manages secrets uses `[\"configure\", \"secrets\"]`. `runners` is granted the same way and lets the token create, rekey and delete runners and runner trusts and declare the workspace's runners, since a runner claims runs, checks out repositories and keeps git credentials; Terraform that manages runners uses `[\"configure\", \"runners\"]`. `trusts` is granted the same way and lets the token create, change and delete workspace token trusts, since a trust hands out tokens; a token can only define a trust granting scopes it has itself, so bootstrap the trusts once with a token that has `trusts` and every scope they grant, as in `[\"configure\", \"secrets\", \"trusts\"]`, and revoke it. No token manages members or tokens, or reads the audit.\n- **CI without a stored token.** A workspace admin, or a token granted `trusts`, defines a workspace token trust naming an OIDC issuer, audience, subject and claims, and the scopes and lifetime (at most an hour) of the tokens it mints. A CI job exchanges the OIDC token its platform issues it at `POST /api/workspace-tokens/exchange` with `{ \"trust\": <trust id>, \"token\": <OIDC token> }`, and calls with the short-lived token it gets back. Deleting the trust stops every token it minted at once, and the audit names the trust and the workload's subject beside each exchange and each change made with a minted token.\n- **Forbidden changes.** A change by someone who may read the resource but not change it, person or token, fails with 403 `forbidden`, whose `permission` names what the caller lacks, one of `configure`, `manage-secrets`, `manage-runners`, `manage-token-trusts`, `administer`, `open-workspaces`, `plan`. Anything they may not see at all answers 404.\n- **Who changed what.** A client names itself in `Spotlight-Client` (`terraform-provider/<version>` or `web`), and every configuration change is recorded with who made it, person or token, and through which client. A secret's change also records the value version it moved to and the hosts it is bound to, never its value.\n- **Import by address.** Each resource has an `address` that names it within its workspace, such as `core/linear`, and an import operation that answers the resource at that address, as `terraform import` needs. A workspace's address is its slug; a team's is its key; anything a team owns is the team's key and its own, as in `core/delivery`.",
     "version": "2026-09-23",
     "contact": {}
   },
@@ -24000,7 +24000,7 @@
             "type": "string",
             "example": null,
             "nullable": true,
-            "description": "Where the task must stand for this to count. Null is wherever it is."
+            "description": "The station where the task must be for this to count. Null means any station."
           },
           "to": {
             "type": "string",
@@ -24019,12 +24019,12 @@
           "repository": {
             "type": "string",
             "example": "acme/platform",
-            "description": "The GitHub repository that holds the line’s Terraform"
+            "description": "The GitHub repository that contains the line’s Terraform"
           },
           "path": {
             "type": "string",
             "example": "teams/core/delivery.tf",
-            "description": "The Terraform file in it that holds the line, from the repository root"
+            "description": "The Terraform file in it that contains the line, from the repository root"
           }
         },
         "required": [
@@ -24203,7 +24203,7 @@
               "plan"
             ],
             "example": "manage-secrets",
-            "description": "The permission the caller lacks, when it was refused as forbidden: one its role in the workspace, or its token’s scopes, do not grant"
+            "description": "The permission the caller lacks, when the request is forbidden: one its role in the workspace, or its token’s scopes, do not grant"
           }
         },
         "required": [
@@ -24251,7 +24251,7 @@
           "definition": {
             "type": "object",
             "additionalProperties": true,
-            "description": "The line as it stands now, stations in order, with every field a definition may leave out filled in",
+            "description": "The current line, stations in order, with every field a definition may leave out filled in",
             "example": {
               "key": "delivery",
               "name": "Delivery",
@@ -24409,7 +24409,7 @@
           "harness": {
             "type": "string",
             "example": "claude-code",
-            "description": "The harness the run needs, so a host can tell whether the image it pulled still holds it"
+            "description": "The harness the run needs, so a host can tell whether the image it pulled still contains it"
           },
           "attempt": {
             "type": "number",
@@ -24613,7 +24613,7 @@
           },
           "before": {
             "type": "string",
-            "description": "The file as it stood"
+            "description": "The file before the agent changed it"
           },
           "after": {
             "type": "string",
@@ -24785,24 +24785,24 @@
           "outcome": {
             "type": "string",
             "enum": [
-              "tunnelled",
-              "forwarded",
+              "passthrough",
+              "injected",
               "blocked",
               "failed"
             ],
-            "description": "blocked: egress stopped it. failed: egress could not open it. forwarded: the host refused or failed a request egress added a secret to"
+            "description": "blocked: egress stopped it. failed: egress could not open it. injected: egress injected a secret into the request"
           },
           "status": {
             "type": "number",
             "nullable": true,
             "example": 401,
-            "description": "The status the host answered a forwarded request with"
+            "description": "The status the host answered an injected request with"
           },
           "reason": {
             "type": "string",
             "enum": [
               "not-allowed",
-              "address-refused",
+              "private-address",
               "not-bound",
               "no-such-host",
               "timed-out",
@@ -24813,22 +24813,22 @@
             "nullable": true,
             "description": "Why egress blocked the connection or could not open it"
           },
-          "trouble": {
+          "error": {
             "type": "string",
             "enum": [
               "blocked",
               "failed",
-              "refused",
+              "auth-failed",
               "server-error",
               null
             ],
             "nullable": true,
-            "description": "What went wrong. blocked: egress stopped it. failed: egress could not open it. refused: the host answered a forwarded request with 401 or 403. server-error: the host answered it with 500 or more. null: nothing went wrong"
+            "description": "The error of the connection. blocked: egress stopped it. failed: egress could not open it. auth-failed: the host answered an injected request with 401 or 403. server-error: the host answered it with 500 or more. null: no error"
           },
-          "times": {
+          "count": {
             "type": "number",
             "example": 3,
-            "description": "How many times the same thing went wrong in this row. The row starts at the first time"
+            "description": "How many times the same error occurred in this row. The row starts at the first time"
           }
         },
         "required": [
@@ -24837,8 +24837,8 @@
           "outcome",
           "status",
           "reason",
-          "trouble",
-          "times"
+          "error",
+          "count"
         ]
       },
       "TraceNodeResponseDto": {
@@ -24912,7 +24912,7 @@
           },
           "connection": {
             "nullable": true,
-            "description": "On a connection row: a connection of the run that went wrong, as a shared egress recorded it",
+            "description": "On a connection row: a connection of the run with an error, as a shared egress recorded it",
             "type": "object",
             "allOf": [
               {
@@ -24920,7 +24920,7 @@
               }
             ]
           },
-          "egress": {
+          "egressEnforcement": {
             "type": "string",
             "enum": [
               "enforced",
@@ -24949,7 +24949,7 @@
           "step",
           "span",
           "connection",
-          "egress",
+          "egressEnforcement",
           "children"
         ]
       },
@@ -25016,7 +25016,7 @@
           "settings": {
             "type": "object",
             "additionalProperties": true,
-            "description": "The permissions, MCP servers and native settings it held"
+            "description": "The permissions, MCP servers and native settings it contained"
           }
         },
         "required": [
@@ -25454,7 +25454,7 @@
           },
           "cost": {
             "nullable": true,
-            "description": "What the replay cost; a replay run has no outcome of its own, so its cost stands beside the run",
+            "description": "What the replay cost; a replay run has no outcome of its own, so the response gives its cost beside the run",
             "type": "object",
             "allOf": [
               {
@@ -25526,7 +25526,7 @@
           "block": {
             "type": "object",
             "additionalProperties": true,
-            "description": "The candidate’s station block, in the shape the line resource holds a station in",
+            "description": "The candidate’s station block, in the shape that the line resource uses for a station",
             "example": {
               "key": "build",
               "name": "Build",
@@ -25639,7 +25639,7 @@
           "stop": {
             "type": "boolean",
             "example": false,
-            "description": "Whether the runner should stop checking: the check was forgotten with its task, settled, or waited too long to be recorded"
+            "description": "Whether the runner should stop checking: the check was forgotten with its task, ended, or waited too long to be recorded"
           }
         },
         "required": [
@@ -25898,7 +25898,7 @@
           "next": {
             "type": "string",
             "example": "code-review",
-            "description": "The key of the station to pass the task to, as in code-review; \"review\" to ask a person; or \"done\" to close the task where it stands. Anything this line does not know is treated as a question for a person."
+            "description": "The key of the station to pass the task to, as in code-review; \"review\" to ask a person; or \"done\" to close the task at its current station. Anything this line does not know is treated as a question for a person."
           },
           "note": {
             "type": "string",
@@ -26000,14 +26000,14 @@
           "parked": {
             "type": "boolean",
             "example": true,
-            "description": "Whether the run is parked (or, if a stop was asked for, ended) and no longer held by this runner. False when the answer arrived first: the run is working again, and the answer waits in its messages."
+            "description": "Whether the run is parked (or, if a stop was asked for, ended) and no longer leased by this runner. False when the answer arrived first: the run is working again, and the answer waits in its messages."
           }
         },
         "required": [
           "parked"
         ]
       },
-      "HeldArchiveResponseDto": {
+      "StoredArchiveResponseDto": {
         "type": "object",
         "properties": {
           "id": {
@@ -26092,7 +26092,7 @@
           "running": {
             "type": "integer",
             "example": 1,
-            "description": "The pool’s runners standing now: holding a run or check, or started and yet to claim"
+            "description": "The pool’s runners that are active now: with a lease on a run or check, or started and yet to claim"
           },
           "capacity": {
             "type": "integer",
@@ -26125,7 +26125,7 @@
           "minimum": {
             "type": "string",
             "example": "20260925-01",
-            "description": "The oldest runner release this control plane works with; a host refuses an image whose runner is older"
+            "description": "The oldest runner release this control plane works with; a host cannot use an image whose runner is older"
           }
         },
         "required": [
@@ -26173,7 +26173,7 @@
           "image": {
             "type": "string",
             "example": "ghcr.io/acme/api-runner:main",
-            "description": "The runner image this claim will run in, one the host reported serving; what it holds and whether it is the default come from that report"
+            "description": "The runner image this claim will run in, one the host reported serving; what it contains and whether it is the default come from that report"
           }
         },
         "required": [
@@ -26195,7 +26195,7 @@
           },
           "egressToken": {
             "type": "string",
-            "description": "The credential the egress beside the sandbox redeems the run’s secrets with; the host hands it to egress alone, never into the sandbox"
+            "description": "The credential the egress beside the sandbox fetches the run’s secrets with; the host hands it to egress alone, never into the sandbox"
           },
           "work": {
             "$ref": "#/components/schemas/ClaimedWorkResponseDto"
@@ -26314,13 +26314,13 @@
           "ms"
         ]
       },
-      "SharedRedeemEgressRequestDto": {
+      "FetchRunSecretsRequestDto": {
         "type": "object",
         "properties": {
           "recipient": {
             "type": "string",
             "example": "p8kX0q1cVJ3Q0x4yQ2a6m0dD6b8hT3n1gC9sZ7rW2Ek=",
-            "description": "The X25519 public key egress holds for this run alone, in base64; values Spotlight keeps are sealed to it"
+            "description": "The X25519 public key that egress keeps for this run alone, in base64; values Spotlight keeps are sealed to it"
           },
           "proxyCredential": {
             "type": "string",
@@ -26331,7 +26331,7 @@
           "recipient"
         ]
       },
-      "ReadInNetworkResponseDto": {
+      "ExternalSecretRefResponseDto": {
         "type": "object",
         "properties": {
           "kind": {
@@ -26356,7 +26356,7 @@
           "field"
         ]
       },
-      "RedeemedSecretResponseDto": {
+      "FetchedSecretResponseDto": {
         "type": "object",
         "properties": {
           "secret": {
@@ -26366,21 +26366,21 @@
           "host": {
             "type": "string",
             "example": "mcp.linear.app",
-            "description": "The one host egress wears it toward"
+            "description": "The one host that egress injects it for"
           },
-          "carrier": {
+          "location": {
             "type": "string",
             "enum": [
               "header",
               "query"
             ],
             "example": "header",
-            "description": "Whether egress wears it in a request header or a query parameter"
+            "description": "Whether egress injects it in a request header or in a query parameter"
           },
           "name": {
             "type": "string",
             "example": "authorization",
-            "description": "The header or query parameter that holds its stand-in"
+            "description": "The header or query parameter that contains its stand-in"
           },
           "prefix": {
             "type": "string",
@@ -26391,13 +26391,13 @@
             "nullable": true,
             "description": "The value, sealed to the recipient for this run; null when egress reads it in its own network"
           },
-          "readInNetwork": {
+          "externalRef": {
             "nullable": true,
             "description": "Where egress reads the value with its host’s own identity; null when Spotlight sealed it",
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ReadInNetworkResponseDto"
+                "$ref": "#/components/schemas/ExternalSecretRefResponseDto"
               }
             ]
           }
@@ -26405,14 +26405,14 @@
         "required": [
           "secret",
           "host",
-          "carrier",
+          "location",
           "name",
           "prefix",
           "sealed",
-          "readInNetwork"
+          "externalRef"
         ]
       },
-      "WithheldSecretResponseDto": {
+      "DeniedSecretResponseDto": {
         "type": "object",
         "properties": {
           "secret": {
@@ -26421,7 +26421,7 @@
           },
           "reason": {
             "type": "string",
-            "example": "The workspace holds no secret named LINEAR_API_KEY; define it before anything uses it"
+            "example": "The workspace has no secret named LINEAR_API_KEY; define it before anything uses it"
           }
         },
         "required": [
@@ -26434,21 +26434,21 @@
         "properties": {
           "sealed": {
             "type": "string",
-            "description": "A read and plan token for this run alone, sealed to the recipient; egress wears it toward the control plane as a bearer token"
+            "description": "A read and plan token for this run alone, sealed to the recipient; egress injects it for the control plane as a bearer token"
           }
         },
         "required": [
           "sealed"
         ]
       },
-      "EgressRedemptionResponseDto": {
+      "EgressSecretsResponseDto": {
         "type": "object",
         "properties": {
           "runId": {
             "type": "string",
             "nullable": true,
             "example": "run_1",
-            "description": "The run the sealed values are bound to; null when the sandbox checks a change stack and wears nothing"
+            "description": "The run the sealed values are bound to; null when the sandbox checks a change stack and gets no secrets"
           },
           "reaches": {
             "example": [
@@ -26473,14 +26473,14 @@
           "secrets": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/RedeemedSecretResponseDto"
+              "$ref": "#/components/schemas/FetchedSecretResponseDto"
             }
           },
-          "withheld": {
-            "description": "Secrets the run wears that egress will not get, and why",
+          "denied": {
+            "description": "The secrets of the run that egress does not get, and why",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/WithheldSecretResponseDto"
+              "$ref": "#/components/schemas/DeniedSecretResponseDto"
             }
           },
           "spotlightApi": {
@@ -26499,7 +26499,7 @@
           "reaches",
           "bound",
           "secrets",
-          "withheld",
+          "denied",
           "spotlightApi"
         ]
       },
@@ -26555,7 +26555,7 @@
           "reaches"
         ]
       },
-      "KeepEgressHoldsRequestDto": {
+      "CheckActiveRunsRequestDto": {
         "type": "object",
         "properties": {
           "proxyCredentials": {
@@ -26571,11 +26571,11 @@
           "proxyCredentials"
         ]
       },
-      "EgressHoldsResponseDto": {
+      "EgressActiveRunsResponseDto": {
         "type": "object",
         "properties": {
-          "held": {
-            "description": "The proxy credentials whose runner still holds its work. Egress forgets every other run",
+          "active": {
+            "description": "The proxy credentials whose runner still leases its work, or has no work yet. Egress forgets every other run",
             "type": "array",
             "items": {
               "type": "string"
@@ -26583,7 +26583,7 @@
           }
         },
         "required": [
-          "held"
+          "active"
         ]
       },
       "EgressConnectionRequestDto": {
@@ -26615,8 +26615,8 @@
           "outcome": {
             "type": "string",
             "enum": [
-              "tunnelled",
-              "forwarded",
+              "passthrough",
+              "injected",
               "blocked",
               "failed"
             ]
@@ -26625,13 +26625,13 @@
             "type": "number",
             "minimum": 100,
             "maximum": 599,
-            "description": "The status the host answered a forwarded request with. Egress cannot read the status of a tunnel"
+            "description": "The status the host answered an injected request with. Egress cannot read the status of a passthrough connection"
           },
           "reason": {
             "type": "string",
             "enum": [
               "not-allowed",
-              "address-refused",
+              "private-address",
               "not-bound",
               "no-such-host",
               "timed-out",
@@ -26671,7 +26671,7 @@
           "records"
         ]
       },
-      "HeldRunResponseDto": {
+      "LeasedRunResponseDto": {
         "type": "object",
         "properties": {
           "id": {
@@ -26728,7 +26728,7 @@
             "description": "The run the runner is working on",
             "allOf": [
               {
-                "$ref": "#/components/schemas/HeldRunResponseDto"
+                "$ref": "#/components/schemas/LeasedRunResponseDto"
               }
             ]
           }
@@ -26886,7 +26886,7 @@
               "alert"
             ],
             "example": "memories",
-            "description": "What is put aside for a person to settle, beside the task’s conversation: memories are proposed memories to approve or reject; grade asks a person to grade a judged run"
+            "description": "What is put aside for a person to resolve, beside the task’s conversation: memories are proposed memories to approve or reject; grade asks a person to grade a judged run"
           },
           "about": {
             "type": "string",
@@ -26978,13 +26978,13 @@
             "description": "Why it cannot go ahead until a person says so"
           },
           "inputs": {
-            "description": "What it would go ahead with, exactly as it stands",
+            "description": "What it would go ahead with, exactly as it is now",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/InboxApprovalInputResponseDto"
             }
           },
-          "standing": {
+          "status": {
             "type": "string",
             "example": "asked",
             "enum": [
@@ -27023,7 +27023,7 @@
           "name",
           "because",
           "inputs",
-          "standing",
+          "status",
           "edited",
           "intent",
           "askedOf"
@@ -27085,7 +27085,7 @@
             "enum": [
               "words",
               "setup",
-              "settled",
+              "resolved",
               "approval",
               "failure",
               "connection"
@@ -27248,7 +27248,7 @@
           "stationCount": {
             "type": "number",
             "example": 4,
-            "description": "How many stations the line holds"
+            "description": "How many stations the line has"
           },
           "raisedAt": {
             "description": "Where it was raised, which it keeps as it moves",
@@ -27258,8 +27258,8 @@
               }
             ]
           },
-          "standsAt": {
-            "description": "Where the task stands now, which is where it ended up",
+          "currentStation": {
+            "description": "Where the task is now, which is where it ended up",
             "allOf": [
               {
                 "$ref": "#/components/schemas/InboxStationResponseDto"
@@ -27277,7 +27277,7 @@
           "resolved": {
             "type": "boolean",
             "example": false,
-            "description": "True once it is settled, and is no longer yours to answer"
+            "description": "True once it is resolved, and is no longer yours to answer"
           },
           "working": {
             "type": "boolean",
@@ -27311,7 +27311,7 @@
           },
           "aside": {
             "nullable": true,
-            "description": "What this item puts aside for a person to settle, where it is not a conversation; it never holds the task up",
+            "description": "What this item puts aside for a person to resolve, where it is not a conversation; it never blocks the task",
             "type": "object",
             "allOf": [
               {
@@ -27339,7 +27339,7 @@
           "stationPosition",
           "stationCount",
           "raisedAt",
-          "standsAt",
+          "currentStation",
           "createdAt",
           "askedAt",
           "resolved",
@@ -27414,7 +27414,7 @@
           "resolved": {
             "type": "boolean",
             "example": false,
-            "description": "True once its person settled it"
+            "description": "True once its person resolved it"
           }
         },
         "required": [
@@ -27465,7 +27465,7 @@
           },
           "approve": {
             "type": "boolean",
-            "description": "Where the conversation asks for a tool call to be approved: true lets it run, false rejects it. Left out, the words answer it and the tool call stays undecided. Refused anywhere else."
+            "description": "Where the conversation asks for a tool call to be approved: true lets it run, false rejects it. Left out, the words answer it and the tool call stays undecided. Rejected anywhere else."
           },
           "inputs": {
             "description": "With approve: true on a tool call, what it runs with instead, as the person changed it. Names exactly the inputs it asked with; a harness asking permission takes no changes.",
@@ -27518,7 +27518,7 @@
           "used": {
             "type": "number",
             "example": 12173,
-            "description": "Tokens held in context"
+            "description": "Tokens in context"
           },
           "size": {
             "type": "number",
@@ -27751,7 +27751,7 @@
           },
           "awaitingReview": {
             "nullable": true,
-            "description": "Where a standing question is answered, or null for none",
+            "description": "Where an open question is answered, or null for none",
             "type": "object",
             "allOf": [
               {
@@ -27834,7 +27834,7 @@
           "count": {
             "type": "number",
             "example": 5,
-            "description": "How many stations the line holds"
+            "description": "How many stations the line has"
           }
         },
         "required": [
@@ -27852,7 +27852,7 @@
             "type": "string",
             "enum": [
               "owed",
-              "settled"
+              "answered"
             ]
           },
           "conversationId": {
@@ -28013,7 +28013,7 @@
           "count": {
             "type": "number",
             "example": 3,
-            "description": "How many the line holds"
+            "description": "How many stations the line has"
           }
         },
         "required": [
@@ -28319,24 +28319,24 @@
           "outcome": {
             "type": "string",
             "enum": [
-              "tunnelled",
-              "forwarded",
+              "passthrough",
+              "injected",
               "blocked",
               "failed"
             ],
-            "description": "tunnelled: egress did not decrypt it. forwarded: egress decrypted it to add a secret. blocked: egress stopped it. failed: egress could not open it"
+            "description": "passthrough: egress did not decrypt it. injected: egress decrypted it to inject a secret. blocked: egress stopped it. failed: egress could not open it"
           },
           "status": {
             "type": "number",
             "nullable": true,
             "example": 401,
-            "description": "The status the host answered a forwarded request with. null for a tunnel, because egress cannot read it"
+            "description": "The status the host answered an injected request with. null for a passthrough connection, because egress cannot read it"
           },
           "reason": {
             "type": "string",
             "enum": [
               "not-allowed",
-              "address-refused",
+              "private-address",
               "not-bound",
               "no-such-host",
               "timed-out",
@@ -28347,17 +28347,17 @@
             "nullable": true,
             "description": "Why egress blocked the connection or could not open it"
           },
-          "trouble": {
+          "error": {
             "type": "string",
             "enum": [
               "blocked",
               "failed",
-              "refused",
+              "auth-failed",
               "server-error",
               null
             ],
             "nullable": true,
-            "description": "What went wrong. blocked: egress stopped it. failed: egress could not open it. refused: the host answered a forwarded request with 401 or 403. server-error: the host answered it with 500 or more. null: nothing went wrong"
+            "description": "The error of the connection. blocked: egress stopped it. failed: egress could not open it. auth-failed: the host answered an injected request with 401 or 403. server-error: the host answered it with 500 or more. null: no error"
           },
           "at": {
             "type": "string",
@@ -28373,7 +28373,7 @@
           "outcome",
           "status",
           "reason",
-          "trouble",
+          "error",
           "at"
         ]
       },
@@ -28388,7 +28388,7 @@
             "type": "number",
             "example": 1
           },
-          "egress": {
+          "egressEnforcement": {
             "type": "string",
             "enum": [
               "enforced",
@@ -28409,7 +28409,7 @@
         "required": [
           "runId",
           "attempt",
-          "egress",
+          "egressEnforcement",
           "connections"
         ]
       },
@@ -29333,7 +29333,7 @@
             "type": "number",
             "nullable": true,
             "example": 2,
-            "description": "Where the station stands on its line, from 0"
+            "description": "The position of the station on its line, from 0"
           },
           "stationCount": {
             "type": "number",
@@ -29777,7 +29777,7 @@
           "key": {
             "type": "string",
             "example": "core",
-            "description": "Names the team in the addresses of everything it holds; fixed for its life, so changing it means replacing the team"
+            "description": "Names the team in the addresses of everything it has; fixed for its life, so changing it means replacing the team"
           },
           "name": {
             "type": "string",
@@ -29962,7 +29962,7 @@
           "subject": {
             "type": "string",
             "example": "repo:acme/platform:ref:refs/heads/main",
-            "description": "The subject the workload’s token must carry; * stands for any run of characters"
+            "description": "The subject the workload’s token must carry; * matches any run of characters"
           },
           "claims": {
             "type": "object",
@@ -30742,7 +30742,7 @@
               "type": "string"
             }
           },
-          "standing": {
+          "status": {
             "type": "string",
             "description": "Whether it is still worth following.",
             "enum": [
@@ -30760,7 +30760,7 @@
           "invitedBy",
           "role",
           "teamNames",
-          "standing"
+          "status"
         ]
       },
       "JoinedWorkspaceResponseDto": {
@@ -30798,7 +30798,7 @@
             "type": "string",
             "nullable": true,
             "example": null,
-            "description": "The key to read when that secret holds JSON"
+            "description": "The key to read when that secret contains JSON"
           }
         },
         "required": [
@@ -30815,29 +30815,29 @@
             "example": "api.linear.app",
             "description": "A host the secret may be sent to, over HTTPS only"
           },
-          "carrier": {
+          "location": {
             "type": "string",
             "enum": [
               "header",
               "query"
             ],
             "example": "header",
-            "description": "Whether it is worn in a request header or a query parameter"
+            "description": "Whether Spotlight injects it in a request header or in a query parameter"
           },
           "name": {
             "type": "string",
             "example": "authorization",
-            "description": "The header or query parameter it is worn in"
+            "description": "The header or query parameter that Spotlight injects it in"
           },
           "prefix": {
             "type": "string",
             "example": "Bearer ",
-            "description": "Written before the value it is worn with"
+            "description": "The text that Spotlight writes before the value"
           }
         },
         "required": [
           "host",
-          "carrier",
+          "location",
           "name",
           "prefix"
         ]
@@ -31044,7 +31044,7 @@
           "fullName"
         ]
       },
-      "GitHubStandingResponseDto": {
+      "GitHubConnectionStatusResponseDto": {
         "type": "object",
         "properties": {
           "connected": {
@@ -31115,7 +31115,7 @@
             }
           },
           "images": {
-            "description": "The runner images it serves or refused, each with what it found inside",
+            "description": "The runner images it serves or cannot use, each with what it found inside",
             "items": {
               "type": "array",
               "items": {
@@ -31133,7 +31133,7 @@
           "capacity"
         ]
       },
-      "HostStandingResponseDto": {
+      "HostHeartbeatResponseDto": {
         "type": "object",
         "properties": {
           "workspace": {
@@ -31217,7 +31217,7 @@
               "$ref": "#/components/schemas/HostHarnessResponseDto"
             }
           },
-          "refused": {
+          "unavailableReason": {
             "type": "string",
             "nullable": true,
             "example": null,
@@ -31230,7 +31230,7 @@
           "usual",
           "release",
           "harnesses",
-          "refused"
+          "unavailableReason"
         ]
       },
       "HostResponseDto": {
@@ -31269,7 +31269,7 @@
             }
           },
           "images": {
-            "description": "The runner images it serves or refused, and what each holds",
+            "description": "The runner images it serves or cannot use, and what each contains",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/HostImageResponseDto"
@@ -31843,7 +31843,7 @@
             "description": "Where the integration is defined",
             "example": "integrations/linear"
           },
-          "standing": {
+          "connectionStatus": {
             "type": "string",
             "description": "Whether the team is linked to the host: it only listens, it links by authorizing and has not, or it has",
             "enum": [
@@ -31853,7 +31853,7 @@
             ],
             "example": "linked"
           },
-          "holding": {
+          "holderRule": {
             "type": "string",
             "description": "Whose connection its tools act with: the team’s, or that of the person who started the task",
             "enum": [
@@ -31883,8 +31883,8 @@
           "source",
           "name",
           "path",
-          "standing",
-          "holding",
+          "connectionStatus",
+          "holderRule",
           "handle",
           "described"
         ]
@@ -32119,7 +32119,7 @@
             "example": {
               "LINEAR_TEAM": "core"
             },
-            "description": "Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace holds, and the server gets only a stand-in, since egress wears the value on its requests to the hosts the secret is bound to."
+            "description": "Environment for the server. A value is plain text, stored and shown as written, or a reference to a workspace secret, as in secret.LINEAR_API_KEY: the reference must name a secret the workspace has, and the server gets only a stand-in, since egress injects the value into its requests to the hosts the secret is bound to."
           }
         },
         "required": [
@@ -32601,7 +32601,7 @@
         "properties": {
           "runId": {
             "type": "string",
-            "description": "The run whose page holds the stack"
+            "description": "The run whose page shows the stack"
           },
           "repository": {
             "type": "string",
@@ -32771,7 +32771,7 @@
             }
           },
           "disputes": {
-            "description": "Who holds it wrong or out of date, and why",
+            "description": "Who says it is wrong or out of date, and why",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/DisputeResponseDto"
@@ -32801,16 +32801,16 @@
             "type": "boolean",
             "description": "Whether a later run’s decisions are being drafted"
           },
-          "standing": {
+          "status": {
             "type": "string",
             "enum": [
               "proposed",
-              "stands"
+              "merged"
             ]
           },
           "merge": {
             "nullable": true,
-            "description": "The merge the decisions stood in, once the pull request merged",
+            "description": "The merge that contains the decisions, after the pull request merges",
             "type": "object",
             "allOf": [
               {
@@ -32829,7 +32829,7 @@
         "required": [
           "runId",
           "drafting",
-          "standing",
+          "status",
           "merge",
           "decisions"
         ]
@@ -32853,7 +32853,7 @@
           "path"
         ]
       },
-      "StandingDecisionsResponseDto": {
+      "MergedDecisionsResponseDto": {
         "type": "object",
         "properties": {
           "taskId": {
@@ -32892,14 +32892,14 @@
           "decisions"
         ]
       },
-      "StandingDecisionListResponseDto": {
+      "MergedDecisionListResponseDto": {
         "type": "object",
         "properties": {
           "merges": {
             "description": "Newest merge first, at most fifty",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/StandingDecisionsResponseDto"
+              "$ref": "#/components/schemas/MergedDecisionsResponseDto"
             }
           }
         },
@@ -32922,7 +32922,7 @@
           "base": {
             "type": "object",
             "nullable": true,
-            "description": "The commit the checkout stood at when the run began"
+            "description": "The commit of the checkout when the run began"
           }
         },
         "required": [
@@ -33074,7 +33074,7 @@
               "posted",
               "failed"
             ],
-            "description": "draft: only its author sees it; sending: on its way to GitHub; posted: on GitHub; failed: GitHub refused it"
+            "description": "draft: only its author sees it; sending: on its way to GitHub; posted: on GitHub; failed: GitHub answered with an error"
           },
           "failure": {
             "type": "string",
@@ -33410,7 +33410,7 @@
           },
           "people": {
             "nullable": true,
-            "description": "Who in the team has connected what, shown to admins only; it never holds a token",
+            "description": "Who in the team has connected what, shown to admins only; it never contains a token",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/PersonConnectionResponseDto"
@@ -33579,7 +33579,7 @@
           "position": {
             "type": "string",
             "example": "integration.webhook.events[0].when",
-            "description": "The attribute that holds the expression, within the definition, written as its problems would name it"
+            "description": "The attribute that contains the expression, within the definition, written as its problems would name it"
           },
           "expression": {
             "type": "string",
@@ -33859,7 +33859,7 @@
           "url": {
             "type": "string",
             "example": "https://dba.acme.dev/review",
-            "description": "Where the request goes; may hold ${{ }} expressions"
+            "description": "Where the request goes; may contain ${{ }} expressions"
           },
           "headers": {
             "type": "object",
@@ -33872,7 +33872,7 @@
             "description": "Headers to send besides the ones Spotlight signs with"
           },
           "body": {
-            "description": "The JSON body, any JSON value; strings may hold ${{ }} expressions. Left out, Spotlight sends the event, task and run",
+            "description": "The JSON body, any JSON value; strings may contain ${{ }} expressions. Left out, Spotlight sends the event, task and run",
             "oneOf": [
               {
                 "type": "object",
@@ -34299,7 +34299,7 @@
           "index": {
             "type": "number",
             "example": 12,
-            "description": "Where the step stands in its run"
+            "description": "The position of the step in its run"
           },
           "kind": {
             "type": "string",
@@ -34347,7 +34347,7 @@
           "position": {
             "type": "number",
             "example": 4,
-            "description": "Where the note stands on its task"
+            "description": "The position of the note on its task"
           },
           "by": {
             "type": "string",
@@ -34366,7 +34366,7 @@
           },
           "text": {
             "type": "string",
-            "example": "Never retry an upload refused with a 403."
+            "example": "Never retry an upload rejected with a 403."
           }
         },
         "required": [
@@ -34397,7 +34397,7 @@
           },
           "body": {
             "type": "string",
-            "example": "Never retry an upload the bucket refused with a 403."
+            "example": "Never retry an upload the bucket rejected with a 403."
           },
           "source": {
             "type": "string",
@@ -34454,7 +34454,7 @@
           "supersedes": {
             "type": "string",
             "nullable": true,
-            "description": "The standing memory it replaces once approved"
+            "description": "The active memory it replaces after approval"
           },
           "decision": {
             "nullable": true,
@@ -34537,8 +34537,8 @@
           },
           "body": {
             "type": "string",
-            "example": "Never retry an upload the bucket refused with a 403 or 404.",
-            "description": "The memory as it should stand, where it was edited"
+            "example": "Never retry an upload the bucket rejected with a 403 or 404.",
+            "description": "The memory as it should be, where it was edited"
           }
         },
         "required": [
@@ -34648,13 +34648,13 @@
             ],
             "example": "person"
           },
-          "standing": {
+          "status": {
             "type": "string",
             "enum": [
-              "stands",
+              "active",
               "retired"
             ],
-            "example": "stands"
+            "example": "active"
           },
           "reach": {
             "type": "string",
@@ -34732,7 +34732,7 @@
           "kind",
           "body",
           "source",
-          "standing",
+          "status",
           "reach",
           "lineId",
           "stationId",
@@ -34851,13 +34851,13 @@
             ],
             "example": "person"
           },
-          "standing": {
+          "status": {
             "type": "string",
             "enum": [
-              "stands",
+              "active",
               "retired"
             ],
-            "example": "stands"
+            "example": "active"
           },
           "reach": {
             "type": "string",
@@ -34971,7 +34971,7 @@
           "kind",
           "body",
           "source",
-          "standing",
+          "status",
           "reach",
           "lineId",
           "stationId",
@@ -34996,7 +34996,7 @@
           "reason": {
             "type": "string",
             "example": "The retry worker was removed.",
-            "description": "Why it no longer holds"
+            "description": "Why it no longer applies"
           }
         },
         "required": [
@@ -35024,7 +35024,7 @@
           },
           "body": {
             "type": "string",
-            "example": "Never retry an upload the bucket refused with a 403."
+            "example": "Never retry an upload the bucket rejected with a 403."
           },
           "source": {
             "type": "string",
@@ -35081,7 +35081,7 @@
           "supersedes": {
             "type": "string",
             "nullable": true,
-            "description": "The standing memory it replaces once approved"
+            "description": "The active memory it replaces after approval"
           },
           "decision": {
             "nullable": true,
@@ -35119,11 +35119,11 @@
             "example": "M-12",
             "description": "Its handle once approved"
           },
-          "standing": {
+          "status": {
             "type": "string",
             "nullable": true,
-            "example": "stands",
-            "description": "Once approved, whether it still stands: stands or retired"
+            "example": "active",
+            "description": "After approval, whether it is still active: active or retired"
           }
         },
         "required": [
@@ -35142,7 +35142,7 @@
           "steps",
           "notes",
           "handle",
-          "standing"
+          "status"
         ]
       },
       "RunMemoriesResponseDto": {
@@ -35247,7 +35247,7 @@
             "type": "string",
             "nullable": true,
             "example": "M-7",
-            "description": "The standing memory it corrects, by handle"
+            "description": "The active memory it corrects, by handle"
           }
         },
         "required": [
@@ -35413,7 +35413,7 @@
               null
             ],
             "nullable": true,
-            "description": "Where the task’s pull request stands, if it opened one"
+            "description": "The status of the task’s pull request, if it opened one"
           }
         },
         "required": [
@@ -35765,7 +35765,7 @@
           "trust"
         ]
       },
-      "JudgeStandingResponseDto": {
+      "JudgeCalibrationResponseDto": {
         "type": "object",
         "properties": {
           "trusted": {
@@ -36236,8 +36236,8 @@
               }
             ]
           },
-          "standing": {
-            "$ref": "#/components/schemas/JudgeStandingResponseDto"
+          "calibration": {
+            "$ref": "#/components/schemas/JudgeCalibrationResponseDto"
           },
           "versions": {
             "description": "How the judge agreed with people under each rubric, the latest first",
@@ -36253,7 +36253,7 @@
         "required": [
           "stationId",
           "judge",
-          "standing",
+          "calibration",
           "versions",
           "coverage"
         ]
@@ -36534,7 +36534,7 @@
               "type": "string",
               "nullable": true
             },
-            "description": "The claims the run is graded on, in order, on a claims scale, empty on any other: the ones the judge marked where it scored the run; a claim reads null only where the rubric the judge was given is no longer held"
+            "description": "The claims the run is graded on, in order, on a claims scale, empty on any other: the ones the judge marked where it scored the run; a claim reads null only where the rubric the judge was given is no longer stored"
           },
           "judged": {
             "type": "boolean",
@@ -36550,8 +36550,8 @@
               }
             ]
           },
-          "standing": {
-            "$ref": "#/components/schemas/JudgeStandingResponseDto"
+          "calibration": {
+            "$ref": "#/components/schemas/JudgeCalibrationResponseDto"
           },
           "grades": {
             "description": "What people graded the run, the latest first",
@@ -36570,7 +36570,7 @@
           "claims",
           "judged",
           "judge",
-          "standing",
+          "calibration",
           "grades"
         ]
       },
@@ -38734,20 +38734,20 @@
             "type": "number",
             "nullable": true,
             "example": 0.4,
-            "description": "The measure over the settled runs compared against: a share, or a cost per run"
+            "description": "The measure over the measured runs compared against: a share, or a cost per run"
           },
           "after": {
             "type": "number",
             "nullable": true,
             "example": 0.6,
-            "description": "The measure over the settled runs compared"
+            "description": "The measure over the measured runs compared"
           },
-          "settledBefore": {
+          "measuredBefore": {
             "type": "number",
             "example": 12,
             "description": "Runs compared against whose outcome for this measure is known"
           },
-          "settledAfter": {
+          "measuredAfter": {
             "type": "number",
             "example": 9,
             "description": "Runs compared whose outcome for this measure is known"
@@ -38766,7 +38766,7 @@
               "unchanged",
               "insufficient"
             ],
-            "description": "Whether the runs compared did better, worse or the same; insufficient below 5 settled runs on either side, or where the costs are in different currencies"
+            "description": "Whether the runs compared did better, worse or the same; insufficient below 5 measured runs on either side, or where the costs are in different currencies"
           },
           "change": {
             "nullable": true,
@@ -38783,8 +38783,8 @@
           "measure",
           "before",
           "after",
-          "settledBefore",
-          "settledAfter",
+          "measuredBefore",
+          "measuredAfter",
           "currency",
           "verdict",
           "change"
@@ -38918,7 +38918,7 @@
           "changes"
         ]
       },
-      "StationStandingResponseDto": {
+      "StationJudgeCalibrationResponseDto": {
         "type": "object",
         "properties": {
           "trusted": {
@@ -39000,7 +39000,7 @@
             "description": "How far each changed station’s judge is trusted, where it has one",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/StationStandingResponseDto"
+              "$ref": "#/components/schemas/StationJudgeCalibrationResponseDto"
             }
           }
         },
@@ -39219,7 +39219,7 @@
               "$ref": "#/components/schemas/SetupOutcomeResponseDto"
             }
           },
-          "judgeWithheld": {
+          "judgeOmitted": {
             "type": "string",
             "enum": [
               "no_station",
@@ -39232,7 +39232,7 @@
             "description": "How far the station’s judge is trusted, where one station is picked and it has a judge",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/StationStandingResponseDto"
+              "$ref": "#/components/schemas/StationJudgeCalibrationResponseDto"
             }
           }
         },
@@ -39244,7 +39244,7 @@
           "minRuns",
           "currency",
           "setups",
-          "judgeWithheld",
+          "judgeOmitted",
           "judges"
         ]
       },
@@ -39329,7 +39329,7 @@
           "period": {
             "$ref": "#/components/schemas/InsightsPeriodResponseDto"
           },
-          "standing": {
+          "activeCount": {
             "type": "number",
             "example": 14,
             "description": "Memories the team keeps now"
@@ -39397,7 +39397,7 @@
         },
         "required": [
           "period",
-          "standing",
+          "activeCount",
           "memoriesBriefed",
           "memoriesRecalled",
           "runsBriefed",
@@ -39543,7 +39543,7 @@
               "90d"
             ],
             "example": "7d",
-            "description": "The shortest Insights period whose days hold the moment the alert went off"
+            "description": "The shortest Insights period whose days include the moment the alert went off"
           },
           "recoveredAt": {
             "type": "string",
@@ -41428,7 +41428,7 @@
           "station": {
             "type": "object",
             "additionalProperties": true,
-            "description": "The station block it replays the station under, in the shape the line resource holds a station in",
+            "description": "The station block it replays the station under, in the shape in which the line resource stores a station",
             "example": {
               "key": "build",
               "name": "Build",
@@ -41792,7 +41792,7 @@
               "gone",
               null
             ],
-            "description": "How the replay it is compared with stands: finished once they can be compared; stopped, over-budget or gone means they never will be"
+            "description": "The state of the replay that it is compared with: finished once they can be compared; stopped, over-budget or gone means they never will be"
           },
           "answered": {
             "type": "number",
@@ -42041,7 +42041,7 @@
             "type": "string",
             "nullable": true,
             "example": "completed",
-            "description": "How the run stands now; null where there is no such run"
+            "description": "The current state of the run; null where there is no such run"
           },
           "endedAt": {
             "type": "string",
@@ -42053,7 +42053,7 @@
             "type": "string",
             "example": "2026-10-01T09:00:00.000Z"
           },
-          "refusal": {
+          "unreplayableReason": {
             "type": "string",
             "enum": [
               "unknown-run",
@@ -42075,7 +42075,7 @@
               null
             ],
             "nullable": true,
-            "description": "Why the run can no longer be replayed, as it stands now; null while it can"
+            "description": "Why the run can no longer be replayed; null while it can"
           },
           "reason": {
             "type": "string",
@@ -42106,7 +42106,7 @@
           "state",
           "endedAt",
           "addedAt",
-          "refusal",
+          "unreplayableReason",
           "reason",
           "outcome",
           "origin"
@@ -42205,7 +42205,7 @@
             "type": "string",
             "example": "2026-10-01T09:00:00.000Z"
           },
-          "refusal": {
+          "unreplayableReason": {
             "type": "string",
             "enum": [
               "unknown-run",
@@ -42240,7 +42240,7 @@
           "title",
           "state",
           "endedAt",
-          "refusal",
+          "unreplayableReason",
           "reason"
         ]
       },
@@ -42266,7 +42266,7 @@
             "type": "string",
             "example": "2026-10-01T09:00:00.000Z"
           },
-          "refusal": {
+          "unreplayableReason": {
             "type": "string",
             "enum": [
               "unknown-run",
@@ -42312,7 +42312,7 @@
           "title",
           "state",
           "endedAt",
-          "refusal",
+          "unreplayableReason",
           "reason",
           "outcome"
         ]
@@ -42396,7 +42396,7 @@
           "station": {
             "type": "object",
             "additionalProperties": true,
-            "description": "The station block, as the line resource holds it"
+            "description": "The station block, as the line resource stores it"
           },
           "createdAt": {
             "type": "string"
@@ -42417,7 +42417,7 @@
           "entries": {
             "type": "number"
           },
-          "settled": {
+          "ended": {
             "type": "number"
           },
           "completed": {
@@ -42513,7 +42513,7 @@
         },
         "required": [
           "entries",
-          "settled",
+          "ended",
           "completed",
           "failed",
           "stopped",
@@ -42605,7 +42605,7 @@
               "none",
               "unchecked"
             ],
-            "description": "drafting or checking until its change stacks settle and their checks end; absent when its run left no change stack; none when its stacks are checked by nothing"
+            "description": "drafting or checking until its change stacks complete and their checks end; absent when its run left no change stack; none when its stacks are checked by nothing"
           },
           "failedAt": {
             "description": "The steps or layers that failed",
@@ -42827,7 +42827,7 @@
               "unavailable",
               "unreadable-rubric",
               "no-evidence",
-              "refused",
+              "request-failed",
               "unreadable",
               "ungrounded",
               "errored",
@@ -42981,7 +42981,7 @@
               "unavailable",
               "unreadable-rubric",
               "no-evidence",
-              "refused",
+              "request-failed",
               "unreadable",
               "ungrounded",
               "errored",
@@ -43034,7 +43034,7 @@
           "detail": {
             "type": "string",
             "nullable": true,
-            "description": "The refusal, failure or skip code, the failed check step or layer, or what the judge said"
+            "description": "The unreplayable reason, the failure or skip code, the failed check step or layer, or what the judge said"
           },
           "steps": {
             "description": "Journal steps of the replay run the judge cited",
@@ -43092,7 +43092,7 @@
             "enum": [
               "waiting",
               "dispatched",
-              "settled"
+              "ended"
             ]
           },
           "ending": {
@@ -43108,7 +43108,7 @@
             ],
             "nullable": true
           },
-          "refusal": {
+          "unreplayableReason": {
             "type": "string",
             "enum": [
               "unknown-run",
@@ -43304,7 +43304,7 @@
           "fingerprint",
           "phase",
           "ending",
-          "refusal",
+          "unreplayableReason",
           "failure",
           "next",
           "ms",
@@ -43417,7 +43417,7 @@
           "pairedWith": {
             "type": "string",
             "nullable": true,
-            "description": "The replay its changes are set beside, judged blind: the baseline standing when it started, or its search’s seed; null for a baseline, a probe or a replay that had none"
+            "description": "The replay its changes are set beside, judged blind: the current baseline when it started, or its search’s seed; null for a baseline, a probe or a replay that had none"
           },
           "pairsAgainstBaseline": {
             "nullable": true,
@@ -43621,7 +43621,7 @@
           "costDelta": {
             "type": "number",
             "nullable": true,
-            "description": "Candidate cost less the baseline’s, each averaged over its copies, once both settled"
+            "description": "Candidate cost less the baseline’s, each averaged over its copies, once both ended"
           },
           "msDelta": {
             "type": "number",
@@ -43769,7 +43769,7 @@
           "pairedWith": {
             "type": "string",
             "nullable": true,
-            "description": "The replay its changes are set beside, judged blind: the baseline standing when it started, or its search’s seed; null for a baseline, a probe or a replay that had none"
+            "description": "The replay its changes are set beside, judged blind: the current baseline when it started, or its search’s seed; null for a baseline, a probe or a replay that had none"
           },
           "pairsAgainstBaseline": {
             "nullable": true,
@@ -44734,7 +44734,7 @@
           },
           "originalRunId": {
             "type": "string",
-            "description": "The run the set holds for the task"
+            "description": "The run the set contains for the task"
           },
           "replayRunId": {
             "type": "string",
@@ -44755,7 +44755,7 @@
           },
           "originalRunId": {
             "type": "string",
-            "description": "The run the set holds for the task"
+            "description": "The run the set contains for the task"
           },
           "replayRunId": {
             "type": "string",
@@ -44798,7 +44798,7 @@
       "SearchReflectionResponseDto": {
         "type": "object",
         "properties": {
-          "standing": {
+          "incumbent": {
             "type": "string",
             "nullable": true,
             "description": "The candidate whose failures it looked into: the best config before it, the seed’s id when nothing beat the live config; none until it looked"
@@ -44836,7 +44836,7 @@
           }
         },
         "required": [
-          "standing",
+          "incumbent",
           "tasks",
           "causes",
           "outcome",
@@ -44874,7 +44874,7 @@
           },
           "attempts": {
             "type": "number",
-            "description": "How many candidates it tried to propose, those refused included"
+            "description": "How many candidates it tried to propose, those rejected included"
           },
           "proposed": {
             "description": "The candidates it proposed, by id",
@@ -44928,14 +44928,14 @@
               "block-not-found",
               "blocks-ambiguous",
               "computed-attribute",
-              "drifted",
+              "base-changed",
               "edit-failed",
               "branch-taken",
               "file-unwritable",
-              "github-refused"
+              "github-error"
             ],
             "example": "computed-attribute",
-            "description": "Why Spotlight would not open it: the line names no source; the GitHub App cannot reach the repository; the file is missing or does not parse; the station’s block was not found exactly once; an attribute it would change is computed in Terraform; the file changed since the search began; or GitHub refused"
+            "description": "Why Spotlight would not open it: the line names no source; the GitHub App cannot reach the repository; the file is missing or does not parse; the station’s block was not found exactly once; an attribute it would change is computed in Terraform; the file changed since the search began; or GitHub answered with an error"
           },
           "message": {
             "type": "string",
@@ -44993,7 +44993,7 @@
             "enum": [
               "opening",
               "opened",
-              "refused"
+              "failed"
             ],
             "example": "opened"
           },
@@ -45005,7 +45005,7 @@
           },
           "reason": {
             "nullable": true,
-            "description": "Why it was refused; null unless it was",
+            "description": "Why it failed; null unless it failed",
             "type": "object",
             "allOf": [
               {
@@ -45391,7 +45391,7 @@
             "enum": [
               "opening",
               "opened",
-              "refused"
+              "failed"
             ],
             "example": "opened"
           },
@@ -45403,7 +45403,7 @@
           },
           "reason": {
             "nullable": true,
-            "description": "Why it was refused; null unless it was",
+            "description": "Why it failed; null unless it failed",
             "type": "object",
             "allOf": [
               {
@@ -45443,7 +45443,7 @@
             "type": "string",
             "nullable": true,
             "example": "acme/platform",
-            "description": "The repository the line’s source names, as it stood when it was picked; null when the line named none"
+            "description": "The repository that the line’s source named when it was picked; null when the line named none"
           },
           "path": {
             "type": "string",
@@ -45458,7 +45458,7 @@
           "attempts": {
             "type": "number",
             "example": 1,
-            "description": "How many times a person picked it; each pick after a refusal tries again"
+            "description": "How many times a person picked it; each pick after a failure tries again"
           },
           "createdAt": {
             "type": "string",
@@ -45520,7 +45520,7 @@
           "station": {
             "type": "object",
             "additionalProperties": true,
-            "description": "The station block as the plan would apply it, as the line resource holds a station; its check, judge, diffs and runners are replaced by the live station’s, since a planned change is scored as, and runs where, the live station does",
+            "description": "The station block as the plan would apply it, as the line resource stores a station; its check, judge, diffs and runners are replaced by the live station’s, since a planned change is scored as, and runs where, the live station does",
             "example": {
               "key": "build",
               "name": "Build",
@@ -45535,7 +45535,7 @@
           "line": {
             "type": "object",
             "additionalProperties": true,
-            "description": "The line’s settings that change how its stations run, as the plan would apply them: its repositories, each with its image and setup, as the line resource holds them",
+            "description": "The line’s settings that change how its stations run, as the plan would apply them: its repositories, each with its image and setup, as the line resource stores them",
             "example": {
               "repositories": [
                 {
@@ -46019,7 +46019,7 @@
           },
           "station": {
             "type": "object",
-            "description": "The station block, as the line holds it, changed only where a search may change it"
+            "description": "The station block, as the line stores it, changed only where a search may change it"
           }
         },
         "required": [
@@ -46198,7 +46198,7 @@
           },
           "runs": {
             "type": "number",
-            "description": "How many past runs the set holds now"
+            "description": "How many past runs the set contains now"
           },
           "oldestRunEndedAt": {
             "type": "string",
@@ -46216,7 +46216,7 @@
             "type": "string",
             "nullable": true,
             "example": "2026-09-29T09:00:00.000Z",
-            "description": "When a task was last added to it; null while it holds none"
+            "description": "When a task was last added to it; null while it contains none"
           },
           "minGain": {
             "type": "number",
@@ -46807,7 +46807,7 @@
             "description": "Whether it checks every pull request that changes its station"
           },
           "health": {
-            "description": "How the set stands now, whatever the period",
+            "description": "The current health of the set, whatever the period",
             "allOf": [
               {
                 "$ref": "#/components/schemas/ReplaySetHealthResponseDto"
@@ -46816,7 +46816,7 @@
           },
           "baseline": {
             "nullable": true,
-            "description": "The live config replayed over the set, its newest standing baseline whatever the period; null while it has none",
+            "description": "The live config replayed over the set, its newest valid baseline whatever the period; null while it has none",
             "type": "object",
             "allOf": [
               {

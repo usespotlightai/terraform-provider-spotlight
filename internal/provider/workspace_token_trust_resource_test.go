@@ -119,7 +119,7 @@ func TestWorkspaceTokenTrustWritesNeedTheTrustsScope(t *testing.T) {
 	})
 }
 
-func TestATokenGivesATrustOnlyScopesItHolds(t *testing.T) {
+func TestATokenGivesATrustOnlyScopesItHas(t *testing.T) {
 	fake := fakeapi.New(t)
 
 	resource.UnitTest(t, resource.TestCase{
@@ -128,7 +128,7 @@ func TestATokenGivesATrustOnlyScopesItHolds(t *testing.T) {
 			{
 				PreConfig:   func() { fake.Grant("configure", "trusts") },
 				Config:      workspaceTokenTrustConfig("github-main", "repo:acme/platform:ref:refs/heads/main", `"configure", "secrets"`, ""),
-				ExpectError: regexp.MustCompile(`(?s)does\s+not\s+hold\s+secrets.*lacks\s+the\s+trusts\s+scope.*or\s+a\s+scope\s+the\s+trust\s+gives`),
+				ExpectError: regexp.MustCompile(`(?s)not\s+change\s+it.*lacks\s+the\s+trusts\s+scope.*or\s+a\s+scope\s+the\s+trust\s+gives`),
 			},
 			{
 				PreConfig: func() { fake.Grant("configure", "secrets", "trusts") },
@@ -137,7 +137,7 @@ func TestATokenGivesATrustOnlyScopesItHolds(t *testing.T) {
 			{
 				PreConfig:   func() { fake.Grant("configure", "trusts") },
 				Config:      workspaceTokenTrustConfig("github-main", "repo:acme/platform:ref:refs/heads/main", `"configure"`, ""),
-				ExpectError: regexp.MustCompile(`(?s)does\s+not\s+hold\s+secrets`),
+				ExpectError: regexp.MustCompile(`(?s)not\s+change\s+it`),
 			},
 			{
 				PreConfig: func() { fake.Grant("configure", "secrets", "trusts") },
@@ -151,7 +151,7 @@ func TestATokenGivesATrustOnlyScopesItHolds(t *testing.T) {
 func TestWorkspaceTokenTrustIsCheckedWhenPlanned(t *testing.T) {
 	for name, each := range map[string]struct {
 		scopes, more string
-		refused      *regexp.Regexp
+		rejected     *regexp.Regexp
 	}{
 		"a lifetime over an hour": {`"plan"`, "lifetime_minutes = 61", regexp.MustCompile(`(?s)lifetime_minutes.*between 1 and 60`)},
 		"no scopes":               {"", "", regexp.MustCompile(`(?s)scopes.*at least 1`)},
@@ -166,7 +166,7 @@ func TestWorkspaceTokenTrustIsCheckedWhenPlanned(t *testing.T) {
 					{
 						Config:      workspaceTokenTrustConfig("github-main", "repo:acme/platform:ref:refs/heads/main", each.scopes, each.more),
 						PlanOnly:    true,
-						ExpectError: each.refused,
+						ExpectError: each.rejected,
 					},
 				},
 			})

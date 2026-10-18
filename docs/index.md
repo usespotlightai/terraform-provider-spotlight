@@ -6,7 +6,7 @@ description: |-
 
 # Spotlight Provider
 
-Configure a [Spotlight](https://github.com/usespotlightai) workspace as code: its teams, the lines their tasks move along, the skills and harness profiles their agents are given, the integrations that connect them to other tools, the secrets those integrations wear, and the runner pools, egresses and trusts the work runs through.
+Configure a [Spotlight](https://github.com/usespotlightai) workspace as code: its teams, the lines their tasks move along, the skills and harness profiles their agents are given, the integrations that connect them to other tools, the secrets that Spotlight injects into the requests of those integrations, and the runner pools, egresses and trusts the work runs through.
 
 **Download as Terraform**, in the web app's workspace menu, gives you a workspace you already have as configuration for this provider: a zipped module with an `import` block for each resource, and each prompt and skill as its own file. A first `terraform apply` adopts what is there and plans no change.
 
@@ -41,7 +41,7 @@ A token, stored or minted, acts only inside the workspace it was created in, and
 | `runners` | `spotlight_runner_pool`, `spotlight_egress`, `spotlight_runner_trust` and `spotlight_workspace_runners` |
 | `trusts` | `spotlight_workspace_token_trust` |
 
-**One token granted `configure`, `secrets`, `runners` and `trusts` manages everything this provider can.** `trusts` decides which CI jobs get tokens and with which scopes, so it is as powerful as all the others together: grant it only to a short-lived token that sets up the trusts, as the guide below does. A token may give a trust only scopes it holds itself. A write the token's scopes do not allow is refused with `403`, and the provider's diagnostic names the scope the token lacks.
+**One token granted `configure`, `secrets`, `runners` and `trusts` manages everything this provider can.** `trusts` decides which CI jobs get tokens and with which scopes, so it is as powerful as all the others together: grant it only to a short-lived token that sets up the trusts, as the guide below does. A token can give a trust only the scopes that it has. A write the token's scopes do not allow fails with `403`, and the provider's diagnostic names the scope the token lacks.
 
 ## Workspaces are adopted, not created
 
@@ -65,7 +65,7 @@ A token may not open a workspace, so creating a `spotlight_workspace` with one f
 
 The `spotlight_workspace` and `spotlight_team` data sources read a workspace by its slug and a team by its key, for configuration that works inside them without managing them.
 
-Every resource is also a list resource. In Terraform 1.14 and later, a `list` block in a `.tfquery.hcl` file lists what a workspace holds, and `terraform query -generate-config-out=generated.tf` writes a resource and an `import` block for each, which is the same adoption the web app's download offers, with prompts and skills written inline rather than as files. Every resource has a resource identity, its `id`, so each can also be imported with an `import` block that names its `identity` (Terraform 1.12 and later).
+Every resource is also a list resource. In Terraform 1.14 and later, a `list` block in a `.tfquery.hcl` file lists the resources in a workspace, and `terraform query -generate-config-out=generated.tf` writes a resource and an `import` block for each, which is the same adoption the web app's download offers, with prompts and skills written inline rather than as files. Every resource has a resource identity, its `id`, so each can also be imported with an `import` block that names its `identity` (Terraform 1.12 and later).
 
 ## Where work runs
 
@@ -75,15 +75,15 @@ Every run gets a fresh runner of its own that ends with it, and only a runner po
 curl -fsSL https://spotlight.example.com/api/install.sh | SPOTLIGHT_URL=https://spotlight.example.com SPOTLIGHT_TOKEN=<pool token> sh
 ```
 
-The host claims each run with that token and starts a fresh sandbox for it. A host on a platform that issues its workloads tokens, as Kubernetes does, claims through a `spotlight_runner_trust` instead, holding no Spotlight token: set `SPOTLIGHT_TRUST` to the trust's `id` and `SPOTLIGHT_OIDC_TOKEN_FILE` to the path of the projected token. A pool with `provision` is pushed to instead: Spotlight calls its URL for each run, handing a one-run runner its credential. The runners of a push pool send their traffic through the egress that `provision.egress` names: `spotlight` for the egress that Spotlight operates, or the `id` of a `spotlight_egress` that you operate. The egress adds the secrets of each run to the requests that go to their bound hosts. A bound host is a host that a secret of the run is bound to. A host is live state, shown on the web app's Runners page, and never a Terraform resource. A line or station names in `runners` the labels of a pool or trust to place its work. A line's `repository` may name the runner `image` its work runs in, built `FROM ghcr.io/usespotlightai/spotlight-runner`; a host serves it when its `SPOTLIGHT_RUNNER_IMAGE` admits it.
+The host claims each run with that token and starts a fresh sandbox for it. A host on a platform that issues its workloads tokens, as Kubernetes does, claims through a `spotlight_runner_trust` instead and has no Spotlight token: set `SPOTLIGHT_TRUST` to the trust's `id` and `SPOTLIGHT_OIDC_TOKEN_FILE` to the path of the projected token. A pool with `provision` is pushed to instead: Spotlight calls its URL for each run, handing a one-run runner its credential. The runners of a push pool send their traffic through the egress that `provision.egress` names: `spotlight` for the egress that Spotlight operates, or the `id` of a `spotlight_egress` that you operate. The egress adds the secrets of each run to the requests that go to their bound hosts. A bound host is a host that a secret of the run is bound to. A host is live state, shown on the web app's Runners page, and never a Terraform resource. A line or station names in `runners` the labels of a pool or trust to place its work. A line's `repository` may name the runner `image` its work runs in, built `FROM ghcr.io/usespotlightai/spotlight-runner`; a host serves it when its `SPOTLIGHT_RUNNER_IMAGE` admits it.
 
 ## Plans check expressions
 
-Integrations hold CEL expressions, written `$${{ ... }}` in HCL so Terraform leaves them alone. `terraform plan` sends each one to the control plane to be type-checked where it is written, so a misspelt field fails the plan with the attribute that holds it named, rather than failing the apply.
+Integrations contain CEL expressions, written `$${{ ... }}` in HCL so Terraform leaves them alone. `terraform plan` sends each one to the control plane to be type-checked where it is written, so a misspelt field fails the plan with the attribute that contains it named, rather than failing the apply.
 
 ## Values Terraform never keeps
 
-A secret's value (`value_wo`), a pull pool's token (`token`), a push pool's signing secret (`provision.secret`) and an egress's token (`token`) are write-only attributes: they are sent to Spotlight and never stored in the plan or the state, so they need Terraform 1.11 or later. Terraform cannot see a change to a value it never keeps, so each has a version beside it (`value_wo_version`, `token_version`, `provision.secret_version`): change it to send the value again. A pull pool or an egress created without a token is issued one by Spotlight, answered only once; the provider does not keep it, and warns that it cannot be used until it is given a token you hold. A pool token or an egress token is given once, ever: rotating it, or deleting or replacing its pool or egress, spends it for good, so a new `token_version` or a replaced pool or egress needs a fresh value, such as a new `random_password`.
+A secret's value (`value_wo`), a pull pool's token (`token`), a push pool's signing secret (`provision.secret`) and an egress's token (`token`) are write-only attributes: they are sent to Spotlight and never stored in the plan or the state, so they need Terraform 1.11 or later. Terraform cannot see a change to a value it never keeps, so each has a version beside it (`value_wo_version`, `token_version`, `provision.secret_version`): change it to send the value again. A pull pool or an egress created without a token is issued one by Spotlight, answered only once; the provider does not keep it, and warns that it cannot be used until it is given a token that you have. A pool token or an egress token is given once, ever: rotating it, or deleting or replacing its pool or egress, spends it for good, so a new `token_version` or a replaced pool or egress needs a fresh value, such as a new `random_password`.
 
 ## Example Usage
 

@@ -50,6 +50,6 @@ resource "spotlight_team" "core" {
 	}
 
 	if got := acctest.Protected(adopted, "spotlight_workspace.other"); got != adopted {
-		t.Errorf("protected what it does not hold:\n%s", got)
+		t.Errorf("protected what it does not contain:\n%s", got)
 	}
 }

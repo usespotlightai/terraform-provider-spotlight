@@ -34,7 +34,7 @@ type WorkspaceResource struct {
 	client *client.Client
 }
 
-// WorkspaceResourceModel is a spotlight_workspace as Terraform holds it.
+// WorkspaceResourceModel is a spotlight_workspace as Terraform stores it.
 type WorkspaceResourceModel struct {
 	ID      types.String `tfsdk:"id"`
 	Version types.Int64  `tfsdk:"version"`

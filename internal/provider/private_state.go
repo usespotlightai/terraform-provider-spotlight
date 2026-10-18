@@ -35,18 +35,18 @@ func rememberAnswer(ctx context.Context, private privateState, answer any) diag.
 
 // answerUnchanged reports if the API answer is the same as the answer that
 // rememberAnswer kept last. If it is, the model of each resource takes the
-// configured attributes from the values that Terraform holds. If not, all
+// configured attributes from the values that Terraform stores. If not, all
 // values come from the answer, so that the plan removes a change made
 // outside Terraform.
 func answerUnchanged(ctx context.Context, private privateState, answer any) bool {
-	held, diags := private.GetKey(ctx, answerKey)
-	if diags.HasError() || len(held) == 0 {
+	remembered, diags := private.GetKey(ctx, answerKey)
+	if diags.HasError() || len(remembered) == 0 {
 		return false
 	}
 
 	fingerprint, err := fingerprintOf(answer)
 
-	return err == nil && string(fingerprint) == string(held)
+	return err == nil && string(fingerprint) == string(remembered)
 }
 
 func fingerprintOf(answer any) ([]byte, error) {

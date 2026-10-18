@@ -67,7 +67,7 @@ func TestEachFieldErrorLandsOnItsAttribute(t *testing.T) {
 	}
 }
 
-func TestAStationAlertRefusalLandsOnItsBlock(t *testing.T) {
+func TestAStationAlertProblemLandsOnItsBlock(t *testing.T) {
 	var diags diag.Diagnostics
 
 	addAPIError(&diags, "Could not create the line", &client.Problem{
@@ -92,7 +92,7 @@ func TestAStationAlertRefusalLandsOnItsBlock(t *testing.T) {
 	}
 }
 
-func TestAStationBlockRefusalLandsOnTheBlock(t *testing.T) {
+func TestAStationBlockProblemLandsOnTheBlock(t *testing.T) {
 	var diags diag.Diagnostics
 
 	addAPIError(&diags, "Could not create the line", &client.Problem{
@@ -122,7 +122,7 @@ func TestAStationBlockRefusalLandsOnTheBlock(t *testing.T) {
 	}
 }
 
-func TestALineReplayCheckOrSourceRefusalLandsOnItsAttribute(t *testing.T) {
+func TestALineReplayCheckOrSourceProblemLandsOnItsAttribute(t *testing.T) {
 	var diags diag.Diagnostics
 
 	addAPIError(&diags, "Could not create the line", &client.Problem{
@@ -131,7 +131,7 @@ func TestALineReplayCheckOrSourceRefusalLandsOnItsAttribute(t *testing.T) {
 			{Path: "replayCheck.maxRegressions", Message: "is how many tasks a planned change may regress on and still pass, a whole number from 0", Severity: "error"},
 			{Path: "replayCheck", Message: "is not valid", Severity: "error"},
 			{Path: "source.path", Message: "is a Terraform file, ending in .tf", Severity: "error"},
-			{Path: "source.repository", Message: "is the GitHub repository that holds the line’s Terraform, as owner/name: is named owner/name", Severity: "error"},
+			{Path: "source.repository", Message: "is the GitHub repository that contains the line’s Terraform, as owner/name: is named owner/name", Severity: "error"},
 		},
 	}, lineFields, client.ScopeConfigure)
 
@@ -192,7 +192,7 @@ func TestSplitImportID(t *testing.T) {
 func TestAForbiddenCallNamesTheScopeTheTokenLacks(t *testing.T) {
 	changing := &client.Problem{
 		Status: 403, Type: client.ProblemForbidden, Title: "Not allowed to change the secret",
-		Detail: "You may read this secret, but your role in its workspace, or your token's scopes, do not let you change it",
+		Detail: "You can read this secret but not change it. Your workspace role or token scopes do not allow it.",
 	}
 
 	for needs, says := range map[client.Scope]string{
@@ -205,13 +205,13 @@ func TestAForbiddenCallNamesTheScopeTheTokenLacks(t *testing.T) {
 		addAPIError(&diags, "Could not update the secret", changing, diagnosedLineFields, needs)
 
 		detail := diags.Errors()[0].Detail()
-		if !strings.HasPrefix(detail, "You may read this secret") || !strings.Contains(detail, says) || !strings.Contains(detail, "configure, secrets, runners and trusts") {
+		if !strings.HasPrefix(detail, "You can read this secret") || !strings.Contains(detail, says) || !strings.Contains(detail, "configure, secrets, runners and trusts") {
 			t.Errorf("%s: detail %q", needs, detail)
 		}
 	}
 }
 
-func TestARefusedPlanNamesThePlanScope(t *testing.T) {
+func TestAForbiddenPlanNamesThePlanScope(t *testing.T) {
 	var diags diag.Diagnostics
 
 	addAPIError(&diags, "Could not check", &client.Problem{
@@ -223,7 +223,7 @@ func TestARefusedPlanNamesThePlanScope(t *testing.T) {
 	}
 }
 
-func refusedDetail(problem *client.Problem, needs client.Scope) string {
+func forbiddenUpdateDetail(problem *client.Problem, needs client.Scope) string {
 	var diags diag.Diagnostics
 
 	addAPIError(&diags, "Could not update", problem, diagnosedLineFields, needs)
@@ -243,7 +243,7 @@ func TestTheNamedPermissionOutranksTheResourceKind(t *testing.T) {
 		client.PermissionOpenWorkspaces: "cannot open one",
 		"a-permission-from-a-newer-api": "do not allow this",
 	} {
-		detail := refusedDetail(&client.Problem{
+		detail := forbiddenUpdateDetail(&client.Problem{
 			Status: 403, Type: client.ProblemForbidden, Title: "Not allowed to change the line", Permission: permission,
 		}, client.ScopeRunners)
 
@@ -259,7 +259,7 @@ func TestWithoutAPermissionTheTitleThenTheKindSays(t *testing.T) {
 		"Not allowed to open a workspace":         "cannot open one",
 		"Not allowed to change the runner-pool":   "lacks the runners scope",
 	} {
-		if detail := refusedDetail(&client.Problem{Status: 403, Type: client.ProblemForbidden, Title: title}, client.ScopeRunners); !strings.Contains(detail, says) {
+		if detail := forbiddenUpdateDetail(&client.Problem{Status: 403, Type: client.ProblemForbidden, Title: title}, client.ScopeRunners); !strings.Contains(detail, says) {
 			t.Errorf("%s: detail %q", title, detail)
 		}
 	}

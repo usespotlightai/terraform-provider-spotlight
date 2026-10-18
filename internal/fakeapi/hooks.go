@@ -175,7 +175,7 @@ func hookSigning(given any, errs *[]fieldError) any {
 	return map[string]any{"secretVersion": signing["secretVersion"]}
 }
 
-func hookSecret(held *resource, fields, body map[string]any) (string, []fieldError) {
+func hookSecret(existing *resource, fields, body map[string]any) (string, []fieldError) {
 	signing := objectOf(fields["signing"])
 	if signing == nil || signing["oidc"] != nil {
 		return "", nil
@@ -189,16 +189,16 @@ func hookSecret(held *resource, fields, body map[string]any) (string, []fieldErr
 	switch {
 	case given:
 		return secret, nil
-	case held == nil || objectOf(held.fields["signing"])["secretVersion"] != signing["secretVersion"]:
+	case existing == nil || objectOf(existing.fields["signing"])["secretVersion"] != signing["secretVersion"]:
 		return "", []fieldError{{"signing.secret", "is given whenever signing.secretVersion is set or changes, since that is how it is rotated"}}
 	default:
 		return "", nil
 	}
 }
 
-func nulls(held map[string]any, at string, errs *[]fieldError) {
-	for _, name := range slices.Sorted(maps.Keys(held)) {
-		if held[name] == nil {
+func nulls(object map[string]any, at string, errs *[]fieldError) {
+	for _, name := range slices.Sorted(maps.Keys(object)) {
+		if object[name] == nil {
 			*errs = append(*errs, fieldError{at + "." + name, "is null; leave it out instead"})
 		}
 	}

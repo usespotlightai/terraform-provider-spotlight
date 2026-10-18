@@ -3,12 +3,12 @@
 page_title: "spotlight_secret Resource - spotlight"
 subcategory: ""
 description: |-
-  A secret integrations wear toward the hosts it is bound to. Spotlight keeps its value and never answers it, so the value is write-only and never enters the plan or the state. Writing secrets needs a token granted the secrets scope. Import it as <workspace id>/<name>.
+  A secret that Spotlight injects into requests, for the hosts it is bound to. Spotlight keeps its value and never answers it, so the value is write-only and never enters the plan or the state. Writing secrets needs a token granted the secrets scope. Import it as <workspace id>/<name>.
 ---
 
 # spotlight_secret (Resource)
 
-A secret integrations wear toward the hosts it is bound to. Spotlight keeps its value and never answers it, so the value is write-only and never enters the plan or the state. Writing secrets needs a token granted the `secrets` scope. Import it as `<workspace id>/<name>`.
+A secret that Spotlight injects into requests, for the hosts it is bound to. Spotlight keeps its value and never answers it, so the value is write-only and never enters the plan or the state. Writing secrets needs a token granted the `secrets` scope. Import it as `<workspace id>/<name>`.
 
 ## Example Usage
 
@@ -44,7 +44,7 @@ resource "spotlight_secret" "google_maps_key" {
   workspace_id = spotlight_workspace.acme.id
   name         = "GOOGLE_MAPS_KEY"
   bindings = [
-    { host = "maps.googleapis.com", carrier = "query", name = "key" },
+    { host = "maps.googleapis.com", location = "query", name = "key" },
   ]
   value_wo         = var.secret_google_maps_key
   value_wo_version = 1
@@ -68,14 +68,14 @@ resource "spotlight_secret" "linear_signing" {
 
 ### Required
 
-- `name` (String) What integrations call the secret, as in `LINEAR_API_KEY`, written `secret.LINEAR_API_KEY` where one wears it. It is fixed for the secret's life, so changing it replaces the secret.
+- `name` (String) What integrations call the secret, as in `LINEAR_API_KEY`, written `secret.LINEAR_API_KEY` where an integration or a harness profile names it. It is fixed for the secret's life, so changing it replaces the secret.
 - `workspace_id` (String) The workspace the secret belongs to. Changing it replaces the secret.
 
 ### Optional
 
 > **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
 
-- `bindings` (Attributes List) The only hosts the secret is ever sent to, and how it is worn there; a request anywhere else goes without it. (see [below for nested schema](#nestedatt--bindings))
+- `bindings` (Attributes List) The only hosts the secret is ever sent to, and where Spotlight injects it there; a request anywhere else goes without it. (see [below for nested schema](#nestedatt--bindings))
 - `source` (Attributes) Where the value lives: kept by Spotlight (`built-in`, the default) or read from AWS Secrets Manager whenever it is used. (see [below for nested schema](#nestedatt--source))
 - `value_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The value Spotlight keeps, usually read from a sensitive variable. A secret read from AWS Secrets Manager takes none. It is sent to Spotlight and never stored in the plan or the state, so it needs Terraform 1.11 or later; change `value_wo_version` to send it again.
 - `value_wo_version` (Number) Any number; change it whenever `value_wo` changes, so Terraform sends the new value.
@@ -96,9 +96,9 @@ Required:
 
 Optional:
 
-- `carrier` (String) Whether the secret is worn in a request header or a query parameter: `header` (the default) or `query`.
-- `name` (String) The header or query parameter the secret is worn in. A header defaults to `authorization`; Spotlight holds a header name in lower case. A query parameter must be named.
-- `prefix` (String) Written before the value where it is worn, as in `Bearer `.
+- `location` (String) Whether Spotlight injects the secret in a request header or in a query parameter: `header` (the default) or `query`.
+- `name` (String) The header or query parameter that Spotlight injects the secret in. A header defaults to `authorization`; Spotlight stores a header name in lower case. A query parameter must be named.
+- `prefix` (String) The text that Spotlight writes before the value, as in `Bearer `.
 
 
 <a id="nestedatt--source"></a>
@@ -110,7 +110,7 @@ Required:
 
 Optional:
 
-- `field` (String) The key to read when the AWS secret holds JSON.
+- `field` (String) The key to read when the AWS secret contains JSON.
 - `secret_id` (String) The name or ARN of the secret in AWS Secrets Manager.
 
 ## Import

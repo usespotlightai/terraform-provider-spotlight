@@ -58,9 +58,9 @@ resource "spotlight_workspace" "acme" {
 
 - **Drift:** each refresh reads the whole resource, and changes made elsewhere are planned back.
 - **Defaults:** fields Spotlight fills in never show as a diff.
-- **Concurrency:** writes send `If-Match` with the version last read, so a resource changed since is refused, not overwritten.
+- **Concurrency:** writes send `If-Match` with the version last read, so a write to a resource changed since fails and does not overwrite it.
 - **Retries:** creates carry an `Idempotency-Key`, so a retried create makes one resource.
-- **Errors:** a refused write is reported on the attribute it's about, and a `403` names the scope the token lacks.
+- **Errors:** a rejected write is reported on the attribute it's about, and a `403` names the scope the token lacks.
 - **Expressions:** `terraform plan` type-checks every CEL expression in an integration or a hook. Write them as `$${{ ... }}`, and a hook's `when` bare.
 - **Tools:** name a tool through its integration, as in `spotlight_integration.grafana.tools["search"]`, so a tool renamed or removed fails the plan where it is named.
 
@@ -76,7 +76,7 @@ To use a local build, add a `dev_overrides` block for `usespotlightai/spotlight`
 
 The layout follows HashiCorp's [provider scaffold](https://github.com/hashicorp/terraform-provider-scaffolding-framework):
 
-| Path | Holds |
+| Path | Contains |
 | --- | --- |
 | `internal/provider/` | The provider, plus `<name>_resource.go`, `<name>_data_source.go` and `<name>_list_resource.go` for each type, with tests beside them and sweepers in `sweep_test.go` |
 | `internal/client/` | The API client; `apigen/` is generated from `api/openapi.json` |
@@ -111,7 +111,7 @@ CI fails when the committed client differs from one generated from the control p
 
 Push a `v*` tag. GoReleaser builds the archives, a GPG-signed `SHA256SUMS` and the registry manifest, and the Terraform Registry publishes the GitHub release.
 
-| CI secret | Used by | Holds |
+| CI secret | Used by | Value |
 | --- | --- | --- |
 | `APP_REPO_APP_ID` | `generate.yml` | The CI GitHub App that reads `usespotlightai/spotlight` (the one the infrastructure repo uses) |
 | `APP_REPO_PRIVATE_KEY` | `generate.yml` | That app's private key |

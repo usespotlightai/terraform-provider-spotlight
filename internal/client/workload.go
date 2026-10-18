@@ -70,7 +70,7 @@ func (g GitHubActions) WorkloadToken(ctx context.Context, audience string) (stri
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("GitHub Actions refused the OIDC token request with %d: %s; the job needs permissions: id-token: write",
+		return "", fmt.Errorf("GitHub Actions answered the OIDC token request with %d: %s; the job needs permissions: id-token: write",
 			resp.StatusCode, strings.TrimSpace(string(body)))
 	}
 

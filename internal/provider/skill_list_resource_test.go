@@ -14,7 +14,7 @@ import (
 func seededSkills(t *testing.T, seeded acctest.Seeded) (core, platform acctest.Listed) {
 	t.Helper()
 
-	held := func(team client.Team, key string) acctest.Listed {
+	create := func(team client.Team, key string) acctest.Listed {
 		t.Helper()
 
 		created, err := seeded.Client.CreateSkill(t.Context(), team.ID, client.SkillInput{Key: key, Files: map[string]string{
@@ -25,9 +25,9 @@ func seededSkills(t *testing.T, seeded acctest.Seeded) (core, platform acctest.L
 		return acctest.ListedAs(created.Meta)
 	}
 
-	held(seeded.OtherCore, "grafana")
+	create(seeded.OtherCore, "grafana")
 
-	return held(seeded.Core, "grafana"), held(seeded.Platform, "sentry")
+	return create(seeded.Core, "grafana"), create(seeded.Platform, "sentry")
 }
 
 func TestSkillListResource(t *testing.T) {
@@ -40,9 +40,9 @@ func TestSkillListResource(t *testing.T) {
 		t.Errorf("listed %v, want %v", all, want)
 	}
 
-	held := acctest.List(t, fake, "spotlight_skill", map[string]string{"workspace_id": seeded.Workspace.ID, "team_id": seeded.Core.ID})
-	if want := []acctest.Listed{core}; !slices.Equal(held, want) {
-		t.Errorf("listed %v in the core team, want %v", held, want)
+	inCore := acctest.List(t, fake, "spotlight_skill", map[string]string{"workspace_id": seeded.Workspace.ID, "team_id": seeded.Core.ID})
+	if want := []acctest.Listed{core}; !slices.Equal(inCore, want) {
+		t.Errorf("listed %v in the core team, want %v", inCore, want)
 	}
 }
 

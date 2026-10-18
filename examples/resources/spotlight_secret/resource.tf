@@ -29,7 +29,7 @@ resource "spotlight_secret" "google_maps_key" {
   workspace_id = spotlight_workspace.acme.id
   name         = "GOOGLE_MAPS_KEY"
   bindings = [
-    { host = "maps.googleapis.com", carrier = "query", name = "key" },
+    { host = "maps.googleapis.com", location = "query", name = "key" },
   ]
   value_wo         = var.secret_google_maps_key
   value_wo_version = 1

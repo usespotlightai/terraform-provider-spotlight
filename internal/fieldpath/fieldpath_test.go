@@ -31,7 +31,7 @@ func TestParseReadsWhatTheAPIWrites(t *testing.T) {
 	}
 }
 
-func TestParseRefusesWhatIsNotAPath(t *testing.T) {
+func TestParseRejectsWhatIsNotAPath(t *testing.T) {
 	for _, written := range []string{"[0]", "a..b", `a["unterminated]`, "a[x]"} {
 		if _, err := fieldpath.Parse(written); err == nil {
 			t.Errorf("Parse(%q) should fail", written)

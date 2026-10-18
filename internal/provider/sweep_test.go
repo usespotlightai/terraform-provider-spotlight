@@ -98,13 +98,13 @@ func sweeper[T any](
 			return err
 		}
 
-		held, err := list(cp.Client, ctx, cp.Workspace.ID)
+		listed, err := list(cp.Client, ctx, cp.Workspace.ID)
 		if err != nil {
 			return err
 		}
 
 		var failed []error
-		for _, each := range held {
+		for _, each := range listed {
 			meta := metaOf(each)
 			if !strings.HasPrefix(meta.Address, prefix) {
 				continue

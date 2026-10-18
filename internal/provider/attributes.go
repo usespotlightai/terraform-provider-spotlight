@@ -83,35 +83,35 @@ type collection interface {
 	ElementsAs(ctx context.Context, target any, allowUnhandled bool) diag.Diagnostics
 }
 
-func stringsIn(held collection, diags *diag.Diagnostics) []string {
+func stringsIn(values collection, diags *diag.Diagnostics) []string {
 	out := []string{}
-	if held.IsNull() || held.IsUnknown() {
+	if values.IsNull() || values.IsUnknown() {
 		return out
 	}
 
-	diags.Append(held.ElementsAs(context.Background(), &out, false)...)
+	diags.Append(values.ElementsAs(context.Background(), &out, false)...)
 
 	return out
 }
 
-func textOrNull(held string) types.String {
-	if held == "" {
+func textOrNull(text string) types.String {
+	if text == "" {
 		return types.StringNull()
 	}
 
-	return types.StringValue(held)
+	return types.StringValue(text)
 }
 
-func float64AsWritten(held float64) types.Float64 {
-	written, _, err := big.ParseFloat(strconv.FormatFloat(held, 'g', -1, 64), 10, 512, big.ToNearestEven)
+func float64AsWritten(number float64) types.Float64 {
+	written, _, err := big.ParseFloat(strconv.FormatFloat(number, 'g', -1, 64), 10, 512, big.ToNearestEven)
 	if err != nil {
-		return types.Float64Value(held)
+		return types.Float64Value(number)
 	}
 
 	value, err := types.Float64Type.ValueFromTerraform(context.Background(), tftypes.NewValue(tftypes.Number, written))
 	read, ok := value.(types.Float64)
 	if err != nil || !ok {
-		return types.Float64Value(held)
+		return types.Float64Value(number)
 	}
 
 	return read
@@ -131,26 +131,26 @@ func (d float64Default) DefaultFloat64(_ context.Context, _ defaults.Float64Requ
 	resp.PlanValue = float64AsWritten(float64(d))
 }
 
-func stringSet(held []string) types.Set {
-	return types.SetValueMust(types.StringType, stringValues(held))
+func stringSet(values []string) types.Set {
+	return types.SetValueMust(types.StringType, stringValues(values))
 }
 
-func stringList(held []string) types.List {
-	return types.ListValueMust(types.StringType, stringValues(held))
+func stringList(values []string) types.List {
+	return types.ListValueMust(types.StringType, stringValues(values))
 }
 
-func stringMap(held map[string]string) types.Map {
-	out := make(map[string]attr.Value, len(held))
-	for key, each := range held {
+func stringMap(values map[string]string) types.Map {
+	out := make(map[string]attr.Value, len(values))
+	for key, each := range values {
 		out[key] = types.StringValue(each)
 	}
 
 	return types.MapValueMust(types.StringType, out)
 }
 
-func stringValues(held []string) []attr.Value {
-	out := make([]attr.Value, 0, len(held))
-	for _, each := range held {
+func stringValues(values []string) []attr.Value {
+	out := make([]attr.Value, 0, len(values))
+	for _, each := range values {
 		out = append(out, types.StringValue(each))
 	}
 

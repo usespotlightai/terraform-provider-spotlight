@@ -15,7 +15,7 @@ var (
 
 // Pieces lists the bare CEL expressions in a string, in the order of the
 // string. If the whole string is one ${{ }}, it lists the whole string. If
-// not, it lists each ${{ }} in the string. A string with no ${{ }} holds no
+// not, it lists each ${{ }} in the string. A string with no ${{ }} contains no
 // expression.
 func Pieces(text string) []string {
 	if found := whole.FindStringSubmatch(text); found != nil {

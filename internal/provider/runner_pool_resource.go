@@ -40,11 +40,11 @@ type RunnerPoolResource struct {
 
 const (
 	runnerPoolIssuedToken = "Spotlight issued this pool a token, answered only once. Terraform keeps no secret in its state, so the token was not kept, and no host can claim with it. " +
-		"Give the pool a token you hold instead: set `token` (from a sensitive variable, or a write-only ephemeral value) and change `token_version` to send it."
+		"Give the pool a token that you have instead: set `token` (from a sensitive variable, or a write-only ephemeral value) and change `token_version` to send it."
 	runnerPoolPullOnly = "is only for a pool that is pulled from; a pool that provisions is called instead, and has no token."
 )
 
-// RunnerPoolResourceModel is a spotlight_runner_pool as Terraform holds it.
+// RunnerPoolResourceModel is a spotlight_runner_pool as Terraform stores it.
 type RunnerPoolResourceModel struct {
 	ID           types.String         `tfsdk:"id"`
 	Version      types.Int64          `tfsdk:"version"`
@@ -79,8 +79,8 @@ func (r *RunnerPoolResource) Schema(_ context.Context, _ resource.SchemaRequest,
 func runnerPoolSchema() schema.Schema {
 	attributes := writeonly.Token.Attributes("The token a `spotlight-host` serving the pool claims work with: 32 to 255 URL-safe characters, as a generated password would be. " +
 		"Only for a pool without `provision`. Spotlight keeps only its hash. Left out, Spotlight issues one when it creates the pool, which Terraform does not keep; " +
-		"a change to `token_version` must come with a token. A token is given once, ever: another pool's token is refused, and one rotated away, or held by a pool since deleted or replaced, " +
-		"is spent and refused to every pool, the same one included, so rotating or replacing a pool always needs a new token.")
+		"a change to `token_version` must come with a token. A token is given once, ever: another pool's token is not accepted, and one rotated away, or used by a pool that was deleted or replaced, " +
+		"is spent and no pool accepts it, the same one included, so rotating or replacing a pool always needs a new token.")
 	attributes["id"] = idAttribute("runner pool")
 	attributes["version"] = versionAttribute("runner pool")
 	attributes["address"] = addressAttribute("ephemeral")
@@ -142,7 +142,7 @@ func (r *RunnerPoolResource) Configure(_ context.Context, req resource.Configure
 	r.client = clientOf(req.ProviderData, &resp.Diagnostics)
 }
 
-// ValidateConfig refuses a token for a push pool, because Spotlight calls the
+// ValidateConfig rejects a token for a push pool, because Spotlight calls the
 // provision URL of a push pool.
 func (r *RunnerPoolResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
 	var provision types.Object

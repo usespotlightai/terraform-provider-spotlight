@@ -44,15 +44,15 @@ func readAnswer[T any](resp *http.Response, err error) (T, error) {
 		return zero, fmt.Errorf("could not read the control plane's answer: %w", err)
 	}
 
-	var held *T
+	var decoded *T
 	if resp.StatusCode < http.StatusBadRequest {
 		var value T
 		if json.Unmarshal(body, &value) == nil {
-			held = &value
+			decoded = &value
 		}
 	}
 
-	return answered(resp, body, held)
+	return answered(resp, body, decoded)
 }
 
 func done(resp *http.Response, body []byte) error {
@@ -68,9 +68,9 @@ func done(resp *http.Response, body []byte) error {
 }
 
 func problemOf(resp *http.Response, body []byte) *Problem {
-	var held apigen.ProblemResponseDto
+	var decoded apigen.ProblemResponseDto
 
-	if err := json.Unmarshal(body, &held); err != nil || held.Type == "" {
+	if err := json.Unmarshal(body, &decoded); err != nil || decoded.Type == "" {
 		detail := strings.TrimSpace(string(body))
 		if detail == "" {
 			detail = http.StatusText(resp.StatusCode)
@@ -85,31 +85,31 @@ func problemOf(resp *http.Response, body []byte) *Problem {
 
 	problem := &Problem{
 		Status: resp.StatusCode,
-		Type:   held.Type,
-		Title:  held.Title,
-		Detail: held.Detail,
+		Type:   decoded.Type,
+		Title:  decoded.Title,
+		Detail: decoded.Detail,
 	}
 
-	if held.Permission != nil {
-		problem.Permission = Permission(*held.Permission)
+	if decoded.Permission != nil {
+		problem.Permission = Permission(*decoded.Permission)
 	}
 
-	if held.Errors != nil {
-		problem.Errors = fieldErrors(*held.Errors)
+	if decoded.Errors != nil {
+		problem.Errors = fieldErrors(*decoded.Errors)
 	}
 
-	if held.CurrentVersion != nil {
-		version := int64(*held.CurrentVersion)
+	if decoded.CurrentVersion != nil {
+		version := int64(*decoded.CurrentVersion)
 		problem.CurrentVersion = &version
 	}
 
 	return problem
 }
 
-func fieldErrors(held []apigen.FieldErrorResponseDto) []FieldError {
-	out := make([]FieldError, 0, len(held))
+func fieldErrors(dtos []apigen.FieldErrorResponseDto) []FieldError {
+	out := make([]FieldError, 0, len(dtos))
 
-	for _, each := range held {
+	for _, each := range dtos {
 		out = append(out, FieldError{
 			Path:     each.Path,
 			Message:  each.Message,
@@ -144,10 +144,10 @@ func jsonBody(in any) (io.Reader, error) {
 	return bytes.NewReader(raw), nil
 }
 
-func orNone[T any](held []T) []T {
-	if held == nil {
+func orNone[T any](items []T) []T {
+	if items == nil {
 		return []T{}
 	}
 
-	return held
+	return items
 }
