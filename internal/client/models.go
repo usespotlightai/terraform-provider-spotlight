@@ -87,16 +87,16 @@ type SkillInput struct {
 // of the integration.
 type Integration struct {
 	Meta
-	TeamID     string
-	Source     string
-	Definition Definition
-	Tools      map[string]string
-	Described  *Described
+	TeamID      string
+	Integration string
+	Definition  Definition
+	Tools       map[string]string
+	Spec        *Spec
 }
 
-// Described is the API description that the tools of an integration come
+// Spec is the API description that the tools of an integration come
 // from, as Spotlight last read it.
-type Described struct {
+type Spec struct {
 	Kind    string
 	Hash    *string
 	ReadAt  time.Time
@@ -218,7 +218,7 @@ type RunnerTrustInput struct {
 type WorkspaceTokenTrust struct {
 	Meta
 	WorkspaceID string
-	DefinedBy   string
+	CreatedBy   string
 	WorkspaceTokenTrustInput
 }
 

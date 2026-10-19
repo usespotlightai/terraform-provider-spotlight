@@ -41,28 +41,28 @@ type IntegrationResource struct {
 }
 
 const (
-	integrationHost      = "integration"
-	integrationTools     = "tools"
-	integrationDescribed = "described"
+	integrationHost  = "integration"
+	integrationTools = "tools"
+	integrationSpec  = "spec"
 )
 
 var integrationDescriptions = []string{"openapi", "graphql", "mcp"}
 
 // IntegrationResourceModel is a spotlight_integration as Terraform stores it.
 type IntegrationResourceModel struct {
-	ID         types.String  `tfsdk:"id"`
-	Version    types.Int64   `tfsdk:"version"`
-	Address    types.String  `tfsdk:"address"`
-	TeamID     types.String  `tfsdk:"team_id"`
-	Source     types.String  `tfsdk:"source"`
-	Definition types.Dynamic `tfsdk:"definition"`
-	Tools      types.Map     `tfsdk:"tools"`
-	Described  types.Object  `tfsdk:"described"`
+	ID          types.String  `tfsdk:"id"`
+	Version     types.Int64   `tfsdk:"version"`
+	Address     types.String  `tfsdk:"address"`
+	TeamID      types.String  `tfsdk:"team_id"`
+	Integration types.String  `tfsdk:"integration"`
+	Definition  types.Dynamic `tfsdk:"definition"`
+	Tools       types.Map     `tfsdk:"tools"`
+	Spec        types.Object  `tfsdk:"spec"`
 }
 
 var (
-	integrationFields         = fieldpath.Locator{Schema: integrationSchema().Type(), Under: fieldpath.Path{fieldpath.Key(expressions.Attribute)}}
-	integrationDescribedTypes = attributeTypesAt(integrationSchema().Type(), integrationDescribed)
+	integrationFields    = fieldpath.Locator{Schema: integrationSchema().Type(), Under: fieldpath.Path{fieldpath.Key(expressions.Attribute)}}
+	integrationSpecTypes = attributeTypesAt(integrationSchema().Type(), integrationSpec)
 )
 
 func (r *IntegrationResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -79,13 +79,13 @@ func integrationSchema() schema.Schema {
 			"Spotlight stores the definition whole, exactly as the integration's definition is written, with its keys verbatim; write each expression as `$${{ ... }}` so Terraform leaves it alone. " +
 			"`terraform plan` type-checks every expression in it where it is written. " +
 			"A definition may name an API description, `openapi` or `graphql`, that Spotlight generates a tool from for each operation when it reads it, or a remote MCP server, `mcp`, whose tools it lists; those tools are known only after apply. " +
-			"Import it as `<workspace id>/<team key>/<source>`.",
+			"Import it as `<workspace id>/<team key>/<integration>`.",
 		Attributes: map[string]schema.Attribute{
 			"id":      idAttribute("integration"),
 			"version": versionAttribute("integration"),
 			"address": addressAttribute("core/linear"),
 			"team_id": ownerAttribute("team", "integration"),
-			"source": schema.StringAttribute{
+			integrationHost: schema.StringAttribute{
 				Computed:            true,
 				MarkdownDescription: "The host the integration defines, from `definition.integration`. It is fixed for the integration's life, so changing it replaces the integration.",
 			},
@@ -100,7 +100,7 @@ func integrationSchema() schema.Schema {
 					"Name a tool through it, as in `spotlight_integration.grafana.tools[\"search\"]`, so a tool renamed or removed fails the plan where it is named. " +
 					"When the definition names an API description or an MCP server the tools are known only after apply, so a generated tool named through it that is not there fails the apply, not the plan.",
 			},
-			integrationDescribed: schema.SingleNestedAttribute{
+			integrationSpec: schema.SingleNestedAttribute{
 				Computed:            true,
 				MarkdownDescription: "The API description or MCP server the integration's tools are generated from, as Spotlight last read it; null when the definition names none.",
 				Attributes: map[string]schema.Attribute{
@@ -162,7 +162,7 @@ func (r *IntegrationResource) ValidateConfig(ctx context.Context, req resource.V
 	resp.Diagnostics.Append(r.expressions.Check(ctx, definition)...)
 }
 
-// ModifyPlan plans the source and tools from the definition. It replaces the
+// ModifyPlan plans the integration and tools from the definition. It replaces the
 // integration when the definition identifies a different host. The apply sets
 // the tools that come from an API description.
 func (r *IntegrationResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -181,10 +181,10 @@ func (r *IntegrationResource) ModifyPlan(ctx context.Context, req resource.Modif
 		return
 	}
 
-	resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("source"), source)...)
+	resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root(integrationHost), source)...)
 
 	if !integrationDescribes(definition) {
-		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root(integrationDescribed), types.ObjectNull(integrationDescribedTypes))...)
+		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root(integrationSpec), types.ObjectNull(integrationSpecTypes))...)
 	}
 
 	if tools, known := integrationToolsIn(definition, source); known {
@@ -196,7 +196,7 @@ func (r *IntegrationResource) ModifyPlan(ctx context.Context, req resource.Modif
 	}
 
 	var prior types.String
-	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("source"), &prior)...)
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root(integrationHost), &prior)...)
 
 	if !prior.IsNull() && prior.ValueString() != source {
 		resp.RequiresReplace = append(resp.RequiresReplace, path.Root(expressions.Attribute).AtName(integrationHost))
@@ -343,14 +343,14 @@ func integrationInput(plan IntegrationResourceModel) (client.Definition, diag.Di
 
 func integrationModel(integration client.Integration, kept *IntegrationResourceModel) IntegrationResourceModel {
 	model := IntegrationResourceModel{
-		ID:         types.StringValue(integration.ID),
-		Version:    types.Int64Value(integration.Version),
-		Address:    types.StringValue(integration.Address),
-		TeamID:     types.StringValue(integration.TeamID),
-		Source:     types.StringValue(integration.Source),
-		Definition: dynamic.FromJSON(integration.Definition),
-		Tools:      stringMap(integration.Tools),
-		Described:  integrationDescribedValue(integration.Described),
+		ID:          types.StringValue(integration.ID),
+		Version:     types.Int64Value(integration.Version),
+		Address:     types.StringValue(integration.Address),
+		TeamID:      types.StringValue(integration.TeamID),
+		Integration: types.StringValue(integration.Integration),
+		Definition:  dynamic.FromJSON(integration.Definition),
+		Tools:       stringMap(integration.Tools),
+		Spec:        integrationSpecValue(integration.Spec),
 	}
 
 	if kept != nil {
@@ -360,17 +360,17 @@ func integrationModel(integration client.Integration, kept *IntegrationResourceM
 	return model
 }
 
-func integrationDescribedValue(described *client.Described) types.Object {
-	if described == nil {
-		return types.ObjectNull(integrationDescribedTypes)
+func integrationSpecValue(spec *client.Spec) types.Object {
+	if spec == nil {
+		return types.ObjectNull(integrationSpecTypes)
 	}
 
-	return types.ObjectValueMust(integrationDescribedTypes, map[string]attr.Value{
-		"kind":    types.StringValue(described.Kind),
-		"hash":    types.StringPointerValue(described.Hash),
-		"read_at": types.StringValue(described.ReadAt.Format(time.RFC3339Nano)),
-		"problem": types.StringPointerValue(described.Problem),
-		"tools":   types.Int64Value(described.Tools),
+	return types.ObjectValueMust(integrationSpecTypes, map[string]attr.Value{
+		"kind":    types.StringValue(spec.Kind),
+		"hash":    types.StringPointerValue(spec.Hash),
+		"read_at": types.StringValue(spec.ReadAt.Format(time.RFC3339Nano)),
+		"problem": types.StringPointerValue(spec.Problem),
+		"tools":   types.Int64Value(spec.Tools),
 	})
 }
 

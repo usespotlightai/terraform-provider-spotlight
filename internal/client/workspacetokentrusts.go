@@ -22,7 +22,7 @@ func workspaceTokenTrustOf(dto apigen.WorkspaceTokenTrustResourceResponseDto) Wo
 	return WorkspaceTokenTrust{
 		Meta:        meta(dto.Id, dto.Version, dto.Address, dto.Warnings),
 		WorkspaceID: dto.WorkspaceId,
-		DefinedBy:   dto.DefinedBy,
+		CreatedBy:   dto.CreatedBy,
 		WorkspaceTokenTrustInput: WorkspaceTokenTrustInput{
 			Key:             dto.Key,
 			Issuer:          dto.Issuer,

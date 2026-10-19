@@ -2,12 +2,12 @@
 page_title: "spotlight_integration Resource - spotlight"
 subcategory: ""
 description: |-
-  An integration a team has defined: how Spotlight hears from a host, and the actions and tools it offers against it. Spotlight stores the definition whole, exactly as the integration's definition is written, with its keys verbatim; write each expression as $${{ ... }} so Terraform leaves it alone. terraform plan type-checks every expression in it where it is written. A definition may name an API description, openapi or graphql, that Spotlight generates a tool from for each operation when it reads it, or a remote MCP server, mcp, whose tools it lists; those tools are known only after apply. Import it as <workspace id>/<team key>/<source>.
+  An integration a team has defined: how Spotlight hears from a host, and the actions and tools it offers against it. Spotlight stores the definition whole, exactly as the integration's definition is written, with its keys verbatim; write each expression as $${{ ... }} so Terraform leaves it alone. terraform plan type-checks every expression in it where it is written. A definition may name an API description, openapi or graphql, that Spotlight generates a tool from for each operation when it reads it, or a remote MCP server, mcp, whose tools it lists; those tools are known only after apply. Import it as <workspace id>/<team key>/<integration>.
 ---
 
 # spotlight_integration (Resource)
 
-An integration a team has defined: how Spotlight hears from a host, and the actions and tools it offers against it. Spotlight stores the definition whole, exactly as the integration's definition is written, with its keys verbatim; write each expression as `$${{ ... }}` so Terraform leaves it alone. `terraform plan` type-checks every expression in it where it is written. A definition may name an API description, `openapi` or `graphql`, that Spotlight generates a tool from for each operation when it reads it, or a remote MCP server, `mcp`, whose tools it lists; those tools are known only after apply. Import it as `<workspace id>/<team key>/<source>`.
+An integration a team has defined: how Spotlight hears from a host, and the actions and tools it offers against it. Spotlight stores the definition whole, exactly as the integration's definition is written, with its keys verbatim; write each expression as `$${{ ... }}` so Terraform leaves it alone. `terraform plan` type-checks every expression in it where it is written. A definition may name an API description, `openapi` or `graphql`, that Spotlight generates a tool from for each operation when it reads it, or a remote MCP server, `mcp`, whose tools it lists; those tools are known only after apply. Import it as `<workspace id>/<team key>/<integration>`.
 
 ## Example Usage
 
@@ -112,14 +112,14 @@ resource "spotlight_integration" "core_linear_mcp" {
 ### Read-Only
 
 - `address` (String) Names the resource within its workspace, as in `core/linear`.
-- `described` (Attributes) The API description or MCP server the integration's tools are generated from, as Spotlight last read it; null when the definition names none. (see [below for nested schema](#nestedatt--described))
 - `id` (String) Issued by Spotlight when the integration is created, and never changed.
-- `source` (String) The host the integration defines, from `definition.integration`. It is fixed for the integration's life, so changing it replaces the integration.
+- `integration` (String) The host the integration defines, from `definition.integration`. It is fixed for the integration's life, so changing it replaces the integration.
+- `spec` (Attributes) The API description or MCP server the integration's tools are generated from, as Spotlight last read it; null when the definition names none. (see [below for nested schema](#nestedatt--spec))
 - `tools` (Map of String) Each tool the integration offers, by its name in `definition.tools` or as generated from its API description or MCP server, to the name a station or hook gives it by, as in `{ search = "grafana.search" }`. Name a tool through it, as in `spotlight_integration.grafana.tools["search"]`, so a tool renamed or removed fails the plan where it is named. When the definition names an API description or an MCP server the tools are known only after apply, so a generated tool named through it that is not there fails the apply, not the plan.
 - `version` (Number) Rises with every change to the integration; each write sends it back so a change made since is not overwritten.
 
-<a id="nestedatt--described"></a>
-### Nested Schema for `described`
+<a id="nestedatt--spec"></a>
+### Nested Schema for `spec`
 
 Read-Only:
 

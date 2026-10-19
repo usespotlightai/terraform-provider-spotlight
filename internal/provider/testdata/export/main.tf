@@ -212,7 +212,7 @@ resource "spotlight_line" "core_delivery" {
     diffs     = true
     decisions = true
     memories  = false
-    tools     = ["${spotlight_integration.core_linear.source}.comment", "pull-request"]
+    tools     = ["${spotlight_integration.core_linear.integration}.comment", "pull-request"]
     skills    = [spotlight_skill.core_grafana.key]
     runners   = ["gpu"]
     passes_to = ["code-review"]

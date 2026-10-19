@@ -78,7 +78,7 @@ func TestIntegrationLifecycle(t *testing.T) {
 			{
 				Config: integrationConfig("linear", integrationSoundWhen, integrationSoundThread),
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(integrationAddress, tfjsonpath.New("source"), knownvalue.StringExact("linear")),
+					statecheck.ExpectKnownValue(integrationAddress, tfjsonpath.New("integration"), knownvalue.StringExact("linear")),
 					statecheck.ExpectKnownValue(integrationAddress, tfjsonpath.New("address"), knownvalue.StringExact("core/linear")),
 					statecheck.ExpectKnownValue(integrationAddress,
 						tfjsonpath.New("definition").AtMapKey("webhook").AtMapKey("events").AtSliceIndex(0).AtMapKey("when"),
@@ -116,7 +116,7 @@ func TestIntegrationLifecycle(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(integrationAddress, plancheck.ResourceActionDestroyBeforeCreate),
-						plancheck.ExpectKnownValue(integrationAddress, tfjsonpath.New("source"), knownvalue.StringExact("jira")),
+						plancheck.ExpectKnownValue(integrationAddress, tfjsonpath.New("integration"), knownvalue.StringExact("jira")),
 					},
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
@@ -335,7 +335,7 @@ func TestIntegrationToolsFromAnAPIDescriptionAreKnownAfterApply(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectUnknownValue(integrationPetstoreAddress, tfjsonpath.New("tools")),
-						plancheck.ExpectUnknownValue(integrationPetstoreAddress, tfjsonpath.New("described")),
+						plancheck.ExpectUnknownValue(integrationPetstoreAddress, tfjsonpath.New("spec")),
 					},
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
@@ -344,9 +344,9 @@ func TestIntegrationToolsFromAnAPIDescriptionAreKnownAfterApply(t *testing.T) {
 						"find-pets": knownvalue.StringExact("petstore.find-pets"),
 						"add-pet":   knownvalue.StringExact("petstore.add-pet"),
 					})),
-					statecheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("described").AtMapKey("kind"), knownvalue.StringExact("openapi")),
-					statecheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("described").AtMapKey("tools"), knownvalue.Int64Exact(2)),
-					statecheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("described").AtMapKey("problem"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("spec").AtMapKey("kind"), knownvalue.StringExact("openapi")),
+					statecheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("spec").AtMapKey("tools"), knownvalue.Int64Exact(2)),
+					statecheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("spec").AtMapKey("problem"), knownvalue.Null()),
 				},
 			},
 			{
@@ -367,7 +367,7 @@ func TestIntegrationToolsFromAnAPIDescriptionAreKnownAfterApply(t *testing.T) {
 						plancheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("tools"), knownvalue.MapExact(map[string]knownvalue.Check{
 							"adopt": knownvalue.StringExact("petstore.adopt"),
 						})),
-						plancheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("described"), knownvalue.Null()),
+						plancheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("spec"), knownvalue.Null()),
 					},
 				},
 			},
@@ -388,7 +388,7 @@ func TestIntegrationToolsWithoutAnAPIDescriptionAreKnownAtPlan(t *testing.T) {
 						plancheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("tools"), knownvalue.MapExact(map[string]knownvalue.Check{
 							"adopt": knownvalue.StringExact("petstore.adopt"),
 						})),
-						plancheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("described"), knownvalue.Null()),
+						plancheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("spec"), knownvalue.Null()),
 					},
 				},
 			},
@@ -401,7 +401,7 @@ func TestIntegrationToolsWithoutAnAPIDescriptionAreKnownAtPlan(t *testing.T) {
 					},
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("described").AtMapKey("kind"), knownvalue.StringExact("graphql")),
+					statecheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("spec").AtMapKey("kind"), knownvalue.StringExact("graphql")),
 				},
 			},
 		},
@@ -420,7 +420,7 @@ func TestIntegrationToolsFromAnMCPServerAreKnownAfterApply(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectUnknownValue(integrationPetstoreAddress, tfjsonpath.New("tools")),
-						plancheck.ExpectUnknownValue(integrationPetstoreAddress, tfjsonpath.New("described")),
+						plancheck.ExpectUnknownValue(integrationPetstoreAddress, tfjsonpath.New("spec")),
 					},
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
@@ -429,7 +429,7 @@ func TestIntegrationToolsFromAnMCPServerAreKnownAfterApply(t *testing.T) {
 						"search-issues": knownvalue.StringExact("petstore.search-issues"),
 						"delete-issue":  knownvalue.StringExact("petstore.delete-issue"),
 					})),
-					statecheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("described").AtMapKey("kind"), knownvalue.StringExact("mcp")),
+					statecheck.ExpectKnownValue(integrationPetstoreAddress, tfjsonpath.New("spec").AtMapKey("kind"), knownvalue.StringExact("mcp")),
 				},
 			},
 			{
