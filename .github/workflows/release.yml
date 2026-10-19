@@ -28,8 +28,16 @@ jobs:
       created: ${{ steps.release.outputs.release_created }}
       tag: ${{ steps.release.outputs.tag_name }}
     steps:
+      - name: Generate a token for release-please
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.APP_REPO_APP_ID }}
+          private-key: ${{ secrets.APP_REPO_PRIVATE_KEY }}
       - id: release
         uses: googleapis/release-please-action@v5
+        with:
+          token: ${{ steps.app-token.outputs.token }}
 
   publish:
     needs: release-please
