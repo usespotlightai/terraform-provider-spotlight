@@ -1,26 +1,46 @@
 name: Release
 
-# This workflow builds an archive for each platform, a SHA256SUMS file signed
-# with the release GPG key, and the registry manifest. It publishes them as a
-# GitHub release. The Terraform Registry gets the release from there.
+# release-please keeps a release pull request open on main. Merging it tags the
+# release and creates it as a draft. This job then builds the archives, a
+# SHA256SUMS file signed with the release GPG key and the registry manifest,
+# uploads them to the draft and publishes it. The Terraform Registry gets the
+# release when it is published, so every file is there by then.
 #   GPG_PRIVATE_KEY  the armored private key. The usespotlightai namespace on
 #                    registry.terraform.io has its public key.
 #   GPG_PASSPHRASE   the passphrase of that key
 
 on:
   push:
-    tags:
-      - "v*"
+    branches: [main]
 
 permissions:
   contents: write
+  pull-requests: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
-  release:
+  release-please:
     runs-on: ubuntu-latest
+    outputs:
+      created: ${{ steps.release.outputs.release_created }}
+      tag: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - id: release
+        uses: googleapis/release-please-action@v5
+
+  publish:
+    needs: release-please
+    if: needs.release-please.outputs.created == 'true'
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ needs.release-please.outputs.tag }}
     steps:
       - uses: actions/checkout@v7
         with:
+          ref: ${{ needs.release-please.outputs.tag }}
           fetch-depth: 0
       - uses: actions/setup-go@v7
         with:
@@ -36,5 +56,12 @@ jobs:
           version: "~> v2"
           args: release --clean
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GPG_FINGERPRINT: ${{ steps.gpg.outputs.fingerprint }}
+      - name: Upload to the draft and publish it
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="${TAG#v}"
+          cp terraform-registry-manifest.json "dist/terraform-provider-spotlight_${version}_manifest.json"
+          gh release upload "$TAG" dist/*.zip dist/*_SHA256SUMS dist/*_SHA256SUMS.sig dist/*_manifest.json --clobber
+          gh release edit "$TAG" --draft=false

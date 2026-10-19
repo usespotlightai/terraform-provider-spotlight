@@ -112,7 +112,11 @@ CI fails when the committed client differs from one generated from the control p
 
 ## Release
 
-Push a `v*` tag. GoReleaser builds the archives, a GPG-signed `SHA256SUMS` and the registry manifest, and the Terraform Registry publishes the GitHub release.
+Releases come from [release-please](https://github.com/googleapis/release-please). Pull requests are squash-merged, and the title becomes the commit, so the title is a Conventional Commit with the Linear issue as the scope, as in `feat(SPO-123): Add the judge to stations`. The **Pull request title** check enforces it.
+
+- **Release pull request:** after each merge to `main`, release-please updates one open pull request with the next version and its `CHANGELOG.md` entries. `feat` and `fix` commits make a release; `docs`, `chore`, `ci`, `test`, `refactor` and `build` do not.
+- **Publishing:** merging the release pull request tags the commit and creates a draft release. `release.yml` then builds the archives, a GPG-signed `SHA256SUMS` and the registry manifest with GoReleaser, uploads them to the draft and publishes it. The Terraform Registry takes the release when it is published.
+- **Release candidates:** `release-please-config.json` has `"prerelease": true`, so each release is the next `-rc.N`. For the final `0.1.0`, set it to `false`; the next release drops the suffix.
 
 | CI secret | Used by | Value |
 | --- | --- | --- |
