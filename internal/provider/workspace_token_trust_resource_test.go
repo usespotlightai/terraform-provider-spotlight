@@ -49,7 +49,7 @@ func TestWorkspaceTokenTrustLifecycle(t *testing.T) {
 					statecheck.ExpectKnownValue(workspaceTokenTrustAddress, tfjsonpath.New("audience"), knownvalue.StringExact("spotlight")),
 					statecheck.ExpectKnownValue(workspaceTokenTrustAddress, tfjsonpath.New("claims"), knownvalue.MapExact(map[string]knownvalue.Check{})),
 					statecheck.ExpectKnownValue(workspaceTokenTrustAddress, tfjsonpath.New("lifetime_minutes"), knownvalue.Int64Exact(15)),
-					statecheck.ExpectKnownValue(workspaceTokenTrustAddress, tfjsonpath.New("defined_by"), knownvalue.StringExact(fakeapi.Admin)),
+					statecheck.ExpectKnownValue(workspaceTokenTrustAddress, tfjsonpath.New("created_by"), knownvalue.StringExact(fakeapi.Admin)),
 					statecheck.ExpectKnownValue(workspaceTokenTrustAddress, tfjsonpath.New("scopes"), knownvalue.SetExact([]knownvalue.Check{
 						knownvalue.StringExact("configure"), knownvalue.StringExact("secrets"),
 					})),
@@ -242,7 +242,7 @@ func TestAccWorkspaceTokenTrust(t *testing.T) {
 					resource.TestCheckResourceAttr(workspaceTokenTrustAddress, "audience", "spotlight"),
 					resource.TestCheckResourceAttr(workspaceTokenTrustAddress, "claims.%", "0"),
 					resource.TestCheckResourceAttr(workspaceTokenTrustAddress, "lifetime_minutes", "15"),
-					resource.TestCheckResourceAttrSet(workspaceTokenTrustAddress, "defined_by"),
+					resource.TestCheckResourceAttrSet(workspaceTokenTrustAddress, "created_by"),
 				),
 			},
 			{

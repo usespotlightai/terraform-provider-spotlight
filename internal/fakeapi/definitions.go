@@ -377,7 +377,7 @@ func integration(body map[string]any) (map[string]any, []fieldError) {
 		definition["actions"] = filled
 	}
 
-	return map[string]any{"source": source, "definition": definition}, nil
+	return map[string]any{"integration": source, "definition": definition}, nil
 }
 
 var generated = map[string][]string{
@@ -386,7 +386,7 @@ var generated = map[string][]string{
 	"mcp":     {"search-issues", "delete-issue"},
 }
 
-func describedBy(fields map[string]any) string {
+func specKind(fields map[string]any) string {
 	definition := objectOf(fields["definition"])
 	for _, kind := range slices.Sorted(maps.Keys(generated)) {
 		if definition[kind] != nil {
@@ -398,10 +398,10 @@ func describedBy(fields map[string]any) string {
 }
 
 func offered(fields map[string]any) map[string]any {
-	source := textOf(fields["source"])
+	source := textOf(fields["integration"])
 	tools := map[string]any{}
 
-	for _, name := range generated[describedBy(fields)] {
+	for _, name := range generated[specKind(fields)] {
 		tools[name] = source + "." + name
 	}
 
@@ -412,8 +412,8 @@ func offered(fields map[string]any) map[string]any {
 	return tools
 }
 
-func described(fields map[string]any) any {
-	kind := describedBy(fields)
+func specOf(fields map[string]any) any {
+	kind := specKind(fields)
 	if kind == "" {
 		return nil
 	}

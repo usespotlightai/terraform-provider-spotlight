@@ -823,7 +823,7 @@ var fixedFields = map[string][]string{
 	"team":                  {"key"},
 	"line":                  {"key"},
 	"skill":                 {"key"},
-	"integration":           {"source"},
+	"integration":           {"integration"},
 	"harness-profile":       {"key"},
 	"secret":                {"name"},
 	"runner-trust":          {"key"},
@@ -859,7 +859,7 @@ func (s *Server) addressOf(stored *resource) string {
 	case "workspace-runners":
 		return s.slugOf(stored.owner)
 	case "integration":
-		return s.teamKeyOf(stored) + "/" + textOf(stored.fields["source"])
+		return s.teamKeyOf(stored) + "/" + textOf(stored.fields["integration"])
 	default:
 		return s.teamKeyOf(stored) + "/" + textOf(stored.fields["key"])
 	}
@@ -921,7 +921,7 @@ func (s *Server) bodyOf(stored *resource) map[string]any {
 	}
 
 	if stored.kind == "workspace-token-trust" {
-		body["definedBy"] = Admin
+		body["createdBy"] = Admin
 	}
 
 	if stored.kind == "egress" && strings.HasPrefix(textOf(stored.fields["url"]), "http:") {
@@ -930,7 +930,7 @@ func (s *Server) bodyOf(stored *resource) map[string]any {
 
 	if stored.kind == "integration" {
 		body["tools"] = offered(stored.fields)
-		body["described"] = described(stored.fields)
+		body["spec"] = specOf(stored.fields)
 	}
 
 	return body

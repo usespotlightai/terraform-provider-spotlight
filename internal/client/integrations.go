@@ -10,21 +10,21 @@ import (
 
 func integrationOf(dto apigen.IntegrationResourceResponseDto) Integration {
 	return Integration{
-		Meta:       meta(dto.Id, dto.Version, dto.Address, dto.Warnings),
-		TeamID:     dto.TeamId,
-		Source:     dto.Source,
-		Definition: dto.Definition,
-		Tools:      dto.Tools,
-		Described:  describedOf(dto.Described),
+		Meta:        meta(dto.Id, dto.Version, dto.Address, dto.Warnings),
+		TeamID:      dto.TeamId,
+		Integration: dto.Integration,
+		Definition:  dto.Definition,
+		Tools:       dto.Tools,
+		Spec:        specOf(dto.Spec),
 	}
 }
 
-func describedOf(dto *apigen.DescribedSourceResponseDto) *Described {
+func specOf(dto *apigen.ApiSpecResponseDto) *Spec {
 	if dto == nil {
 		return nil
 	}
 
-	return &Described{
+	return &Spec{
 		Kind:    string(dto.Kind),
 		Hash:    dto.Hash,
 		ReadAt:  dto.ReadAt,

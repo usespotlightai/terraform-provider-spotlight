@@ -135,7 +135,7 @@ func TestAccWorkspaceConfiguredEndToEnd(t *testing.T) {
 					resource.TestCheckResourceAttr("spotlight_team.acc", "address", k.Team),
 					resource.TestCheckResourceAttr("spotlight_line.delivery", "address", k.Team+"/"+k.Line),
 					resource.TestCheckResourceAttr("spotlight_skill.grafana", "description", "Look up dashboards"),
-					resource.TestCheckResourceAttr("spotlight_integration.linear", "source", k.Integration),
+					resource.TestCheckResourceAttr("spotlight_integration.linear", "integration", k.Integration),
 				),
 			},
 			{
