@@ -5,7 +5,7 @@ name: Acceptance
 # of resource under random keys. It does a round trip of an export, destroys
 # the resources that it created, and does not change the workspace.
 #   SPOTLIGHT_ACC_URL        the dev control plane, for example https://dev.spotlight.example.com
-#   SPOTLIGHT_ACC_TOKEN      a workspace API token on that control plane with configure, secrets and runners
+#   SPOTLIGHT_ACC_TOKEN      a workspace API token on that control plane with configure, secrets, runners and trusts
 #   SPOTLIGHT_ACC_WORKSPACE  the slug of the workspace of that token
 
 on:

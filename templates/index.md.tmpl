@@ -8,7 +8,7 @@ description: |-
 
 Configure a [Spotlight](https://github.com/usespotlightai) workspace as code: its teams, the lines their tasks move along, the skills and harness profiles their agents are given, the integrations that connect them to other tools, the secrets that Spotlight injects into the requests of those integrations, and the runner pools, egresses and trusts the work runs through.
 
-**Download as Terraform**, in the web app's workspace menu, gives you a workspace you already have as configuration for this provider: a zipped module with an `import` block for each resource, and each prompt and skill as its own file. A first `terraform apply` adopts what is there and plans no change.
+`terraform query -generate-config-out=generated.tf` gives you a workspace you already have as configuration for this provider, with an `import` block for each resource (see [Reading and listing](#reading-and-listing)). A first `terraform apply` adopts what is there and plans no change.
 
 ## Authentication
 
@@ -65,7 +65,7 @@ A token may not open a workspace, so creating a `spotlight_workspace` with one f
 
 The `spotlight_workspace` and `spotlight_team` data sources read a workspace by its slug and a team by its key, for configuration that works inside them without managing them.
 
-Every resource is also a list resource. In Terraform 1.14 and later, a `list` block in a `.tfquery.hcl` file lists the resources in a workspace, and `terraform query -generate-config-out=generated.tf` writes a resource and an `import` block for each, which is the same adoption the web app's download offers, with prompts and skills written inline rather than as files. Every resource has a resource identity, its `id`, so each can also be imported with an `import` block that names its `identity` (Terraform 1.12 and later).
+Every resource is also a list resource. In Terraform 1.14 and later, a `list` block in a `.tfquery.hcl` file lists the resources in a workspace, and `terraform query -generate-config-out=generated.tf` writes a resource and an `import` block for each, with prompts and skills written inline. Every resource has a resource identity, its `id`, so each can also be imported with an `import` block that names its `identity` (Terraform 1.12 and later).
 
 ## Where work runs
 
