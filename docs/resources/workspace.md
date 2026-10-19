@@ -3,14 +3,14 @@ page_title: "spotlight_workspace Resource - spotlight"
 subcategory: ""
 description: |-
   A Spotlight workspace. A person creates it by signing up in the web app; Terraform adopts it with an import block that names its slug, then manages everything inside it.
-  Creating a workspace from Terraform needs a caller allowed to open workspaces, and API tokens are not: a token acts only inside its own workspace. Import the workspace rather than creating it.
+  Creating a workspace from Terraform needs a caller allowed to create workspaces, and API tokens are not: a token acts only inside its own workspace. Import the workspace rather than creating it.
 ---
 
 # spotlight_workspace (Resource)
 
 A Spotlight workspace. A person creates it by signing up in the web app; Terraform adopts it with an `import` block that names its slug, then manages everything inside it.
 
-Creating a workspace from Terraform needs a caller allowed to open workspaces, and API tokens are not: a token acts only inside its own workspace. Import the workspace rather than creating it.
+Creating a workspace from Terraform needs a caller allowed to create workspaces, and API tokens are not: a token acts only inside its own workspace. Import the workspace rather than creating it.
 
 ## Adopt a workspace
 
@@ -30,7 +30,7 @@ resource "spotlight_workspace" "acme" {
 
 ## Creating a workspace
 
-Creating a workspace from Terraform needs a caller allowed to open workspaces. API tokens are not: a token acts only inside its own workspace, and opening one fails with `403 Forbidden`. The provider reports that error with the `import` block to write instead.
+Creating a workspace from Terraform needs a caller allowed to create workspaces. API tokens are not: a token acts only inside its own workspace, and creating one fails with `403 Forbidden`. The provider reports that error with the `import` block to write instead.
 
 ## Stop managing a workspace
 

@@ -295,7 +295,7 @@ func TestTheProviderReportsAnOIDCTokenTheTrustDoesNotAccept(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      providerWorkspace,
-				ExpectError: regexp.MustCompile(`(?s)did not accept the OIDC\s+token`),
+				ExpectError: regexp.MustCompile(`(?s)could not exchange the OIDC\s+token`),
 			},
 		},
 	})

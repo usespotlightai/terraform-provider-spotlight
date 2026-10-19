@@ -40,7 +40,7 @@ type issuing struct {
 	clock        *clock
 	lifetime     time.Duration
 	unauthorized map[string]bool
-	accept       string
+	matches      string
 	jwts         int
 }
 
@@ -63,9 +63,9 @@ func (i *issuing) serve(w http.ResponseWriter, r *http.Request) {
 		reply(w, http.StatusOK, "application/json", map[string]any{"count": 1, "value": jwt})
 	case "/api/workspace-tokens/exchange":
 		token, _ := body["token"].(string)
-		if i.accept != "" && !strings.HasPrefix(token, i.accept) {
+		if i.matches != "" && !strings.HasPrefix(token, i.matches) {
 			reply(w, http.StatusUnauthorized, "application/problem+json", map[string]any{
-				"type": "urn:spotlight:problem:unauthenticated", "title": "Unauthorized", "status": 401, "detail": "The workload is not accepted",
+				"type": "urn:spotlight:problem:unauthenticated", "title": "Unauthorized", "status": 401, "detail": "Token trust trust-1 does not match this workload.",
 			})
 			return
 		}
@@ -353,10 +353,10 @@ func TestAnUnauthorizedStoredTokenIsNotRetried(t *testing.T) {
 
 func TestAFailedExchangeNamesTheTrust(t *testing.T) {
 	api, issued := exchangingClient(t, fromGitHub)
-	issued.accept = "nothing"
+	issued.matches = "nothing"
 
 	_, err := api.ReadWorkspace(context.Background(), "ws-1")
-	if err == nil || !strings.Contains(err.Error(), "workspace token trust trust-1 did not accept the OIDC token") || !strings.Contains(err.Error(), "The workload is not accepted") {
+	if err == nil || !strings.Contains(err.Error(), "could not exchange the OIDC token through the workspace token trust trust-1") || !strings.Contains(err.Error(), "Token trust trust-1 does not match this workload.") {
 		t.Fatalf("got %v", err)
 	}
 

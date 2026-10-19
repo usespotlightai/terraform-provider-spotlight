@@ -56,7 +56,7 @@ func (r *WorkspaceResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 func workspaceSchema() schema.Schema {
 	return schema.Schema{
 		MarkdownDescription: "A Spotlight workspace. A person creates it by signing up in the web app; Terraform adopts it with an `import` block that names its slug, then manages everything inside it.\n\n" +
-			"Creating a workspace from Terraform needs a caller allowed to open workspaces, and API tokens are not: a token acts only inside its own workspace. Import the workspace rather than creating it.",
+			"Creating a workspace from Terraform needs a caller allowed to create workspaces, and API tokens are not: a token acts only inside its own workspace. Import the workspace rather than creating it.",
 		Attributes: map[string]schema.Attribute{
 			"id":      idAttribute("workspace"),
 			"version": versionAttribute("workspace"),

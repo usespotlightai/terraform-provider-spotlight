@@ -233,7 +233,6 @@ func forbiddenUpdateDetail(problem *client.Problem, needs client.Scope) string {
 
 func TestTheNamedPermissionOutranksTheResourceKind(t *testing.T) {
 	for permission, says := range map[client.Permission]string{
-		client.PermissionRead:             "lacks the read scope",
 		client.PermissionPlan:             "lacks the plan scope",
 		client.PermissionConfigure:        "lacks the configure scope",
 		client.PermissionSecrets:          "lacks the secrets scope",

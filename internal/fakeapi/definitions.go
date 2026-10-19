@@ -151,7 +151,7 @@ func line(body map[string]any) (map[string]any, []fieldError) {
 			case !keys[textOf(next)]:
 				errs = append(errs, fieldError{fmt.Sprintf("stations[%d].passesTo", at), fmt.Sprintf("names %s, which is not a station on this line", next)})
 			case !worked[textOf(next)]:
-				errs = append(errs, fieldError{fmt.Sprintf("stations[%d].passesTo", at), fmt.Sprintf("must pass to work stations, but %s is not one", next)})
+				errs = append(errs, fieldError{fmt.Sprintf("stations[%d].passesTo", at), fmt.Sprintf("must pass to work stations, but %s does not", textOf(station["name"]))})
 			}
 		}
 

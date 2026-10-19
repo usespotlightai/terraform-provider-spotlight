@@ -128,7 +128,7 @@ func (e *exchanging) exchange(ctx context.Context) (issued, error) {
 
 	dto, err := answered(resp.HTTPResponse, resp.Body, resp.JSON200)
 	if err != nil {
-		return issued{}, fmt.Errorf("the workspace token trust %s did not accept the OIDC token: %v", e.oidc.Trust, err)
+		return issued{}, fmt.Errorf("could not exchange the OIDC token through the workspace token trust %s: %v", e.oidc.Trust, err)
 	}
 
 	expiresAt, err := time.Parse(time.RFC3339, dto.ExpiresAt)

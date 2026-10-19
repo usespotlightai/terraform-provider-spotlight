@@ -21,7 +21,6 @@ type Permission string
 
 // The permissions that a 403 problem can identify.
 const (
-	PermissionRead             Permission = "read"
 	PermissionPlan             Permission = "plan"
 	PermissionConfigure        Permission = "configure"
 	PermissionSecrets          Permission = "secrets"
@@ -32,7 +31,6 @@ const (
 )
 
 var grantedBy = map[Permission]Scope{
-	PermissionRead:      ScopeRead,
 	PermissionPlan:      ScopePlan,
 	PermissionConfigure: ScopeConfigure,
 	PermissionSecrets:   ScopeSecrets,
