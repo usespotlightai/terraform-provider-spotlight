@@ -529,7 +529,7 @@ func TestHookImportsByIdentity(t *testing.T) {
 func hookAccConfig(k acctest.Keys, text string) string {
 	return fmt.Sprintf(`
 resource "spotlight_team" "acc" {
-  workspace_id = spotlight_workspace.acc.id
+  workspace_id = local.workspace_id
   key          = %[1]q
   name         = "Terraform acceptance"
 }
@@ -548,7 +548,7 @@ resource "spotlight_integration" "linear" {
     }
     tools = {
       comment = {
-        does        = "comment"
+        action      = "comment"
         description = "Comment on the issue."
         inputs      = { body = { type = "string", required = true } }
       }
@@ -616,6 +616,10 @@ func TestAccHook(t *testing.T) {
 				Config:      acctest.AdoptedWorkspace(cp.Workspace) + hookAccConfig(k, "Commented by $${{ event.tol }}"),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`(?s)Invalid expression in steps\[0\]\.with\.body`),
+			},
+			{
+				Config:           acctest.ReleasedWorkspace(cp.Workspace) + hookAccConfig(k, "Commented: $${{ event.inputs.body }}"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{acctest.ExpectForgotten("spotlight_workspace.acc")}},
 			},
 		},
 	})

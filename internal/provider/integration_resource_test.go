@@ -46,7 +46,7 @@ resource "spotlight_integration" "core_linear" {
     }
     on = {
       "task.opened" = {
-        do = "comment"
+        action = "comment"
         to = { thread = %q }
       }
     }
@@ -176,7 +176,7 @@ resource "spotlight_integration" "core_linear" {
   definition = {
     integration = "linear"
     connection = {
-      holder = "requester"
+      actsAs = "requester"
       oauth2 = {
         authorize    = "https://linear.app/oauth/authorize"
         token        = "https://api.linear.app/oauth/token"
@@ -202,7 +202,7 @@ func TestIntegrationActingAsEachPersonRoundTrips(t *testing.T) {
 				Config: acctest.Workspace + integrationActingAsEachPerson,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(integrationAddress,
-						tfjsonpath.New("definition").AtMapKey("connection").AtMapKey("holder"),
+						tfjsonpath.New("definition").AtMapKey("connection").AtMapKey("actsAs"),
 						knownvalue.StringExact("requester")),
 					statecheck.ExpectKnownValue(integrationAddress, oauth2("registration"),
 						knownvalue.StringExact("https://api.linear.app/oauth/register")),
@@ -316,7 +316,7 @@ resource "spotlight_integration" "core_petstore" {
     integration = "petstore"
     %s
     tools = {
-      adopt = { does = "adopt", description = "Adopt a pet." }
+      adopt = { action = "adopt", description = "Adopt a pet." }
     }
   }
 }

@@ -1,15 +1,17 @@
 name: Acceptance
 
-# This workflow runs the TF_ACC tests against a dev control plane, in the
-# workspace of the token. Each run imports the workspace and creates each kind
-# of resource under random keys. It does a round trip of an export, destroys
-# the resources that it created, and does not change the workspace.
-#   SPOTLIGHT_ACC_URL        the dev control plane, for example https://dev.spotlight.example.com
-#   SPOTLIGHT_ACC_TOKEN      a workspace API token on that control plane with configure, secrets, runners and trusts
-#   SPOTLIGHT_ACC_WORKSPACE  the slug of the workspace of that token
+# This workflow runs the TF_ACC tests against a throwaway Spotlight control
+# plane. scripts/acceptance/run.sh starts the control plane at a Spotlight
+# release, creates a workspace and a token there, runs make testacc and
+# removes the control plane.
 
 on:
   workflow_dispatch:
+    inputs:
+      spotlight_version:
+        description: "The control-plane image tag to test against: a Spotlight release, or canary (the latest staging build) when left empty."
+        required: false
+        type: string
   push:
     branches: [main]
   schedule:
@@ -17,34 +19,26 @@ on:
 
 permissions:
   contents: read
-
-concurrency:
-  group: acceptance
-  cancel-in-progress: false
+  packages: read
 
 jobs:
   acceptance:
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    env:
-      TF_ACC: "1"
-      SPOTLIGHT_URL: ${{ secrets.SPOTLIGHT_ACC_URL }}
-      SPOTLIGHT_API_TOKEN: ${{ secrets.SPOTLIGHT_ACC_TOKEN }}
-      SPOTLIGHT_ACC_WORKSPACE: ${{ secrets.SPOTLIGHT_ACC_WORKSPACE }}
     steps:
-      - name: Skip without a dev control plane
-        if: env.SPOTLIGHT_URL == '' || env.SPOTLIGHT_API_TOKEN == '' || env.SPOTLIGHT_ACC_WORKSPACE == ''
-        run: echo "::notice::SPOTLIGHT_ACC_URL, SPOTLIGHT_ACC_TOKEN and SPOTLIGHT_ACC_WORKSPACE are not all set; acceptance tests skipped."
       - uses: actions/checkout@v7
-        if: env.SPOTLIGHT_URL != '' && env.SPOTLIGHT_API_TOKEN != '' && env.SPOTLIGHT_ACC_WORKSPACE != ''
       - uses: actions/setup-go@v7
-        if: env.SPOTLIGHT_URL != '' && env.SPOTLIGHT_API_TOKEN != '' && env.SPOTLIGHT_ACC_WORKSPACE != ''
         with:
           go-version-file: go.mod
       - uses: hashicorp/setup-terraform@v4
-        if: env.SPOTLIGHT_URL != '' && env.SPOTLIGHT_API_TOKEN != '' && env.SPOTLIGHT_ACC_WORKSPACE != ''
         with:
           terraform_wrapper: false
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Acceptance tests
-        if: env.SPOTLIGHT_URL != '' && env.SPOTLIGHT_API_TOKEN != '' && env.SPOTLIGHT_ACC_WORKSPACE != ''
-        run: make testacc
+        env:
+          SPOTLIGHT_VERSION: ${{ inputs.spotlight_version }}
+        run: scripts/acceptance/run.sh

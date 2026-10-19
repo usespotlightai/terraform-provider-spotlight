@@ -59,11 +59,11 @@ type lineStation struct {
 }
 
 type lineJudge struct {
-	Rubric    types.String  `tfsdk:"rubric"`
-	Claims    types.List    `tfsdk:"claims"`
-	PassShare types.Float64 `tfsdk:"pass_share"`
-	Sample    types.Float64 `tfsdk:"sample"`
-	Trust     types.Float64 `tfsdk:"trust"`
+	Rubric        types.String  `tfsdk:"rubric"`
+	Claims        types.List    `tfsdk:"claims"`
+	PassThreshold types.Float64 `tfsdk:"pass_threshold"`
+	Sample        types.Float64 `tfsdk:"sample"`
+	MinAgreement  types.Float64 `tfsdk:"min_agreement"`
 }
 
 type lineAlert struct {
@@ -201,9 +201,9 @@ func lineInput(plan LineResourceModel) (client.Definition, diag.Diagnostics) {
 			judge := lineWritten{}
 			judge.text("rubric", each.Judge.Rubric)
 			judge.texts("claims", each.Judge.Claims, &diags)
-			judge.number("passShare", each.Judge.PassShare)
+			judge.number("passThreshold", each.Judge.PassThreshold)
 			judge.number("sample", each.Judge.Sample)
-			judge.number("trust", each.Judge.Trust)
+			judge.number("minAgreement", each.Judge.MinAgreement)
 			station["judge"] = map[string]any(judge)
 		}
 
@@ -444,11 +444,11 @@ func lineStationOf(read lineRead) lineStation {
 
 	if judge, ok := read.object("judge"); ok {
 		station.Judge = &lineJudge{
-			Rubric:    judge.text("rubric"),
-			Claims:    judge.claims(),
-			PassShare: judge.number("passShare"),
-			Sample:    judge.number("sample"),
-			Trust:     judge.number("trust"),
+			Rubric:        judge.text("rubric"),
+			Claims:        judge.claims(),
+			PassThreshold: judge.number("passThreshold"),
+			Sample:        judge.number("sample"),
+			MinAgreement:  judge.number("minAgreement"),
 		}
 	}
 
