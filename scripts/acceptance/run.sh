@@ -5,11 +5,11 @@
 #   eval "$(scripts/acceptance/run.sh up)" start it and export its SPOTLIGHT_* variables
 #   scripts/acceptance/run.sh down         remove it
 #
-#   SPOTLIGHT_VERSION   the control-plane image tag (a Spotlight release)
+#   SPOTLIGHT_VERSION   the control-plane image tag: canary (the latest staging build) if not set, or a Spotlight release
 #   SPOTLIGHT_ACC_PORT  the local port of the control plane, 3300 if not set
 set -euo pipefail
 
-: "${SPOTLIGHT_VERSION:=e54e7dea9613}"
+: "${SPOTLIGHT_VERSION:=canary}"
 : "${SPOTLIGHT_ACC_PORT:=3300}"
 : "${COMPOSE_PROJECT_NAME:=spotlight-acc}"
 export SPOTLIGHT_VERSION SPOTLIGHT_ACC_PORT COMPOSE_PROJECT_NAME
@@ -50,6 +50,8 @@ up() {
     compose logs migrate control-plane >&2 || true
     return 1
   fi
+  log "Spotlight ${SPOTLIGHT_VERSION} is build $(docker image inspect --format '{{ index .Config.Labels "org.opencontainers.image.version" }}' \
+    "${SPOTLIGHT_IMAGES:-ghcr.io/usespotlightai}/spotlight-control-plane:${SPOTLIGHT_VERSION}")."
 
   local user session slug
   user=$(random 16)

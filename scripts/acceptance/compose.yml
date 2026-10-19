@@ -31,6 +31,7 @@ services:
 
   migrate:
     image: ${SPOTLIGHT_IMAGES:-ghcr.io/usespotlightai}/spotlight-control-plane-migrate:${SPOTLIGHT_VERSION:?}
+    pull_policy: always
     platform: linux/amd64
     environment: *control-plane-env
     depends_on:
@@ -39,6 +40,7 @@ services:
 
   control-plane:
     image: ${SPOTLIGHT_IMAGES:-ghcr.io/usespotlightai}/spotlight-control-plane:${SPOTLIGHT_VERSION:?}
+    pull_policy: always
     platform: linux/amd64
     environment: *control-plane-env
     depends_on:

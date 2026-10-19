@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       spotlight_version:
-        description: "The Spotlight release (control-plane image tag) to test against."
+        description: "The control-plane image tag to test against: a Spotlight release, or canary (the latest staging build) when left empty."
         required: false
         type: string
   push:
