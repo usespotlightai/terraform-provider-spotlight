@@ -23,6 +23,38 @@
         ]
       }
     },
+    "/health/ready": {
+      "get": {
+        "operationId": "getReadiness",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Readiness probe",
+        "tags": [
+          "health"
+        ]
+      }
+    },
     "/error-reporting": {
       "get": {
         "operationId": "getErrorReporting",
@@ -23801,6 +23833,50 @@
         },
         "required": [
           "status"
+        ]
+      },
+      "ReadinessCheckDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "postgres"
+          },
+          "status": {
+            "type": "string",
+            "example": "ok",
+            "enum": [
+              "ok",
+              "failed"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "status"
+        ]
+      },
+      "ReadinessResponseDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "ready",
+            "enum": [
+              "ready",
+              "not_ready"
+            ]
+          },
+          "checks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReadinessCheckDto"
+            }
+          }
+        },
+        "required": [
+          "status",
+          "checks"
         ]
       },
       "ErrorReportingResponseDto": {

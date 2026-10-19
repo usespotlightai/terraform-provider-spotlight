@@ -16,7 +16,7 @@ func workspaceOf(dto apigen.WorkspaceResourceResponseDto) Workspace {
 	}
 }
 
-// CreateWorkspace opens a workspace.
+// CreateWorkspace creates a workspace.
 func (c *Client) CreateWorkspace(ctx context.Context, in WorkspaceInput) (Workspace, error) {
 	resp, err := c.api.CreateWorkspaceWithResponse(ctx,
 		&apigen.CreateWorkspaceParams{IdempotencyKey: uuid.NewString()},

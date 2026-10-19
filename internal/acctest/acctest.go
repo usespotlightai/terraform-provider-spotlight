@@ -58,14 +58,14 @@ func NoneLeft(fake *fakeapi.Server, kinds ...string) func(*terraform.State) erro
 }
 
 // NothingContains checks that no attribute in the state contains one of these
-// values, because the state must never keep a write-only value.
+// values, because the state must never store a write-only value.
 func NothingContains(values ...func() string) func(*terraform.State) error {
 	return func(state *terraform.State) error {
 		for _, module := range state.Modules {
 			for address, stored := range module.Resources {
-				for name, kept := range stored.Primary.Attributes {
+				for name, attribute := range stored.Primary.Attributes {
 					for _, value := range values {
-						if secret := value(); secret != "" && strings.Contains(kept, secret) {
+						if secret := value(); secret != "" && strings.Contains(attribute, secret) {
 							return fmt.Errorf("%s.%s contains a write-only value", address, name)
 						}
 					}

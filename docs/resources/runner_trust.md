@@ -3,12 +3,12 @@
 page_title: "spotlight_runner_trust Resource - spotlight"
 subcategory: ""
 description: |-
-  A workload whose platform-issued tokens let a spotlight-host claim work, as a Kubernetes service account's do: a host there has no Spotlight token and claims through the trust with its workload token, given SPOTLIGHT_TRUST=<trust id> and SPOTLIGHT_OIDC_TOKEN_FILE=<projected token path>. Writing runner trusts needs a token granted the runners scope. Import it as <workspace id>/<key>.
+  A workload whose platform-issued tokens let a spotlight-host claim work, as a Kubernetes service account's do: a host there has no Spotlight token and claims through the trust with its workload token, with SPOTLIGHT_TRUST=<trust id> and SPOTLIGHT_OIDC_TOKEN_FILE=<projected token path>. Writing runner trusts needs a token granted the runners scope. Import it as <workspace id>/<key>.
 ---
 
 # spotlight_runner_trust (Resource)
 
-A workload whose platform-issued tokens let a `spotlight-host` claim work, as a Kubernetes service account's do: a host there has no Spotlight token and claims through the trust with its workload token, given `SPOTLIGHT_TRUST=<trust id>` and `SPOTLIGHT_OIDC_TOKEN_FILE=<projected token path>`. Writing runner trusts needs a token granted the `runners` scope. Import it as `<workspace id>/<key>`.
+A workload whose platform-issued tokens let a `spotlight-host` claim work, as a Kubernetes service account's do: a host there has no Spotlight token and claims through the trust with its workload token, with `SPOTLIGHT_TRUST=<trust id>` and `SPOTLIGHT_OIDC_TOKEN_FILE=<projected token path>`. Writing runner trusts needs a token granted the `runners` scope. Import it as `<workspace id>/<key>`.
 
 ## Example Usage
 
@@ -28,7 +28,7 @@ resource "spotlight_runner_trust" "production_cluster" {
 ### Required
 
 - `issuer` (String) The https URL the platform signs its workloads' tokens as; its keys are found through OIDC discovery.
-- `key` (String) Names the trust, as in `production-cluster`. It is fixed for the runner trust's life, so changing it replaces the runner trust.
+- `key` (String) Names the trust, as in `production-cluster`. It is immutable, so changing it replaces the runner trust.
 - `subject` (String) The workload a token must be issued to, exactly, as in `system:serviceaccount:spotlight:runner`.
 - `workspace_id` (String) The workspace the runner trust belongs to. Changing it replaces the runner trust.
 

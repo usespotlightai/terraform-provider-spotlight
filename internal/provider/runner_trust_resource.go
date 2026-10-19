@@ -56,14 +56,14 @@ func (r *RunnerTrustResource) Schema(_ context.Context, _ resource.SchemaRequest
 func runnerTrustSchema() schema.Schema {
 	return schema.Schema{
 		MarkdownDescription: "A workload whose platform-issued tokens let a `spotlight-host` claim work, as a Kubernetes service account's do: a host there has no Spotlight token " +
-			"and claims through the trust with its workload token, given `SPOTLIGHT_TRUST=<trust id>` and `SPOTLIGHT_OIDC_TOKEN_FILE=<projected token path>`. " +
+			"and claims through the trust with its workload token, with `SPOTLIGHT_TRUST=<trust id>` and `SPOTLIGHT_OIDC_TOKEN_FILE=<projected token path>`. " +
 			"Writing runner trusts needs a token granted the `runners` scope. Import it as `<workspace id>/<key>`.",
 		Attributes: map[string]schema.Attribute{
 			"id":           idAttribute("runner trust"),
 			"version":      versionAttribute("runner trust"),
 			"address":      addressAttribute("production-cluster"),
 			"workspace_id": ownerAttribute("workspace", "runner trust"),
-			"key":          fixedAttribute("Names the trust, as in `production-cluster`.", "runner trust"),
+			"key":          immutableAttribute("Names the trust, as in `production-cluster`.", "runner trust"),
 			"issuer": schema.StringAttribute{
 				Required:            true,
 				MarkdownDescription: "The https URL the platform signs its workloads' tokens as; its keys are found through OIDC discovery.",
@@ -133,12 +133,12 @@ func (r *RunnerTrustResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	kept := &state
+	prior := &state
 	if !answerUnchanged(ctx, req.Private, runnerTrustSettable(runnerTrust)) {
-		kept = nil
+		prior = nil
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, runnerTrustModel(runnerTrust, kept))...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, runnerTrustModel(runnerTrust, prior))...)
 	resp.Diagnostics.Append(setIdentity(ctx, resp.Identity, runnerTrust.ID)...)
 	resp.Diagnostics.Append(rememberAnswer(ctx, resp.Private, runnerTrustSettable(runnerTrust))...)
 }
@@ -221,7 +221,7 @@ func runnerTrustInput(plan RunnerTrustResourceModel) (client.RunnerTrustInput, d
 	}, diags
 }
 
-func runnerTrustModel(trust client.RunnerTrust, kept *RunnerTrustResourceModel) RunnerTrustResourceModel {
+func runnerTrustModel(trust client.RunnerTrust, prior *RunnerTrustResourceModel) RunnerTrustResourceModel {
 	model := RunnerTrustResourceModel{
 		ID:          types.StringValue(trust.ID),
 		Version:     types.Int64Value(trust.Version),
@@ -234,12 +234,12 @@ func runnerTrustModel(trust client.RunnerTrust, kept *RunnerTrustResourceModel) 
 		Labels:      stringSet(trust.Labels),
 	}
 
-	if kept != nil {
-		model.Key = kept.Key
-		model.Issuer = kept.Issuer
-		model.Subject = kept.Subject
-		model.Audience = kept.Audience
-		model.Labels = kept.Labels
+	if prior != nil {
+		model.Key = prior.Key
+		model.Issuer = prior.Issuer
+		model.Subject = prior.Subject
+		model.Audience = prior.Audience
+		model.Labels = prior.Labels
 	}
 
 	return model

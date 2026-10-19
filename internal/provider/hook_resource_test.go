@@ -83,9 +83,9 @@ func hookImportID(state *terraform.State) (string, error) {
 	return state.RootModule().Resources["spotlight_workspace.acme"].Primary.ID + "/core/grafana-reads", nil
 }
 
-func hookKept(fake *fakeapi.Server, want string) resource.TestCheckFunc {
+func hookSecret(fake *fakeapi.Server, want string) resource.TestCheckFunc {
 	return func(*terraform.State) error {
-		if got := fake.Kept(fake.IDOf("hook", "core/grafana-reads")); got != want {
+		if got := fake.WriteOnly(fake.IDOf("hook", "core/grafana-reads")); got != want {
 			return fmt.Errorf("the hook signs with %q, want %q", got, want)
 		}
 
@@ -125,7 +125,7 @@ func TestHookLifecycle(t *testing.T) {
 					statecheck.ExpectKnownValue("spotlight_integration.slack", tfjsonpath.New("tools"),
 						knownvalue.MapExact(map[string]knownvalue.Check{"post-message": knownvalue.StringExact("slack.post-message")})),
 				},
-				Check: resource.ComposeAggregateTestCheckFunc(hookKept(fake, provisionFirst), acctest.NothingContains(acctest.Value(provisionFirst))),
+				Check: resource.ComposeAggregateTestCheckFunc(hookSecret(fake, provisionFirst), acctest.NothingContains(acctest.Value(provisionFirst))),
 			},
 			{
 				Config:   config,
@@ -156,7 +156,7 @@ func TestHookLifecycle(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(hookAddress, plancheck.ResourceActionUpdate)},
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
-					hookKept(fake, provisionSecond),
+					hookSecret(fake, provisionSecond),
 					sentTimes(fake, hookSigningSecret, 2, "a new secret_wo_version sends the secret again"),
 					acctest.NothingContains(acctest.Value(provisionFirst), acctest.Value(provisionSecond)),
 				),

@@ -1,5 +1,5 @@
 variable "secret_linear_api_key" {
-  description = "The value of the secret LINEAR_API_KEY, which Spotlight keeps and never answers"
+  description = "The value of the secret LINEAR_API_KEY, which Spotlight stores and never returns"
   type        = string
   sensitive   = true
 }

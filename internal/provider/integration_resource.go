@@ -41,12 +41,12 @@ type IntegrationResource struct {
 }
 
 const (
-	integrationHost  = "integration"
+	integrationKey   = "integration"
 	integrationTools = "tools"
 	integrationSpec  = "spec"
 )
 
-var integrationDescriptions = []string{"openapi", "graphql", "mcp"}
+var integrationSpecKinds = []string{"openapi", "graphql", "mcp"}
 
 // IntegrationResourceModel is a spotlight_integration as Terraform stores it.
 type IntegrationResourceModel struct {
@@ -75,19 +75,19 @@ func (r *IntegrationResource) Schema(_ context.Context, _ resource.SchemaRequest
 
 func integrationSchema() schema.Schema {
 	return schema.Schema{
-		MarkdownDescription: "An integration a team has defined: how Spotlight hears from a host, and the actions and tools it offers against it. " +
+		MarkdownDescription: "An integration a team has created: how Spotlight receives events from a service, and the actions and tools it provides for that service. " +
 			"Spotlight stores the definition whole, exactly as the integration's definition is written, with its keys verbatim; write each expression as `$${{ ... }}` so Terraform leaves it alone. " +
 			"`terraform plan` type-checks every expression in it where it is written. " +
-			"A definition may name an API description, `openapi` or `graphql`, that Spotlight generates a tool from for each operation when it reads it, or a remote MCP server, `mcp`, whose tools it lists; those tools are known only after apply. " +
+			"A definition may name an API spec, `openapi` or `graphql`, that Spotlight generates a tool from for each operation when it reads it, or a remote MCP server, `mcp`, whose tools it lists; those tools are known only after apply. " +
 			"Import it as `<workspace id>/<team key>/<integration>`.",
 		Attributes: map[string]schema.Attribute{
 			"id":      idAttribute("integration"),
 			"version": versionAttribute("integration"),
 			"address": addressAttribute("core/linear"),
 			"team_id": ownerAttribute("team", "integration"),
-			integrationHost: schema.StringAttribute{
+			integrationKey: schema.StringAttribute{
 				Computed:            true,
-				MarkdownDescription: "The host the integration defines, from `definition.integration`. It is fixed for the integration's life, so changing it replaces the integration.",
+				MarkdownDescription: "The name of the integration, from `definition.integration`. It is immutable, so changing it replaces the integration.",
 			},
 			expressions.Attribute: schema.DynamicAttribute{
 				Required:            true,
@@ -96,13 +96,13 @@ func integrationSchema() schema.Schema {
 			integrationTools: schema.MapAttribute{
 				Computed:    true,
 				ElementType: types.StringType,
-				MarkdownDescription: "Each tool the integration offers, by its name in `definition.tools` or as generated from its API description or MCP server, to the name a station or hook gives it by, as in `{ search = \"grafana.search\" }`. " +
+				MarkdownDescription: "Each tool the integration provides, by its name in `definition.tools` or as generated from its API spec or MCP server, to the name that a station or hook uses for it, as in `{ search = \"grafana.search\" }`. " +
 					"Name a tool through it, as in `spotlight_integration.grafana.tools[\"search\"]`, so a tool renamed or removed fails the plan where it is named. " +
-					"When the definition names an API description or an MCP server the tools are known only after apply, so a generated tool named through it that is not there fails the apply, not the plan.",
+					"When the definition names an API spec or an MCP server the tools are known only after apply, so a generated tool named through it that is not there fails the apply, not the plan.",
 			},
 			integrationSpec: schema.SingleNestedAttribute{
 				Computed:            true,
-				MarkdownDescription: "The API description or MCP server the integration's tools are generated from, as Spotlight last read it; null when the definition names none.",
+				MarkdownDescription: "The API spec or MCP server the integration's tools are generated from, as Spotlight last read it; null when the definition names none.",
 				Attributes: map[string]schema.Attribute{
 					"kind": schema.StringAttribute{
 						Computed:            true,
@@ -110,21 +110,21 @@ func integrationSchema() schema.Schema {
 					},
 					"hash": schema.StringAttribute{
 						Computed:            true,
-						MarkdownDescription: "The sha256 of the last good read, kept while a later read fails; null when the description has never been read.",
+						MarkdownDescription: "The sha256 of the last good read, unchanged while a later read fails; null when the spec has never been read.",
 					},
 					"read_at": schema.StringAttribute{
 						Computed:            true,
-						MarkdownDescription: "When the description was last read, in RFC 3339.",
+						MarkdownDescription: "When the spec was last read, in RFC 3339.",
 					},
 					"problem": schema.StringAttribute{
 						Computed: true,
-						MarkdownDescription: "Why the latest read failed; null when it succeeded. While it is set, the tools from the last good read stay offered. " +
-							"Spotlight reads the description when the integration is created, and again when its `url`, `document`, `baseUrl`, `revision`, `depth` or kind of `auth` changes, " +
-							"on any update after a failed read, and when the integration's host is connected over OAuth. Spotlight lists an MCP server's tools again every ten minutes, or as often as its deployment sets. Calling a tool never reads it.",
+						MarkdownDescription: "Why the latest read failed; null when it succeeded. While it is set, the integration keeps the tools from the last good read. " +
+							"Spotlight reads the spec when the integration is created, and again when its `url`, `document`, `baseUrl`, `revision`, `depth` or kind of `auth` changes, " +
+							"on any update after a failed read, and when the integration is connected over OAuth. Spotlight lists an MCP server's tools again every ten minutes, or as often as its deployment sets. Calling a tool never reads it.",
 					},
 					"tools": schema.Int64Attribute{
 						Computed:            true,
-						MarkdownDescription: "How many of the integration's tools were generated from the description's last good read.",
+						MarkdownDescription: "How many of the integration's tools were generated from the spec's last good read.",
 					},
 				},
 			},
@@ -162,9 +162,9 @@ func (r *IntegrationResource) ValidateConfig(ctx context.Context, req resource.V
 	resp.Diagnostics.Append(r.expressions.Check(ctx, definition)...)
 }
 
-// ModifyPlan plans the integration and tools from the definition. It replaces the
-// integration when the definition identifies a different host. The apply sets
-// the tools that come from an API description.
+// ModifyPlan plans the integration and tools from the definition. It replaces
+// the integration when the definition names a different integration. The apply
+// sets the tools that come from an API spec.
 func (r *IntegrationResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	if req.Plan.Raw.IsNull() {
 		return
@@ -176,18 +176,18 @@ func (r *IntegrationResource) ModifyPlan(ctx context.Context, req resource.Modif
 		return
 	}
 
-	source, known := integrationHostIn(definition)
+	named, known := integrationKeyIn(definition)
 	if !known {
 		return
 	}
 
-	resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root(integrationHost), source)...)
+	resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root(integrationKey), named)...)
 
-	if !integrationDescribes(definition) {
+	if !integrationNamesSpec(definition) {
 		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root(integrationSpec), types.ObjectNull(integrationSpecTypes))...)
 	}
 
-	if tools, known := integrationToolsIn(definition, source); known {
+	if tools, known := integrationToolsIn(definition, named); known {
 		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root(integrationTools), tools)...)
 	}
 
@@ -196,10 +196,10 @@ func (r *IntegrationResource) ModifyPlan(ctx context.Context, req resource.Modif
 	}
 
 	var prior types.String
-	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root(integrationHost), &prior)...)
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root(integrationKey), &prior)...)
 
-	if !prior.IsNull() && prior.ValueString() != source {
-		resp.RequiresReplace = append(resp.RequiresReplace, path.Root(expressions.Attribute).AtName(integrationHost))
+	if !prior.IsNull() && prior.ValueString() != named {
+		resp.RequiresReplace = append(resp.RequiresReplace, path.Root(expressions.Attribute).AtName(integrationKey))
 	}
 }
 
@@ -245,12 +245,12 @@ func (r *IntegrationResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	kept := &state
+	prior := &state
 	if !answerUnchanged(ctx, req.Private, integrationSettable(integration)) {
-		kept = nil
+		prior = nil
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, integrationModel(integration, kept))...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, integrationModel(integration, prior))...)
 	resp.Diagnostics.Append(setIdentity(ctx, resp.Identity, integration.ID)...)
 	resp.Diagnostics.Append(rememberAnswer(ctx, resp.Private, integrationSettable(integration))...)
 }
@@ -341,7 +341,7 @@ func integrationInput(plan IntegrationResourceModel) (client.Definition, diag.Di
 	return definition, diags
 }
 
-func integrationModel(integration client.Integration, kept *IntegrationResourceModel) IntegrationResourceModel {
+func integrationModel(integration client.Integration, prior *IntegrationResourceModel) IntegrationResourceModel {
 	model := IntegrationResourceModel{
 		ID:          types.StringValue(integration.ID),
 		Version:     types.Int64Value(integration.Version),
@@ -353,8 +353,8 @@ func integrationModel(integration client.Integration, kept *IntegrationResourceM
 		Spec:        integrationSpecValue(integration.Spec),
 	}
 
-	if kept != nil {
-		model.Definition = dynamic.Resolve(kept.Definition, integration.Definition)
+	if prior != nil {
+		model.Definition = dynamic.Resolve(prior.Definition, integration.Definition)
 	}
 
 	return model
@@ -374,7 +374,7 @@ func integrationSpecValue(spec *client.Spec) types.Object {
 	})
 }
 
-func integrationHostIn(definition types.Dynamic) (string, bool) {
+func integrationKeyIn(definition types.Dynamic) (string, bool) {
 	if definition.IsNull() || definition.IsUnknown() || definition.IsUnderlyingValueUnknown() {
 		return "", false
 	}
@@ -384,7 +384,7 @@ func integrationHostIn(definition types.Dynamic) (string, bool) {
 		return "", false
 	}
 
-	named, ok := object.Attributes()[integrationHost].(basetypes.StringValue)
+	named, ok := object.Attributes()[integrationKey].(basetypes.StringValue)
 	if !ok || named.IsNull() || named.IsUnknown() {
 		return "", false
 	}
@@ -392,22 +392,22 @@ func integrationHostIn(definition types.Dynamic) (string, bool) {
 	return named.ValueString(), true
 }
 
-func integrationDescribes(definition types.Dynamic) bool {
+func integrationNamesSpec(definition types.Dynamic) bool {
 	object, ok := definition.UnderlyingValue().(basetypes.ObjectValue)
 	if !ok {
 		return false
 	}
 
-	return slices.ContainsFunc(integrationDescriptions, func(kind string) bool {
+	return slices.ContainsFunc(integrationSpecKinds, func(kind string) bool {
 		named, ok := object.Attributes()[kind]
 
 		return ok && !named.IsNull()
 	})
 }
 
-func integrationToolsIn(definition types.Dynamic, source string) (types.Map, bool) {
+func integrationToolsIn(definition types.Dynamic, integration string) (types.Map, bool) {
 	object, ok := definition.UnderlyingValue().(basetypes.ObjectValue)
-	if !ok || integrationDescribes(definition) {
+	if !ok || integrationNamesSpec(definition) {
 		return types.Map{}, false
 	}
 
@@ -432,10 +432,10 @@ func integrationToolsIn(definition types.Dynamic, source string) (types.Map, boo
 		return types.Map{}, false
 	}
 
-	offered := make(map[string]string, len(names))
+	provided := make(map[string]string, len(names))
 	for _, name := range names {
-		offered[name] = source + "." + name
+		provided[name] = integration + "." + name
 	}
 
-	return stringMap(offered), true
+	return stringMap(provided), true
 }

@@ -20,15 +20,15 @@ var lacking = map[client.Scope]string{
 	client.ScopeRead:      "The API token lacks the read scope, which reading anything in the workspace needs.",
 	client.ScopePlan:      "The API token lacks the plan scope, which checking expressions needs; grant it plan or configure.",
 	client.ScopeConfigure: "The API token lacks the configure scope, which changing the workspace's configuration needs.",
-	client.ScopeSecrets:   "The API token lacks the secrets scope, which setting, rebinding, rotating and deleting secrets needs; grant it secrets beside configure.",
-	client.ScopeRunners:   "The API token lacks the runners scope, which creating, rekeying and deleting runner pools and runner trusts, and declaring the workspace's runners, needs; grant it runners beside configure.",
-	client.ScopeTrusts: "The API token lacks the trusts scope, which creating, changing and deleting workspace token trusts needs, or a scope the trust gives. " +
-		"A token can give a trust only the scopes that it has. A token can change a trust only when it has the current scopes and the new scopes of the trust. Grant it trusts beside configure and every scope the trusts give.",
+	client.ScopeSecrets:   "The API token lacks the secrets scope, which creating, rebinding, rotating and deleting secrets needs; grant it secrets beside configure.",
+	client.ScopeRunners:   "The API token lacks the runners scope. Creating and deleting runner pools and runner trusts, rotating pool tokens, and creating, updating and deleting the workspace's runners need it. Grant it runners beside configure.",
+	client.ScopeTrusts: "The API token lacks the trusts scope, which creating, updating and deleting workspace token trusts needs, or a scope the trust grants. " +
+		"A token can grant a trust only the scopes that it has. A token can change a trust only when it has the current scopes and the new scopes of the trust. Grant it trusts beside configure and every scope the trusts grant.",
 }
 
 var beyondTokens = map[client.Permission]string{
-	client.PermissionAdminister:     "Only the workspace's admins may do this, and a token never administers; a person does it in the web app.",
-	client.PermissionOpenWorkspaces: "A token acts only inside its own workspace and cannot open one; a person creates a workspace in the web app.",
+	client.PermissionAdminister:       "Only the workspace's admins may do this, and a token never administers; a person does it in the web app.",
+	client.PermissionCreateWorkspaces: "A token acts only inside its own workspace and cannot create one; a person creates a workspace in the web app.",
 }
 
 var titled = []struct {
@@ -37,7 +37,7 @@ var titled = []struct {
 }{
 	{"Not allowed to plan", client.PermissionPlan},
 	{"Not allowed to administer", client.PermissionAdminister},
-	{"Not allowed to open a workspace", client.PermissionOpenWorkspaces},
+	{"Not allowed to create a workspace", client.PermissionCreateWorkspaces},
 }
 
 func forbiddenDetail(problem *client.Problem, needs client.Scope) string {

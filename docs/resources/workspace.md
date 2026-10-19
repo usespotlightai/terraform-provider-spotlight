@@ -34,7 +34,7 @@ Creating a workspace from Terraform needs a caller allowed to open workspaces. A
 
 ## Stop managing a workspace
 
-Destroying a `spotlight_workspace` asks Spotlight to delete the workspace. To stop managing it without deleting it, replace the resource with a `removed` block (Terraform 1.7 or later):
+Destroying a `spotlight_workspace` requests that Spotlight delete the workspace. To stop managing it without deleting it, replace the resource with a `removed` block (Terraform 1.7 or later):
 
 ```terraform
 removed {
@@ -52,7 +52,7 @@ removed {
 ### Required
 
 - `name` (String) What the workspace is called.
-- `slug` (String) Where the workspace lives in the web app. It is fixed for the workspace's life, so changing it replaces the workspace.
+- `slug` (String) Where the workspace lives in the web app. It is immutable, so changing it replaces the workspace.
 
 ### Read-Only
 

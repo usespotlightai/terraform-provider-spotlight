@@ -40,14 +40,14 @@ func egressImportID(state *terraform.State) (string, error) {
 	return state.RootModule().Resources["spotlight_workspace.acme"].Primary.ID + "/shared", nil
 }
 
-func egressKept(fake *fakeapi.Server) string {
-	return fake.Kept(fake.IDOf("egress", "shared"))
+func egressStoredToken(fake *fakeapi.Server) string {
+	return fake.WriteOnly(fake.IDOf("egress", "shared"))
 }
 
-func egressKeeps(fake *fakeapi.Server, want string) resource.TestCheckFunc {
+func egressStores(fake *fakeapi.Server, want string) resource.TestCheckFunc {
 	return func(*terraform.State) error {
-		if got := egressKept(fake); got != want {
-			return fmt.Errorf("the egress keeps %q, want %q", got, want)
+		if got := egressStoredToken(fake); got != want {
+			return fmt.Errorf("the egress stores %q, want %q", got, want)
 		}
 
 		return nil
@@ -64,7 +64,7 @@ func egressToken(body map[string]any) (any, bool) {
 	return token, ok
 }
 
-func TestEgressTokenIsWrittenButNeverKept(t *testing.T) {
+func TestEgressTokenIsWrittenButNeverStored(t *testing.T) {
 	fake := fakeapi.New(t)
 	updated := resource.ConfigPlanChecks{
 		PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(egressAddress, plancheck.ResourceActionUpdate)},
@@ -84,7 +84,7 @@ func TestEgressTokenIsWrittenButNeverKept(t *testing.T) {
 					statecheck.ExpectKnownValue(egressAddress, tfjsonpath.New("token"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(egressAddress, tfjsonpath.New("token_version"), knownvalue.Int64Exact(1)),
 				},
-				Check: resource.ComposeAggregateTestCheckFunc(egressKeeps(fake, tokenFirst), acctest.NothingContains(acctest.Value(tokenFirst))),
+				Check: resource.ComposeAggregateTestCheckFunc(egressStores(fake, tokenFirst), acctest.NothingContains(acctest.Value(tokenFirst))),
 			},
 			{
 				Config:   acctest.Workspace + egressShared(tokenFirst, 1),
@@ -99,7 +99,7 @@ func TestEgressTokenIsWrittenButNeverKept(t *testing.T) {
 				Config:           acctest.Workspace + egressAt("shared", "https://egress.example.com/v2", tokenSecond, 2),
 				ConfigPlanChecks: updated,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					egressKeeps(fake, tokenSecond),
+					egressStores(fake, tokenSecond),
 					sentTimes(fake, egressToken, 2, "a new token_version sends the token again"),
 					acctest.NothingContains(acctest.Value(tokenFirst), acctest.Value(tokenSecond)),
 				),
@@ -131,7 +131,7 @@ func TestEgressTokenIsWrittenButNeverKept(t *testing.T) {
 	})
 }
 
-const egressMinted = `
+const egressIssued = `
 resource "spotlight_egress" "shared" {
   workspace_id = spotlight_workspace.acme.id
   key          = "shared"
@@ -148,7 +148,7 @@ resource "spotlight_egress" "shared" {
 }
 `
 
-func TestAnEgressTokenSpotlightIssuesIsNeverKept(t *testing.T) {
+func TestAnEgressTokenSpotlightIssuesIsNeverStored(t *testing.T) {
 	fake := fakeapi.New(t)
 	var first string
 
@@ -157,13 +157,13 @@ func TestAnEgressTokenSpotlightIssuesIsNeverKept(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
 		Steps: []resource.TestStep{
 			{
-				Config: acctest.Workspace + egressMinted,
+				Config: acctest.Workspace + egressIssued,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(egressAddress, tfjsonpath.New("token"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(egressAddress, tfjsonpath.New("token_version"), knownvalue.Null()),
 				},
 				Check: func(state *terraform.State) error {
-					first = egressKept(fake)
+					first = egressStoredToken(fake)
 					if !strings.HasPrefix(first, "issued-") {
 						return fmt.Errorf("Spotlight issued no token")
 					}
@@ -172,7 +172,7 @@ func TestAnEgressTokenSpotlightIssuesIsNeverKept(t *testing.T) {
 				},
 			},
 			{
-				Config:   acctest.Workspace + egressMinted,
+				Config:   acctest.Workspace + egressIssued,
 				PlanOnly: true,
 			},
 			{
@@ -180,13 +180,13 @@ func TestAnEgressTokenSpotlightIssuesIsNeverKept(t *testing.T) {
 				ExpectError: regexp.MustCompile(`(?s)token: is required whenever tokenVersion changes`),
 			},
 			{
-				Config: acctest.Workspace + egressMinted,
+				Config: acctest.Workspace + egressIssued,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
 				},
 				Check: func(*terraform.State) error {
-					if kept := egressKept(fake); kept != first {
-						return fmt.Errorf("a rejected rotation changed the egress's token to %q", kept)
+					if stored := egressStoredToken(fake); stored != first {
+						return fmt.Errorf("a rejected rotation changed the egress's token to %q", stored)
 					}
 
 					return nil
@@ -197,7 +197,7 @@ func TestAnEgressTokenSpotlightIssuesIsNeverKept(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(egressAddress, plancheck.ResourceActionUpdate)},
 				},
-				Check: egressKeeps(fake, tokenFirst),
+				Check: egressStores(fake, tokenFirst),
 			},
 		},
 	})
@@ -217,10 +217,10 @@ func egressBeside(token string, version int, neighbour string, neighbourVersion 
 	return acctest.Workspace + egressShared(token, version) + fmt.Sprintf(egressNeighbour, neighbour, neighbourVersion)
 }
 
-func TestAnEgressTokenIsGivenOnceEver(t *testing.T) {
+func TestAnEgressTokenIsSingleUse(t *testing.T) {
 	fake := fakeapi.New(t)
-	spent := regexp.MustCompile(`(?s)token: was used before\. Egress tokens work once only`)
-	taken := regexp.MustCompile(`(?s)token: belongs to another egress`)
+	alreadyUsed := regexp.MustCompile(`(?s)token: was used before\. Each egress token is single-use`)
+	inUse := regexp.MustCompile(`(?s)token: is in use by another egress`)
 
 	resource.UnitTest(t, resource.TestCase{
 		TerraformVersionChecks:   acctest.WriteOnly,
@@ -231,37 +231,37 @@ func TestAnEgressTokenIsGivenOnceEver(t *testing.T) {
 			},
 			{
 				Config: acctest.Workspace + egressShared(tokenSecond, 2),
-				Check:  egressKeeps(fake, tokenSecond),
+				Check:  egressStores(fake, tokenSecond),
 			},
 			{
 				Config:      acctest.Workspace + egressShared(tokenFirst, 3),
-				ExpectError: spent,
+				ExpectError: alreadyUsed,
 			},
 			{
 				Config:      egressBeside(tokenSecond, 2, tokenFirst, 1),
-				ExpectError: spent,
+				ExpectError: alreadyUsed,
 			},
 			{
 				Config:      egressBeside(tokenSecond, 2, tokenSecond, 1),
-				ExpectError: taken,
+				ExpectError: inUse,
 			},
 			{
 				Config: egressBeside(tokenSecond, 2, tokenThird, 1),
-				Check:  egressKeeps(fake, tokenSecond),
+				Check:  egressStores(fake, tokenSecond),
 			},
 			{
 				Config: acctest.Workspace + egressShared(tokenSecond, 2),
 			},
 			{
 				Config:      acctest.Workspace + egressShared(tokenThird, 3),
-				ExpectError: spent,
+				ExpectError: alreadyUsed,
 			},
 			{
 				Config: acctest.Workspace + egressAt("central", "https://egress.example.com", tokenSecond, 2),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(egressAddress, plancheck.ResourceActionDestroyBeforeCreate)},
 				},
-				ExpectError: spent,
+				ExpectError: alreadyUsed,
 			},
 		},
 	})
@@ -318,7 +318,7 @@ removed {
 				ExpectError: regexp.MustCompile(`(?s)Egress shared is in use\. Runner pools that name it: ephemeral`),
 			},
 			{
-				PreConfig: func() { fake.Forget(fake.IDOf("runner-pool", "ephemeral")) },
+				PreConfig: func() { fake.Delete(fake.IDOf("runner-pool", "ephemeral")) },
 				Config:    acctest.Workspace,
 				Check:     acctest.NoneLeft(fake, "egress", "runner-pool"),
 			},
@@ -350,7 +350,7 @@ func TestEgressImportsByIdentity(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
 		Steps: []resource.TestStep{
 			{
-				Config:            acctest.Workspace + egressMinted,
+				Config:            acctest.Workspace + egressIssued,
 				ConfigStateChecks: acctest.ExpectIdentity(egressAddress),
 			},
 			acctest.ImportedByIdentity(egressAddress),

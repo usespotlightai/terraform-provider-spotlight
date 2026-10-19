@@ -21,13 +21,13 @@ resource "spotlight_workspace" "acme" {
 }
 
 variable "secret_linear_api_key" {
-  description = "The value of the secret LINEAR_API_KEY, which Spotlight keeps and never answers"
+  description = "The value of the secret LINEAR_API_KEY, which Spotlight stores and never returns"
   type        = string
   sensitive   = true
 }
 
 variable "runner_pool_ephemeral_token" {
-  description = "The token the runner pool ephemeral claims with, which a spotlight-host serving it has; left null, Spotlight issues one Terraform does not keep"
+  description = "The token the runner pool ephemeral claims with, which a spotlight-host serving it has; left null, Spotlight issues one that Terraform does not store"
   type        = string
   sensitive   = true
   default     = null

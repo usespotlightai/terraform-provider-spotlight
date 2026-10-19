@@ -18,7 +18,7 @@ import (
 
 const integrationAddress = "spotlight_integration.core_linear"
 
-func integrationConfig(host, when, thread string) string {
+func integrationConfig(integration, when, thread string) string {
 	return acctest.Workspace + fmt.Sprintf(`
 resource "spotlight_integration" "core_linear" {
   team_id = spotlight_team.core.id
@@ -47,12 +47,12 @@ resource "spotlight_integration" "core_linear" {
     on = {
       "task.opened" = {
         action = "comment"
-        to = { thread = %q }
+        to     = { thread = %q }
       }
     }
   }
 }
-`, host, when, thread)
+`, integration, when, thread)
 }
 
 const (
@@ -284,7 +284,7 @@ resource "spotlight_integration" "core_linear" {
 }
 `,
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`(?s)Invalid definition at definition\.integration.*names the host`),
+				ExpectError: regexp.MustCompile(`(?s)Invalid definition at definition\.integration.*is the name of the integration`),
 			},
 		},
 	})
@@ -308,7 +308,7 @@ func TestIntegrationImportsByIdentity(t *testing.T) {
 
 const integrationPetstoreAddress = "spotlight_integration.core_petstore"
 
-func integrationPetstoreConfig(description string) string {
+func integrationPetstoreConfig(spec string) string {
 	return acctest.Workspace + fmt.Sprintf(`
 resource "spotlight_integration" "core_petstore" {
   team_id = spotlight_team.core.id
@@ -320,10 +320,10 @@ resource "spotlight_integration" "core_petstore" {
     }
   }
 }
-`, description)
+`, spec)
 }
 
-func TestIntegrationToolsFromAnAPIDescriptionAreKnownAfterApply(t *testing.T) {
+func TestIntegrationToolsFromAnAPISpecAreKnownAfterApply(t *testing.T) {
 	fake := fakeapi.New(t)
 
 	resource.UnitTest(t, resource.TestCase{
@@ -375,7 +375,7 @@ func TestIntegrationToolsFromAnAPIDescriptionAreKnownAfterApply(t *testing.T) {
 	})
 }
 
-func TestIntegrationToolsWithoutAnAPIDescriptionAreKnownAtPlan(t *testing.T) {
+func TestIntegrationToolsWithoutAnAPISpecAreKnownAtPlan(t *testing.T) {
 	fake := fakeapi.New(t)
 
 	resource.UnitTest(t, resource.TestCase{
@@ -443,7 +443,7 @@ func TestIntegrationToolsFromAnMCPServerAreKnownAfterApply(t *testing.T) {
 func TestIntegrationToolsOfADefinitionNotKnownYetAreUnknown(t *testing.T) {
 	for name, definition := range map[string]string{
 		"whole": `spotlight_team.core.id == "" ? local.petstore : local.petstore`,
-		"description": `merge(local.petstore, {
+		"spec": `merge(local.petstore, {
     openapi = { url = "https://petstore.example.com/${spotlight_team.core.id}/openapi.json" }
   })`,
 	} {

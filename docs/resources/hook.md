@@ -3,12 +3,12 @@
 page_title: "spotlight_hook Resource - spotlight"
 subcategory: ""
 description: |-
-  A hook a team has defined: steps Spotlight takes whenever an event it fires on matches, each calling a tool an integration offers or sending a request. Write each expression in a step as $${{ ... }}, and when bare; terraform plan type-checks every one where it is written. Import it as <workspace id>/<team key>/<key>.
+  A hook a team has created: steps Spotlight takes whenever an event it fires on matches, each calling a tool an integration provides or sending a request. Write each expression in a step as $${{ ... }}, and when bare; terraform plan type-checks every one where it is written. Import it as <workspace id>/<team key>/<key>.
 ---
 
 # spotlight_hook (Resource)
 
-A hook a team has defined: steps Spotlight takes whenever an event it fires `on` matches, each calling a tool an integration offers or sending a request. Write each expression in a step as `$${{ ... }}`, and `when` bare; `terraform plan` type-checks every one where it is written. Import it as `<workspace id>/<team key>/<key>`.
+A hook a team has created: steps Spotlight takes whenever an event it fires `on` matches, each calling a tool an integration provides or sending a request. Write each expression in a step as `$${{ ... }}`, and `when` bare; `terraform plan` type-checks every one where it is written. Import it as `<workspace id>/<team key>/<key>`.
 
 ## Example Usage
 
@@ -18,7 +18,7 @@ resource "random_password" "hook" {
   special = false
 }
 
-# Each time an agent searches Grafana, tell the team in Slack and keep an audit trail.
+# Each time an agent searches Grafana, tell the team in Slack and record an audit trail.
 resource "spotlight_hook" "grafana_reads" {
   team_id = spotlight_team.core.id
   key     = "grafana-reads"
@@ -83,9 +83,9 @@ resource "spotlight_hook" "migrations" {
 
 ### Required
 
-- `key` (String) Names the hook within its team, as in `migrations-need-a-dba`. It is fixed for the hook's life, so changing it replaces the hook.
-- `on` (String) The event the hook fires on: `tool.using`, `tool.used`, `run.starting`, `run.ended`, `handover.giving`, `pull-request.opening`, `pull-request.merged`, `task.opened`, `task.moved`. The `.using`, `.starting`, `.giving` and `.opening` events fire before what they name, so a hook on one may stop it.
-- `steps` (Dynamic) What the hook does, in order: a list of at least one step, each an object that either calls a tool or sends a request. Every step has a `name`, lowercase words joined by dashes, by which later steps read its outcome as `step.<name>`. A step that calls a tool names it in `call`, as in `spotlight_integration.slack.tools["post-message"]`, and gives it its inputs in `with`, an object of any JSON. A step that sends a request sets `request`: its `url`, any `headers` beside the ones Spotlight signs with, its `body`, which is any JSON and, left out, is the event, task and run, and `from`: `spotlight`, the default, to send it from Spotlight, to a host the control plane's `OUTBOUND_ALLOWED_HOSTS` allows, or `network`, to have a host of the workspace send it from inside its network. A hook that sends a request signs it, so it needs `signing`. Strings in `with`, and a request's `url`, `headers` and `body`, may contain `$${{ ... }}` expressions, which read what `when` does and `step`.
+- `key` (String) Names the hook within its team, as in `migrations-need-a-dba`. It is immutable, so changing it replaces the hook.
+- `on` (String) The event the hook fires on: `tool.using`, `tool.used`, `run.starting`, `run.ended`, `handover.submitting`, `pull-request.opening`, `pull-request.merged`, `task.opened`, `task.moved`. The `.using`, `.starting`, `.submitting` and `.opening` events fire before what they name, so a hook on one may stop it.
+- `steps` (Dynamic) What the hook does, in order: a list of at least one step, each an object that either calls a tool or sends a request. Every step has a `name`, lowercase words joined by dashes, by which later steps read its outcome as `step.<name>`. A step that calls a tool names it in `call`, as in `spotlight_integration.slack.tools["post-message"]`, and sets its inputs in `with`, an object of any JSON. A step that sends a request sets `request`: its `url`, any `headers` beside the ones Spotlight signs with, its `body`, which is any JSON and, left out, is the event, task and run, and `from`: `spotlight`, the default, to send it from Spotlight, to a host the control plane's `SPOTLIGHT_OUTBOUND_ALLOWED_HOSTS` allows, or `network`, to have a host of the workspace send it from inside its network. A hook that sends a request signs it, so it needs `signing`. Strings in `with`, and a request's `url`, `headers` and `body`, may contain `$${{ ... }}` expressions, which read what `when` does and `step`.
 - `team_id` (String) The team the hook belongs to. Changing it replaces the hook.
 
 ### Optional
@@ -121,7 +121,7 @@ Optional:
 Optional:
 
 - `oidc` (Attributes) Signs each request with a short-lived OIDC token Spotlight issues, instead of a secret. (see [below for nested schema](#nestedatt--signing--oidc))
-- `secret_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The HMAC secret Spotlight signs each request with, as Standard Webhooks sign: `whsec_` followed by 24 to 64 base64-encoded random bytes, as `"whsec_${base64encode(random_password.hook.result)}"` makes. Needed with `secret_wo_version`, and given again whenever it changes. It is sent to Spotlight and never stored in the plan or the state, so it needs Terraform 1.11 or later; change `secret_wo_version` to send it again.
+- `secret_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The HMAC secret Spotlight signs each request with, as Standard Webhooks sign: `whsec_` followed by 24 to 64 base64-encoded random bytes, as `"whsec_${base64encode(random_password.hook.result)}"` makes. Needed with `secret_wo_version`, and sent again whenever it changes. It is sent to Spotlight and never stored in the plan or the state, so it needs Terraform 1.11 or later; change `secret_wo_version` to send it again.
 - `secret_wo_version` (Number) A whole number from 1; change it whenever `secret_wo` changes, so Terraform sends the new value.
 
 <a id="nestedatt--signing--oidc"></a>

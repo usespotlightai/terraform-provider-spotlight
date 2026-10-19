@@ -184,15 +184,15 @@ func TestEveryReadWarnsOfWhatNoTrustOrPoolAnswers(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	var said []string
+	var details []string
 	for _, each := range read.Diagnostics {
 		if each.Severity == tfprotov6.DiagnosticSeverityError {
 			t.Fatalf("read failed: %s: %s", each.Summary, each.Detail)
 		}
-		said = append(said, each.Detail)
+		details = append(details, each.Detail)
 	}
 
-	joined := strings.Join(said, "\n")
+	joined := strings.Join(details, "\n")
 	for _, want := range []string{"names cluster, but the workspace trusts no workload by that key", "names burst, but the workspace has no runner pool by that key"} {
 		if !strings.Contains(joined, want) {
 			t.Errorf("the read did not warn %q; it said:\n%s", want, joined)

@@ -161,7 +161,7 @@ func lineSchema() schema.Schema {
 			"version": versionAttribute("line"),
 			"address": addressAttribute("core/delivery"),
 			"team_id": ownerAttribute("team", "line"),
-			"key":     fixedAttribute("Names the line within its team.", "line"),
+			"key":     immutableAttribute("Names the line within its team.", "line"),
 			"name": schema.StringAttribute{
 				Required:            true,
 				MarkdownDescription: "What the line is called.",
@@ -171,7 +171,7 @@ func lineSchema() schema.Schema {
 		},
 		Blocks: map[string]schema.Block{
 			"repository": schema.SetNestedBlock{
-				MarkdownDescription: "A repository the line works on. Spotlight keeps them sorted by name, so they are a set. The repositories of a line name at most one `image`.",
+				MarkdownDescription: "A repository the line works on. Spotlight stores them sorted by name, so they are a set. The repositories of a line name at most one `image`.",
 				NestedObject: schema.NestedBlockObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
@@ -211,16 +211,16 @@ func lineSchema() schema.Schema {
 						"model":       lineOptional("The model the harness uses."),
 						"effort":      lineOptional("How hard the agent thinks: `low`, `medium`, `high`, `xhigh` or `max`."),
 						"profile":     lineOptional("The harness profile the station's agent runs with, by key, as in `careful`."),
-						"prompt":      lineOptional("What the agent is asked to do, usually read with `file()`."),
+						"prompt":      lineOptional("The instructions for the agent, usually read with `file()`."),
 						"check":       lineOptional("A command that must pass before a task moves on, as in `npm test`."),
-						"diffs":       lineDerived("Whether the station's runs draft a change stack from their diff."),
+						"diffs":       lineDerived("Whether Spotlight generates a change stack from the diff of each run of the station."),
 						"decisions":   lineDerived("Whether the station records the agent's decisions for review."),
 						"memories":    lineDerived("Whether the station drafts proposed team memories from each run it completes, for people to approve."),
-						"tools":       stringListAttribute("The tools the station gives its agent, as in `linear.comment`."),
-						"skills":      stringListAttribute("The skills the station gives its agent, by key."),
+						"tools":       stringListAttribute("The tools the station enables for its agent, as in `linear.comment`."),
+						"skills":      stringListAttribute("The skills the station enables for its agent, by key."),
 						"runners":     stringSetAttribute("Where the station's work runs, in place of the line's `runners`: the labels of a runner pool or trust, any of which a runner must answer to. The line's apply when left out."),
 						"passes_to":   stringSetAttribute("The stations a task here may move on to, by key."),
-						"ends":        lineFlag("Whether a task that reaches the station is finished.", false),
+						"ends":        lineFlag("Whether a task that arrives at the station is finished.", false),
 					},
 					Blocks: map[string]schema.Block{
 						"judge": schema.SingleNestedBlock{
@@ -247,7 +247,7 @@ func lineSchema() schema.Schema {
 										listvalidator.SizeBetween(1, 20),
 										listvalidator.ValueStringsAre(stringvalidator.LengthBetween(1, 500)),
 									},
-									MarkdownDescription: "Checkable claims the judge answers yes or no about each change, from 1 to 20, each at most 500 characters. A change passes when the share of claims met reaches `pass_threshold`.",
+									MarkdownDescription: "Checkable claims the judge answers yes or no about each change, from 1 to 20, each at most 500 characters. A change passes when the share of claims met is at least `pass_threshold`.",
 								},
 								"pass_threshold": schema.Float64Attribute{
 									Optional: true,
@@ -325,13 +325,13 @@ func lineSchema() schema.Schema {
 						Optional:            true,
 						Computed:            true,
 						Default:             stringdefault.StaticString("@spotlight"),
-						MarkdownDescription: "The handle that asks for a review.",
+						MarkdownDescription: "The handle that requests a review.",
 					},
 					"label": schema.StringAttribute{
 						Optional:            true,
 						Computed:            true,
 						Default:             stringdefault.StaticString("spotlight"),
-						MarkdownDescription: "The pull request label that asks for a review, whatever `start` says. Matched without regard to case. GitHub labels are at most 50 characters.",
+						MarkdownDescription: "The pull request label that requests a review, whatever `start` says. Matched without regard to case. GitHub labels are at most 50 characters.",
 						Validators:          []validator.String{stringvalidator.LengthBetween(1, 50)},
 					},
 				},
@@ -341,7 +341,7 @@ func lineSchema() schema.Schema {
 						Attributes: map[string]schema.Attribute{
 							"spotlight": lineFlag("Skip pull requests Spotlight opened.", true),
 							"drafts":    lineFlag("Skip draft pull requests.", true),
-							"authors":   stringSetAttribute("Skip pull requests by these GitHub logins, in lower case, as in `dependabot[bot]`. Spotlight keeps them sorted and each once, so they are a set."),
+							"authors":   stringSetAttribute("Skip pull requests by these GitHub logins, in lower case, as in `dependabot[bot]`. Spotlight stores them sorted and each once, so they are a set."),
 						},
 					},
 				},
@@ -457,12 +457,12 @@ func (r *LineResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
-	kept := &state
+	prior := &state
 	if !answerUnchanged(ctx, req.Private, lineSettable(line)) {
-		kept = nil
+		prior = nil
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, lineModel(line, kept))...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, lineModel(line, prior))...)
 	resp.Diagnostics.Append(setIdentity(ctx, resp.Identity, line.ID)...)
 	resp.Diagnostics.Append(rememberAnswer(ctx, resp.Private, lineSettable(line))...)
 }

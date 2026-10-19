@@ -69,7 +69,7 @@ type Skill struct {
 	Tools       []string
 }
 
-// SkillSecret is a secret that the SKILL.md of a skill asks for.
+// SkillSecret is a secret that the SKILL.md of a skill requires.
 type SkillSecret struct {
 	Name        string
 	Description string
@@ -83,8 +83,8 @@ type SkillInput struct {
 
 // Integration is an integration resource. Tools maps the name of each tool
 // in the integration to the name that stations and hooks use, for example
-// grafana.search. A tool can be hand-written or come from the API description
-// of the integration.
+// grafana.search. A tool can be hand-written or come from the API spec of the
+// integration.
 type Integration struct {
 	Meta
 	TeamID      string
@@ -94,8 +94,8 @@ type Integration struct {
 	Spec        *Spec
 }
 
-// Spec is the API description that the tools of an integration come
-// from, as Spotlight last read it.
+// Spec is the API spec that the tools of an integration come from, as
+// Spotlight last read it.
 type Spec struct {
 	Kind    string
 	Hash    *string
@@ -113,7 +113,7 @@ type Hook struct {
 }
 
 // HookInput is the input to write a hook. Each step is the JSON that the
-// configuration contains, because a step can give any JSON to its tool or
+// configuration contains, because a step can send any JSON to its tool or
 // send any JSON. The client sends Signing.Secret only when the hook must
 // sign with a new secret. The API never returns it.
 type HookInput struct {
@@ -163,7 +163,7 @@ type Secret struct {
 	RotatedAt    string
 }
 
-// SecretSource tells where the value of a secret is. Spotlight keeps the
+// SecretSource tells where the value of a secret is. Spotlight stores the
 // value, or Spotlight reads it from AWS Secrets Manager each time it uses it.
 type SecretSource struct {
 	Kind     string `json:"kind"`
@@ -187,7 +187,7 @@ type SecretBinding struct {
 }
 
 // SecretInput is the input to write a secret. The client sends Value only
-// when Spotlight must keep the value or a new value.
+// when Spotlight must store the value or a new value.
 type SecretInput struct {
 	Name         string          `json:"name"`
 	Source       SecretSource    `json:"source"`
@@ -309,7 +309,7 @@ type WorkspaceRunnersInput struct {
 	Pools  []string `json:"pools"`
 }
 
-// HarnessProfile contains the settings of a team. Spotlight gives the
+// HarnessProfile contains the settings of a team. Spotlight sends the
 // settings to each harness in the terms of that harness.
 type HarnessProfile struct {
 	Meta
@@ -333,7 +333,7 @@ type Permissions struct {
 	Deny  []string `json:"deny"`
 }
 
-// MCPServer is a stdio MCP server that Spotlight gives to each harness.
+// MCPServer is a stdio MCP server that Spotlight adds to each harness.
 type MCPServer struct {
 	Name    string            `json:"name"`
 	Command string            `json:"command"`

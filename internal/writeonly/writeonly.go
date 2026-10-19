@@ -1,8 +1,8 @@
 // Package writeonly handles values as Terraform 1.11 and later versions permit.
 // The provider reads each value from configuration and sends it to Spotlight.
-// The plan and the state never keep it. A version attribute next to each
+// The plan and the state never store it. A version attribute next to each
 // value tells when to send it again. Terraform cannot see a change to a value
-// that it does not keep.
+// that it does not store.
 package writeonly
 
 import (

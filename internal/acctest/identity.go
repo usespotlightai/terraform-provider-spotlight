@@ -18,7 +18,7 @@ func ExpectIdentity(address string) []statecheck.StateCheck {
 
 // ImportedByIdentity is a test step that imports the resource at address
 // with an import block. The block contains the identity that the previous
-// step gave the resource. The step expects a plan with no change.
+// step set on the resource. The step expects a plan with no change.
 func ImportedByIdentity(address string) resource.TestStep {
 	return resource.TestStep{
 		ResourceName:    address,

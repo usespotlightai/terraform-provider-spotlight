@@ -114,7 +114,7 @@ variable "spotlight_token" {
 
 ### Optional
 
-- `oidc` (Block, Optional) Authenticate from CI with no stored token: the OIDC token the CI platform issues the job is exchanged, through a `spotlight_workspace_token_trust`, for a short-lived token, renewed before it expires. In GitHub Actions, a job granted `permissions: id-token: write` needs only `trust`; elsewhere, give the platform's OIDC token as `token`. (see [below for nested schema](#nestedblock--oidc))
+- `oidc` (Block, Optional) Authenticate from CI with no stored token: the OIDC token the CI platform issues the job is exchanged, through a `spotlight_workspace_token_trust`, for a short-lived token, renewed before it expires. In GitHub Actions, a job granted `permissions: id-token: write` needs only `trust`; elsewhere, set the platform's OIDC token as `token`. (see [below for nested schema](#nestedblock--oidc))
 - `token` (String, Sensitive) A Spotlight API token. Defaults to `SPOTLIGHT_API_TOKEN`. Leave it unset to authenticate through `oidc`.
 - `url` (String) The control plane's URL, as in `https://spotlight.example.com`. Defaults to `SPOTLIGHT_URL`, which the `spotlight` CLI reads too.
 
@@ -124,5 +124,5 @@ variable "spotlight_token" {
 Optional:
 
 - `audience` (String) The audience to request the OIDC token for, which must be the trust's. Defaults to `SPOTLIGHT_OIDC_AUDIENCE`, then `spotlight`.
-- `token` (String, Sensitive) An OIDC token the CI platform issued the job, as GitLab's `id_tokens`, CircleCI's `$CIRCLE_OIDC_TOKEN_V2` or `buildkite-agent oidc request-token` give one. Defaults to `SPOTLIGHT_OIDC_TOKEN`; in GitHub Actions, one is requested for each exchange.
+- `token` (String, Sensitive) An OIDC token the CI platform issued the job, as GitLab's `id_tokens`, CircleCI's `$CIRCLE_OIDC_TOKEN_V2` or `buildkite-agent oidc request-token` return one. Defaults to `SPOTLIGHT_OIDC_TOKEN`; in GitHub Actions, one is requested for each exchange.
 - `trust` (String) The `id` of the workspace token trust to exchange through. Defaults to `SPOTLIGHT_OIDC_TRUST`.

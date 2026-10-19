@@ -11,22 +11,22 @@ import (
 	"strings"
 )
 
-// WorkloadTokens gives the OIDC tokens that a CI platform issues to the job
+// WorkloadTokens returns the OIDC tokens that a CI platform issues to the job
 // that it runs.
 type WorkloadTokens interface {
 	WorkloadToken(ctx context.Context, audience string) (string, error)
 }
 
-// GivenWorkloadToken is an OIDC token that the provider receives from the
-// environment. CI platforms other than GitHub Actions give tokens this way.
-type GivenWorkloadToken string
+// SuppliedWorkloadToken is an OIDC token that the provider receives from the
+// environment. CI platforms other than GitHub Actions supply tokens this way.
+type SuppliedWorkloadToken string
 
 // WorkloadToken returns the same token for each audience.
-func (t GivenWorkloadToken) WorkloadToken(context.Context, string) (string, error) {
+func (t SuppliedWorkloadToken) WorkloadToken(context.Context, string) (string, error) {
 	return string(t), nil
 }
 
-// GitHubActions asks GitHub Actions for an OIDC token issued to the job.
+// GitHubActions requests from GitHub Actions an OIDC token issued to the job.
 // The job must have the id-token: write permission.
 type GitHubActions struct {
 	RequestURL   string
@@ -36,16 +36,16 @@ type GitHubActions struct {
 
 // WorkloadToken requests a new OIDC token for audience.
 func (g GitHubActions) WorkloadToken(ctx context.Context, audience string) (string, error) {
-	asked, err := url.Parse(g.RequestURL)
+	tokenURL, err := url.Parse(g.RequestURL)
 	if err != nil {
 		return "", fmt.Errorf("ACTIONS_ID_TOKEN_REQUEST_URL is not a URL: %w", err)
 	}
 
-	query := asked.Query()
+	query := tokenURL.Query()
 	query.Set("audience", audience)
-	asked.RawQuery = query.Encode()
+	tokenURL.RawQuery = query.Encode()
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, asked.String(), nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, tokenURL.String(), nil)
 	if err != nil {
 		return "", err
 	}

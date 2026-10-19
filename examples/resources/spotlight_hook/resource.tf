@@ -3,7 +3,7 @@ resource "random_password" "hook" {
   special = false
 }
 
-# Each time an agent searches Grafana, tell the team in Slack and keep an audit trail.
+# Each time an agent searches Grafana, tell the team in Slack and record an audit trail.
 resource "spotlight_hook" "grafana_reads" {
   team_id = spotlight_team.core.id
   key     = "grafana-reads"
