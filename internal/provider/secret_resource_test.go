@@ -71,17 +71,17 @@ func secretSentValue(fake *fakeapi.Server) (int, bool) {
 	return sent, last
 }
 
-func secretKeeps(fake *fakeapi.Server, want string) resource.TestCheckFunc {
+func secretStores(fake *fakeapi.Server, want string) resource.TestCheckFunc {
 	return func(*terraform.State) error {
-		if got := fake.Kept(fake.IDOf("secret", "LINEAR_API_KEY")); got != want {
-			return fmt.Errorf("Spotlight keeps %q, want %q", got, want)
+		if got := fake.WriteOnly(fake.IDOf("secret", "LINEAR_API_KEY")); got != want {
+			return fmt.Errorf("Spotlight stores %q, want %q", got, want)
 		}
 
 		return nil
 	}
 }
 
-func TestSecretIsWrittenButItsValueNeverKept(t *testing.T) {
+func TestSecretIsWrittenButItsValueNeverStored(t *testing.T) {
 	fake := fakeapi.New(t)
 
 	resource.UnitTest(t, resource.TestCase{
@@ -101,7 +101,7 @@ func TestSecretIsWrittenButItsValueNeverKept(t *testing.T) {
 					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("rotated_at"), knownvalue.NotNull()),
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
-					secretKeeps(fake, "lin_first"),
+					secretStores(fake, "lin_first"),
 					acctest.NothingContains(acctest.Value("lin_first")),
 				),
 			},
@@ -119,7 +119,7 @@ func TestSecretIsWrittenButItsValueNeverKept(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(secretAddress, plancheck.ResourceActionUpdate)},
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
-					secretKeeps(fake, "lin_second"),
+					secretStores(fake, "lin_second"),
 					acctest.NothingContains(acctest.Value("lin_first"), acctest.Value("lin_second")),
 				),
 			},
@@ -352,7 +352,7 @@ func TestSecretReadFromAWSTakesNoValue(t *testing.T) {
 					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("source").AtMapKey("secret_id"), knownvalue.StringExact("linear/api")),
 					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("value_wo_version"), knownvalue.Null()),
 				},
-				Check: secretKeeps(fake, ""),
+				Check: secretStores(fake, ""),
 			},
 			{
 				Config:   acctest.Workspace + secretFromAWS,
@@ -366,14 +366,14 @@ func TestSecretReadFromAWSTakesNoValue(t *testing.T) {
 			},
 			{
 				Config:      acctest.Workspace + regexp.MustCompile(`bindings = `).ReplaceAllString(secretFromAWS, "value_wo = \"lin_nope\"\n  bindings = "),
-				ExpectError: regexp.MustCompile(`(?s)value_wo: is kept only by Spotlight`),
+				ExpectError: regexp.MustCompile(`(?s)value_wo: is stored only by Spotlight`),
 			},
 			{
-				Config: secretBuiltIn("LINEAR_API_KEY", "lin_kept_now", 1, secretLinear),
+				Config: secretBuiltIn("LINEAR_API_KEY", "lin_stored_now", 1, secretLinear),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(secretAddress, plancheck.ResourceActionUpdate)},
 				},
-				Check: secretKeeps(fake, "lin_kept_now"),
+				Check: secretStores(fake, "lin_stored_now"),
 			},
 		},
 	})
@@ -402,7 +402,7 @@ variable "secret_value" {
   sensitive = true
 }
 
-resource "spotlight_secret" "kept" {
+resource "spotlight_secret" "stored" {
   workspace_id     = local.workspace_id
   name             = %[1]q
   bindings         = [%[3]s]
@@ -445,12 +445,12 @@ func TestAccSecret(t *testing.T) {
 				Config:          acctest.AdoptedWorkspace(cp.Workspace) + secretAccConfig(k, linear, 1),
 				ConfigVariables: secretAccVariables(first),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("spotlight_secret.kept", "address", k.Secret),
-					resource.TestCheckResourceAttr("spotlight_secret.kept", "source.kind", "built-in"),
-					resource.TestCheckResourceAttr("spotlight_secret.kept", "bindings.0.location", "header"),
-					resource.TestCheckResourceAttr("spotlight_secret.kept", "bindings.0.name", "authorization"),
-					resource.TestCheckResourceAttr("spotlight_secret.kept", "value_wo_version", "1"),
-					resource.TestCheckNoResourceAttr("spotlight_secret.kept", "value_wo"),
+					resource.TestCheckResourceAttr("spotlight_secret.stored", "address", k.Secret),
+					resource.TestCheckResourceAttr("spotlight_secret.stored", "source.kind", "built-in"),
+					resource.TestCheckResourceAttr("spotlight_secret.stored", "bindings.0.location", "header"),
+					resource.TestCheckResourceAttr("spotlight_secret.stored", "bindings.0.name", "authorization"),
+					resource.TestCheckResourceAttr("spotlight_secret.stored", "value_wo_version", "1"),
+					resource.TestCheckNoResourceAttr("spotlight_secret.stored", "value_wo"),
 					resource.TestCheckResourceAttr("spotlight_secret.aws", "source.secret_id", "tf-acc/"+k.AWSSecret),
 					acctest.NothingContains(acctest.Value(first)),
 				),
@@ -464,11 +464,11 @@ func TestAccSecret(t *testing.T) {
 				Config:          acctest.AdoptedWorkspace(cp.Workspace) + secretAccConfig(k, both, 2),
 				ConfigVariables: secretAccVariables(second),
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
-					plancheck.ExpectResourceAction("spotlight_secret.kept", plancheck.ResourceActionUpdate),
+					plancheck.ExpectResourceAction("spotlight_secret.stored", plancheck.ResourceActionUpdate),
 				}},
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("spotlight_secret.kept", "bindings.#", "2"),
-					resource.TestCheckResourceAttr("spotlight_secret.kept", "value_wo_version", "2"),
+					resource.TestCheckResourceAttr("spotlight_secret.stored", "bindings.#", "2"),
+					resource.TestCheckResourceAttr("spotlight_secret.stored", "value_wo_version", "2"),
 					acctest.NothingContains(acctest.Value(first), acctest.Value(second)),
 				),
 			},
@@ -478,7 +478,7 @@ func TestAccSecret(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}},
 			},
 			{
-				ResourceName:      "spotlight_secret.kept",
+				ResourceName:      "spotlight_secret.stored",
 				ImportState:       true,
 				ImportStateId:     acctest.ImportID(id, k.Secret),
 				ImportStateVerify: true,
@@ -496,7 +496,7 @@ func TestAccSecret(t *testing.T) {
 				ConfigVariables: secretAccVariables(second),
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 					acctest.ExpectForgotten("spotlight_workspace.acc"),
-					plancheck.ExpectResourceAction("spotlight_secret.kept", plancheck.ResourceActionNoop),
+					plancheck.ExpectResourceAction("spotlight_secret.stored", plancheck.ResourceActionNoop),
 				}},
 			},
 		},

@@ -78,7 +78,7 @@ func TestWorkspaceLifecycle(t *testing.T) {
 				Check: resource.TestCheckResourceAttr(workspaceAddress, "name", "Acme Corp"),
 			},
 			{
-				PreConfig: func() { fake.Forget(fake.IDOf("workspace", "acme-corp")) },
+				PreConfig: func() { fake.Delete(fake.IDOf("workspace", "acme-corp")) },
 				Config:    workspaceConfig("Acme Corp", "acme-corp"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(workspaceAddress, plancheck.ResourceActionCreate)},
@@ -159,7 +159,7 @@ func TestAWorkspaceATokenMayNotCreateIsToBeImported(t *testing.T) {
 			{
 				PreConfig:   func() { fake.FailNext(http.StatusForbidden) },
 				Config:      workspaceConfig("Acme", "acme"),
-				ExpectError: regexp.MustCompile(`may not open a new\s+one(?s:.*)import it\s+rather than creating it(?s:.*)to = spotlight_workspace\.<name>`),
+				ExpectError: regexp.MustCompile(`may not create a new\s+one(?s:.*)import it\s+rather than creating it(?s:.*)to = spotlight_workspace\.<name>`),
 			},
 		},
 	})

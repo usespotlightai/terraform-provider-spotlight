@@ -7,13 +7,13 @@ description: |-
 
 # GitHub Actions without a stored token
 
-A pipeline that keeps a Spotlight API token as a repository secret has a credential that works from anywhere until someone rotates it. A `spotlight_workspace_token_trust` removes it. The trust names an OIDC issuer and the workloads it admits, and each job exchanges the OIDC token its CI platform issues it for a workspace token with the trust's scopes, lasting the trust's `lifetime_minutes` (15 by default, an hour at most). Nothing is stored in GitHub, and a token that leaks from a job's logs stops working within minutes.
+A pipeline that stores a Spotlight API token as a repository secret has a credential that works from anywhere until someone rotates it. A `spotlight_workspace_token_trust` removes it. The trust names an OIDC issuer and the workloads it matches, and each job exchanges the OIDC token its CI platform issues it for a workspace token with the trust's scopes, lasting the trust's `lifetime_minutes` (15 by default, an hour at most). Nothing is stored in GitHub, and a token that leaks from a job's logs stops working within minutes.
 
-The provider does the exchange itself: given a trust, it asks GitHub for an OIDC token, exchanges it, sends the token it gets back as `Authorization: Bearer`, and repeats the exchange a minute before that token expires, so an apply that outlives one token carries on with the next. Changing or deleting a trust stops every token it minted at once; a job whose token stops working that way exchanges again and carries on if the trust still admits it.
+The provider does the exchange itself: with a trust, it requests an OIDC token from GitHub, exchanges it, sends the token it gets back as `Authorization: Bearer`, and repeats the exchange a minute before that token expires, so an apply that outlives one token carries on with the next. Changing or deleting a trust stops every token that it issued at once; a job whose token stops working that way exchanges again and carries on if the trust still matches it.
 
-## 1. Define the trusts
+## 1. Create the trusts
 
-This is a Terraform root of its own, run once by an admin as described below. Pull requests only plan, so they get a trust that mints `plan` tokens; pushes to `main` apply, so they get one that mints `configure` and `secrets` tokens. Add `runners` to the second if the configuration manages runner pools, runner trusts or the workspace's runners.
+This is a Terraform root of its own, run once by an admin as described below. Pull requests only plan, so they get a trust that issues `plan` tokens; pushes to `main` apply, so they get one that issues `configure` and `secrets` tokens. Add `runners` to the second if the configuration manages runner pools, runner trusts or the workspace's runners.
 
 ```terraform
 data "spotlight_workspace" "acme" {
@@ -49,20 +49,20 @@ output "apply_trust" {
 
 ### Bootstrap once, then store nothing
 
-Creating, changing and deleting a trust needs a workspace admin, or a token granted the `trusts` scope that also has every scope the trust gives. A token can give a trust only the scopes that it has. A token can change a trust only when it has the current scopes and the new scopes of the trust. A write with any other token fails with `403`. The trusts that let CI in cannot come from CI before they exist, so an admin applies them once:
+Creating, changing and deleting a trust needs a workspace admin, or a token granted the `trusts` scope that also has every scope the trust grants. A token can grant a trust only the scopes that it has. A token can change a trust only when it has the current scopes and the new scopes of the trust. A write with any other token fails with `403`. The trusts that let CI in cannot come from CI before they exist, so an admin applies them once:
 
 1. Keep the trusts in a small Terraform root of their own, apart from the configuration CI applies.
-2. Create an API token in the web app with `trusts` and every scope the trusts give, here `["configure", "secrets", "trusts"]` (`configure` includes `plan`), and the shortest expiry it offers. Add `runners` if a trust gives it.
+2. Create an API token in the web app with `trusts` and every scope the trusts grant, here `["configure", "secrets", "trusts"]` (`configure` includes `plan`), and the shortest expiry it offers. Add `runners` if a trust grants it.
 3. Apply that root with it, as in `SPOTLIGHT_API_TOKEN=<token> terraform apply`, and note each trust's `id`, which `terraform output` shows.
 4. Revoke the token.
 
 From then on, CI runs with no stored token at all. Changing a trust later is the same: a short-lived `trusts` token, an apply of that root, and a revocation.
 
-A pipeline that is to keep managing trusts itself needs a trust whose `scopes` include `trusts` and every scope the trusts it manages give. That is as powerful as it sounds: any job the trust admits can rewrite every trust in the workspace, its own included, and so mint itself tokens with any scope. Keep `trusts` off the trusts CI uses unless their subject admits nothing but a protected branch or environment.
+A pipeline that is to keep managing trusts itself needs a trust whose `scopes` include `trusts` and every scope the trusts it manages grant. That is as powerful as it sounds: any job the trust matches can rewrite every trust in the workspace, its own included, and so issue itself tokens with any scope. Keep `trusts` off the trusts CI uses unless their subject matches nothing but a protected branch or environment.
 
 ## 2. Set the repository variables
 
-Each trust's `id` names it when a job exchanges a token. It is not a secret, since only a job the trust admits can use it, so set it in the repository's **variables**, not its secrets:
+Each trust's `id` names it when a job exchanges a token. It is not a secret, since only a job the trust matches can use it, so set it in the repository's **variables**, not its secrets:
 
 | Variable | Value |
 | --- | --- |
@@ -129,7 +129,7 @@ A trust and a stored token are never used together: with `SPOTLIGHT_API_TOKEN` o
 
 ## Other CI platforms
 
-A platform that hands its jobs an OIDC token works the same way once the token is given to the provider in `SPOTLIGHT_OIDC_TOKEN`, or `oidc.token`. Define a trust with the platform's issuer and the audience its tokens carry, and set `SPOTLIGHT_OIDC_TRUST` to its `id`.
+A platform that hands its jobs an OIDC token works the same way once you pass the token to the provider in `SPOTLIGHT_OIDC_TOKEN`, or `oidc.token`. Create a trust with the platform's issuer and the audience its tokens carry, and set `SPOTLIGHT_OIDC_TRUST` to its `id`.
 
 | Platform | Issuer | Setting `SPOTLIGHT_OIDC_TOKEN` |
 | --- | --- | --- |
@@ -154,4 +154,4 @@ plan:
     - terraform plan -input=false
 ```
 
-A token handed over this way cannot be requested again: when the minted token is due for renewal, the provider exchanges the same OIDC token again, so it must outlive the run. In GitHub Actions the provider requests a fresh one for every exchange.
+A token handed over this way cannot be requested again: when the issued token is due for renewal, the provider exchanges the same OIDC token again, so it must outlive the run. In GitHub Actions the provider requests a fresh one for every exchange.

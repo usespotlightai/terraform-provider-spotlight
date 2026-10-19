@@ -54,7 +54,7 @@ func onceEach(items []any, at string, wrong func(string) string, errs *[]fieldEr
 			*errs = append(*errs, fieldError{fmt.Sprintf("%s[%d]", at, index), why})
 		}
 		if seen[text] {
-			*errs = append(*errs, fieldError{fmt.Sprintf("%s[%d]", at, index), fmt.Sprintf("gives %s a second time", text)})
+			*errs = append(*errs, fieldError{fmt.Sprintf("%s[%d]", at, index), fmt.Sprintf("names %s twice", text)})
 		}
 		seen[text] = true
 		out = append(out, text)
@@ -81,17 +81,17 @@ func secret(body map[string]any) (map[string]any, []fieldError) {
 		errs = append(errs, fieldError{"name", "is upper case letters, digits and underscores, as in LINEAR_API_KEY"})
 	}
 
-	given, _ := body["source"].(map[string]any)
+	input, _ := body["source"].(map[string]any)
 	source := map[string]any{"kind": "built-in", "secretId": nil, "field": nil}
-	if kind, _ := given["kind"].(string); kind == "aws-secrets-manager" {
+	if kind, _ := input["kind"].(string); kind == "aws-secrets-manager" {
 		source["kind"] = kind
-		secretID, _ := given["secretId"].(string)
+		secretID, _ := input["secretId"].(string)
 		secretID = strings.TrimSpace(secretID)
 		if !awsSecret.MatchString(secretID) || len(secretID) > 2048 {
 			errs = append(errs, fieldError{"source.secretId", "is the name or ARN of the secret in AWS Secrets Manager, as in arn:aws:secretsmanager:eu-west-1:123456789012:secret:linear-api-key"})
 		}
 		source["secretId"] = secretID
-		if field, _ := given["field"].(string); field != "" {
+		if field, _ := input["field"].(string); field != "" {
 			source["field"] = field
 		}
 	} else if kind != "" && kind != "built-in" {
@@ -170,12 +170,12 @@ func written(kind string, existing *resource, fields, body map[string]any) (stri
 }
 
 func secretValue(existing *resource, fields, body map[string]any) (string, []fieldError) {
-	value, given := body["valueWo"].(string)
+	value, present := body["valueWo"].(string)
 	builtIn := objectOf(fields["source"])["kind"] == "built-in"
 
 	switch {
-	case !builtIn && given:
-		return "", []fieldError{{"valueWo", "is kept only by Spotlight; a secret read from AWS Secrets Manager is set there"}}
+	case !builtIn && present:
+		return "", []fieldError{{"valueWo", "is stored only by Spotlight; a secret read from AWS Secrets Manager is set there"}}
 	case !builtIn:
 		fields["rotatedAt"] = rotatedAt(existing)
 		return "", nil
@@ -185,8 +185,8 @@ func secretValue(existing *resource, fields, body map[string]any) (string, []fie
 		objectOf(existing.fields["source"])["kind"] != "built-in" ||
 		existing.fields["valueWoVersion"] != fields["valueWoVersion"]
 
-	if needed && !given {
-		return "", []fieldError{{"valueWo", "is the value Spotlight keeps; it is written once and never read back"}}
+	if needed && !present {
+		return "", []fieldError{{"valueWo", "is the value Spotlight stores; it is written once and never read back"}}
 	}
 
 	if !needed {
@@ -208,13 +208,13 @@ func rotatedAt(existing *resource) any {
 }
 
 var (
-	tokenTaken = map[string]string{
-		"runner-pool": "is already another pool’s token; give each pool its own",
-		"egress":      "belongs to another egress. Please give each egress its own",
+	tokenInUse = map[string]string{
+		"runner-pool": "is in use by another pool. Please use a different token for each pool",
+		"egress":      "is in use by another egress. Please use a different token for each egress",
 	}
-	tokenSpent = map[string]string{
-		"runner-pool": "was given to a pool before, and a pool token is given once, ever: a token that was rotated away, or that a deleted or replaced pool used, never works again. Give a new one",
-		"egress":      "was used before. Egress tokens work once only",
+	tokenAlreadyUsed = map[string]string{
+		"runner-pool": "was used before. Each pool token is single-use. Please use a new token",
+		"egress":      "was used before. Each egress token is single-use. Please use a new token",
 	}
 )
 
@@ -245,7 +245,7 @@ func runnerPool(body map[string]any) (map[string]any, []fieldError) {
 		fields["maxRuns"] = maxRuns
 	}
 
-	given, ok := body["provision"].(map[string]any)
+	input, ok := body["provision"].(map[string]any)
 	if !ok {
 		fields["tokenVersion"] = versionOf(body["tokenVersion"])
 		return fields, errs
@@ -257,19 +257,19 @@ func runnerPool(body map[string]any) (map[string]any, []fieldError) {
 		}
 	}
 
-	written, _ := given["url"].(string)
+	written, _ := input["url"].(string)
 	called, err := url.Parse(written)
 	if err != nil || !called.IsAbs() || called.Scheme != "https" || called.User != nil || called.Fragment != "" {
 		errs = append(errs, fieldError{"provision.url", "is an absolute https URL, as in https://provision.example.com/runs"})
 	}
 
 	fields["mode"] = "push"
-	fields["provision"] = map[string]any{"url": written, "secretVersion": versionOf(given["secretVersion"]), "egress": nil, "egressTraffic": "all"}
-	named, _ := given["egress"].(string)
+	fields["provision"] = map[string]any{"url": written, "secretVersion": versionOf(input["secretVersion"]), "egress": nil, "egressTraffic": "all"}
+	named, _ := input["egress"].(string)
 	if strings.TrimSpace(named) != "" {
 		objectOf(fields["provision"])["egress"] = strings.TrimSpace(named)
 	}
-	switch traffic := given["egressTraffic"]; {
+	switch traffic := input["egressTraffic"]; {
 	case traffic == nil:
 	case traffic != "all" && traffic != "bound":
 		errs = append(errs, fieldError{"provision.egressTraffic", "is all or bound"})
@@ -300,7 +300,7 @@ func egress(body map[string]any) (map[string]any, []fieldError) {
 	case sent.Scheme != "https" && sent.Scheme != "http":
 		errs = append(errs, fieldError{"url", "must be an http or https URL"})
 	case sent.User != nil:
-		errs = append(errs, fieldError{"url", "must carry no credentials. Runners give their proxy credential"})
+		errs = append(errs, fieldError{"url", "must carry no credentials. Runners send their proxy credential"})
 	case sent.RawQuery != "" || sent.Fragment != "" || len(written) > 2048:
 		errs = append(errs, fieldError{"url", "must be at most 2048 characters, with no query and no fragment"})
 	}
@@ -340,24 +340,24 @@ func poolAccess(existing *resource, fields, body map[string]any) (string, []fiel
 		case token != "" && !runnerKey.MatchString(token):
 			return "", []fieldError{{"token", "is 32 to 255 URL-safe characters, as a generated password would be"}}
 		case token == "" && existing != nil && existing.fields["tokenVersion"] != fields["tokenVersion"]:
-			return "", []fieldError{{"token", "is given whenever tokenVersion changes, since that is how it is rotated; Spotlight issues one only when a pool is created without it"}}
+			return "", []fieldError{{"token", "is required whenever tokenVersion changes, since that is how it is rotated; Spotlight issues one only when a pool is created without it"}}
 		default:
 			return token, nil
 		}
 	}
 
-	secret, given := objectOf(body["provision"])["secret"].(string)
-	if given && !signingSecret(secret) {
+	secret, present := objectOf(body["provision"])["secret"].(string)
+	if present && !signingSecret(secret) {
 		return "", []fieldError{{"provision.secret", "is whsec_ followed by 24 to 64 base64-encoded random bytes, as Standard Webhooks signing secrets are"}}
 	}
 
 	switch {
-	case given:
+	case present:
 		return secret, nil
 	case existing == nil:
-		return "", []fieldError{{"provision.secret", "is given when a pool that provisions is defined, to sign its calls with"}}
+		return "", []fieldError{{"provision.secret", "is required when a pool that provisions is created, to sign its calls with"}}
 	case objectOf(existing.fields["provision"])["secretVersion"] != objectOf(fields["provision"])["secretVersion"]:
-		return "", []fieldError{{"provision.secret", "is given again whenever provision.secretVersion changes, since that is how it is rotated"}}
+		return "", []fieldError{{"provision.secret", "is required whenever provision.secretVersion changes, since that is how it is rotated"}}
 	default:
 		return "", nil
 	}
@@ -411,8 +411,8 @@ func runnerTrust(body map[string]any) (map[string]any, []fieldError) {
 		errs = append(errs, fieldError{"subject", why})
 	}
 
-	written, given := body["audience"].(string)
-	if !given {
+	written, present := body["audience"].(string)
+	if !present {
 		written = "spotlight"
 	}
 	audience, why := oneWord(written, "spotlight")
@@ -494,12 +494,12 @@ func harnessProfile(body map[string]any) (map[string]any, []fieldError) {
 		errs = append(errs, fieldError{"key", fmt.Sprintf("is lower case words joined by dashes, at most %d characters, as in careful", longestWords)})
 	}
 
-	given, _ := body["permissions"].(map[string]any)
+	input, _ := body["permissions"].(map[string]any)
 	permissions := map[string]any{}
 	stated := map[string]string{}
 	for _, decision := range []string{"allow", "ask", "deny"} {
 		listed := []any{}
-		for at, each := range texts(given[decision]) {
+		for at, each := range texts(input[decision]) {
 			written, ok := permissionRule(textOf(each))
 			path := fmt.Sprintf("permissions.%s[%d]", decision, at)
 			if !ok {
@@ -620,8 +620,8 @@ func tokenTrust(body map[string]any) (map[string]any, []fieldError) {
 		errs = append(errs, fieldError{"subject", "names its owner before any *, as in repo:acme/platform:*"})
 	}
 
-	written, given := body["audience"].(string)
-	if !given {
+	written, present := body["audience"].(string)
+	if !present {
 		written = "spotlight"
 	}
 	audience, why := oneWord(written, "spotlight")

@@ -15,7 +15,7 @@ func answered[T any](resp *http.Response, body []byte, value *T) (T, error) {
 	var zero T
 
 	if resp == nil {
-		return zero, fmt.Errorf("the control plane gave no answer")
+		return zero, fmt.Errorf("the control plane returned no answer")
 	}
 
 	if resp.StatusCode >= http.StatusBadRequest {
@@ -57,7 +57,7 @@ func readAnswer[T any](resp *http.Response, err error) (T, error) {
 
 func done(resp *http.Response, body []byte) error {
 	if resp == nil {
-		return fmt.Errorf("the control plane gave no answer")
+		return fmt.Errorf("the control plane returned no answer")
 	}
 
 	if resp.StatusCode >= http.StatusBadRequest {

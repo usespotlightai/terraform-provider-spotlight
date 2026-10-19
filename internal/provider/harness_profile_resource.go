@@ -96,7 +96,7 @@ func harnessProfileSchema() schema.Schema {
 			"version": versionAttribute("harness profile"),
 			"address": addressAttribute("core/careful"),
 			"team_id": ownerAttribute("team", "harness profile"),
-			"key":     fixedAttribute("What stations name the profile by, as in `careful`.", "harness profile"),
+			"key":     immutableAttribute("What stations name the profile by, as in `careful`.", "harness profile"),
 			"permissions": schema.SingleNestedAttribute{
 				Optional: true,
 				Computed: true,
@@ -108,7 +108,7 @@ func harnessProfileSchema() schema.Schema {
 				MarkdownDescription: "What the harness may do, what it asks a person about first, and what it may never do.",
 				Attributes: map[string]schema.Attribute{
 					"allow": harnessProfileRulesAttribute("What the harness may do without asking."),
-					"ask":   harnessProfileRulesAttribute("What the harness asks a person about first; the ask reaches their inbox as an approval."),
+					"ask":   harnessProfileRulesAttribute("What the harness asks a person about first; the ask goes to their inbox as an approval."),
 					"deny":  harnessProfileRulesAttribute("What the harness may never do."),
 				},
 			},
@@ -127,13 +127,13 @@ func harnessProfileSchema() schema.Schema {
 							Required:            true,
 							MarkdownDescription: "What starts the server, as in `npx`.",
 						},
-						"args": stringListAttribute("What the command is given."),
+						"args": stringListAttribute("The arguments of the command."),
 						"env": schema.MapAttribute{
 							Optional:            true,
 							Computed:            true,
 							ElementType:         types.StringType,
 							Default:             mapdefault.StaticValue(types.MapValueMust(types.StringType, map[string]attr.Value{})),
-							MarkdownDescription: "The server's environment. A value is plain text, stored and shown as written, or a reference to a workspace secret such as `secret.LINEAR_API_KEY`: the secret must exist, cannot be deleted while referenced, and reaches the server only as a stand-in, since egress injects its value into the server's requests to the hosts it is bound to.",
+							MarkdownDescription: "The server's environment. A value is plain text, stored and shown as written, or a reference to a workspace secret such as `secret.LINEAR_API_KEY`: the secret must exist, cannot be deleted while referenced, and goes to the server only as a stand-in, since egress injects its value into the server's requests to the hosts it is bound to.",
 						},
 					},
 				},
@@ -198,12 +198,12 @@ func (r *HarnessProfileResource) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 
-	kept := &state
+	prior := &state
 	if !answerUnchanged(ctx, req.Private, harnessProfileSettable(harnessProfile)) {
-		kept = nil
+		prior = nil
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, harnessProfileModel(harnessProfile, kept))...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, harnessProfileModel(harnessProfile, prior))...)
 	resp.Diagnostics.Append(setIdentity(ctx, resp.Identity, harnessProfile.ID)...)
 	resp.Diagnostics.Append(rememberAnswer(ctx, resp.Private, harnessProfileSettable(harnessProfile))...)
 }
@@ -325,7 +325,7 @@ func harnessProfileInput(plan HarnessProfileResourceModel) (client.HarnessProfil
 	return in, diags
 }
 
-func harnessProfileModel(profile client.HarnessProfile, kept *HarnessProfileResourceModel) HarnessProfileResourceModel {
+func harnessProfileModel(profile client.HarnessProfile, prior *HarnessProfileResourceModel) HarnessProfileResourceModel {
 	model := HarnessProfileResourceModel{
 		ID:      types.StringValue(profile.ID),
 		Version: types.Int64Value(profile.Version),
@@ -355,11 +355,11 @@ func harnessProfileModel(profile client.HarnessProfile, kept *HarnessProfileReso
 		})
 	}
 
-	if kept != nil {
-		model.Key = kept.Key
-		model.Permissions = kept.Permissions
-		model.MCPServers = kept.MCPServers
-		model.Native = dynamic.Resolve(kept.Native, profile.Native)
+	if prior != nil {
+		model.Key = prior.Key
+		model.Permissions = prior.Permissions
+		model.MCPServers = prior.MCPServers
+		model.Native = dynamic.Resolve(prior.Native, profile.Native)
 	}
 
 	return model

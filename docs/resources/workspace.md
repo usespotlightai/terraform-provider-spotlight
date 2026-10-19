@@ -3,14 +3,14 @@ page_title: "spotlight_workspace Resource - spotlight"
 subcategory: ""
 description: |-
   A Spotlight workspace. A person creates it by signing up in the web app; Terraform adopts it with an import block that names its slug, then manages everything inside it.
-  Creating a workspace from Terraform needs a caller allowed to open workspaces, and API tokens are not: a token acts only inside its own workspace. Import the workspace rather than creating it.
+  Creating a workspace from Terraform needs a caller allowed to create workspaces, and API tokens are not: a token acts only inside its own workspace. Import the workspace rather than creating it.
 ---
 
 # spotlight_workspace (Resource)
 
 A Spotlight workspace. A person creates it by signing up in the web app; Terraform adopts it with an `import` block that names its slug, then manages everything inside it.
 
-Creating a workspace from Terraform needs a caller allowed to open workspaces, and API tokens are not: a token acts only inside its own workspace. Import the workspace rather than creating it.
+Creating a workspace from Terraform needs a caller allowed to create workspaces, and API tokens are not: a token acts only inside its own workspace. Import the workspace rather than creating it.
 
 ## Adopt a workspace
 
@@ -30,11 +30,11 @@ resource "spotlight_workspace" "acme" {
 
 ## Creating a workspace
 
-Creating a workspace from Terraform needs a caller allowed to open workspaces. API tokens are not: a token acts only inside its own workspace, and opening one fails with `403 Forbidden`. The provider reports that error with the `import` block to write instead.
+Creating a workspace from Terraform needs a caller allowed to create workspaces. API tokens are not: a token acts only inside its own workspace, and creating one fails with `403 Forbidden`. The provider reports that error with the `import` block to write instead.
 
 ## Stop managing a workspace
 
-Destroying a `spotlight_workspace` asks Spotlight to delete the workspace. To stop managing it without deleting it, replace the resource with a `removed` block (Terraform 1.7 or later):
+Destroying a `spotlight_workspace` requests that Spotlight delete the workspace. To stop managing it without deleting it, replace the resource with a `removed` block (Terraform 1.7 or later):
 
 ```terraform
 removed {
@@ -52,7 +52,7 @@ removed {
 ### Required
 
 - `name` (String) What the workspace is called.
-- `slug` (String) Where the workspace lives in the web app. It is fixed for the workspace's life, so changing it replaces the workspace.
+- `slug` (String) Where the workspace lives in the web app. It is immutable, so changing it replaces the workspace.
 
 ### Read-Only
 

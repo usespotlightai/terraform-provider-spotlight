@@ -117,12 +117,12 @@ func (r *WorkspaceRunnersResource) Read(ctx context.Context, req resource.ReadRe
 
 	addAPIWarnings(&resp.Diagnostics, "workspace runners", workspaceRunners.Warnings, workspaceRunnersFields)
 
-	kept := &state
+	prior := &state
 	if !answerUnchanged(ctx, req.Private, workspaceRunnersSettable(workspaceRunners)) {
-		kept = nil
+		prior = nil
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, workspaceRunnersModel(workspaceRunners, kept))...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, workspaceRunnersModel(workspaceRunners, prior))...)
 	resp.Diagnostics.Append(setIdentity(ctx, resp.Identity, workspaceRunners.ID)...)
 	resp.Diagnostics.Append(rememberAnswer(ctx, resp.Private, workspaceRunnersSettable(workspaceRunners))...)
 }
@@ -202,7 +202,7 @@ func workspaceRunnersInput(plan WorkspaceRunnersResourceModel) (client.Workspace
 	}, diags
 }
 
-func workspaceRunnersModel(declared client.WorkspaceRunners, kept *WorkspaceRunnersResourceModel) WorkspaceRunnersResourceModel {
+func workspaceRunnersModel(declared client.WorkspaceRunners, prior *WorkspaceRunnersResourceModel) WorkspaceRunnersResourceModel {
 	model := WorkspaceRunnersResourceModel{
 		ID:          types.StringValue(declared.ID),
 		Version:     types.Int64Value(declared.Version),
@@ -212,9 +212,9 @@ func workspaceRunnersModel(declared client.WorkspaceRunners, kept *WorkspaceRunn
 		Pools:       stringSet(declared.Pools),
 	}
 
-	if kept != nil {
-		model.Trusts = kept.Trusts
-		model.Pools = kept.Pools
+	if prior != nil {
+		model.Trusts = prior.Trusts
+		model.Pools = prior.Pools
 	}
 
 	return model

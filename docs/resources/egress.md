@@ -41,7 +41,7 @@ resource "spotlight_egress" "shared" {
 
 ### Required
 
-- `key` (String) Names the egress, as in `shared`. It is fixed for the egress's life, so changing it replaces the egress.
+- `key` (String) Names the egress, as in `shared`. It is immutable, so changing it replaces the egress.
 - `url` (String) Where the runners of a pool that names the egress send their traffic, as in `https://egress.example.com`. It has no credentials, no query and no fragment. An http URL gets a warning: the runners send their proxy credential to it, and a production deployment does not provision runners that use it.
 - `workspace_id` (String) The workspace the egress belongs to. Changing it replaces the egress.
 
@@ -49,7 +49,7 @@ resource "spotlight_egress" "shared" {
 
 > **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
 
-- `token` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The token the egress calls Spotlight with: 32 to 255 URL-safe characters, as a generated password would be. Spotlight keeps only its hash. Left out, Spotlight issues one when it creates the egress, which Terraform does not keep; a change to `token_version` must come with a token. A token is given once, ever: another egress's token is not accepted, and one rotated away, or used by an egress that was deleted or replaced, is spent and no egress accepts it, the same one included, so rotating or replacing an egress always needs a new token. It is sent to Spotlight and never stored in the plan or the state, so it needs Terraform 1.11 or later; change `token_version` to send it again.
+- `token` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The token the egress calls Spotlight with: 32 to 255 URL-safe characters, as a generated password would be. Spotlight stores only its hash. Left out, Spotlight issues one when it creates the egress, which Terraform does not store; a change to `token_version` must come with a token. Each token is single-use. Spotlight does not accept the token of another egress. A token that you rotated away, or that a deleted or replaced egress used, was used once, so no egress accepts it again, the same egress included. Thus, to rotate or replace an egress, you always need a new token. It is sent to Spotlight and never stored in the plan or the state, so it needs Terraform 1.11 or later; change `token_version` to send it again.
 - `token_version` (Number) Any number; change it whenever `token` changes, so Terraform sends the new value.
 
 ### Read-Only

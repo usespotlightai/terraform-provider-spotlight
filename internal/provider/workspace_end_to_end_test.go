@@ -224,7 +224,7 @@ resource "spotlight_workspace" "acc" {
   slug = %[1]q
 }
 `, slug),
-				ExpectError: regexp.MustCompile(`may not open a new\s+one(?s:.*)import it\s+rather than creating it`),
+				ExpectError: regexp.MustCompile(`may not create a new\s+one(?s:.*)import it\s+rather than creating it`),
 			},
 		},
 	})

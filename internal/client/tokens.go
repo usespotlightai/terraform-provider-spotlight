@@ -12,12 +12,12 @@ import (
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/client/apigen"
 )
 
-// RenewBefore is the time before a minted token expires when the client
-// mints the next token. If a token is minted for less than two times this
+// RenewBefore is the time before an issued token expires when the client
+// gets the next token. If a token is issued for less than two times this
 // duration, the client renews it after half of its life.
 const RenewBefore = time.Minute
 
-// TokenSource gives the bearer token for each call.
+// TokenSource returns the bearer token for each call.
 type TokenSource interface {
 	// Token returns the token for the current call.
 	Token(ctx context.Context) (string, error)
@@ -57,7 +57,7 @@ type OIDC struct {
 // identify a different audience.
 const DefaultAudience = "spotlight"
 
-type minted struct {
+type issued struct {
 	token     string
 	expiresAt time.Time
 }
@@ -110,33 +110,33 @@ func (e *exchanging) Unauthorized(token string) bool {
 	return true
 }
 
-func (e *exchanging) exchange(ctx context.Context) (minted, error) {
+func (e *exchanging) exchange(ctx context.Context) (issued, error) {
 	workload, err := e.oidc.Workload.WorkloadToken(ctx, e.oidc.Audience)
 	if err != nil {
-		return minted{}, fmt.Errorf("could not get an OIDC token for the audience %s: %w", e.oidc.Audience, err)
+		return issued{}, fmt.Errorf("could not get an OIDC token for the audience %s: %w", e.oidc.Audience, err)
 	}
 
 	body, err := jsonBody(apigen.ExchangeWorkloadTokenRequestDto{Trust: e.oidc.Trust, Token: workload})
 	if err != nil {
-		return minted{}, err
+		return issued{}, err
 	}
 
 	resp, err := e.api.ExchangeWorkloadTokenWithBodyWithResponse(ctx, jsonContent, body)
 	if err != nil {
-		return minted{}, err
+		return issued{}, err
 	}
 
 	dto, err := answered(resp.HTTPResponse, resp.Body, resp.JSON200)
 	if err != nil {
-		return minted{}, fmt.Errorf("the workspace token trust %s did not admit the OIDC token: %v", e.oidc.Trust, err)
+		return issued{}, fmt.Errorf("could not exchange the OIDC token through the workspace token trust %s: %v", e.oidc.Trust, err)
 	}
 
 	expiresAt, err := time.Parse(time.RFC3339, dto.ExpiresAt)
 	if err != nil {
-		return minted{}, fmt.Errorf("the minted token's expiry %q is not a time: %w", dto.ExpiresAt, err)
+		return issued{}, fmt.Errorf("the issued token's expiry %q is not a time: %w", dto.ExpiresAt, err)
 	}
 
-	return minted{token: dto.Token, expiresAt: expiresAt}, nil
+	return issued{token: dto.Token, expiresAt: expiresAt}, nil
 }
 
 type authenticating struct {

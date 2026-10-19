@@ -59,7 +59,7 @@ resource "spotlight_workspace" "acme" {
 }
 ```
 
-A token may not open a workspace, so creating a `spotlight_workspace` with one fails and says to import it instead.
+A token may not create a workspace, so creating a `spotlight_workspace` with one fails and says to import it instead.
 
 ## Reading and listing
 

@@ -7,7 +7,7 @@
 //   - Imports by address and lists in address order.
 //   - Write-only values that the fake never returns.
 //   - The expression check.
-//   - The exchange of the OIDC token of a workload for a minted token.
+//   - The exchange of the OIDC token of a workload for an issued token.
 package fakeapi
 
 import (
@@ -31,7 +31,7 @@ const Token = "test-token"
 // the fake accept.
 const WorkloadToken = "test-workload-token"
 
-// Admin is the person who defined each workspace token trust in the fake.
+// Admin is the person who created each workspace token trust in the fake.
 const Admin = "test-admin"
 
 const apiVersion = "2026-09-23"
@@ -67,10 +67,10 @@ type Server struct {
 	requests   []Request
 	failNext   []int
 	scopes     map[string]bool
-	kept       map[string]string
-	given      map[givenToken]struct{}
-	minted     map[string]string
-	mintedFor  time.Duration
+	writeOnly  map[string]string
+	used       map[usedToken]struct{}
+	issued     map[string]string
+	issuedFor  time.Duration
 }
 
 type resource struct {
@@ -87,10 +87,10 @@ func New(t interface{ Cleanup(func()) }) *Server {
 	s := &Server{
 		stored:     map[string]*resource{},
 		idempotent: map[string]string{},
-		kept:       map[string]string{},
-		given:      map[givenToken]struct{}{},
-		minted:     map[string]string{},
-		mintedFor:  15 * time.Minute,
+		writeOnly:  map[string]string{},
+		used:       map[usedToken]struct{}{},
+		issued:     map[string]string{},
+		issuedFor:  15 * time.Minute,
 	}
 	s.Grant("configure", "secrets", "runners", "trusts")
 
@@ -119,7 +119,7 @@ func New(t interface{ Cleanup(func()) }) *Server {
 	return s
 }
 
-// Grant gives the token only these scopes for all later calls.
+// Grant limits the token to these scopes for all later calls.
 func (s *Server) Grant(scopes ...string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -130,13 +130,13 @@ func (s *Server) Grant(scopes ...string) {
 	}
 }
 
-// MintFor makes the tokens that the fake mints after this call expire after
+// IssueFor makes the tokens that the fake issues after this call expire after
 // d.
-func (s *Server) MintFor(d time.Duration) {
+func (s *Server) IssueFor(d time.Duration) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	s.mintedFor = d
+	s.issuedFor = d
 }
 
 // Requests lists each request that the fake received.
@@ -185,17 +185,17 @@ func (s *Server) IDOf(kind, address string) string {
 	return ""
 }
 
-// Kept returns the write-only value that the fake keeps for a resource:
+// WriteOnly returns the write-only value that the fake stores for a resource:
 //   - The value of a secret.
 //   - The token of a pull pool.
 //   - The token of an egress.
 //   - The provision secret of a push pool.
 //   - The secret that a hook signs with.
-func (s *Server) Kept(id string) string {
+func (s *Server) WriteOnly(id string) string {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	return s.kept[id]
+	return s.writeOnly[id]
 }
 
 // Change changes a resource without Terraform, as a different client does,
@@ -209,8 +209,8 @@ func (s *Server) Change(id string, change func(fields map[string]any)) {
 	stored.version++
 }
 
-// Forget removes a resource without Terraform.
-func (s *Server) Forget(id string) {
+// Delete removes a resource without Terraform.
+func (s *Server) Delete(id string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -240,7 +240,7 @@ func (s *Server) guard(next http.Handler) http.Handler {
 			return
 		}
 
-		if r.URL.Path != exchangePath && !s.admits(r.Header.Get("Authorization")) {
+		if r.URL.Path != exchangePath && !s.authenticates(r.Header.Get("Authorization")) {
 			problem(w, http.StatusUnauthorized, "unauthenticated", "No valid credentials", "Send a Spotlight API token as a bearer token", nil)
 			return
 		}
@@ -250,8 +250,8 @@ func (s *Server) guard(next http.Handler) http.Handler {
 			return
 		}
 
-		if asked := r.Header.Get("Spotlight-Api-Version"); asked != "" && asked != apiVersion {
-			problem(w, http.StatusBadRequest, "unsupported-api-version", "This API version is not served here", "Asked for "+asked, nil)
+		if requested := r.Header.Get("Spotlight-Api-Version"); requested != "" && requested != apiVersion {
+			problem(w, http.StatusBadRequest, "unsupported-api-version", "This API version is not served here", "Requested "+requested, nil)
 			return
 		}
 
@@ -262,7 +262,7 @@ func (s *Server) guard(next http.Handler) http.Handler {
 
 const exchangePath = "/api/workspace-tokens/exchange"
 
-func (s *Server) admits(authorization string) bool {
+func (s *Server) authenticates(authorization string) bool {
 	bearer, ok := strings.CutPrefix(authorization, "Bearer ")
 	if !ok {
 		return false
@@ -271,15 +271,15 @@ func (s *Server) admits(authorization string) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	_, minted := s.minted[bearer]
+	_, issued := s.issued[bearer]
 
-	return bearer == Token || minted
+	return bearer == Token || issued
 }
 
-func (s *Server) lapse(trust string) {
-	for token, mintedBy := range s.minted {
-		if mintedBy == trust {
-			delete(s.minted, token)
+func (s *Server) revokeIssued(trust string) {
+	for token, issuedBy := range s.issued {
+		if issuedBy == trust {
+			delete(s.issued, token)
 		}
 	}
 }
@@ -299,20 +299,20 @@ func (s *Server) exchange(w http.ResponseWriter, r *http.Request) {
 
 	trust, ok := s.stored[body.Trust]
 	if !ok || trust.kind != "workspace-token-trust" || body.Token != WorkloadToken {
-		problem(w, http.StatusUnauthorized, "unauthenticated", "The workload token was not admitted", "No trust here admits that workload", nil)
+		problem(w, http.StatusUnauthorized, "unauthenticated", "The workload token was not accepted", "No trust here matches that workload", nil)
 		return
 	}
 
 	s.next++
-	token := fmt.Sprintf("minted-%04d-%s", s.next, strings.Repeat("m", 32))
-	s.minted[token] = trust.id
+	token := fmt.Sprintf("issued-%04d-%s", s.next, strings.Repeat("m", 32))
+	s.issued[token] = trust.id
 
 	writeJSON(w, http.StatusOK, "application/json", map[string]any{
 		"token":       token,
 		"tokenId":     fmt.Sprintf("token-%04d", s.next),
 		"workspaceId": trust.owner,
 		"scopes":      trust.fields["scopes"],
-		"expiresAt":   time.Now().Add(s.mintedFor).UTC().Format(time.RFC3339Nano),
+		"expiresAt":   time.Now().Add(s.issuedFor).UTC().Format(time.RFC3339Nano),
 	})
 }
 
@@ -413,7 +413,7 @@ func forbidTrust(w http.ResponseWriter, detail string) {
 		"title":      "Not allowed to change the workspace-token-trust",
 		"status":     http.StatusForbidden,
 		"detail":     detail,
-		"permission": "manage-token-trusts",
+		"permission": "trusts",
 	})
 }
 
@@ -515,11 +515,11 @@ func (s *Server) create(kind string) http.HandlerFunc {
 			}
 		}
 
-		if value == "" && givesToken(kind, fields) {
+		if value == "" && hasToken(kind, fields) {
 			value = issue(w, created)
 		}
 
-		s.keep(created, value)
+		s.storeWriteOnly(created, value)
 		s.stored[created.id] = created
 		s.idempotent[key] = created.id
 		s.answer(w, http.StatusCreated, created)
@@ -577,15 +577,15 @@ func (s *Server) update(kind string) http.HandlerFunc {
 			return
 		}
 
-		s.keep(existing, value)
+		s.storeWriteOnly(existing, value)
 
 		if kind == "secret" && objectOf(fields["source"])["kind"] != "built-in" {
-			delete(s.kept, existing.id)
+			delete(s.writeOnly, existing.id)
 		}
 
 		existing.fields = fields
 		existing.version++
-		s.lapse(existing.id)
+		s.revokeIssued(existing.id)
 		s.answer(w, http.StatusOK, existing)
 	}
 }
@@ -620,45 +620,45 @@ func (s *Server) remove(kind string) http.HandlerFunc {
 		}
 
 		delete(s.stored, existing.id)
-		delete(s.kept, existing.id)
-		s.lapse(existing.id)
+		delete(s.writeOnly, existing.id)
+		s.revokeIssued(existing.id)
 		w.WriteHeader(http.StatusNoContent)
 	}
 }
 
-func (s *Server) keep(stored *resource, value string) {
+func (s *Server) storeWriteOnly(stored *resource, value string) {
 	if value == "" {
 		return
 	}
 
-	s.kept[stored.id] = value
-	if givesToken(stored.kind, stored.fields) {
-		s.given[givenToken{stored.kind, value}] = struct{}{}
+	s.writeOnly[stored.id] = value
+	if hasToken(stored.kind, stored.fields) {
+		s.used[usedToken{stored.kind, value}] = struct{}{}
 	}
 }
 
-type givenToken struct{ kind, token string }
+type usedToken struct{ kind, token string }
 
 func (s *Server) tokenProblems(kind, claimant, value string) []fieldError {
 	if (kind != "runner-pool" && kind != "egress") || value == "" {
 		return nil
 	}
 
-	if _, ever := s.given[givenToken{kind, value}]; !ever {
+	if _, ever := s.used[usedToken{kind, value}]; !ever {
 		return nil
 	}
 
-	for id, kept := range s.kept {
-		if stored := s.stored[id]; kept == value && stored != nil && stored.kind == kind && givesToken(stored.kind, stored.fields) {
+	for id, token := range s.writeOnly {
+		if stored := s.stored[id]; token == value && stored != nil && stored.kind == kind && hasToken(stored.kind, stored.fields) {
 			if id == claimant {
 				return nil
 			}
 
-			return []fieldError{{"token", tokenTaken[kind]}}
+			return []fieldError{{"token", tokenInUse[kind]}}
 		}
 	}
 
-	return []fieldError{{"token", tokenSpent[kind]}}
+	return []fieldError{{"token", tokenAlreadyUsed[kind]}}
 }
 
 func (s *Server) unknownEgress(kind, workspace string, fields map[string]any) []fieldError {
@@ -833,7 +833,7 @@ var fixedFields = map[string][]string{
 	"hook":                  {"key"},
 }
 
-func givesToken(kind string, fields map[string]any) bool {
+func hasToken(kind string, fields map[string]any) bool {
 	return kind == "egress" || (kind == "runner-pool" && fields["mode"] == "pull")
 }
 
@@ -929,8 +929,8 @@ func (s *Server) bodyOf(stored *resource) map[string]any {
 	}
 
 	if stored.kind == "integration" {
-		body["tools"] = offered(stored.fields)
-		body["spec"] = specOf(stored.fields)
+		body["tools"] = provided(stored.fields)
+		body["spec"] = spec(stored.fields)
 	}
 
 	return body

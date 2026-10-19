@@ -151,7 +151,7 @@ func line(body map[string]any) (map[string]any, []fieldError) {
 			case !keys[textOf(next)]:
 				errs = append(errs, fieldError{fmt.Sprintf("stations[%d].passesTo", at), fmt.Sprintf("names %s, which is not a station on this line", next)})
 			case !worked[textOf(next)]:
-				errs = append(errs, fieldError{fmt.Sprintf("stations[%d].passesTo", at), fmt.Sprintf("must hand on to a station work is done at, but %s is not one", next)})
+				errs = append(errs, fieldError{fmt.Sprintf("stations[%d].passesTo", at), fmt.Sprintf("must pass to work stations, but %s does not", textOf(station["name"]))})
 			}
 		}
 
@@ -271,8 +271,8 @@ func repositories(definition map[string]any, errs *[]fieldError) {
 	seen := map[string]bool{}
 
 	for at, each := range listed {
-		given := objectOf(each)
-		name := strings.TrimSpace(textOf(given["name"]))
+		input := objectOf(each)
+		name := strings.TrimSpace(textOf(input["name"]))
 		if owner, rest, ok := strings.Cut(name, "/"); !ok || owner == "" || rest == "" || strings.Contains(rest, "/") {
 			*errs = append(*errs, fieldError{fmt.Sprintf("repositories[%d].name", at), "A repository is named owner/name"})
 		}
@@ -282,7 +282,7 @@ func repositories(definition map[string]any, errs *[]fieldError) {
 		seen[name] = true
 
 		repository := map[string]any{"name": name}
-		if image := strings.TrimSpace(textOf(given["image"])); image != "" {
+		if image := strings.TrimSpace(textOf(input["image"])); image != "" {
 			if len(image) > 255 || !imageReference.MatchString(image) {
 				*errs = append(*errs, fieldError{fmt.Sprintf("repositories[%d].image", at), "A runner image is named by a reference such as ghcr.io/acme/runner:main, in lowercase, with an optional tag or digest"})
 			}
@@ -291,8 +291,8 @@ func repositories(definition map[string]any, errs *[]fieldError) {
 			}
 			repository["image"] = image
 		}
-		if setup := textOf(given["setup"]); setup != "" {
-			if said := strings.TrimSpace(setup); said == "" || len(said) > 500 || strings.ContainsAny(said, "\r\n") {
+		if setup := textOf(input["setup"]); setup != "" {
+			if command := strings.TrimSpace(setup); command == "" || len(command) > 500 || strings.ContainsAny(command, "\r\n") {
 				*errs = append(*errs, fieldError{fmt.Sprintf("repositories[%d].setup", at), "Invalid repository setup: is one line of at most 500 characters"})
 			}
 			repository["setup"] = setup
@@ -357,9 +357,9 @@ func skill(body map[string]any) (map[string]any, []fieldError) {
 func integration(body map[string]any) (map[string]any, []fieldError) {
 	definition := maps.Clone(body)
 
-	source, _ := definition["integration"].(string)
-	if source == "" {
-		return nil, []fieldError{{"integration", "names the host this integration defines, as in linear"}}
+	named, _ := definition["integration"].(string)
+	if named == "" {
+		return nil, []fieldError{{"integration", "is the name of the integration, as in linear"}}
 	}
 
 	if actions, ok := definition["actions"].(map[string]any); ok {
@@ -377,7 +377,7 @@ func integration(body map[string]any) (map[string]any, []fieldError) {
 		definition["actions"] = filled
 	}
 
-	return map[string]any{"integration": source, "definition": definition}, nil
+	return map[string]any{"integration": named, "definition": definition}, nil
 }
 
 var generated = map[string][]string{
@@ -386,7 +386,7 @@ var generated = map[string][]string{
 	"mcp":     {"search-issues", "delete-issue"},
 }
 
-func specKind(fields map[string]any) string {
+func specKindOf(fields map[string]any) string {
 	definition := objectOf(fields["definition"])
 	for _, kind := range slices.Sorted(maps.Keys(generated)) {
 		if definition[kind] != nil {
@@ -397,23 +397,23 @@ func specKind(fields map[string]any) string {
 	return ""
 }
 
-func offered(fields map[string]any) map[string]any {
-	source := textOf(fields["integration"])
+func provided(fields map[string]any) map[string]any {
+	named := textOf(fields["integration"])
 	tools := map[string]any{}
 
-	for _, name := range generated[specKind(fields)] {
-		tools[name] = source + "." + name
+	for _, name := range generated[specKindOf(fields)] {
+		tools[name] = named + "." + name
 	}
 
 	for name := range objectOf(objectOf(fields["definition"])["tools"]) {
-		tools[name] = source + "." + name
+		tools[name] = named + "." + name
 	}
 
 	return tools
 }
 
-func specOf(fields map[string]any) any {
-	kind := specKind(fields)
+func spec(fields map[string]any) any {
+	kind := specKindOf(fields)
 	if kind == "" {
 		return nil
 	}

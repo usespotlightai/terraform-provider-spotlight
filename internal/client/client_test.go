@@ -183,7 +183,7 @@ func TestAnUpdateIsNotRetried(t *testing.T) {
 	}
 }
 
-func TestImportAsksByAddress(t *testing.T) {
+func TestImportRequestsByAddress(t *testing.T) {
 	api, recorded := serve(t, func(w http.ResponseWriter, _ *http.Request, _ int) {
 		reply(w, http.StatusOK, "application/json", map[string]any{
 			"id": "line-1", "version": 1, "address": "core/delivery", "warnings": []any{},
@@ -198,7 +198,7 @@ func TestImportAsksByAddress(t *testing.T) {
 
 	got := recorded.all()[0]
 	if got.Path != "/api/resources/workspaces/ws-1/lines/import" || got.Query != "address=core%2Fdelivery" {
-		t.Errorf("asked %s?%s", got.Path, got.Query)
+		t.Errorf("requested %s?%s", got.Path, got.Query)
 	}
 
 	if found.Definition["name"] != "Delivery" {
@@ -274,7 +274,7 @@ func TestExpressionsAreCheckedWhereTheyAreWritten(t *testing.T) {
 	api, recorded := serve(t, func(w http.ResponseWriter, r *http.Request, _ int) {
 		if r.Method == http.MethodGet {
 			reply(w, http.StatusOK, "application/json", []any{
-				map[string]any{"position": "integration.webhook.events[*].when", "returns": "bool", "sees": []any{}, "alsoSees": []any{"item"}},
+				map[string]any{"position": "integration.webhook.events[*].when", "returns": "bool", "variables": []any{}, "addedVariables": []any{"item"}},
 			})
 			return
 		}
@@ -342,7 +342,7 @@ func TestURLMayNameTheAPIPath(t *testing.T) {
 
 	for _, each := range paths {
 		if each != "/api/resources/workspaces/ws-1" {
-			t.Errorf("asked %s", each)
+			t.Errorf("requested %s", each)
 		}
 	}
 }
@@ -351,14 +351,14 @@ func TestAForbiddenCallSaysWhatPermissionTheCallerLacked(t *testing.T) {
 	api, _ := serve(t, func(w http.ResponseWriter, _ *http.Request, _ int) {
 		reply(w, http.StatusForbidden, "application/problem+json", map[string]any{
 			"type": client.ProblemForbidden, "title": "Not allowed to change the secret", "status": 403,
-			"detail": "You can read this secret", "permission": "manage-secrets",
+			"detail": "You can read this secret", "permission": "secrets",
 		})
 	})
 
 	_, err := api.ReadSecret(context.Background(), "secret-1")
 
 	problem, ok := client.ProblemOf(err)
-	if !ok || !client.IsForbidden(err) || problem.Permission != client.PermissionManageSecrets {
+	if !ok || !client.IsForbidden(err) || problem.Permission != client.PermissionSecrets {
 		t.Errorf("problem %+v", problem)
 	}
 }
@@ -369,7 +369,7 @@ var pool = map[string]any{
 }
 
 func TestAPoolTokenSpotlightIssuesIsDroppedUnread(t *testing.T) {
-	const issued = "issued-pool-token-that-must-never-be-kept-anywhere"
+	const issued = "issued-pool-token-that-must-never-be-stored-anywhere"
 
 	api, _ := serve(t, func(w http.ResponseWriter, _ *http.Request, _ int) {
 		w.Header().Set(client.PoolTokenHeader, issued)
@@ -392,7 +392,7 @@ var egress = map[string]any{
 }
 
 func TestAnEgressTokenSpotlightIssuesIsDroppedUnread(t *testing.T) {
-	const issued = "issued-egress-token-that-must-never-be-kept-anywhere"
+	const issued = "issued-egress-token-that-must-never-be-stored-anywhere"
 
 	api, recorded := serve(t, func(w http.ResponseWriter, _ *http.Request, _ int) {
 		w.Header().Set(client.EgressTokenHeader, issued)

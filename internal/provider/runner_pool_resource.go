@@ -39,8 +39,8 @@ type RunnerPoolResource struct {
 }
 
 const (
-	runnerPoolIssuedToken = "Spotlight issued this pool a token, answered only once. Terraform keeps no secret in its state, so the token was not kept, and no host can claim with it. " +
-		"Give the pool a token that you have instead: set `token` (from a sensitive variable, or a write-only ephemeral value) and change `token_version` to send it."
+	runnerPoolIssuedToken = "Spotlight issued this pool a token, returned only once. Terraform stores no secret in its state, so the token was not stored, and no host can claim with it. " +
+		"To use a token that you have instead, set `token` (from a sensitive variable, or a write-only ephemeral value) and change `token_version` to send it."
 	runnerPoolPullOnly = "is only for a pool that is pulled from; a pool that provisions is called instead, and has no token."
 )
 
@@ -78,14 +78,15 @@ func (r *RunnerPoolResource) Schema(_ context.Context, _ resource.SchemaRequest,
 
 func runnerPoolSchema() schema.Schema {
 	attributes := writeonly.Token.Attributes("The token a `spotlight-host` serving the pool claims work with: 32 to 255 URL-safe characters, as a generated password would be. " +
-		"Only for a pool without `provision`. Spotlight keeps only its hash. Left out, Spotlight issues one when it creates the pool, which Terraform does not keep; " +
-		"a change to `token_version` must come with a token. A token is given once, ever: another pool's token is not accepted, and one rotated away, or used by a pool that was deleted or replaced, " +
-		"is spent and no pool accepts it, the same one included, so rotating or replacing a pool always needs a new token.")
+		"Only for a pool without `provision`. Spotlight stores only its hash. Left out, Spotlight issues one when it creates the pool, which Terraform does not store; " +
+		"a change to `token_version` must come with a token. Each token is single-use. Spotlight does not accept the token of another pool. " +
+		"A token that you rotated away, or that a deleted or replaced pool used, was used once, so no pool accepts it again, the same pool included. " +
+		"Thus, to rotate or replace a pool, you always need a new token.")
 	attributes["id"] = idAttribute("runner pool")
 	attributes["version"] = versionAttribute("runner pool")
 	attributes["address"] = addressAttribute("ephemeral")
 	attributes["workspace_id"] = ownerAttribute("workspace", "runner pool")
-	attributes["key"] = fixedAttribute("Names the pool, as in `ephemeral`. Placement ignores it: a line or station places its work on the pool by its `labels`.", "runner pool")
+	attributes["key"] = immutableAttribute("Names the pool, as in `ephemeral`. Placement ignores it: a line or station places its work on the pool by its `labels`.", "runner pool")
 	attributes["labels"] = stringSetAttribute("What a line or station may name in `runners` to place its work on the pool's runners, as in `linux`.")
 	attributes["max_runs"] = schema.Int64Attribute{
 		Optional:            true,
@@ -115,7 +116,7 @@ func runnerPoolSchema() schema.Schema {
 	attributes["provision"] = schema.SingleNestedAttribute{
 		Optional: true,
 		MarkdownDescription: "Makes the pool one Spotlight pushes to: it calls `url` to start a runner for each run, and the pool has no token. " +
-			"Left out, a `spotlight-host` pulls work from the pool with its token. Which of the two a pool does is fixed for its life, so adding or removing `provision` replaces the pool.",
+			"Left out, a `spotlight-host` pulls work from the pool with its token. Which of the two a pool does is immutable, so adding or removing `provision` replaces the pool.",
 		Attributes:    provision,
 		PlanModifiers: []planmodifier.Object{objectplanmodifier.RequiresReplaceIf(provisionAddedOrRemoved, "Adding or removing provision replaces the pool.", "Adding or removing `provision` replaces the pool.")},
 	}
@@ -123,7 +124,7 @@ func runnerPoolSchema() schema.Schema {
 	return schema.Schema{
 		MarkdownDescription: "A pool of one-run runners: each run the pool serves gets a fresh runner of its own that ends with it. " +
 			"A `spotlight-host` on any machine pulls work from the pool with its token and starts a fresh sandbox for each run; " +
-			"install one with `curl -fsSL <spotlight>/api/install.sh | SPOTLIGHT_URL=<spotlight> SPOTLIGHT_TOKEN=<pool token> sh`. " +
+			"install one with `curl -fsSL <spotlight>/api/install.sh | SPOTLIGHT_URL=<spotlight> SPOTLIGHT_POOL_TOKEN=<pool token> sh`. " +
 			"With `provision`, Spotlight pushes each run to a URL instead, whose call hands a one-run runner its credential. " +
 			"Writing runner pools needs a token granted the `runners` scope. Import it as `<workspace id>/<key>`.",
 		Attributes: attributes,
@@ -211,12 +212,12 @@ func (r *RunnerPoolResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	kept := &state
+	prior := &state
 	if !answerUnchanged(ctx, req.Private, runnerPoolSettable(pool)) {
-		kept = nil
+		prior = nil
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, runnerPoolModel(pool, kept))...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, runnerPoolModel(pool, prior))...)
 	resp.Diagnostics.Append(setIdentity(ctx, resp.Identity, pool.ID)...)
 	resp.Diagnostics.Append(rememberAnswer(ctx, resp.Private, runnerPoolSettable(pool))...)
 }
@@ -349,13 +350,13 @@ func runnerPoolCreated(in client.RunnerPoolInput) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	if in.Provision == nil && in.Token == "" {
-		diags.AddAttributeWarning(writeonly.Token.Path(), "Spotlight issued the pool a token Terraform did not keep", runnerPoolIssuedToken)
+		diags.AddAttributeWarning(writeonly.Token.Path(), "Spotlight issued the pool a token Terraform did not store", runnerPoolIssuedToken)
 	}
 
 	return diags
 }
 
-func runnerPoolModel(pool client.RunnerPool, kept *RunnerPoolResourceModel) RunnerPoolResourceModel {
+func runnerPoolModel(pool client.RunnerPool, prior *RunnerPoolResourceModel) RunnerPoolResourceModel {
 	model := RunnerPoolResourceModel{
 		ID:           types.StringValue(pool.ID),
 		Version:      types.Int64Value(pool.Version),
@@ -378,17 +379,17 @@ func runnerPoolModel(pool client.RunnerPool, kept *RunnerPoolResourceModel) Runn
 		}
 	}
 
-	if kept != nil {
-		model.Key = kept.Key
-		model.Labels = kept.Labels
-		model.MaxRuns = kept.MaxRuns
-		model.TokenVersion = kept.TokenVersion
+	if prior != nil {
+		model.Key = prior.Key
+		model.Labels = prior.Labels
+		model.MaxRuns = prior.MaxRuns
+		model.TokenVersion = prior.TokenVersion
 
-		if model.Provision != nil && kept.Provision != nil {
-			model.Provision.URL = kept.Provision.URL
-			model.Provision.SecretVersion = kept.Provision.SecretVersion
-			model.Provision.Egress = kept.Provision.Egress
-			model.Provision.EgressTraffic = kept.Provision.EgressTraffic
+		if model.Provision != nil && prior.Provision != nil {
+			model.Provision.URL = prior.Provision.URL
+			model.Provision.SecretVersion = prior.Provision.SecretVersion
+			model.Provision.Egress = prior.Provision.Egress
+			model.Provision.EgressTraffic = prior.Provision.EgressTraffic
 		}
 	}
 

@@ -3,29 +3,29 @@
 page_title: "spotlight_secret Resource - spotlight"
 subcategory: ""
 description: |-
-  A secret that Spotlight injects into requests, for the hosts it is bound to. Spotlight keeps its value and never answers it, so the value is write-only and never enters the plan or the state. Writing secrets needs a token granted the secrets scope. Import it as <workspace id>/<name>.
+  A secret that Spotlight injects into requests, for the hosts it is bound to. Spotlight stores its value and never returns it, so the value is write-only and never enters the plan or the state. Writing secrets needs a token granted the secrets scope. Import it as <workspace id>/<name>.
 ---
 
 # spotlight_secret (Resource)
 
-A secret that Spotlight injects into requests, for the hosts it is bound to. Spotlight keeps its value and never answers it, so the value is write-only and never enters the plan or the state. Writing secrets needs a token granted the `secrets` scope. Import it as `<workspace id>/<name>`.
+A secret that Spotlight injects into requests, for the hosts it is bound to. Spotlight stores its value and never returns it, so the value is write-only and never enters the plan or the state. Writing secrets needs a token granted the `secrets` scope. Import it as `<workspace id>/<name>`.
 
 ## Example Usage
 
 ```terraform
 variable "secret_linear_api_key" {
-  description = "The value of the secret LINEAR_API_KEY, which Spotlight keeps and never answers"
+  description = "The value of the secret LINEAR_API_KEY, which Spotlight stores and never returns"
   type        = string
   sensitive   = true
 }
 
 variable "secret_google_maps_key" {
-  description = "The value of the secret GOOGLE_MAPS_KEY, which Spotlight keeps and never answers"
+  description = "The value of the secret GOOGLE_MAPS_KEY, which Spotlight stores and never returns"
   type        = string
   sensitive   = true
 }
 
-# Spotlight keeps the value. The value is write-only. Terraform sends it when
+# Spotlight stores the value. The value is write-only. Terraform sends it when
 # it creates the secret and when value_wo_version changes. The plan and the
 # state never store it.
 resource "spotlight_secret" "linear_api_key" {
@@ -68,7 +68,7 @@ resource "spotlight_secret" "linear_signing" {
 
 ### Required
 
-- `name` (String) What integrations call the secret, as in `LINEAR_API_KEY`, written `secret.LINEAR_API_KEY` where an integration or a harness profile names it. It is fixed for the secret's life, so changing it replaces the secret.
+- `name` (String) What integrations call the secret, as in `LINEAR_API_KEY`, written `secret.LINEAR_API_KEY` where an integration or a harness profile names it. It is immutable, so changing it replaces the secret.
 - `workspace_id` (String) The workspace the secret belongs to. Changing it replaces the secret.
 
 ### Optional
@@ -76,8 +76,8 @@ resource "spotlight_secret" "linear_signing" {
 > **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
 
 - `bindings` (Attributes List) The only hosts the secret is ever sent to, and where Spotlight injects it there; a request anywhere else goes without it. (see [below for nested schema](#nestedatt--bindings))
-- `source` (Attributes) Where the value lives: kept by Spotlight (`built-in`, the default) or read from AWS Secrets Manager whenever it is used. (see [below for nested schema](#nestedatt--source))
-- `value_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The value Spotlight keeps, usually read from a sensitive variable. A secret read from AWS Secrets Manager takes none. It is sent to Spotlight and never stored in the plan or the state, so it needs Terraform 1.11 or later; change `value_wo_version` to send it again.
+- `source` (Attributes) Where the value lives: stored by Spotlight (`built-in`, the default) or read from AWS Secrets Manager whenever it is used. (see [below for nested schema](#nestedatt--source))
+- `value_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The value Spotlight stores, usually read from a sensitive variable. A secret read from AWS Secrets Manager takes none. It is sent to Spotlight and never stored in the plan or the state, so it needs Terraform 1.11 or later; change `value_wo_version` to send it again.
 - `value_wo_version` (Number) Any number; change it whenever `value_wo` changes, so Terraform sends the new value.
 
 ### Read-Only

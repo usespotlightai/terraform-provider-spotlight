@@ -17,11 +17,11 @@ A workspace is created by a person signing up in the web app. Bring it under Ter
 
 ## Creating a workspace
 
-Creating a workspace from Terraform needs a caller allowed to open workspaces. API tokens are not: a token acts only inside its own workspace, and opening one fails with `403 Forbidden`. The provider reports that error with the `import` block to write instead.
+Creating a workspace from Terraform needs a caller allowed to create workspaces. API tokens are not: a token acts only inside its own workspace, and creating one fails with `403 Forbidden`. The provider reports that error with the `import` block to write instead.
 
 ## Stop managing a workspace
 
-Destroying a `spotlight_workspace` asks Spotlight to delete the workspace. To stop managing it without deleting it, replace the resource with a `removed` block (Terraform 1.7 or later):
+Destroying a `spotlight_workspace` requests that Spotlight delete the workspace. To stop managing it without deleting it, replace the resource with a `removed` block (Terraform 1.7 or later):
 
 {{ tffile "examples/resources/spotlight_workspace/removed.tf" }}
 

@@ -3,12 +3,12 @@
 page_title: "spotlight_workspace_token_trust Resource - spotlight"
 subcategory: ""
 description: |-
-  A CI workload whose OIDC tokens are exchanged for short-lived workspace tokens, so the CI platform stores no Spotlight token: a job whose token the trust admits calls POST /api/workspace-tokens/exchange, as the provider's oidc block does, and is given a token with the trust's scopes for its lifetime. Changing or deleting the trust stops every token that it issued at once. Writing workspace token trusts needs a workspace admin, or a token granted the trusts scope that has every scope the trust gives. A token can give a trust only the scopes that it has. A token can change a trust only when it has the current scopes and the new scopes of the trust. Import it as <workspace id>/<key>.
+  A CI workload whose OIDC tokens are exchanged for short-lived workspace tokens, so the CI platform stores no Spotlight token: a job whose token the trust matches calls POST /api/workspace-tokens/exchange, as the provider's oidc block does, and receives a token with the trust's scopes for its lifetime. Changing or deleting the trust stops every token that it issued at once. Writing workspace token trusts needs a workspace admin, or a token granted the trusts scope that has every scope the trust grants. A token can grant a trust only the scopes that it has. A token can change a trust only when it has the current scopes and the new scopes of the trust. Import it as <workspace id>/<key>.
 ---
 
 # spotlight_workspace_token_trust (Resource)
 
-A CI workload whose OIDC tokens are exchanged for short-lived workspace tokens, so the CI platform stores no Spotlight token: a job whose token the trust admits calls `POST /api/workspace-tokens/exchange`, as the provider's `oidc` block does, and is given a token with the trust's scopes for its lifetime. Changing or deleting the trust stops every token that it issued at once. Writing workspace token trusts needs a workspace admin, or a token granted the `trusts` scope that has every scope the trust gives. A token can give a trust only the scopes that it has. A token can change a trust only when it has the current scopes and the new scopes of the trust. Import it as `<workspace id>/<key>`.
+A CI workload whose OIDC tokens are exchanged for short-lived workspace tokens, so the CI platform stores no Spotlight token: a job whose token the trust matches calls `POST /api/workspace-tokens/exchange`, as the provider's `oidc` block does, and receives a token with the trust's scopes for its lifetime. Changing or deleting the trust stops every token that it issued at once. Writing workspace token trusts needs a workspace admin, or a token granted the `trusts` scope that has every scope the trust grants. A token can grant a trust only the scopes that it has. A token can change a trust only when it has the current scopes and the new scopes of the trust. Import it as `<workspace id>/<key>`.
 
 ## Example Usage
 
@@ -32,16 +32,16 @@ resource "spotlight_workspace_token_trust" "github_main" {
 ### Required
 
 - `issuer` (String) The https URL of the OIDC issuer whose signed tokens the trust accepts, as in `https://token.actions.githubusercontent.com`; its keys are found through OIDC discovery.
-- `key` (String) Names the trust, and every token it issues, as in `github-main`. It is fixed for the workspace token trust's life, so changing it replaces the workspace token trust.
-- `scopes` (Set of String) The scopes every token the trust issues is given: one of `read`, `plan` or `configure`, which are a ladder, and `secrets`, `runners` or `trusts` beside it, as a stored token's are. A trust that grants `trusts` lets the workloads it admits write every trust in the workspace, their own included, and so issue tokens with any scope.
+- `key` (String) Names the trust, and every token it issues, as in `github-main`. It is immutable, so changing it replaces the workspace token trust.
+- `scopes` (Set of String) The scopes of every token the trust issues: one of `read`, `plan` or `configure`, which are a ladder, and `secrets`, `runners` or `trusts` beside it, as a stored token's are. A trust that grants `trusts` lets the workloads it matches write every trust in the workspace, their own included, and so issue tokens with any scope.
 - `subject` (String) The subject the workload's token must carry, as in `repo:acme/platform:ref:refs/heads/main`. `*` matches any run of characters, colons included, as in `repo:acme/platform:*`; a subject with one names its owner before the first, so `repo:acme/*` is accepted but `repo:*` and `*` are rejected.
 - `workspace_id` (String) The workspace the workspace token trust belongs to. Changing it replaces the workspace token trust.
 
 ### Optional
 
-- `audience` (String) The audience the workload must ask its issuer for.
+- `audience` (String) The audience the workload must request from its issuer.
 - `claims` (Map of String) Further claims the workload's token must carry, by name, each matching its pattern the way `subject` does, as in `{ repository = "acme/platform" }`.
-- `lifetime_minutes` (Number) How many minutes a token the trust issues admits its bearer, from 1 to 60.
+- `lifetime_minutes` (Number) How many minutes a token the trust issues stays valid, from 1 to 60.
 
 ### Read-Only
 

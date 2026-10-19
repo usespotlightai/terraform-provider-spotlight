@@ -20,7 +20,7 @@ var (
 	_ resource.ResourceWithIdentity    = &WorkspaceResource{}
 )
 
-const workspaceForbiddenToCreate = "An API token acts only inside its own workspace, so it may not open a new one. " +
+const workspaceForbiddenToCreate = "An API token acts only inside its own workspace, so it may not create a new one. " +
 	"A person creates a workspace by signing up in the web app; import it rather than creating it, with an import block that names its slug:\n\n" +
 	"  import {\n    to = spotlight_workspace.<name>\n    id = \"<slug>\"\n  }"
 
@@ -56,7 +56,7 @@ func (r *WorkspaceResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 func workspaceSchema() schema.Schema {
 	return schema.Schema{
 		MarkdownDescription: "A Spotlight workspace. A person creates it by signing up in the web app; Terraform adopts it with an `import` block that names its slug, then manages everything inside it.\n\n" +
-			"Creating a workspace from Terraform needs a caller allowed to open workspaces, and API tokens are not: a token acts only inside its own workspace. Import the workspace rather than creating it.",
+			"Creating a workspace from Terraform needs a caller allowed to create workspaces, and API tokens are not: a token acts only inside its own workspace. Import the workspace rather than creating it.",
 		Attributes: map[string]schema.Attribute{
 			"id":      idAttribute("workspace"),
 			"version": versionAttribute("workspace"),
@@ -67,7 +67,7 @@ func workspaceSchema() schema.Schema {
 			},
 			"slug": schema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "Where the workspace lives in the web app. It is fixed for the workspace's life, so changing it replaces the workspace.",
+				MarkdownDescription: "Where the workspace lives in the web app. It is immutable, so changing it replaces the workspace.",
 				PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 		},
@@ -122,12 +122,12 @@ func (r *WorkspaceResource) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 
-	kept := &state
+	prior := &state
 	if !answerUnchanged(ctx, req.Private, workspaceSettable(workspace)) {
-		kept = nil
+		prior = nil
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, workspaceModel(workspace, kept))...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, workspaceModel(workspace, prior))...)
 	resp.Diagnostics.Append(setIdentity(ctx, resp.Identity, workspace.ID)...)
 	resp.Diagnostics.Append(rememberAnswer(ctx, resp.Private, workspaceSettable(workspace))...)
 }
@@ -196,7 +196,7 @@ func workspaceSettable(workspace client.Workspace) any {
 	return client.WorkspaceInput{Name: workspace.Name, Slug: workspace.Slug}
 }
 
-func workspaceModel(workspace client.Workspace, kept *WorkspaceResourceModel) WorkspaceResourceModel {
+func workspaceModel(workspace client.Workspace, prior *WorkspaceResourceModel) WorkspaceResourceModel {
 	model := WorkspaceResourceModel{
 		ID:      types.StringValue(workspace.ID),
 		Version: types.Int64Value(workspace.Version),
@@ -205,9 +205,9 @@ func workspaceModel(workspace client.Workspace, kept *WorkspaceResourceModel) Wo
 		Slug:    types.StringValue(workspace.Slug),
 	}
 
-	if kept != nil {
-		model.Name = kept.Name
-		model.Slug = kept.Slug
+	if prior != nil {
+		model.Name = prior.Name
+		model.Slug = prior.Slug
 	}
 
 	return model

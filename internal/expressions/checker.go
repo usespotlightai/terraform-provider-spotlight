@@ -34,14 +34,14 @@ type API interface {
 }
 
 // Checker checks the expressions in definitions. After it reads the
-// positions that can contain expressions, it keeps them.
+// positions that can contain expressions, it stores them.
 type Checker struct {
 	api       API
 	mu        sync.Mutex
 	positions []fieldpath.Path
 }
 
-// NewChecker returns a Checker that asks api.
+// NewChecker returns a Checker that calls api.
 func NewChecker(api API) *Checker {
 	return &Checker{api: api}
 }

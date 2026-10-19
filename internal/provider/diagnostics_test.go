@@ -233,21 +233,20 @@ func forbiddenUpdateDetail(problem *client.Problem, needs client.Scope) string {
 
 func TestTheNamedPermissionOutranksTheResourceKind(t *testing.T) {
 	for permission, says := range map[client.Permission]string{
-		client.PermissionRead:           "lacks the read scope",
-		client.PermissionPlan:           "lacks the plan scope",
-		client.PermissionConfigure:      "lacks the configure scope",
-		client.PermissionManageSecrets:  "lacks the secrets scope",
-		client.PermissionManageRunners:  "lacks the runners scope",
-		client.PermissionManageTrusts:   "lacks the trusts scope",
-		client.PermissionAdminister:     "a token never administers",
-		client.PermissionOpenWorkspaces: "cannot open one",
-		"a-permission-from-a-newer-api": "do not allow this",
+		client.PermissionPlan:             "lacks the plan scope",
+		client.PermissionConfigure:        "lacks the configure scope",
+		client.PermissionSecrets:          "lacks the secrets scope",
+		client.PermissionRunners:          "lacks the runners scope",
+		client.PermissionTrusts:           "lacks the trusts scope",
+		client.PermissionAdminister:       "a token never administers",
+		client.PermissionCreateWorkspaces: "cannot create one",
+		"a-permission-from-a-newer-api":   "do not allow this",
 	} {
 		detail := forbiddenUpdateDetail(&client.Problem{
 			Status: 403, Type: client.ProblemForbidden, Title: "Not allowed to change the line", Permission: permission,
 		}, client.ScopeRunners)
 
-		if !strings.Contains(detail, says) || (permission != client.PermissionManageRunners && strings.Contains(detail, "lacks the runners scope")) {
+		if !strings.Contains(detail, says) || (permission != client.PermissionRunners && strings.Contains(detail, "lacks the runners scope")) {
 			t.Errorf("%s: detail %q", permission, detail)
 		}
 	}
@@ -256,7 +255,7 @@ func TestTheNamedPermissionOutranksTheResourceKind(t *testing.T) {
 func TestWithoutAPermissionTheTitleThenTheKindSays(t *testing.T) {
 	for title, says := range map[string]string{
 		"Not allowed to administer the workspace": "a token never administers",
-		"Not allowed to open a workspace":         "cannot open one",
+		"Not allowed to create a workspace":       "cannot create one",
 		"Not allowed to change the runner-pool":   "lacks the runners scope",
 	} {
 		if detail := forbiddenUpdateDetail(&client.Problem{Status: 403, Type: client.ProblemForbidden, Title: title}, client.ScopeRunners); !strings.Contains(detail, says) {
