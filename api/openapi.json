@@ -23,6 +23,38 @@
         ]
       }
     },
+    "/health/ready": {
+      "get": {
+        "operationId": "getReadiness",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Readiness probe",
+        "tags": [
+          "health"
+        ]
+      }
+    },
     "/error-reporting": {
       "get": {
         "operationId": "getErrorReporting",
@@ -23803,6 +23835,50 @@
           "status"
         ]
       },
+      "ReadinessCheckDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "postgres"
+          },
+          "status": {
+            "type": "string",
+            "example": "ok",
+            "enum": [
+              "ok",
+              "failed"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "status"
+        ]
+      },
+      "ReadinessResponseDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "ready",
+            "enum": [
+              "ready",
+              "not_ready"
+            ]
+          },
+          "checks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReadinessCheckDto"
+            }
+          }
+        },
+        "required": [
+          "status",
+          "checks"
+        ]
+      },
       "ErrorReportingResponseDto": {
         "type": "object",
         "properties": {
@@ -26177,12 +26253,12 @@
           "release": {
             "type": "string",
             "nullable": true,
-            "example": "20261018-01",
+            "example": "v0.7.0",
             "description": "The published release this control plane runs; a host on another release updates to it, unless the operator turned that off. Null when the control plane runs a staging build or does not know its release"
           },
           "minimum": {
             "type": "string",
-            "example": "20261002-02",
+            "example": "v0.5.1",
             "description": "The oldest host release this control plane gives work to; an older host gets no work until it updates"
           }
         },
@@ -26196,7 +26272,7 @@
         "properties": {
           "minimum": {
             "type": "string",
-            "example": "20260925-01",
+            "example": "v0.3.0",
             "description": "The oldest runner release this control plane works with; a host cannot use an image whose runner is older"
           }
         },
@@ -31289,7 +31365,7 @@
           "release": {
             "type": "string",
             "nullable": true,
-            "example": "20260925-01",
+            "example": "v0.3.0",
             "description": "The release of the runner inside"
           },
           "harnesses": {
@@ -31330,13 +31406,13 @@
           },
           "release": {
             "type": "string",
-            "example": "20261018-01",
+            "example": "v0.7.0",
             "description": "The spotlight release"
           },
           "unavailableReason": {
             "type": "string",
             "nullable": true,
-            "example": "Host is on release 20261001-04. Minimum release required: 20261002-02. Update it with: spotlight host update",
+            "example": "Host is on release v0.4.3. Minimum release required: v0.5.1. Update it with: spotlight host update",
             "description": "Why the control plane gives this host no work, or null when it gives it work"
           },
           "containerRuntime": {
