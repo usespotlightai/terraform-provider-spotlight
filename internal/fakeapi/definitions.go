@@ -244,7 +244,7 @@ func judged(station map[string]any, at int, errs *[]fieldError) {
 	}
 
 	if claimed {
-		orDefault(judge, "passShare", float64(1))
+		orDefault(judge, "passThreshold", float64(1))
 		if len(claims) < 1 || len(claims) > 20 {
 			*errs = append(*errs, fieldError{field + ".claims", "is the checkable claims the judge answers yes or no, from 1 to 20"})
 		}
@@ -253,12 +253,12 @@ func judged(station map[string]any, at int, errs *[]fieldError) {
 				*errs = append(*errs, fieldError{fmt.Sprintf("%s.claims[%d]", field, each), "is a checkable claim from 1 to 500 characters"})
 			}
 		}
-	} else if _, ok := judge["passShare"]; ok {
-		*errs = append(*errs, fieldError{field + ".passShare", "is only set with claims"})
+	} else if _, ok := judge["passThreshold"]; ok {
+		*errs = append(*errs, fieldError{field + ".passThreshold", "is only set with claims"})
 	}
 
-	if share, ok := judge["passShare"].(float64); ok && (share < 0 || share > 1) {
-		*errs = append(*errs, fieldError{field + ".passShare", "is the share of claims a change must meet to pass, from 0 to 1"})
+	if share, ok := judge["passThreshold"].(float64); ok && (share < 0 || share > 1) {
+		*errs = append(*errs, fieldError{field + ".passThreshold", "is the share of claims a change must meet to pass, from 0 to 1"})
 	}
 
 	station["judge"] = judge

@@ -66,9 +66,9 @@ resource "spotlight_line" "core_delivery" {
     ends      = false
 
     judge {
-      rubric = "A good run changes only what the task asks for.\n"
-      sample = 0.2
-      trust  = 0.6
+      rubric        = "A good run changes only what the task asks for.\n"
+      sample        = 0.2
+      min_agreement = 0.6
     }
 
     alert {
@@ -756,9 +756,9 @@ func TestLineStationsJudgeAndAlert(t *testing.T) {
 
 	judged := lineJudged(`
     judge {
-      rubric = "A good run changes only what the task asks for."
-      sample = 0.2
-      trust  = 0.6
+      rubric        = "A good run changes only what the task asks for."
+      sample        = 0.2
+      min_agreement = 0.6
     }
 
     alert {
@@ -769,9 +769,9 @@ func TestLineStationsJudgeAndAlert(t *testing.T) {
 `)
 	retuned := lineJudged(`
     judge {
-      rubric = "A good run changes only what the task asks for."
-      sample = 1
-      trust  = 0.6
+      rubric        = "A good run changes only what the task asks for."
+      sample        = 1
+      min_agreement = 0.6
     }
 
     alert {
@@ -808,11 +808,11 @@ func TestLineStationsJudgeAndAlert(t *testing.T) {
 				Config: judged,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "judge"), knownvalue.ObjectExact(map[string]knownvalue.Check{
-						"rubric":     knownvalue.StringExact("A good run changes only what the task asks for."),
-						"claims":     knownvalue.Null(),
-						"pass_share": knownvalue.Null(),
-						"sample":     knownvalue.Float64Exact(0.2),
-						"trust":      knownvalue.Float64Exact(0.6),
+						"rubric":         knownvalue.StringExact("A good run changes only what the task asks for."),
+						"claims":         knownvalue.Null(),
+						"pass_threshold": knownvalue.Null(),
+						"sample":         knownvalue.Float64Exact(0.2),
+						"min_agreement":  knownvalue.Float64Exact(0.6),
 					})),
 					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "alert"), knownvalue.ListExact([]knownvalue.Check{
 						lineAlert("sent_back_rate", "rises_by", 0.2, 20),
@@ -881,17 +881,17 @@ func TestLineJudgeChecksClaims(t *testing.T) {
         "The change touches only files the task names.",
         "Every new function has a test.",
       ]
-      sample = 0.2
-      trust  = 0.6
+      sample        = 0.2
+      min_agreement = 0.6
     }
 `)
 	shared := lineJudged(`
     judge {
-      rubric     = "A good run changes only what the task asks for."
-      claims     = ["The change touches only files the task names."]
-      pass_share = 0.75
-      sample     = 0.2
-      trust      = 0.6
+      rubric         = "A good run changes only what the task asks for."
+      claims         = ["The change touches only files the task names."]
+      pass_threshold = 0.75
+      sample         = 0.2
+      min_agreement  = 0.6
     }
 `)
 
@@ -908,9 +908,9 @@ func TestLineJudgeChecksClaims(t *testing.T) {
 							knownvalue.StringExact("The change touches only files the task names."),
 							knownvalue.StringExact("Every new function has a test."),
 						}),
-						"pass_share": knownvalue.Float64Exact(1),
-						"sample":     knownvalue.Float64Exact(0.2),
-						"trust":      knownvalue.Float64Exact(0.6),
+						"pass_threshold": knownvalue.Float64Exact(1),
+						"sample":         knownvalue.Float64Exact(0.2),
+						"min_agreement":  knownvalue.Float64Exact(0.6),
 					})),
 				},
 			},
@@ -931,7 +931,7 @@ func TestLineJudgeChecksClaims(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "judge").AtMapKey("rubric"), knownvalue.StringExact("A good run changes only what the task asks for.")),
-					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "judge").AtMapKey("pass_share"), knownvalue.Float64Exact(0.75)),
+					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "judge").AtMapKey("pass_threshold"), knownvalue.Float64Exact(0.75)),
 				},
 			},
 			{
@@ -942,7 +942,7 @@ func TestLineJudgeChecksClaims(t *testing.T) {
 				Config: claimed,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "judge").AtMapKey("rubric"), knownvalue.Null()),
-					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "judge").AtMapKey("pass_share"), knownvalue.Float64Exact(1)),
+					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "judge").AtMapKey("pass_threshold"), knownvalue.Float64Exact(1)),
 				},
 			},
 			{
@@ -956,32 +956,32 @@ func TestLineJudgeChecksClaims(t *testing.T) {
 func TestLineJudgeSetsARubricOrClaims(t *testing.T) {
 	lineInvalid(t, `
     judge {
-      sample = 0.2
-      trust  = 0.6
+      sample        = 0.2
+      min_agreement = 0.6
     }
 `, regexp.MustCompile(`(?s)Missing Judge Criteria.*rubric.*claims`))
 }
 
-func TestLineJudgePassShareNeedsClaims(t *testing.T) {
+func TestLineJudgePassThresholdNeedsClaims(t *testing.T) {
 	lineInvalid(t, `
     judge {
-      rubric     = "A good run."
-      pass_share = 0.5
-      sample     = 0.2
-      trust      = 0.6
+      rubric         = "A good run."
+      pass_threshold = 0.5
+      sample         = 0.2
+      min_agreement  = 0.6
     }
-`, regexp.MustCompile(`(?s)station\[0\]\.judge\.claims"?\s+must be specified when\s+"?station\[0\]\.judge\.pass_share`))
+`, regexp.MustCompile(`(?s)station\[0\]\.judge\.claims"?\s+must be specified when\s+"?station\[0\]\.judge\.pass_threshold`))
 }
 
-func TestLineJudgePassShareIsAShare(t *testing.T) {
+func TestLineJudgePassThresholdIsAShare(t *testing.T) {
 	lineInvalid(t, `
     judge {
-      claims     = ["Every new function has a test."]
-      pass_share = 1.5
-      sample     = 0.2
-      trust      = 0.6
+      claims         = ["Every new function has a test."]
+      pass_threshold = 1.5
+      sample         = 0.2
+      min_agreement  = 0.6
     }
-`, regexp.MustCompile(`(?s)station\[0\]\.judge\.pass_share value must be between 0\.0+ and\s+1\.0+`))
+`, regexp.MustCompile(`(?s)station\[0\]\.judge\.pass_threshold value must be between 0\.0+ and\s+1\.0+`))
 }
 
 func TestLineJudgeClaimsAreFew(t *testing.T) {
@@ -992,9 +992,9 @@ func TestLineJudgeClaimsAreFew(t *testing.T) {
 
 	lineInvalid(t, `
     judge {
-      claims = [`+strings.Join(claims, ", ")+`]
-      sample = 0.2
-      trust  = 0.6
+      claims        = [`+strings.Join(claims, ", ")+`]
+      sample        = 0.2
+      min_agreement = 0.6
     }
 `, regexp.MustCompile(`(?s)station\[0\]\.judge\.claims list must contain at least 1 elements and\s+at most 20`))
 }
@@ -1003,9 +1003,9 @@ func TestLineJudgeClaimsAreShortAndNotEmpty(t *testing.T) {
 	for _, claim := range []string{`""`, fmt.Sprintf("%q", strings.Repeat("a", 501))} {
 		lineInvalid(t, `
     judge {
-      claims = [`+claim+`]
-      sample = 0.2
-      trust  = 0.6
+      claims        = [`+claim+`]
+      sample        = 0.2
+      min_agreement = 0.6
     }
 `, regexp.MustCompile(`(?s)station\[0\]\.judge\.claims\[0\].*between 1 and 500`))
 	}
@@ -1029,20 +1029,20 @@ func lineInvalid(t *testing.T, station string, want *regexp.Regexp) {
 func TestLineJudgeSamplesAShare(t *testing.T) {
 	lineInvalid(t, `
     judge {
-      rubric = "A good run."
-      sample = 1.5
-      trust  = 0.6
+      rubric        = "A good run."
+      sample        = 1.5
+      min_agreement = 0.6
     }
 `, regexp.MustCompile(`(?s)station\[0\]\.judge\.sample value must be between 0\.0+ and\s+1\.0+`))
 }
 
-func TestLineJudgeSetsItsRubricSampleAndTrust(t *testing.T) {
+func TestLineJudgeSetsItsRubricSampleAndMinAgreement(t *testing.T) {
 	lineInvalid(t, `
     judge {
       rubric = "A good run."
       sample = 0.2
     }
-`, regexp.MustCompile(`(?s)station\[0\]\.judge\.trust.*must be specified`))
+`, regexp.MustCompile(`(?s)station\[0\]\.judge\.min_agreement.*must be specified`))
 }
 
 func TestLineAlertWatchesAKnownMeasure(t *testing.T) {
@@ -1095,9 +1095,9 @@ func TestLineAlertThresholdsAreNotNegative(t *testing.T) {
 func TestLineJudgeRubricIsNotEmpty(t *testing.T) {
 	lineInvalid(t, `
     judge {
-      rubric = ""
-      sample = 0.2
-      trust  = 0.6
+      rubric        = ""
+      sample        = 0.2
+      min_agreement = 0.6
     }
 `, regexp.MustCompile(`(?s)station\[0\]\.judge\.rubric.*at least 1`))
 }
@@ -1126,17 +1126,30 @@ resource "spotlight_line" "delivery" {
   name    = "Delivery"
 
   station {
+    key       = "backlog"
+    name      = "Backlog"
+    kind      = "backlog"
+    passes_to = ["implementation"]
+  }
+
+  station {
     key     = "implementation"
     name    = "Implementation"
     harness = "claude-code"
     prompt  = "Implement the task."
 
     judge {
-      rubric = "A good run changes only what the task asks for."
-      sample = %[3]s
-      trust  = 0.6
+      rubric        = "A good run changes only what the task asks for."
+      sample        = %[3]s
+      min_agreement = 0.6
     }
 %[4]s
+  }
+
+  station {
+    key  = "completed"
+    name = "Completed"
+    kind = "completed"
   }
 }
 `, k.Team, k.Line, sample, alert)
@@ -1155,7 +1168,7 @@ func TestAccLineStationJudgeAndAlerts(t *testing.T) {
       over     = 20
     }
 `)
-	retuned := acctest.AdoptedWorkspace(cp.Workspace) + lineJudgedAccConfig(k, "0.35", `
+	retunedLine := lineJudgedAccConfig(k, "0.35", `
     alert {
       measure = "cost_per_run"
       above   = 2.5
@@ -1180,6 +1193,7 @@ func TestAccLineStationJudgeAndAlerts(t *testing.T) {
       over     = 20
     }
 `)
+	retuned := acctest.AdoptedWorkspace(cp.Workspace) + retunedLine
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories(),
@@ -1188,8 +1202,8 @@ func TestAccLineStationJudgeAndAlerts(t *testing.T) {
 			{
 				Config: judged,
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue("spotlight_line.delivery", lineStation(0, "judge").AtMapKey("trust"), knownvalue.Float64Exact(0.6)),
-					statecheck.ExpectKnownValue("spotlight_line.delivery", lineStation(0, "alert"), knownvalue.ListExact([]knownvalue.Check{
+					statecheck.ExpectKnownValue("spotlight_line.delivery", lineStation(1, "judge").AtMapKey("min_agreement"), knownvalue.Float64Exact(0.6)),
+					statecheck.ExpectKnownValue("spotlight_line.delivery", lineStation(1, "alert"), knownvalue.ListExact([]knownvalue.Check{
 						lineAlert("sent_back_rate", "rises_by", 0.2, 20),
 					})),
 				},
@@ -1213,6 +1227,10 @@ func TestAccLineStationJudgeAndAlerts(t *testing.T) {
 				ImportState:       true,
 				ImportStateId:     acctest.ImportID(id, k.Team+"/"+k.Line),
 				ImportStateVerify: true,
+			},
+			{
+				Config:           acctest.ReleasedWorkspace(cp.Workspace) + retunedLine,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{acctest.ExpectForgotten("spotlight_workspace.acc")}},
 			},
 		},
 	})
@@ -1443,10 +1461,23 @@ resource "spotlight_line" "delivery" {
   name    = "Delivery"
 
   station {
+    key       = "backlog"
+    name      = "Backlog"
+    kind      = "backlog"
+    passes_to = ["implementation"]
+  }
+
+  station {
     key     = "implementation"
     name    = "Implementation"
     harness = "claude-code"
     prompt  = "Implement the task."
+  }
+
+  station {
+    key  = "completed"
+    name = "Completed"
+    kind = "completed"
   }
 %[3]s
 }
@@ -1467,7 +1498,7 @@ func TestAccLineReplayCheckAndSource(t *testing.T) {
     path       = "spotlight/web.tf"
   }
 `)
-	tightened := acctest.AdoptedWorkspace(cp.Workspace) + lineCheckedAccConfig(k, `
+	tightenedLine := lineCheckedAccConfig(k, `
   replay_check {
     max_regressions = 2
     ceiling         = 12.5
@@ -1475,6 +1506,7 @@ func TestAccLineReplayCheckAndSource(t *testing.T) {
     min_gain        = 0.1
   }
 `)
+	tightened := acctest.AdoptedWorkspace(cp.Workspace) + tightenedLine
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories(),
@@ -1516,6 +1548,10 @@ func TestAccLineReplayCheckAndSource(t *testing.T) {
 				ImportState:       true,
 				ImportStateId:     acctest.ImportID(id, k.Team+"/"+k.Line),
 				ImportStateVerify: true,
+			},
+			{
+				Config:           acctest.ReleasedWorkspace(cp.Workspace) + tightenedLine,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{acctest.ExpectForgotten("spotlight_workspace.acc")}},
 			},
 		},
 	})

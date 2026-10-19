@@ -1,0 +1,56 @@
+# A throwaway Spotlight control plane for the acceptance tests.
+# scripts/acceptance/run.sh starts it, seeds it and removes it.
+
+x-control-plane-env: &control-plane-env
+  DATABASE_URL: postgres://postgres:postgres@db:5432/postgres
+  BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?}
+  BETTER_AUTH_URL: http://localhost:${SPOTLIGHT_ACC_PORT:-3300}
+  SPOTLIGHT_SECRETS_KEY: ${SPOTLIGHT_SECRETS_KEY:?}
+  GITHUB_CLIENT_ID: acceptance
+  GITHUB_CLIENT_SECRET: acceptance
+  GITHUB_APP_ID: acceptance
+  GITHUB_APP_PRIVATE_KEY: acceptance
+  S3_BUCKET: acceptance
+  LOG_LEVEL: warn
+
+services:
+  db:
+    image: postgres:18.6-alpine
+    command: postgres -c fsync=off -c synchronous_commit=off -c full_page_writes=off
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    tmpfs:
+      - /var/lib/postgresql
+
+  migrate:
+    image: ${SPOTLIGHT_IMAGES:-ghcr.io/usespotlightai}/spotlight-control-plane-migrate:${SPOTLIGHT_VERSION:?}
+    platform: linux/amd64
+    environment: *control-plane-env
+    depends_on:
+      db:
+        condition: service_healthy
+
+  control-plane:
+    image: ${SPOTLIGHT_IMAGES:-ghcr.io/usespotlightai}/spotlight-control-plane:${SPOTLIGHT_VERSION:?}
+    platform: linux/amd64
+    environment: *control-plane-env
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      - "127.0.0.1:${SPOTLIGHT_ACC_PORT:-3300}:3000"
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:3000/api/health > /dev/null 2>&1 || exit 1" ]
+      interval: 2s
+      timeout: 3s
+      retries: 60
+      start_period: 10s

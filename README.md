@@ -91,11 +91,13 @@ The layout follows HashiCorp's [provider scaffold](https://github.com/hashicorp/
 ```shell
 make test                  # unit tests against the in-memory control plane
 make testacc               # acceptance tests against a dev control plane
+scripts/acceptance/run.sh  # acceptance tests against a throwaway control plane in Docker
 make sweep SWEEP=<slug>    # delete what an interrupted acceptance run left behind
 ```
 
 - **Terraform binary:** unit tests run the real `terraform`. Tests skip below the version they need: 1.11 for write-only values, 1.12 for identity, 1.14 for list resources.
 - **Acceptance tests:** these need `SPOTLIGHT_URL`, `SPOTLIGHT_API_TOKEN` (with `configure`, `secrets`, `runners` and `trusts`) and `SPOTLIGHT_ACC_WORKSPACE`. They work under random `tf-acc-` keys and leave the workspace as they found it.
+- **Throwaway control plane:** `scripts/acceptance/run.sh` starts Postgres and the control plane of a Spotlight release (`SPOTLIGHT_VERSION`, an image tag) with Docker Compose. It creates a workspace and a token, runs `make testacc` and removes everything. `eval "$(scripts/acceptance/run.sh up)"` keeps the control plane and exports its variables; `scripts/acceptance/run.sh down` removes it. Docker must be able to pull `ghcr.io/usespotlightai/spotlight-control-plane` and `spotlight-control-plane-migrate`. `acceptance.yml` pulls them with its `GITHUB_TOKEN`, so each package gives this repository read access in its Actions access settings.
 - **Sweepers:** these delete only `tf-acc-` / `TF_ACC_` resources. There's no sweeper for the workspace or its runner declaration.
 
 ## Generate
@@ -116,9 +118,6 @@ Push a `v*` tag. GoReleaser builds the archives, a GPG-signed `SHA256SUMS` and t
 | --- | --- | --- |
 | `APP_REPO_APP_ID` | `generate.yml` | The CI GitHub App that reads `usespotlightai/spotlight` (the one the infrastructure repo uses) |
 | `APP_REPO_PRIVATE_KEY` | `generate.yml` | That app's private key |
-| `SPOTLIGHT_ACC_URL` | `acceptance.yml` | The dev control plane |
-| `SPOTLIGHT_ACC_TOKEN` | `acceptance.yml` | A token with `configure`, `secrets`, `runners` and `trusts` |
-| `SPOTLIGHT_ACC_WORKSPACE` | `acceptance.yml` | That token's workspace slug |
 | `GPG_PRIVATE_KEY` | `release.yml` | The signing key registered with the namespace |
 | `GPG_PASSPHRASE` | `release.yml` | Its passphrase |
 
