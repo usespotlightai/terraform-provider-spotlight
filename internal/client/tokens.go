@@ -153,6 +153,13 @@ func (a *authenticating) Do(req *http.Request) (*http.Response, error) {
 	req.Header.Set("Authorization", "Bearer "+token)
 
 	resp, err := a.next.Do(req)
+	if login, ok := a.tokens.(signedIn); ok && err == nil && resp.StatusCode == http.StatusUnauthorized {
+		_, _ = io.Copy(io.Discard, resp.Body)
+		_ = resp.Body.Close()
+
+		return nil, login.rejected()
+	}
+
 	if err != nil || resp.StatusCode != http.StatusUnauthorized || !a.tokens.Unauthorized(token) {
 		return resp, err
 	}
