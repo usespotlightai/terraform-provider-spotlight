@@ -23,7 +23,7 @@ export SPOTLIGHT_API_TOKEN=<token>
 
 or through the provider block, as below. Keep the token out of version control.
 
-**From CI, with no stored token.** A `spotlight_workspace_token_trust` admits the OIDC tokens a CI platform issues its jobs, and the provider exchanges the job's token for a short-lived one with the trust's scopes, exchanging again before it expires. In GitHub Actions, a job granted `permissions: id-token: write` needs only the trust's id:
+**From CI, with no stored token.** A `spotlight_oidc_trust` admits the OIDC tokens a CI platform issues its jobs, and the provider exchanges the job's token for a short-lived one with the trust's scopes, exchanging again before it expires. In GitHub Actions, a job granted `permissions: id-token: write` needs only the trust's id:
 
 ```shell
 export SPOTLIGHT_URL=https://spotlight.example.com
@@ -39,7 +39,7 @@ A token, stored or minted, acts only inside the workspace it was created in, and
 | `configure` | the workspace, teams, lines, skills, integrations and harness profiles |
 | `secrets` | `spotlight_secret` |
 | `runners` | `spotlight_runner_pool`, `spotlight_egress`, `spotlight_runner_trust` and `spotlight_workspace_runners` |
-| `trusts` | `spotlight_workspace_token_trust` |
+| `trusts` | `spotlight_oidc_trust` |
 
 **One token granted `configure`, `secrets`, `runners` and `trusts` manages everything this provider can.** `trusts` decides which CI jobs get tokens and with which scopes, so it is as powerful as all the others together: grant it only to a short-lived token that sets up the trusts, as the guide below does. A token can give a trust only the scopes that it has. A write the token's scopes do not allow fails with `403`, and the provider's diagnostic names the scope the token lacks.
 

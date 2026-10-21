@@ -68,9 +68,9 @@ var sweepers = []*resource.Sweeper{
 		F:            sweeper((*client.Client).ListEgresses, (*client.Client).DeleteEgress, func(e client.Egress) client.Meta { return e.Meta }, acctest.KeyPrefix),
 	},
 	{
-		Name: "spotlight_workspace_token_trust",
-		F: sweeper((*client.Client).ListWorkspaceTokenTrusts, (*client.Client).DeleteWorkspaceTokenTrust,
-			func(t client.WorkspaceTokenTrust) client.Meta { return t.Meta }, acctest.KeyPrefix),
+		Name: "spotlight_oidc_trust",
+		F: sweeper((*client.Client).ListOidcTrusts, (*client.Client).DeleteOidcTrust,
+			func(t client.OidcTrust) client.Meta { return t.Meta }, acctest.KeyPrefix),
 	},
 }
 
@@ -171,8 +171,8 @@ func TestSweepersDeleteOnlyWhatAcceptanceTestsCreate(t *testing.T) {
 		acctest.Must(t, err)
 	}
 
-	for _, key := range []string{k.TokenTrust, "github-main"} {
-		_, err = api.CreateWorkspaceTokenTrust(ctx, seeded.Workspace.ID, client.WorkspaceTokenTrustInput{
+	for _, key := range []string{k.OidcTrust, "github-main"} {
+		_, err = api.CreateOidcTrust(ctx, seeded.Workspace.ID, client.OidcTrustInput{
 			Key: key, Issuer: "https://token.actions.githubusercontent.com", Audience: "spotlight", Subject: "repo:acme/platform:*",
 			Claims: map[string]string{}, Scopes: []string{"plan"}, LifetimeMinutes: 15,
 		})
@@ -200,7 +200,7 @@ func TestSweepersDeleteOnlyWhatAcceptanceTestsCreate(t *testing.T) {
 
 	for kind, want := range map[string]int{
 		"team": 3, "line": 1, "skill": 1, "integration": 1, "harness-profile": 1, "hook": 1,
-		"secret": 1, "runner-trust": 1, "runner-pool": 1, "egress": 1, "workspace-token-trust": 1, "workspace": 2,
+		"secret": 1, "runner-trust": 1, "runner-pool": 1, "egress": 1, "oidc-trust": 1, "workspace": 2,
 	} {
 		if got := fake.Count(kind); got != want {
 			t.Errorf("%d of %s left after sweeping, want %d", got, kind, want)

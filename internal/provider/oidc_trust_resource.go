@@ -22,27 +22,27 @@ import (
 )
 
 var (
-	_ resource.Resource                = &WorkspaceTokenTrustResource{}
-	_ resource.ResourceWithConfigure   = &WorkspaceTokenTrustResource{}
-	_ resource.ResourceWithImportState = &WorkspaceTokenTrustResource{}
-	_ resource.ResourceWithIdentity    = &WorkspaceTokenTrustResource{}
+	_ resource.Resource                = &OidcTrustResource{}
+	_ resource.ResourceWithConfigure   = &OidcTrustResource{}
+	_ resource.ResourceWithImportState = &OidcTrustResource{}
+	_ resource.ResourceWithIdentity    = &OidcTrustResource{}
 )
 
-// NewWorkspaceTokenTrustResource returns the spotlight_workspace_token_trust
+// NewOidcTrustResource returns the spotlight_oidc_trust
 // resource.
-func NewWorkspaceTokenTrustResource() resource.Resource {
-	return &WorkspaceTokenTrustResource{}
+func NewOidcTrustResource() resource.Resource {
+	return &OidcTrustResource{}
 }
 
-// WorkspaceTokenTrustResource is the spotlight_workspace_token_trust
+// OidcTrustResource is the spotlight_oidc_trust
 // resource.
-type WorkspaceTokenTrustResource struct {
+type OidcTrustResource struct {
 	client *client.Client
 }
 
-// WorkspaceTokenTrustResourceModel is a spotlight_workspace_token_trust as
+// OidcTrustResourceModel is a spotlight_oidc_trust as
 // Terraform stores it.
-type WorkspaceTokenTrustResourceModel struct {
+type OidcTrustResourceModel struct {
 	ID              types.String `tfsdk:"id"`
 	Version         types.Int64  `tfsdk:"version"`
 	Address         types.String `tfsdk:"address"`
@@ -57,29 +57,29 @@ type WorkspaceTokenTrustResourceModel struct {
 	CreatedBy       types.String `tfsdk:"created_by"`
 }
 
-var workspaceTokenTrustFields = fieldpath.Locator{Schema: workspaceTokenTrustSchema().Type()}
+var oidcTrustFields = fieldpath.Locator{Schema: oidcTrustSchema().Type()}
 
-func (r *WorkspaceTokenTrustResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_workspace_token_trust"
+func (r *OidcTrustResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_oidc_trust"
 }
 
-func (r *WorkspaceTokenTrustResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = workspaceTokenTrustSchema()
+func (r *OidcTrustResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = oidcTrustSchema()
 }
 
-func workspaceTokenTrustSchema() schema.Schema {
+func oidcTrustSchema() schema.Schema {
 	return schema.Schema{
 		MarkdownDescription: "A CI workload whose OIDC tokens are exchanged for short-lived workspace tokens, so the CI platform stores no Spotlight token: " +
 			"a job whose token the trust matches calls `POST /api/workspace-tokens/exchange`, as the provider's `oidc` block does, and receives a token with the trust's scopes for its lifetime. " +
 			"Changing or deleting the trust stops every token that it issued at once. " +
-			"Writing workspace token trusts needs a workspace admin, or a token granted the `trusts` scope that has every scope the trust grants. " +
+			"Writing OIDC trusts needs a workspace admin, or a token granted the `trusts` scope that has every scope the trust grants. " +
 			"A token can grant a trust only the scopes that it has. A token can change a trust only when it has the current scopes and the new scopes of the trust. Import it as `<workspace id>/<key>`.",
 		Attributes: map[string]schema.Attribute{
-			"id":           idAttribute("workspace token trust"),
-			"version":      versionAttribute("workspace token trust"),
+			"id":           idAttribute("OIDC trust"),
+			"version":      versionAttribute("OIDC trust"),
 			"address":      addressAttribute("github-main"),
-			"workspace_id": ownerAttribute("workspace", "workspace token trust"),
-			"key":          immutableAttribute("Names the trust, and every token it issues, as in `github-main`.", "workspace token trust"),
+			"workspace_id": ownerAttribute("workspace", "OIDC trust"),
+			"key":          immutableAttribute("Names the trust, and every token it issues, as in `github-main`.", "OIDC trust"),
 			"issuer": schema.StringAttribute{
 				Required:            true,
 				MarkdownDescription: "The https URL of the OIDC issuer whose signed tokens the trust accepts, as in `https://token.actions.githubusercontent.com`; its keys are found through OIDC discovery.",
@@ -132,133 +132,133 @@ func workspaceTokenTrustSchema() schema.Schema {
 	}
 }
 
-func (r *WorkspaceTokenTrustResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
-	resp.IdentitySchema = idIdentitySchema("workspace token trust")
+func (r *OidcTrustResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
+	resp.IdentitySchema = idIdentitySchema("OIDC trust")
 }
 
-func (r *WorkspaceTokenTrustResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *OidcTrustResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	r.client = clientOf(req.ProviderData, &resp.Diagnostics)
 }
 
-func (r *WorkspaceTokenTrustResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan WorkspaceTokenTrustResourceModel
+func (r *OidcTrustResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan OidcTrustResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	in, diags := workspaceTokenTrustInput(ctx, plan)
+	in, diags := oidcTrustInput(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	trust, err := r.client.CreateWorkspaceTokenTrust(ctx, plan.WorkspaceID.ValueString(), in)
+	trust, err := r.client.CreateOidcTrust(ctx, plan.WorkspaceID.ValueString(), in)
 	if err != nil {
-		addAPIError(&resp.Diagnostics, "Could not create the workspace token trust", err, workspaceTokenTrustFields, client.ScopeTrusts)
+		addAPIError(&resp.Diagnostics, "Could not create the OIDC trust", err, oidcTrustFields, client.ScopeTrusts)
 		return
 	}
 
-	addAPIWarnings(&resp.Diagnostics, "workspace token trust", trust.Warnings, workspaceTokenTrustFields)
-	resp.Diagnostics.Append(resp.State.Set(ctx, workspaceTokenTrustModel(trust, &plan))...)
+	addAPIWarnings(&resp.Diagnostics, "OIDC trust", trust.Warnings, oidcTrustFields)
+	resp.Diagnostics.Append(resp.State.Set(ctx, oidcTrustModel(trust, &plan))...)
 	resp.Diagnostics.Append(setIdentity(ctx, resp.Identity, trust.ID)...)
-	resp.Diagnostics.Append(rememberAnswer(ctx, resp.Private, workspaceTokenTrustSettable(trust))...)
+	resp.Diagnostics.Append(rememberAnswer(ctx, resp.Private, oidcTrustSettable(trust))...)
 }
 
-func (r *WorkspaceTokenTrustResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state WorkspaceTokenTrustResourceModel
+func (r *OidcTrustResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state OidcTrustResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	trust, err := r.client.ReadWorkspaceTokenTrust(ctx, state.ID.ValueString())
+	trust, err := r.client.ReadOidcTrust(ctx, state.ID.ValueString())
 	if client.IsNotFound(err) {
 		removed(ctx, resp, state.ID.ValueString())
 		return
 	}
 	if err != nil {
-		addAPIError(&resp.Diagnostics, "Could not read the workspace token trust", err, workspaceTokenTrustFields, client.ScopeRead)
+		addAPIError(&resp.Diagnostics, "Could not read the OIDC trust", err, oidcTrustFields, client.ScopeRead)
 		return
 	}
 
 	prior := &state
-	if !answerUnchanged(ctx, req.Private, workspaceTokenTrustSettable(trust)) {
+	if !answerUnchanged(ctx, req.Private, oidcTrustSettable(trust)) {
 		prior = nil
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, workspaceTokenTrustModel(trust, prior))...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, oidcTrustModel(trust, prior))...)
 	resp.Diagnostics.Append(setIdentity(ctx, resp.Identity, trust.ID)...)
-	resp.Diagnostics.Append(rememberAnswer(ctx, resp.Private, workspaceTokenTrustSettable(trust))...)
+	resp.Diagnostics.Append(rememberAnswer(ctx, resp.Private, oidcTrustSettable(trust))...)
 }
 
-func (r *WorkspaceTokenTrustResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan, state WorkspaceTokenTrustResourceModel
+func (r *OidcTrustResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var plan, state OidcTrustResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	in, diags := workspaceTokenTrustInput(ctx, plan)
+	in, diags := oidcTrustInput(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	trust, err := r.client.UpdateWorkspaceTokenTrust(ctx, state.ID.ValueString(), state.Version.ValueInt64(), in)
+	trust, err := r.client.UpdateOidcTrust(ctx, state.ID.ValueString(), state.Version.ValueInt64(), in)
 	if err != nil {
-		addAPIError(&resp.Diagnostics, "Could not update the workspace token trust", err, workspaceTokenTrustFields, client.ScopeTrusts)
+		addAPIError(&resp.Diagnostics, "Could not update the OIDC trust", err, oidcTrustFields, client.ScopeTrusts)
 		return
 	}
 
-	addAPIWarnings(&resp.Diagnostics, "workspace token trust", trust.Warnings, workspaceTokenTrustFields)
-	resp.Diagnostics.Append(resp.State.Set(ctx, workspaceTokenTrustModel(trust, &plan))...)
+	addAPIWarnings(&resp.Diagnostics, "OIDC trust", trust.Warnings, oidcTrustFields)
+	resp.Diagnostics.Append(resp.State.Set(ctx, oidcTrustModel(trust, &plan))...)
 	resp.Diagnostics.Append(setIdentity(ctx, resp.Identity, trust.ID)...)
-	resp.Diagnostics.Append(rememberAnswer(ctx, resp.Private, workspaceTokenTrustSettable(trust))...)
+	resp.Diagnostics.Append(rememberAnswer(ctx, resp.Private, oidcTrustSettable(trust))...)
 }
 
-func (r *WorkspaceTokenTrustResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state WorkspaceTokenTrustResourceModel
+func (r *OidcTrustResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var state OidcTrustResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	err := r.client.DeleteWorkspaceTokenTrust(ctx, state.ID.ValueString(), state.Version.ValueInt64())
+	err := r.client.DeleteOidcTrust(ctx, state.ID.ValueString(), state.Version.ValueInt64())
 	if err != nil && !client.IsNotFound(err) {
-		addAPIError(&resp.Diagnostics, "Could not delete the workspace token trust", err, workspaceTokenTrustFields, client.ScopeTrusts)
+		addAPIError(&resp.Diagnostics, "Could not delete the OIDC trust", err, oidcTrustFields, client.ScopeTrusts)
 	}
 }
 
-func (r *WorkspaceTokenTrustResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *OidcTrustResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	target, ok := importTargetOf(ctx, req, &resp.Diagnostics, "<workspace id>/github-main")
 	if !ok {
 		return
 	}
 
-	var trust client.WorkspaceTokenTrust
+	var trust client.OidcTrust
 	var err error
 	if target.byID() {
-		trust, err = r.client.ReadWorkspaceTokenTrust(ctx, target.id)
+		trust, err = r.client.ReadOidcTrust(ctx, target.id)
 	} else {
-		trust, err = r.client.ImportWorkspaceTokenTrust(ctx, target.workspaceID, target.address)
+		trust, err = r.client.ImportOidcTrust(ctx, target.workspaceID, target.address)
 	}
 	if err != nil {
-		addAPIError(&resp.Diagnostics, "Could not import the workspace token trust at "+target.String(), err, fieldpath.Locator{}, client.ScopeRead)
+		addAPIError(&resp.Diagnostics, "Could not import the OIDC trust at "+target.String(), err, fieldpath.Locator{}, client.ScopeRead)
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, workspaceTokenTrustModel(trust, nil))...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, oidcTrustModel(trust, nil))...)
 	resp.Diagnostics.Append(setIdentity(ctx, resp.Identity, trust.ID)...)
-	resp.Diagnostics.Append(rememberAnswer(ctx, resp.Private, workspaceTokenTrustSettable(trust))...)
+	resp.Diagnostics.Append(rememberAnswer(ctx, resp.Private, oidcTrustSettable(trust))...)
 }
 
-func workspaceTokenTrustSettable(trust client.WorkspaceTokenTrust) any {
-	return trust.WorkspaceTokenTrustInput
+func oidcTrustSettable(trust client.OidcTrust) any {
+	return trust.OidcTrustInput
 }
 
-func workspaceTokenTrustInput(ctx context.Context, plan WorkspaceTokenTrustResourceModel) (client.WorkspaceTokenTrustInput, diag.Diagnostics) {
+func oidcTrustInput(ctx context.Context, plan OidcTrustResourceModel) (client.OidcTrustInput, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	claims := map[string]string{}
@@ -266,7 +266,7 @@ func workspaceTokenTrustInput(ctx context.Context, plan WorkspaceTokenTrustResou
 		diags.Append(plan.Claims.ElementsAs(ctx, &claims, false)...)
 	}
 
-	return client.WorkspaceTokenTrustInput{
+	return client.OidcTrustInput{
 		Key:             plan.Key.ValueString(),
 		Issuer:          plan.Issuer.ValueString(),
 		Audience:        plan.Audience.ValueString(),
@@ -277,8 +277,8 @@ func workspaceTokenTrustInput(ctx context.Context, plan WorkspaceTokenTrustResou
 	}, diags
 }
 
-func workspaceTokenTrustModel(trust client.WorkspaceTokenTrust, prior *WorkspaceTokenTrustResourceModel) WorkspaceTokenTrustResourceModel {
-	model := WorkspaceTokenTrustResourceModel{
+func oidcTrustModel(trust client.OidcTrust, prior *OidcTrustResourceModel) OidcTrustResourceModel {
+	model := OidcTrustResourceModel{
 		ID:              types.StringValue(trust.ID),
 		Version:         types.Int64Value(trust.Version),
 		Address:         types.StringValue(trust.Address),

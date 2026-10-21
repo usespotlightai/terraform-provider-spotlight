@@ -47,12 +47,12 @@ output-options:
     - deleteRunnerTrust
     - importRunnerTrust
     - listRunnerTrusts
-    - createWorkspaceTokenTrust
-    - readWorkspaceTokenTrust
-    - updateWorkspaceTokenTrust
-    - deleteWorkspaceTokenTrust
-    - importWorkspaceTokenTrust
-    - listWorkspaceTokenTrusts
+    - createOidcTrust
+    - readOidcTrust
+    - updateOidcTrust
+    - deleteOidcTrust
+    - importOidcTrust
+    - listOidcTrusts
     - exchangeWorkloadToken
     - createRunnerPool
     - readRunnerPool

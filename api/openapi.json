@@ -6571,9 +6571,9 @@
         }
       }
     },
-    "/resources/workspaces/{workspaceId}/token-trusts": {
+    "/resources/workspaces/{workspaceId}/oidc-trusts": {
       "post": {
-        "operationId": "createWorkspaceTokenTrust",
+        "operationId": "createOidcTrust",
         "parameters": [
           {
             "name": "Spotlight-Api-Version",
@@ -6689,7 +6689,7 @@
         },
         "responses": {
           "201": {
-            "description": "The workspace-token-trust, as a read returns it",
+            "description": "The oidc-trust, as a read returns it",
             "headers": {
               "ETag": {
                 "description": "The returned version, to send back as If-Match",
@@ -6711,7 +6711,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WorkspaceTokenTrustResourceResponseDto"
+                  "$ref": "#/components/schemas/OidcTrustResourceResponseDto"
                 }
               }
             }
@@ -6737,7 +6737,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the workspace-token-trust: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the oidc-trust: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -6747,7 +6747,7 @@
             }
           },
           "404": {
-            "description": "No such workspace-token-trust that you may see",
+            "description": "No such oidc-trust that you may see",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -6757,7 +6757,7 @@
             }
           },
           "409": {
-            "description": "A workspace-token-trust already exists at that address",
+            "description": "A oidc-trust already exists at that address",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -6787,12 +6787,12 @@
           "workspace-tokens"
         ],
         "x-spotlight-resource": {
-          "kind": "workspace-token-trust",
+          "kind": "oidc-trust",
           "operation": "create"
         }
       },
       "get": {
-        "operationId": "listWorkspaceTokenTrusts",
+        "operationId": "listOidcTrusts",
         "parameters": [
           {
             "name": "Spotlight-Api-Version",
@@ -6829,11 +6829,11 @@
         ],
         "responses": {
           "200": {
-            "description": "Every workspace-token-trust there, each as a read returns it, in address order",
+            "description": "Every oidc-trust there, each as a read returns it, in address order",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WorkspaceTokenTrustResourceListResponseDto"
+                  "$ref": "#/components/schemas/OidcTrustResourceListResponseDto"
                 }
               }
             }
@@ -6874,19 +6874,19 @@
             "bearer": []
           }
         ],
-        "summary": "List every token trust in a workspace",
+        "summary": "List every OIDC trust in a workspace",
         "tags": [
           "workspace-tokens"
         ],
         "x-spotlight-resource": {
-          "kind": "workspace-token-trust",
+          "kind": "oidc-trust",
           "operation": "list"
         }
       }
     },
-    "/resources/token-trusts/{id}": {
+    "/resources/oidc-trusts/{id}": {
       "get": {
-        "operationId": "readWorkspaceTokenTrust",
+        "operationId": "readOidcTrust",
         "parameters": [
           {
             "name": "Spotlight-Api-Version",
@@ -6923,7 +6923,7 @@
         ],
         "responses": {
           "200": {
-            "description": "The workspace-token-trust, every field of it",
+            "description": "The oidc-trust, every field of it",
             "headers": {
               "ETag": {
                 "description": "The returned version, to send back as If-Match",
@@ -6936,7 +6936,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WorkspaceTokenTrustResourceResponseDto"
+                  "$ref": "#/components/schemas/OidcTrustResourceResponseDto"
                 }
               }
             }
@@ -6962,7 +6962,7 @@
             }
           },
           "404": {
-            "description": "No such workspace-token-trust that you may see",
+            "description": "No such oidc-trust that you may see",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -6977,17 +6977,17 @@
             "bearer": []
           }
         ],
-        "summary": "Read a workspace token trust",
+        "summary": "Read an OIDC trust",
         "tags": [
           "workspace-tokens"
         ],
         "x-spotlight-resource": {
-          "kind": "workspace-token-trust",
+          "kind": "oidc-trust",
           "operation": "read"
         }
       },
       "put": {
-        "operationId": "updateWorkspaceTokenTrust",
+        "operationId": "updateOidcTrust",
         "parameters": [
           {
             "name": "Spotlight-Api-Version",
@@ -7103,7 +7103,7 @@
         },
         "responses": {
           "200": {
-            "description": "The workspace-token-trust, as a read returns it",
+            "description": "The oidc-trust, as a read returns it",
             "headers": {
               "ETag": {
                 "description": "The returned version, to send back as If-Match",
@@ -7116,7 +7116,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WorkspaceTokenTrustResourceResponseDto"
+                  "$ref": "#/components/schemas/OidcTrustResourceResponseDto"
                 }
               }
             }
@@ -7142,7 +7142,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the workspace-token-trust: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the oidc-trust: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -7152,7 +7152,7 @@
             }
           },
           "404": {
-            "description": "No such workspace-token-trust that you may see",
+            "description": "No such oidc-trust that you may see",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -7197,17 +7197,17 @@
             "bearer": []
           }
         ],
-        "summary": "Change which workloads a token trust matches, or what the tokens it issues may do; tokens issued with scopes it no longer grants stop being valid",
+        "summary": "Change which workloads an OIDC trust matches, or what the tokens it issues may do; tokens issued with scopes it no longer grants stop being valid",
         "tags": [
           "workspace-tokens"
         ],
         "x-spotlight-resource": {
-          "kind": "workspace-token-trust",
+          "kind": "oidc-trust",
           "operation": "update"
         }
       },
       "delete": {
-        "operationId": "deleteWorkspaceTokenTrust",
+        "operationId": "deleteOidcTrust",
         "parameters": [
           {
             "name": "Spotlight-Api-Version",
@@ -7277,7 +7277,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the workspace-token-trust: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the oidc-trust: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -7287,7 +7287,7 @@
             }
           },
           "404": {
-            "description": "No such workspace-token-trust that you may see",
+            "description": "No such oidc-trust that you may see",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -7322,19 +7322,19 @@
             "bearer": []
           }
         ],
-        "summary": "Delete a token trust; Spotlight accepts no token that the trust issued from this moment",
+        "summary": "Delete an OIDC trust; Spotlight accepts no token that the trust issued from this moment",
         "tags": [
           "workspace-tokens"
         ],
         "x-spotlight-resource": {
-          "kind": "workspace-token-trust",
+          "kind": "oidc-trust",
           "operation": "delete"
         }
       }
     },
-    "/resources/workspaces/{workspaceId}/token-trusts/import": {
+    "/resources/workspaces/{workspaceId}/oidc-trusts/import": {
       "get": {
-        "operationId": "importWorkspaceTokenTrust",
+        "operationId": "importOidcTrust",
         "parameters": [
           {
             "name": "Spotlight-Api-Version",
@@ -7372,7 +7372,7 @@
             "name": "address",
             "required": true,
             "in": "query",
-            "description": "The workspace-token-trust's address within the workspace",
+            "description": "The oidc-trust's address within the workspace",
             "schema": {
               "example": "github-main"
             }
@@ -7380,7 +7380,7 @@
         ],
         "responses": {
           "200": {
-            "description": "The workspace-token-trust, as a read returns it",
+            "description": "The oidc-trust, as a read returns it",
             "headers": {
               "ETag": {
                 "description": "The returned version, to send back as If-Match",
@@ -7393,7 +7393,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WorkspaceTokenTrustResourceResponseDto"
+                  "$ref": "#/components/schemas/OidcTrustResourceResponseDto"
                 }
               }
             }
@@ -7419,7 +7419,7 @@
             }
           },
           "404": {
-            "description": "No such workspace-token-trust that you may see",
+            "description": "No such oidc-trust that you may see",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -7434,12 +7434,12 @@
             "bearer": []
           }
         ],
-        "summary": "Find the token trust with a key in a workspace, to import it",
+        "summary": "Find the OIDC trust with a key in a workspace, to import it",
         "tags": [
           "workspace-tokens"
         ],
         "x-spotlight-resource": {
-          "kind": "workspace-token-trust",
+          "kind": "oidc-trust",
           "operation": "import"
         }
       }
@@ -7473,7 +7473,7 @@
             "description": "Spotlight did not accept the exchange. Possible causes: an unknown trust, a token its issuer did not sign for the trust’s audience, a workload the trust does not match, or a deleted workspace"
           }
         },
-        "summary": "Exchange the OIDC token a CI platform issued a workload for a short-lived workspace token, through a workspace token trust that matches it",
+        "summary": "Exchange the OIDC token a CI platform issued a workload for a short-lived workspace token, through an OIDC trust that matches it",
         "tags": [
           "workspace-tokens"
         ]
@@ -7738,6 +7738,47 @@
           }
         },
         "summary": "Who changed the workspace’s configuration, what they changed and through which client, newest first; only its admins may see",
+        "tags": [
+          "workspaces"
+        ]
+      }
+    },
+    "/workspaces/{slug}/oidc-trusts": {
+      "get": {
+        "operationId": "listWorkspaceOidcTrusts",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "acme-inc",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OidcTrustSummaryResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session"
+          },
+          "404": {
+            "description": "No such workspace that you administer"
+          }
+        },
+        "summary": "The workspace’s OIDC trusts, with who created each and when it last issued a token; only its admins may see. Terraform and the resource API write them",
         "tags": [
           "workspaces"
         ]
@@ -14902,7 +14943,7 @@
                 "integrations",
                 "hooks",
                 "secrets",
-                "token-trusts",
+                "oidc-trusts",
                 "runner-trusts",
                 "runner-pools",
                 "egresses",
@@ -23800,7 +23841,7 @@
   },
   "info": {
     "title": "Spotlight Control Plane",
-    "description": "HTTP API for the Spotlight Control Plane.\n\n## Resource conventions\n\nOperations marked `x-spotlight-resource` manage configuration resources, the ones the Terraform provider writes. They live under `/resources` and address everything by id. Every resource follows these rules, and a conformance suite checks each one against them.\n\n- **Stable ids.** Spotlight issues a resource's `id` when it is created. It never changes for the resource's life, whatever else does.\n- **Reads return every field.** A read returns the whole resource, defaults filled in, so a client comparing it with what it wrote sees any drift. A write returns exactly what a read returns.\n- **Versions.** Every resource carries a `version` that rises with each change, and each response carries it as a strong `ETag` (`\"3\"`). An update or delete must send it back as `If-Match`: without one it fails with 428, and against a version that is no longer current with 409, whose body gives the `currentVersion` and whose `ETag` names it. A write that would remove something another resource still uses fails with 409 `in-use`.\n- **Idempotent creates.** A create must carry an `Idempotency-Key`. Retrying with the same key and body within 24 hours returns the resource that the first attempt created, marked `Idempotent-Replayed: true`, and creates nothing more; the same key with a different body fails with 422.\n- **Problems name fields.** Errors are `application/problem+json` (RFC 9457). `type` is stable and safe to branch on. An invalid request lists `errors`, each with the `path` of the attribute it is about, as in `stations[2].check`; a key that is not a plain name is quoted, as Terraform addresses it: `on[\"task.opened\"].to.thread`.\n- **API versions.** A client may send `Spotlight-Api-Version`; every response names the version that it uses, currently `2026-09-23`. Changes within a version are additive only: fields and operations are added, never removed, renamed or given a new meaning.\n- **Expression checks.** `POST /expressions/check` type-checks one CEL expression at the attribute that contains it, named within the resource's whole definition (`integration.webhook.events[0].when`), as `terraform plan` needs. What the expression may read is worked out from that definition exactly as applying it would, so a plan fails where an apply would; a definition that has an error fails with 422, each error under `definition`. It returns the type and any errors, each with the span it is about and a suggestion where a declared name is near, and warnings about the definition, such as a capture shadowing a built-in name. `GET /expressions/positions` lists every position, with `[*]` for any index or key, and the variables an expression there can read. They follow these headers and problems, but are not resources.\n- **Credentials.** A client calls with a person's session or with a workspace token, sent as `Authorization: Bearer <token>`. A token acts only within its own workspace and only as its scopes allow. `read`, `plan` and `configure` are a ladder: `read` reads, `plan` also checks expressions, and `configure` also creates, updates and deletes configuration as a workspace admin may, except secrets, runners and token trusts. `secrets` is granted beside one of them and lets the token create, rebind, rotate and delete secrets; Terraform that manages secrets uses `[\"configure\", \"secrets\"]`. `runners` is granted the same way and lets the token create, rekey and delete runners and runner trusts and create, update and delete the workspace's runners, since a runner claims runs, checks out repositories and keeps git credentials; Terraform that manages runners uses `[\"configure\", \"runners\"]`. `trusts` is granted the same way and lets the token create, update and delete workspace token trusts, since a trust hands out tokens; a token can only create a trust that grants scopes it has itself, so bootstrap the trusts once with a token that has `trusts` and every scope they grant, as in `[\"configure\", \"secrets\", \"trusts\"]`, and revoke it. No token manages members or tokens, or reads the audit.\n- **CI without a stored token.** A workspace admin, or a token granted `trusts`, creates a workspace token trust naming an OIDC issuer, audience, subject and claims, and the scopes and lifetime (at most an hour) of the tokens it issues. A CI job exchanges the OIDC token its platform issues it at `POST /api/workspace-tokens/exchange` with `{ \"trust\": <trust id>, \"token\": <OIDC token> }`, and calls with the short-lived token it gets back. Deleting the trust stops every token that it issued at once, and the audit names the trust and the workload's subject beside each exchange and each change made with an issued token.\n- **Forbidden changes.** A change by someone who may read the resource but not change it, person or token, fails with 403 `forbidden`, whose `permission` names what the caller lacks, one of `configure`, `secrets`, `runners`, `trusts`, `administer`, `create-workspaces`, `plan`. Anything they may not see at all returns 404.\n- **Who changed what.** A client names itself in `Spotlight-Client` (`terraform-provider/<version>` or `web`), and every configuration change is recorded with who made it, person or token, and through which client. A secret's change also records the value version it moved to and the hosts it is bound to, never its value.\n- **Import by address.** Each resource has an `address` that names it within its workspace, such as `core/linear`, and an import operation that returns the resource at that address, as `terraform import` needs. A workspace's address is its slug; a team's is its key; anything a team owns is the team's key and its own, as in `core/delivery`.",
+    "description": "HTTP API for the Spotlight Control Plane.\n\n## Resource conventions\n\nOperations marked `x-spotlight-resource` manage configuration resources, the ones the Terraform provider writes. They live under `/resources` and address everything by id. Every resource follows these rules, and a conformance suite checks each one against them.\n\n- **Stable ids.** Spotlight issues a resource's `id` when it is created. It never changes for the resource's life, whatever else does.\n- **Reads return every field.** A read returns the whole resource, defaults filled in, so a client comparing it with what it wrote sees any drift. A write returns exactly what a read returns.\n- **Versions.** Every resource carries a `version` that rises with each change, and each response carries it as a strong `ETag` (`\"3\"`). An update or delete must send it back as `If-Match`: without one it fails with 428, and against a version that is no longer current with 409, whose body gives the `currentVersion` and whose `ETag` names it. A write that would remove something another resource still uses fails with 409 `in-use`.\n- **Idempotent creates.** A create must carry an `Idempotency-Key`. Retrying with the same key and body within 24 hours returns the resource that the first attempt created, marked `Idempotent-Replayed: true`, and creates nothing more; the same key with a different body fails with 422.\n- **Problems name fields.** Errors are `application/problem+json` (RFC 9457). `type` is stable and safe to branch on. An invalid request lists `errors`, each with the `path` of the attribute it is about, as in `stations[2].check`; a key that is not a plain name is quoted, as Terraform addresses it: `on[\"task.opened\"].to.thread`.\n- **API versions.** A client may send `Spotlight-Api-Version`; every response names the version that it uses, currently `2026-09-23`. Changes within a version are additive only: fields and operations are added, never removed, renamed or given a new meaning.\n- **Expression checks.** `POST /expressions/check` type-checks one CEL expression at the attribute that contains it, named within the resource's whole definition (`integration.webhook.events[0].when`), as `terraform plan` needs. What the expression may read is worked out from that definition exactly as applying it would, so a plan fails where an apply would; a definition that has an error fails with 422, each error under `definition`. It returns the type and any errors, each with the span it is about and a suggestion where a declared name is near, and warnings about the definition, such as a capture shadowing a built-in name. `GET /expressions/positions` lists every position, with `[*]` for any index or key, and the variables an expression there can read. They follow these headers and problems, but are not resources.\n- **Credentials.** A client calls with a person's session or with a workspace token. A script or Terraform sends a workspace token, or the login that `spotlight login` stores, as `Authorization: Bearer <token>`. A login acts as its person, with that person's role. A token acts only within its own workspace and only as its scopes allow. `read`, `plan` and `configure` are a ladder: `read` reads, `plan` also checks expressions, and `configure` also creates, updates and deletes configuration as a workspace admin may, except secrets, runners and OIDC trusts. `secrets` is granted beside one of them and lets the token create, rebind, rotate and delete secrets; Terraform that manages secrets uses `[\"configure\", \"secrets\"]`. `runners` is granted the same way and lets the token create, rekey and delete runners and runner trusts and create, update and delete the workspace's runners, since a runner claims runs, checks out repositories and keeps git credentials; Terraform that manages runners uses `[\"configure\", \"runners\"]`. `trusts` is granted the same way and lets the token create, update and delete OIDC trusts, since a trust hands out tokens; a token can only create a trust that grants scopes it has itself, so bootstrap the trusts once with a token that has `trusts` and every scope they grant, as in `[\"configure\", \"secrets\", \"trusts\"]`, and revoke it. No token manages members or tokens, or reads the audit.\n- **CI without a stored token.** A workspace admin, or a token granted `trusts`, creates an OIDC trust naming an OIDC issuer, audience, subject and claims, and the scopes and lifetime (at most an hour) of the tokens it issues. A CI job exchanges the OIDC token its platform issues it at `POST /api/workspace-tokens/exchange` with `{ \"trust\": <trust id>, \"token\": <OIDC token> }`, and calls with the short-lived token it gets back. Deleting the trust stops every token that it issued at once, and the audit names the trust and the workload's subject beside each exchange and each change made with an issued token.\n- **Forbidden changes.** A change by someone who may read the resource but not change it, person or token, fails with 403 `forbidden`, whose `permission` names what the caller lacks, one of `configure`, `secrets`, `runners`, `trusts`, `administer`, `create-workspaces`, `plan`. Anything they may not see at all returns 404.\n- **Who changed what.** A client names itself in `Spotlight-Client` (`terraform-provider/<version>` or `web`), and every configuration change is recorded with who made it, person or token, and through which client. A secret's change also records the value version it moved to and the hosts it is bound to, never its value.\n- **Import by address.** Each resource has an `address` that names it within its workspace, such as `core/linear`, and an import operation that returns the resource at that address, as `terraform import` needs. A workspace's address is its slug; a team's is its key; anything a team owns is the team's key and its own, as in `core/delivery`.",
     "version": "2026-09-23",
     "contact": {}
   },
@@ -27431,10 +27472,17 @@
             "example": false,
             "description": "True once it is resolved, and is no longer yours to answer"
           },
-          "working": {
-            "type": "boolean",
-            "example": false,
-            "description": "True while a run is working it, so an answer is coming"
+          "progress": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "in-progress",
+              "stopping",
+              null
+            ],
+            "nullable": true,
+            "example": "in-progress",
+            "description": "What the run on it is doing, so an answer is coming: queued until a runner takes it, then in progress, and stopping once someone asked it to stop"
           },
           "runId": {
             "type": "string",
@@ -27495,7 +27543,7 @@
           "createdAt",
           "askedAt",
           "resolved",
-          "working",
+          "progress",
           "runId",
           "unread",
           "briefing",
@@ -27651,6 +27699,11 @@
             "type": "string",
             "nullable": true
           },
+          "agentStoppedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "When the runner stopped the agent because the run was asked to stop"
+          },
           "endedAt": {
             "type": "string",
             "nullable": true
@@ -27661,6 +27714,7 @@
           "readyAt",
           "firstAgentUpdateAt",
           "lastAgentUpdateAt",
+          "agentStoppedAt",
           "endedAt"
         ]
       },
@@ -27896,10 +27950,17 @@
             "type": "string",
             "example": "2026-08-27T09:15:00.000Z"
           },
-          "running": {
-            "type": "boolean",
-            "example": false,
-            "description": "A run is under way"
+          "progress": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "in-progress",
+              "stopping",
+              null
+            ],
+            "nullable": true,
+            "example": "in-progress",
+            "description": "What its current run is doing: queued until a runner takes it, then in progress, and stopping once someone asked it to stop. Null without a run at work."
           },
           "awaitingReview": {
             "nullable": true,
@@ -27956,7 +28017,7 @@
           "description",
           "attachments",
           "createdAt",
-          "running",
+          "progress",
           "awaitingReview",
           "pullRequest",
           "createdBy",
@@ -28086,6 +28147,18 @@
               }
             ]
           },
+          "progress": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "in-progress",
+              "stopping",
+              null
+            ],
+            "nullable": true,
+            "example": "in-progress",
+            "description": "What it is doing: queued until a runner takes it, then in progress, and stopping once someone asked it to stop. Null once it waits for a person or has ended."
+          },
           "taskId": {
             "type": "string",
             "nullable": true
@@ -28112,6 +28185,7 @@
           "image",
           "station",
           "review",
+          "progress",
           "taskId",
           "taskTitle",
           "taskDescription"
@@ -28567,6 +28641,46 @@
           "connections"
         ]
       },
+      "LatestRunResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "4e1e84a2-0c39-406d-bbbb-559f29e450be"
+          },
+          "state": {
+            "type": "string",
+            "example": "claimed",
+            "enum": [
+              "queued",
+              "claimed",
+              "waiting",
+              "suspended",
+              "completed",
+              "failed",
+              "cancelled",
+              "superseded"
+            ]
+          },
+          "progress": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "in-progress",
+              "stopping",
+              null
+            ],
+            "nullable": true,
+            "example": "in-progress",
+            "description": "What it is doing: queued until a runner takes it, then in progress, and stopping once someone asked it to stop"
+          }
+        },
+        "required": [
+          "id",
+          "state",
+          "progress"
+        ]
+      },
       "RunSpendResponseDto": {
         "type": "object",
         "properties": {
@@ -28657,10 +28771,25 @@
             "type": "string",
             "description": "The briefing of the run, word for word"
           },
-          "working": {
-            "type": "boolean",
-            "example": false,
-            "description": "A run is on the task now"
+          "progress": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "in-progress",
+              "stopping",
+              null
+            ],
+            "nullable": true,
+            "example": "in-progress",
+            "description": "What the run of the task at this station is doing now: queued until a runner takes it, then in progress, and stopping once someone asked it to stop. A paused run is under way again once a person answered it."
+          },
+          "latestRun": {
+            "description": "The newest run of the task at this station",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LatestRunResponseDto"
+              }
+            ]
           },
           "notes": {
             "type": "array",
@@ -28688,7 +28817,8 @@
           "station",
           "createdAt",
           "briefing",
-          "working",
+          "progress",
+          "latestRun",
           "notes",
           "spend"
         ]
@@ -28780,6 +28910,18 @@
                 "$ref": "#/components/schemas/RunReviewResponseDto"
               }
             ]
+          },
+          "progress": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "in-progress",
+              "stopping",
+              null
+            ],
+            "nullable": true,
+            "example": "in-progress",
+            "description": "What it is doing: queued until a runner takes it, then in progress, and stopping once someone asked it to stop. Null once it waits for a person or has ended."
           }
         },
         "required": [
@@ -28792,7 +28934,8 @@
           "harness",
           "image",
           "station",
-          "review"
+          "review",
+          "progress"
         ]
       },
       "AddTaskRequestDto": {
@@ -28975,6 +29118,18 @@
               }
             ]
           },
+          "progress": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "in-progress",
+              "stopping",
+              null
+            ],
+            "nullable": true,
+            "example": "in-progress",
+            "description": "What it is doing: queued until a runner takes it, then in progress, and stopping once someone asked it to stop. Null once it waits for a person or has ended."
+          },
           "original": {
             "description": "The past task run it replays",
             "allOf": [
@@ -29030,6 +29185,7 @@
           "image",
           "station",
           "review",
+          "progress",
           "original",
           "spend",
           "journals",
@@ -29143,6 +29299,18 @@
               }
             ]
           },
+          "progress": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "in-progress",
+              "stopping",
+              null
+            ],
+            "nullable": true,
+            "example": "in-progress",
+            "description": "What it is doing: queued until a runner takes it, then in progress, and stopping once someone asked it to stop. Null once it waits for a person or has ended."
+          },
           "searchId": {
             "type": "string",
             "description": "The search this run is an iteration of"
@@ -29205,6 +29373,7 @@
           "image",
           "station",
           "review",
+          "progress",
           "searchId",
           "iteration",
           "agent",
@@ -29337,10 +29506,17 @@
             "type": "string",
             "example": "2026-09-14T09:05:00.000Z"
           },
-          "working": {
-            "type": "boolean",
-            "example": true,
-            "description": "The agent is answering now"
+          "progress": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "in-progress",
+              "stopping",
+              null
+            ],
+            "nullable": true,
+            "example": "in-progress",
+            "description": "What the run answering it is doing: queued until a runner takes it, then in progress, and stopping once someone asked it to stop. Null while nothing answers."
           }
         },
         "required": [
@@ -29354,7 +29530,7 @@
           "setup",
           "createdAt",
           "updatedAt",
-          "working"
+          "progress"
         ]
       },
       "ChatSetupRequestDto": {
@@ -29670,10 +29846,17 @@
             "type": "string",
             "example": "2026-09-14T09:05:00.000Z"
           },
-          "working": {
-            "type": "boolean",
-            "example": true,
-            "description": "The agent is answering now"
+          "progress": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "in-progress",
+              "stopping",
+              null
+            ],
+            "nullable": true,
+            "example": "in-progress",
+            "description": "What the run answering it is doing: queued until a runner takes it, then in progress, and stopping once someone asked it to stop. Null while nothing answers."
           },
           "runId": {
             "type": "string",
@@ -29698,7 +29881,7 @@
           "setup",
           "createdAt",
           "updatedAt",
-          "working",
+          "progress",
           "runId",
           "messages"
         ]
@@ -30013,7 +30196,7 @@
               "configure",
               "secrets"
             ],
-            "description": "What it may do: read reads; plan also checks expressions; configure also changes configuration as a workspace admin may, except secrets, runners and token trusts; secrets, granted beside one of those, manages secrets; runners, granted the same way, manages runners, runner trusts and the workspace’s runners; trusts, granted the same way, manages workspace token trusts. Immutable",
+            "description": "What it may do: read reads; plan also checks expressions; configure also changes configuration as a workspace admin may, except secrets, runners and OIDC trusts; secrets, granted beside one of those, manages secrets; runners, granted the same way, manages runners, runner trusts and the workspace’s runners; trusts, granted the same way, manages OIDC trusts. Immutable",
             "items": {
               "type": "string",
               "enum": [
@@ -30071,7 +30254,7 @@
           "items"
         ]
       },
-      "WorkspaceTokenTrustResourceResponseDto": {
+      "OidcTrustResourceResponseDto": {
         "type": "object",
         "properties": {
           "id": {
@@ -30180,14 +30363,14 @@
           "createdBy"
         ]
       },
-      "WorkspaceTokenTrustResourceListResponseDto": {
+      "OidcTrustResourceListResponseDto": {
         "type": "object",
         "properties": {
           "items": {
             "description": "Every one there is, each as a read returns it, in address order",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/WorkspaceTokenTrustResourceResponseDto"
+              "$ref": "#/components/schemas/OidcTrustResourceResponseDto"
             }
           }
         },
@@ -30201,7 +30384,7 @@
           "trust": {
             "type": "string",
             "example": "0d6f3c1e-8a52-4f7b-9c1d-5e2a7b3f9c40",
-            "description": "The id of the workspace token trust to exchange through"
+            "description": "The id of the OIDC trust to exchange through"
           },
           "token": {
             "type": "string",
@@ -30545,7 +30728,7 @@
           "trust": {
             "type": "string",
             "nullable": true,
-            "description": "For a token issued by a workspace token trust, that trust; the person is then whoever created the trust"
+            "description": "For a token issued by an OIDC trust, that trust; the person is then whoever created the trust"
           }
         },
         "required": [
@@ -30575,7 +30758,7 @@
               "hook",
               "secret",
               "workspace-token",
-              "workspace-token-trust",
+              "oidc-trust",
               "runner-trust",
               "runner-pool",
               "egress",
@@ -30638,6 +30821,116 @@
           "client",
           "details",
           "at"
+        ]
+      },
+      "OidcTrustCreatorResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "user_1"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "example": "Ada Lovelace",
+            "description": "Null when the account no longer exists"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "OidcTrustSummaryResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "0d6f3c1e-8a52-4f7b-9c1d-5e2a7b3f9c40"
+          },
+          "key": {
+            "type": "string",
+            "example": "github-main"
+          },
+          "issuer": {
+            "type": "string",
+            "example": "https://token.actions.githubusercontent.com"
+          },
+          "audience": {
+            "type": "string",
+            "example": "spotlight"
+          },
+          "subject": {
+            "type": "string",
+            "example": "repo:acme/platform:ref:refs/heads/main",
+            "description": "The subject a workload’s token must carry. * matches any run of characters"
+          },
+          "claims": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "repository_owner": "acme"
+            },
+            "description": "Further claims the workload’s token must carry, by name"
+          },
+          "scopes": {
+            "type": "array",
+            "example": [
+              "configure",
+              "secrets"
+            ],
+            "description": "The scopes of every token the trust issues",
+            "items": {
+              "type": "string",
+              "enum": [
+                "read",
+                "plan",
+                "configure",
+                "secrets",
+                "runners",
+                "trusts"
+              ]
+            }
+          },
+          "lifetimeMinutes": {
+            "type": "number",
+            "example": 15
+          },
+          "createdBy": {
+            "description": "The person who created the trust. Its tokens act for them",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OidcTrustCreatorResponseDto"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the trust was created"
+          },
+          "lastIssuedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the trust last issued a token. Null when it never did"
+          }
+        },
+        "required": [
+          "id",
+          "key",
+          "issuer",
+          "audience",
+          "subject",
+          "claims",
+          "scopes",
+          "lifetimeMinutes",
+          "createdBy",
+          "createdAt",
+          "lastIssuedAt"
         ]
       },
       "MemberResponseDto": {
@@ -32410,7 +32703,7 @@
         "type": "object",
         "properties": {
           "files": {
-            "description": "main.tf, with an import block beside each resource and references between them; variables.tf, declaring a sensitive variable for each value Spotlight never returns (secret values, runner tokens); and every prompt and skill file main.tf reads with file(), byte for byte; ordered by path",
+            "description": "terraform.tf with the required provider; imports.tf with an import block for each resource; one file per concern (workspace.tf, secrets.tf, runners.tf, and per team team-<team>.tf, line-<team>-<line>.tf, integration-<team>-<integration>.tf, skills-<team>.tf, hooks-<team>.tf, profiles-<team>.tf) with references between them; variables.tf, declaring a sensitive variable for each value Spotlight never returns (secret values, runner tokens); .gitignore; and every prompt, rubric and skill file the module reads with file(), byte for byte; ordered by path",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/TerraformFileResponseDto"

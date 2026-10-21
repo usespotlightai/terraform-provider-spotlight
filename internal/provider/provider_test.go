@@ -146,7 +146,7 @@ func withoutCredentials(t *testing.T) {
 func trustedGitHub(t *testing.T, fake *fakeapi.Server) string {
 	t.Helper()
 
-	trust, err := acctest.FakeClient(t, fake).CreateWorkspaceTokenTrust(t.Context(), mustWorkspace(t, fake), client.WorkspaceTokenTrustInput{
+	trust, err := acctest.FakeClient(t, fake).CreateOidcTrust(t.Context(), mustWorkspace(t, fake), client.OidcTrustInput{
 		Key: "github-main", Issuer: "https://token.actions.githubusercontent.com", Audience: "spotlight",
 		Subject: "repo:acme/platform:ref:refs/heads/main", Claims: map[string]string{}, Scopes: []string{"configure"}, LifetimeMinutes: 15,
 	})

@@ -1,4 +1,4 @@
-list "spotlight_workspace_token_trust" "all" {
+list "spotlight_oidc_trust" "all" {
   provider = spotlight
 
   config {

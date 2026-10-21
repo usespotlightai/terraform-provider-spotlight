@@ -56,11 +56,11 @@ resource "spotlight_secret" "linear_signing" {
 }
 
 import {
-  to = spotlight_workspace_token_trust.github-main
+  to = spotlight_oidc_trust.github-main
   id = "00000000-0000-4000-8000-00000000a0a0/github-main"
 }
 
-resource "spotlight_workspace_token_trust" "github-main" {
+resource "spotlight_oidc_trust" "github-main" {
   workspace_id     = spotlight_workspace.acme.id
   key              = "github-main"
   issuer           = "https://token.actions.githubusercontent.com"
@@ -71,11 +71,11 @@ resource "spotlight_workspace_token_trust" "github-main" {
 }
 
 import {
-  to = spotlight_workspace_token_trust.github-pull-requests
+  to = spotlight_oidc_trust.github-pull-requests
   id = "00000000-0000-4000-8000-00000000a0a0/github-pull-requests"
 }
 
-resource "spotlight_workspace_token_trust" "github-pull-requests" {
+resource "spotlight_oidc_trust" "github-pull-requests" {
   workspace_id = spotlight_workspace.acme.id
   key          = "github-pull-requests"
   issuer       = "https://token.actions.githubusercontent.com"

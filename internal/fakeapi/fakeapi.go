@@ -27,11 +27,11 @@ import (
 // Token is the API token the fake accepts.
 const Token = "test-token"
 
-// WorkloadToken is the only OIDC token that the workspace token trusts of
+// WorkloadToken is the only OIDC token that the OIDC trusts of
 // the fake accept.
 const WorkloadToken = "test-workload-token"
 
-// Admin is the person who created each workspace token trust in the fake.
+// Admin is the person who created each OIDC trust in the fake.
 const Admin = "test-admin"
 
 const apiVersion = "2026-09-23"
@@ -298,7 +298,7 @@ func (s *Server) exchange(w http.ResponseWriter, r *http.Request) {
 	defer s.mu.Unlock()
 
 	trust, ok := s.stored[body.Trust]
-	if !ok || trust.kind != "workspace-token-trust" || body.Token != WorkloadToken {
+	if !ok || trust.kind != "oidc-trust" || body.Token != WorkloadToken {
 		problem(w, http.StatusUnauthorized, "unauthenticated", "The workload token was not accepted", "No trust here matches that workload", nil)
 		return
 	}
@@ -327,7 +327,7 @@ var kinds = map[string]string{
 	"runner-pools":      "runner-pool",
 	"egresses":          "egress",
 	"workspace-runners": "workspace-runners",
-	"token-trusts":      "workspace-token-trust",
+	"oidc-trusts":       "oidc-trust",
 	"hooks":             "hook",
 }
 
@@ -353,12 +353,12 @@ func (s *Server) allowed(w http.ResponseWriter, kind string) bool {
 		return true
 	}
 
-	if kind == "workspace-token-trust" {
+	if kind == "oidc-trust" {
 		if s.scopes["trusts"] {
 			return true
 		}
 
-		forbidTrust(w, cannotChange("workspace-token-trust"))
+		forbidTrust(w, cannotChange("oidc-trust"))
 
 		return false
 	}
@@ -398,7 +398,7 @@ func (s *Server) grants(w http.ResponseWriter, scopes ...any) bool {
 	for _, listed := range scopes {
 		for _, each := range texts(listed) {
 			if !owned[textOf(each)] {
-				forbidTrust(w, cannotChange("workspace-token-trust"))
+				forbidTrust(w, cannotChange("oidc-trust"))
 				return false
 			}
 		}
@@ -410,7 +410,7 @@ func (s *Server) grants(w http.ResponseWriter, scopes ...any) bool {
 func forbidTrust(w http.ResponseWriter, detail string) {
 	writeJSON(w, http.StatusForbidden, "application/problem+json", map[string]any{
 		"type":       "urn:spotlight:problem:forbidden",
-		"title":      "Not allowed to change the workspace-token-trust",
+		"title":      "Not allowed to change the oidc-trust",
 		"status":     http.StatusForbidden,
 		"detail":     detail,
 		"permission": "trusts",
@@ -501,7 +501,7 @@ func (s *Server) create(kind string) http.HandlerFunc {
 			return
 		}
 
-		if kind == "workspace-token-trust" && !s.grants(w, fields["scopes"]) {
+		if kind == "oidc-trust" && !s.grants(w, fields["scopes"]) {
 			return
 		}
 
@@ -568,7 +568,7 @@ func (s *Server) update(kind string) http.HandlerFunc {
 			errs = s.tokenProblems(kind, existing.id, value)
 		}
 
-		if len(errs) == 0 && kind == "workspace-token-trust" && !s.grants(w, existing.fields["scopes"], fields["scopes"]) {
+		if len(errs) == 0 && kind == "oidc-trust" && !s.grants(w, existing.fields["scopes"], fields["scopes"]) {
 			return
 		}
 
@@ -819,18 +819,18 @@ func (s *Server) exists(id, kind string) bool {
 }
 
 var fixedFields = map[string][]string{
-	"workspace":             {"slug"},
-	"team":                  {"key"},
-	"line":                  {"key"},
-	"skill":                 {"key"},
-	"integration":           {"integration"},
-	"harness-profile":       {"key"},
-	"secret":                {"name"},
-	"runner-trust":          {"key"},
-	"runner-pool":           {"key"},
-	"egress":                {"key"},
-	"workspace-token-trust": {"key"},
-	"hook":                  {"key"},
+	"workspace":       {"slug"},
+	"team":            {"key"},
+	"line":            {"key"},
+	"skill":           {"key"},
+	"integration":     {"integration"},
+	"harness-profile": {"key"},
+	"secret":          {"name"},
+	"runner-trust":    {"key"},
+	"runner-pool":     {"key"},
+	"egress":          {"key"},
+	"oidc-trust":      {"key"},
+	"hook":            {"key"},
 }
 
 func hasToken(kind string, fields map[string]any) bool {
@@ -852,7 +852,7 @@ func (s *Server) addressOf(stored *resource) string {
 	switch stored.kind {
 	case "workspace":
 		return textOf(stored.fields["slug"])
-	case "team", "runner-trust", "runner-pool", "egress", "workspace-token-trust":
+	case "team", "runner-trust", "runner-pool", "egress", "oidc-trust":
 		return textOf(stored.fields["key"])
 	case "secret":
 		return textOf(stored.fields["name"])
@@ -920,7 +920,7 @@ func (s *Server) bodyOf(stored *resource) map[string]any {
 		body["warnings"] = s.unansweredOf(stored)
 	}
 
-	if stored.kind == "workspace-token-trust" {
+	if stored.kind == "oidc-trust" {
 		body["createdBy"] = Admin
 	}
 
