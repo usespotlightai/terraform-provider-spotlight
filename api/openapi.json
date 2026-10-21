@@ -27431,10 +27431,17 @@
             "example": false,
             "description": "True once it is resolved, and is no longer yours to answer"
           },
-          "working": {
-            "type": "boolean",
-            "example": false,
-            "description": "True while a run is working it, so an answer is coming"
+          "progress": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "in-progress",
+              "stopping",
+              null
+            ],
+            "nullable": true,
+            "example": "in-progress",
+            "description": "What the run on it is doing, so an answer is coming: queued until a runner takes it, then in progress, and stopping once someone asked it to stop"
           },
           "runId": {
             "type": "string",
@@ -27495,7 +27502,7 @@
           "createdAt",
           "askedAt",
           "resolved",
-          "working",
+          "progress",
           "runId",
           "unread",
           "briefing",
@@ -27651,6 +27658,11 @@
             "type": "string",
             "nullable": true
           },
+          "agentStoppedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "When the runner stopped the agent because the run was asked to stop"
+          },
           "endedAt": {
             "type": "string",
             "nullable": true
@@ -27661,6 +27673,7 @@
           "readyAt",
           "firstAgentUpdateAt",
           "lastAgentUpdateAt",
+          "agentStoppedAt",
           "endedAt"
         ]
       },
@@ -27896,10 +27909,17 @@
             "type": "string",
             "example": "2026-08-27T09:15:00.000Z"
           },
-          "running": {
-            "type": "boolean",
-            "example": false,
-            "description": "A run is under way"
+          "progress": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "in-progress",
+              "stopping",
+              null
+            ],
+            "nullable": true,
+            "example": "in-progress",
+            "description": "What its current run is doing: queued until a runner takes it, then in progress, and stopping once someone asked it to stop. Null without a run at work."
           },
           "awaitingReview": {
             "nullable": true,
@@ -27956,7 +27976,7 @@
           "description",
           "attachments",
           "createdAt",
-          "running",
+          "progress",
           "awaitingReview",
           "pullRequest",
           "createdBy",
@@ -28086,6 +28106,18 @@
               }
             ]
           },
+          "progress": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "in-progress",
+              "stopping",
+              null
+            ],
+            "nullable": true,
+            "example": "in-progress",
+            "description": "What it is doing: queued until a runner takes it, then in progress, and stopping once someone asked it to stop. Null once it waits for a person or has ended."
+          },
           "taskId": {
             "type": "string",
             "nullable": true
@@ -28112,6 +28144,7 @@
           "image",
           "station",
           "review",
+          "progress",
           "taskId",
           "taskTitle",
           "taskDescription"
@@ -28567,6 +28600,46 @@
           "connections"
         ]
       },
+      "LatestRunResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "4e1e84a2-0c39-406d-bbbb-559f29e450be"
+          },
+          "state": {
+            "type": "string",
+            "example": "claimed",
+            "enum": [
+              "queued",
+              "claimed",
+              "waiting",
+              "suspended",
+              "completed",
+              "failed",
+              "cancelled",
+              "superseded"
+            ]
+          },
+          "progress": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "in-progress",
+              "stopping",
+              null
+            ],
+            "nullable": true,
+            "example": "in-progress",
+            "description": "What it is doing: queued until a runner takes it, then in progress, and stopping once someone asked it to stop"
+          }
+        },
+        "required": [
+          "id",
+          "state",
+          "progress"
+        ]
+      },
       "RunSpendResponseDto": {
         "type": "object",
         "properties": {
@@ -28657,10 +28730,25 @@
             "type": "string",
             "description": "The briefing of the run, word for word"
           },
-          "working": {
-            "type": "boolean",
-            "example": false,
-            "description": "A run is on the task now"
+          "progress": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "in-progress",
+              "stopping",
+              null
+            ],
+            "nullable": true,
+            "example": "in-progress",
+            "description": "What the run of the task at this station is doing now: queued until a runner takes it, then in progress, and stopping once someone asked it to stop. A paused run is under way again once a person answered it."
+          },
+          "latestRun": {
+            "description": "The newest run of the task at this station",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LatestRunResponseDto"
+              }
+            ]
           },
           "notes": {
             "type": "array",
@@ -28688,7 +28776,8 @@
           "station",
           "createdAt",
           "briefing",
-          "working",
+          "progress",
+          "latestRun",
           "notes",
           "spend"
         ]
@@ -28780,6 +28869,18 @@
                 "$ref": "#/components/schemas/RunReviewResponseDto"
               }
             ]
+          },
+          "progress": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "in-progress",
+              "stopping",
+              null
+            ],
+            "nullable": true,
+            "example": "in-progress",
+            "description": "What it is doing: queued until a runner takes it, then in progress, and stopping once someone asked it to stop. Null once it waits for a person or has ended."
           }
         },
         "required": [
@@ -28792,7 +28893,8 @@
           "harness",
           "image",
           "station",
-          "review"
+          "review",
+          "progress"
         ]
       },
       "AddTaskRequestDto": {
@@ -28975,6 +29077,18 @@
               }
             ]
           },
+          "progress": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "in-progress",
+              "stopping",
+              null
+            ],
+            "nullable": true,
+            "example": "in-progress",
+            "description": "What it is doing: queued until a runner takes it, then in progress, and stopping once someone asked it to stop. Null once it waits for a person or has ended."
+          },
           "original": {
             "description": "The past task run it replays",
             "allOf": [
@@ -29030,6 +29144,7 @@
           "image",
           "station",
           "review",
+          "progress",
           "original",
           "spend",
           "journals",
@@ -29143,6 +29258,18 @@
               }
             ]
           },
+          "progress": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "in-progress",
+              "stopping",
+              null
+            ],
+            "nullable": true,
+            "example": "in-progress",
+            "description": "What it is doing: queued until a runner takes it, then in progress, and stopping once someone asked it to stop. Null once it waits for a person or has ended."
+          },
           "searchId": {
             "type": "string",
             "description": "The search this run is an iteration of"
@@ -29205,6 +29332,7 @@
           "image",
           "station",
           "review",
+          "progress",
           "searchId",
           "iteration",
           "agent",
@@ -29337,10 +29465,17 @@
             "type": "string",
             "example": "2026-09-14T09:05:00.000Z"
           },
-          "working": {
-            "type": "boolean",
-            "example": true,
-            "description": "The agent is answering now"
+          "progress": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "in-progress",
+              "stopping",
+              null
+            ],
+            "nullable": true,
+            "example": "in-progress",
+            "description": "What the run answering it is doing: queued until a runner takes it, then in progress, and stopping once someone asked it to stop. Null while nothing answers."
           }
         },
         "required": [
@@ -29354,7 +29489,7 @@
           "setup",
           "createdAt",
           "updatedAt",
-          "working"
+          "progress"
         ]
       },
       "ChatSetupRequestDto": {
@@ -29670,10 +29805,17 @@
             "type": "string",
             "example": "2026-09-14T09:05:00.000Z"
           },
-          "working": {
-            "type": "boolean",
-            "example": true,
-            "description": "The agent is answering now"
+          "progress": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "in-progress",
+              "stopping",
+              null
+            ],
+            "nullable": true,
+            "example": "in-progress",
+            "description": "What the run answering it is doing: queued until a runner takes it, then in progress, and stopping once someone asked it to stop. Null while nothing answers."
           },
           "runId": {
             "type": "string",
@@ -29698,7 +29840,7 @@
           "setup",
           "createdAt",
           "updatedAt",
-          "working",
+          "progress",
           "runId",
           "messages"
         ]
@@ -32410,7 +32552,7 @@
         "type": "object",
         "properties": {
           "files": {
-            "description": "main.tf, with an import block beside each resource and references between them; variables.tf, declaring a sensitive variable for each value Spotlight never returns (secret values, runner tokens); and every prompt and skill file main.tf reads with file(), byte for byte; ordered by path",
+            "description": "terraform.tf with the required provider; imports.tf with an import block for each resource; one file per concern (workspace.tf, secrets.tf, runners.tf, and per team team-<team>.tf, line-<team>-<line>.tf, integration-<team>-<integration>.tf, skills-<team>.tf, hooks-<team>.tf, profiles-<team>.tf) with references between them; variables.tf, declaring a sensitive variable for each value Spotlight never returns (secret values, runner tokens); .gitignore; and every prompt, rubric and skill file the module reads with file(), byte for byte; ordered by path",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/TerraformFileResponseDto"
