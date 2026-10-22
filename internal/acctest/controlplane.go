@@ -26,7 +26,7 @@ const WorkspaceEnv = "SPOTLIGHT_ACC_WORKSPACE"
 // The prefixes of all the resources that the acceptance tests create. The
 // sweepers delete these resources.
 //   - KeyPrefix starts the keys and names of teams, runners, runner trusts,
-//     runner pools, egresses and workspace token trusts. An address in a team starts
+//     runner pools, egresses and OIDC trusts. An address in a team starts
 //     with the team key, so KeyPrefix also starts each of these addresses.
 //   - SecretPrefix starts the names of secrets.
 const (
@@ -104,7 +104,7 @@ type Keys struct {
 	Secret, AWSSecret                       string
 	Trust, Pool, PushPool                   string
 	Egress                                  string
-	TokenTrust                              string
+	OidcTrust                               string
 }
 
 // RandomKeys returns keys that no other test uses.
@@ -125,7 +125,7 @@ func RandomKeys() Keys {
 		Pool:        KeyPrefix + "pool-" + suffix,
 		PushPool:    KeyPrefix + "push-" + suffix,
 		Egress:      KeyPrefix + "egress-" + suffix,
-		TokenTrust:  KeyPrefix + "github-" + suffix,
+		OidcTrust:   KeyPrefix + "github-" + suffix,
 	}
 }
 
@@ -248,7 +248,7 @@ func (cp ControlPlane) created(k Keys) []sweepable {
 		sweepableOf("runner pool", api.ImportRunnerPool, func(p client.RunnerPool) client.Meta { return p.Meta }, api.DeleteRunnerPool, id, k.Pool),
 		sweepableOf("runner pool", api.ImportRunnerPool, func(p client.RunnerPool) client.Meta { return p.Meta }, api.DeleteRunnerPool, id, k.PushPool),
 		sweepableOf("egress", api.ImportEgress, func(e client.Egress) client.Meta { return e.Meta }, api.DeleteEgress, id, k.Egress),
-		sweepableOf("workspace token trust", api.ImportWorkspaceTokenTrust, func(t client.WorkspaceTokenTrust) client.Meta { return t.Meta }, api.DeleteWorkspaceTokenTrust, id, k.TokenTrust),
+		sweepableOf("OIDC trust", api.ImportOidcTrust, func(t client.OidcTrust) client.Meta { return t.Meta }, api.DeleteOidcTrust, id, k.OidcTrust),
 	}
 }
 

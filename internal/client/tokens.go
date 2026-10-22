@@ -44,7 +44,7 @@ func (t StaticToken) Unauthorized(string) bool {
 	return false
 }
 
-// OIDC says how to authenticate through a workspace token trust: the
+// OIDC says how to authenticate through an OIDC trust: the
 // trust's id, the audience its workload tokens are issued for, and where
 // those tokens come from.
 type OIDC struct {
@@ -128,7 +128,7 @@ func (e *exchanging) exchange(ctx context.Context) (issued, error) {
 
 	dto, err := answered(resp.HTTPResponse, resp.Body, resp.JSON200)
 	if err != nil {
-		return issued{}, fmt.Errorf("could not exchange the OIDC token through the workspace token trust %s: %v", e.oidc.Trust, err)
+		return issued{}, fmt.Errorf("could not exchange the OIDC token through the OIDC trust %s: %v", e.oidc.Trust, err)
 	}
 
 	expiresAt, err := time.Parse(time.RFC3339, dto.ExpiresAt)

@@ -2,7 +2,7 @@ data "spotlight_workspace" "acme" {
   slug = "acme"
 }
 
-resource "spotlight_workspace_token_trust" "github_pull_requests" {
+resource "spotlight_oidc_trust" "github_pull_requests" {
   workspace_id = data.spotlight_workspace.acme.id
   key          = "github-pull-requests"
   issuer       = "https://token.actions.githubusercontent.com"
@@ -10,7 +10,7 @@ resource "spotlight_workspace_token_trust" "github_pull_requests" {
   scopes       = ["plan"]
 }
 
-resource "spotlight_workspace_token_trust" "github_main" {
+resource "spotlight_oidc_trust" "github_main" {
   workspace_id = data.spotlight_workspace.acme.id
   key          = "github-main"
   issuer       = "https://token.actions.githubusercontent.com"
@@ -19,9 +19,9 @@ resource "spotlight_workspace_token_trust" "github_main" {
 }
 
 output "plan_trust" {
-  value = spotlight_workspace_token_trust.github_pull_requests.id
+  value = spotlight_oidc_trust.github_pull_requests.id
 }
 
 output "apply_trust" {
-  value = spotlight_workspace_token_trust.github_main.id
+  value = spotlight_oidc_trust.github_main.id
 }

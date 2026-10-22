@@ -11,13 +11,13 @@ import (
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/fakeapi"
 )
 
-func seededWorkspaceTokenTrusts(t *testing.T, seeded acctest.Seeded) (first, second acctest.Listed) {
+func seededOidcTrusts(t *testing.T, seeded acctest.Seeded) (first, second acctest.Listed) {
 	t.Helper()
 
 	create := func(workspace client.Workspace, key string) acctest.Listed {
 		t.Helper()
 
-		created, err := seeded.Client.CreateWorkspaceTokenTrust(t.Context(), workspace.ID, client.WorkspaceTokenTrustInput{
+		created, err := seeded.Client.CreateOidcTrust(t.Context(), workspace.ID, client.OidcTrustInput{
 			Key: key, Issuer: "https://token.actions.githubusercontent.com", Audience: "spotlight", Subject: "repo:acme/platform:*",
 			Claims: map[string]string{}, Scopes: []string{"plan"}, LifetimeMinutes: 15,
 		})
@@ -32,21 +32,21 @@ func seededWorkspaceTokenTrusts(t *testing.T, seeded acctest.Seeded) (first, sec
 	return create(seeded.Workspace, "github-main"), later
 }
 
-func TestWorkspaceTokenTrustListResource(t *testing.T) {
+func TestOidcTrustListResource(t *testing.T) {
 	fake := fakeapi.New(t)
 	seeded := acctest.Seed(t, fake)
-	first, second := seededWorkspaceTokenTrusts(t, seeded)
+	first, second := seededOidcTrusts(t, seeded)
 
-	listed := acctest.List(t, fake, "spotlight_workspace_token_trust", map[string]string{"workspace_id": seeded.Workspace.ID})
+	listed := acctest.List(t, fake, "spotlight_oidc_trust", map[string]string{"workspace_id": seeded.Workspace.ID})
 	if want := []acctest.Listed{first, second}; !slices.Equal(listed, want) {
 		t.Errorf("listed %v, want %v", listed, want)
 	}
 }
 
-func TestWorkspaceTokenTrustListResourceQuery(t *testing.T) {
+func TestOidcTrustListResourceQuery(t *testing.T) {
 	fake := fakeapi.New(t)
 	seeded := acctest.Seed(t, fake)
-	first, second := seededWorkspaceTokenTrusts(t, seeded)
+	first, second := seededOidcTrusts(t, seeded)
 
 	resource.UnitTest(t, resource.TestCase{
 		TerraformVersionChecks:   acctest.Query,
@@ -55,8 +55,8 @@ func TestWorkspaceTokenTrustListResourceQuery(t *testing.T) {
 			{Config: acctest.SeededConfig},
 			{
 				Query:             true,
-				Config:            acctest.QueryConfig(acctest.ListBlock("spotlight_workspace_token_trust", "all", map[string]string{"workspace_id": seeded.Workspace.ID})),
-				QueryResultChecks: acctest.ExpectListed("spotlight_workspace_token_trust.all", first, second),
+				Config:            acctest.QueryConfig(acctest.ListBlock("spotlight_oidc_trust", "all", map[string]string{"workspace_id": seeded.Workspace.ID})),
+				QueryResultChecks: acctest.ExpectListed("spotlight_oidc_trust.all", first, second),
 			},
 		},
 	})
