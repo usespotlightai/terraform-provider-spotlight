@@ -2,12 +2,12 @@
 page_title: "GitHub Actions without a stored token"
 subcategory: ""
 description: |-
-  Run terraform plan and apply from GitHub Actions with no Spotlight token stored anywhere: each job exchanges the OIDC token GitHub issues it for a short-lived one, through a workspace token trust.
+  Run terraform plan and apply from GitHub Actions with no Spotlight token stored anywhere: each job exchanges the OIDC token GitHub issues it for a short-lived one, through an OIDC trust.
 ---
 
 # GitHub Actions without a stored token
 
-A pipeline that stores a Spotlight API token as a repository secret has a credential that works from anywhere until someone rotates it. A `spotlight_workspace_token_trust` removes it. The trust names an OIDC issuer and the workloads it matches, and each job exchanges the OIDC token its CI platform issues it for a workspace token with the trust's scopes, lasting the trust's `lifetime_minutes` (15 by default, an hour at most). Nothing is stored in GitHub, and a token that leaks from a job's logs stops working within minutes.
+A pipeline that stores a Spotlight API token as a repository secret has a credential that works from anywhere until someone rotates it. A `spotlight_oidc_trust` removes it. The trust names an OIDC issuer and the workloads it matches, and each job exchanges the OIDC token its CI platform issues it for a workspace token with the trust's scopes, lasting the trust's `lifetime_minutes` (15 by default, an hour at most). Nothing is stored in GitHub, and a token that leaks from a job's logs stops working within minutes.
 
 The provider does the exchange itself: with a trust, it requests an OIDC token from GitHub, exchanges it, sends the token it gets back as `Authorization: Bearer`, and repeats the exchange a minute before that token expires, so an apply that outlives one token carries on with the next. Changing or deleting a trust stops every token that it issued at once; a job whose token stops working that way exchanges again and carries on if the trust still matches it.
 
@@ -20,7 +20,7 @@ data "spotlight_workspace" "acme" {
   slug = "acme"
 }
 
-resource "spotlight_workspace_token_trust" "github_pull_requests" {
+resource "spotlight_oidc_trust" "github_pull_requests" {
   workspace_id = data.spotlight_workspace.acme.id
   key          = "github-pull-requests"
   issuer       = "https://token.actions.githubusercontent.com"
@@ -28,7 +28,7 @@ resource "spotlight_workspace_token_trust" "github_pull_requests" {
   scopes       = ["plan"]
 }
 
-resource "spotlight_workspace_token_trust" "github_main" {
+resource "spotlight_oidc_trust" "github_main" {
   workspace_id = data.spotlight_workspace.acme.id
   key          = "github-main"
   issuer       = "https://token.actions.githubusercontent.com"
@@ -37,11 +37,11 @@ resource "spotlight_workspace_token_trust" "github_main" {
 }
 
 output "plan_trust" {
-  value = spotlight_workspace_token_trust.github_pull_requests.id
+  value = spotlight_oidc_trust.github_pull_requests.id
 }
 
 output "apply_trust" {
-  value = spotlight_workspace_token_trust.github_main.id
+  value = spotlight_oidc_trust.github_main.id
 }
 ```
 

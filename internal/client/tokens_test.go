@@ -65,7 +65,7 @@ func (i *issuing) serve(w http.ResponseWriter, r *http.Request) {
 		token, _ := body["token"].(string)
 		if i.matches != "" && !strings.HasPrefix(token, i.matches) {
 			reply(w, http.StatusUnauthorized, "application/problem+json", map[string]any{
-				"type": "urn:spotlight:problem:unauthenticated", "title": "Unauthorized", "status": 401, "detail": "Token trust trust-1 does not match this workload.",
+				"type": "urn:spotlight:problem:unauthenticated", "title": "Unauthorized", "status": 401, "detail": "OIDC trust trust-1 does not match this workload.",
 			})
 			return
 		}
@@ -356,7 +356,7 @@ func TestAFailedExchangeNamesTheTrust(t *testing.T) {
 	issued.matches = "nothing"
 
 	_, err := api.ReadWorkspace(context.Background(), "ws-1")
-	if err == nil || !strings.Contains(err.Error(), "could not exchange the OIDC token through the workspace token trust trust-1") || !strings.Contains(err.Error(), "Token trust trust-1 does not match this workload.") {
+	if err == nil || !strings.Contains(err.Error(), "could not exchange the OIDC token through the OIDC trust trust-1") || !strings.Contains(err.Error(), "OIDC trust trust-1 does not match this workload.") {
 		t.Fatalf("got %v", err)
 	}
 
@@ -426,11 +426,11 @@ func TestAChangeToTheTrustMidApplyIsRecoveredFrom(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	in := client.WorkspaceTokenTrustInput{
+	in := client.OidcTrustInput{
 		Key: "github-main", Issuer: "https://token.actions.githubusercontent.com", Audience: "spotlight",
 		Subject: "repo:acme/platform:ref:refs/heads/main", Claims: map[string]string{}, Scopes: []string{"configure"}, LifetimeMinutes: 15,
 	}
-	trust, err := admin.CreateWorkspaceTokenTrust(ctx, workspace.ID, in)
+	trust, err := admin.CreateOidcTrust(ctx, workspace.ID, in)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -449,7 +449,7 @@ func TestAChangeToTheTrustMidApplyIsRecoveredFrom(t *testing.T) {
 	}
 
 	in.Scopes = []string{"configure", "secrets"}
-	if _, err := admin.UpdateWorkspaceTokenTrust(ctx, trust.ID, trust.Version, in); err != nil {
+	if _, err := admin.UpdateOidcTrust(ctx, trust.ID, trust.Version, in); err != nil {
 		t.Fatal(err)
 	}
 

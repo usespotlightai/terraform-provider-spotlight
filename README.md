@@ -18,7 +18,7 @@ Manages a Spotlight workspace as code. Full reference: [`docs/`](docs/index.md).
 | `spotlight_runner_pool` | `runners` | `<workspace id>/<key>` |
 | `spotlight_egress` | `runners` | `<workspace id>/<key>` |
 | `spotlight_workspace_runners` | `runners` | `<workspace id>/<slug>` |
-| `spotlight_workspace_token_trust` | `trusts` | `<workspace id>/<key>` |
+| `spotlight_oidc_trust` | `trusts` | `<workspace id>/<key>` |
 
 - **Import by identity:** every resource can also be imported by its identity, `{ id = "<id>" }` (Terraform 1.12+).
 - **List resources:** every resource is also a list resource, for `terraform query` (Terraform 1.14+).
@@ -51,7 +51,7 @@ resource "spotlight_workspace" "acme" {
 
 - **Workspaces:** a workspace is created by signing up in the web app, then adopted with an `import` block. A token cannot create one.
 - **Scopes:** one token with `configure`, `secrets`, `runners` and `trusts` manages everything.
-- **CI without a stored token:** `oidc { trust = "<trust id>" }`, or `SPOTLIGHT_OIDC_TRUST`, exchanges the CI job's OIDC token for a short-lived one through a `spotlight_workspace_token_trust`.
+- **CI without a stored token:** `oidc { trust = "<trust id>" }`, or `SPOTLIGHT_OIDC_TRUST`, exchanges the CI job's OIDC token for a short-lived one through a `spotlight_oidc_trust`.
 - **Adopting an existing workspace:** `terraform query -generate-config-out=…` writes the configuration and import blocks for you.
 - **Terraform versions:** Terraform 1.11+ is needed for the write-only `value_wo` (secrets), `token` (runner pools and egresses), `provision.secret` (runner pools) and `signing.secret_wo` (hooks).
 

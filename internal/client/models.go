@@ -213,17 +213,17 @@ type RunnerTrustInput struct {
 	Labels   []string `json:"labels"`
 }
 
-// WorkspaceTokenTrust is a CI workload that exchanges its OIDC tokens for
+// OidcTrust is a CI workload that exchanges its OIDC tokens for
 // short-lived workspace tokens. The CI platform stores no token.
-type WorkspaceTokenTrust struct {
+type OidcTrust struct {
 	Meta
 	WorkspaceID string
 	CreatedBy   string
-	WorkspaceTokenTrustInput
+	OidcTrustInput
 }
 
-// WorkspaceTokenTrustInput is the input to write a workspace token trust.
-type WorkspaceTokenTrustInput struct {
+// OidcTrustInput is the input to write an OIDC trust.
+type OidcTrustInput struct {
 	Key             string            `json:"key"`
 	Issuer          string            `json:"issuer"`
 	Audience        string            `json:"audience"`

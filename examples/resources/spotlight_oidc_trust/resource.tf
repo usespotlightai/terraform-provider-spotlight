@@ -1,4 +1,4 @@
-resource "spotlight_workspace_token_trust" "github_main" {
+resource "spotlight_oidc_trust" "github_main" {
   workspace_id = spotlight_workspace.acme.id
   key          = "github-main"
   issuer       = "https://token.actions.githubusercontent.com"

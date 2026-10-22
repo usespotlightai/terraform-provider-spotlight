@@ -23,7 +23,7 @@ export SPOTLIGHT_API_TOKEN=<token>
 
 or through the provider block, as below. Keep the token out of version control.
 
-**From CI, with no stored token.** A `spotlight_workspace_token_trust` admits the OIDC tokens a CI platform issues its jobs, and the provider exchanges the job's token for a short-lived one with the trust's scopes, exchanging again before it expires. In GitHub Actions, a job granted `permissions: id-token: write` needs only the trust's id:
+**From CI, with no stored token.** A `spotlight_oidc_trust` admits the OIDC tokens a CI platform issues its jobs, and the provider exchanges the job's token for a short-lived one with the trust's scopes, exchanging again before it expires. In GitHub Actions, a job granted `permissions: id-token: write` needs only the trust's id:
 
 ```shell
 export SPOTLIGHT_URL=https://spotlight.example.com
@@ -39,7 +39,7 @@ A token, stored or minted, acts only inside the workspace it was created in, and
 | `configure` | the workspace, teams, lines, skills, integrations and harness profiles |
 | `secrets` | `spotlight_secret` |
 | `runners` | `spotlight_runner_pool`, `spotlight_egress`, `spotlight_runner_trust` and `spotlight_workspace_runners` |
-| `trusts` | `spotlight_workspace_token_trust` |
+| `trusts` | `spotlight_oidc_trust` |
 
 **One token granted `configure`, `secrets`, `runners` and `trusts` manages everything this provider can.** `trusts` decides which CI jobs get tokens and with which scopes, so it is as powerful as all the others together: grant it only to a short-lived token that sets up the trusts, as the guide below does. A token can give a trust only the scopes that it has. A write the token's scopes do not allow fails with `403`, and the provider's diagnostic names the scope the token lacks.
 
@@ -114,7 +114,7 @@ variable "spotlight_token" {
 
 ### Optional
 
-- `oidc` (Block, Optional) Authenticate from CI with no stored token: the OIDC token the CI platform issues the job is exchanged, through a `spotlight_workspace_token_trust`, for a short-lived token, renewed before it expires. In GitHub Actions, a job granted `permissions: id-token: write` needs only `trust`; elsewhere, set the platform's OIDC token as `token`. (see [below for nested schema](#nestedblock--oidc))
+- `oidc` (Block, Optional) Authenticate from CI with no stored token: the OIDC token the CI platform issues the job is exchanged, through a `spotlight_oidc_trust`, for a short-lived token, renewed before it expires. In GitHub Actions, a job granted `permissions: id-token: write` needs only `trust`; elsewhere, set the platform's OIDC token as `token`. (see [below for nested schema](#nestedblock--oidc))
 - `token` (String, Sensitive) A Spotlight API token. Defaults to `SPOTLIGHT_API_TOKEN`. Leave it unset to authenticate through `oidc`.
 - `url` (String) The control plane's URL, as in `https://spotlight.example.com`. Defaults to `SPOTLIGHT_URL`, which the `spotlight` CLI reads too.
 
@@ -125,4 +125,4 @@ Optional:
 
 - `audience` (String) The audience to request the OIDC token for, which must be the trust's. Defaults to `SPOTLIGHT_OIDC_AUDIENCE`, then `spotlight`.
 - `token` (String, Sensitive) An OIDC token the CI platform issued the job, as GitLab's `id_tokens`, CircleCI's `$CIRCLE_OIDC_TOKEN_V2` or `buildkite-agent oidc request-token` return one. Defaults to `SPOTLIGHT_OIDC_TOKEN`; in GitHub Actions, one is requested for each exchange.
-- `trust` (String) The `id` of the workspace token trust to exchange through. Defaults to `SPOTLIGHT_OIDC_TRUST`.
+- `trust` (String) The `id` of the OIDC trust to exchange through. Defaults to `SPOTLIGHT_OIDC_TRUST`.

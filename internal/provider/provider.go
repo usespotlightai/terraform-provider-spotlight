@@ -81,7 +81,7 @@ func (p *SpotlightProvider) Metadata(_ context.Context, _ provider.MetadataReque
 func (p *SpotlightProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Configure a Spotlight workspace as code: its teams, lines, skills, integrations and harness profiles, its secrets, and its runner pools and trusts. " +
-			"It authenticates with a stored API token, or from CI with none: through `oidc`, it exchanges the OIDC token the CI platform issues the job for a short-lived token, through a workspace token trust. " +
+			"It authenticates with a stored API token, or from CI with none: through `oidc`, it exchanges the OIDC token the CI platform issues the job for a short-lived token, through an OIDC trust. " +
 			"One token granted the `configure`, `secrets`, `runners` and `trusts` scopes manages all of it.",
 		Attributes: map[string]schema.Attribute{
 			"url": schema.StringAttribute{
@@ -96,12 +96,12 @@ func (p *SpotlightProvider) Schema(_ context.Context, _ provider.SchemaRequest, 
 		},
 		Blocks: map[string]schema.Block{
 			"oidc": schema.SingleNestedBlock{
-				MarkdownDescription: "Authenticate from CI with no stored token: the OIDC token the CI platform issues the job is exchanged, through a `spotlight_workspace_token_trust`, for a short-lived token, renewed before it expires. " +
+				MarkdownDescription: "Authenticate from CI with no stored token: the OIDC token the CI platform issues the job is exchanged, through a `spotlight_oidc_trust`, for a short-lived token, renewed before it expires. " +
 					"In GitHub Actions, a job granted `permissions: id-token: write` needs only `trust`; elsewhere, set the platform's OIDC token as `token`.",
 				Attributes: map[string]schema.Attribute{
 					"trust": schema.StringAttribute{
 						Optional:            true,
-						MarkdownDescription: "The `id` of the workspace token trust to exchange through. Defaults to `" + OIDCTrustEnv + "`.",
+						MarkdownDescription: "The `id` of the OIDC trust to exchange through. Defaults to `" + OIDCTrustEnv + "`.",
 					},
 					"audience": schema.StringAttribute{
 						Optional:            true,
@@ -165,7 +165,7 @@ func (p *SpotlightProvider) Configure(ctx context.Context, req provider.Configur
 	if trust := orEnv(oidc.Trust, OIDCTrustEnv); trust != "" {
 		if cfg.Token != "" {
 			resp.Diagnostics.AddAttributeError(path.Root("oidc").AtName("trust"), "Both a token and an OIDC trust",
-				"Authenticate with a stored API token (token or "+TokenEnv+") or through a workspace token trust (oidc.trust or "+OIDCTrustEnv+"), not both.")
+				"Authenticate with a stored API token (token or "+TokenEnv+") or through an OIDC trust (oidc.trust or "+OIDCTrustEnv+"), not both.")
 
 			return
 		}
@@ -187,7 +187,7 @@ func (p *SpotlightProvider) Configure(ctx context.Context, req provider.Configur
 
 	if cfg.Token == "" && cfg.OIDC == nil {
 		resp.Diagnostics.AddAttributeError(path.Root("token"), "No API token",
-			"Set token, or "+TokenEnv+", to a Spotlight API token; or, in CI, set oidc.trust, or "+OIDCTrustEnv+", to the id of a workspace token trust to authenticate through.")
+			"Set token, or "+TokenEnv+", to a Spotlight API token; or, in CI, set oidc.trust, or "+OIDCTrustEnv+", to the id of an OIDC trust to authenticate through.")
 
 		return
 	}
@@ -216,7 +216,7 @@ func (p *SpotlightProvider) Resources(_ context.Context) []func() resource.Resou
 		NewHarnessProfileResource,
 		NewHookResource,
 		NewSecretResource,
-		NewWorkspaceTokenTrustResource,
+		NewOidcTrustResource,
 		NewRunnerTrustResource,
 		NewEgressResource,
 		NewRunnerPoolResource,
@@ -244,7 +244,7 @@ func (p *SpotlightProvider) ListResources(_ context.Context) []func() list.ListR
 		NewHarnessProfileListResource,
 		NewHookListResource,
 		NewSecretListResource,
-		NewWorkspaceTokenTrustListResource,
+		NewOidcTrustListResource,
 		NewRunnerTrustListResource,
 		NewEgressListResource,
 		NewRunnerPoolListResource,
@@ -263,7 +263,7 @@ func workloadTokens(configured types.String, diags *diag.Diagnostics) client.Wor
 	}
 
 	diags.AddAttributeError(path.Root("oidc").AtName("token"), "No OIDC token",
-		"Exchanging through a workspace token trust needs an OIDC token the CI platform issued the job. "+
+		"Exchanging through an OIDC trust needs an OIDC token the CI platform issued the job. "+
 			"In GitHub Actions, grant the job permissions: id-token: write, which sets "+GitHubTokenRequestURLEnv+" and "+GitHubTokenRequestTokenEnv+" for the provider to request one. "+
 			"Elsewhere, set oidc.token, or "+OIDCTokenEnv+", to the token the platform issues.")
 

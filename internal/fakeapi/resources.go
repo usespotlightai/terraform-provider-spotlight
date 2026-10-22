@@ -597,7 +597,7 @@ func nativeProblems(native map[string]any) []fieldError {
 
 var tokenScopes = []string{"read", "plan", "configure", "secrets", "runners", "trusts"}
 
-func tokenTrust(body map[string]any) (map[string]any, []fieldError) {
+func oidcTrust(body map[string]any) (map[string]any, []fieldError) {
 	var errs []fieldError
 
 	key, _ := body["key"].(string)
