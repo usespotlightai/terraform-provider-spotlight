@@ -12,7 +12,23 @@ Configure a [Spotlight](https://github.com/usespotlightai) workspace as code: it
 
 ## Authentication
 
-The provider calls the Spotlight control plane with a workspace token, sent as `Authorization: Bearer <token>`, which it gets in one of two ways.
+The provider calls the Spotlight control plane with a token, sent as `Authorization: Bearer <token>`, which it gets in one of three ways. It uses your login only when no stored API token and no OIDC trust is set.
+
+**On your machine, as you.** Sign in once with the `spotlight` CLI:
+
+```shell
+spotlight login
+```
+
+Then a provider block with only `url` works on your machine, with no token:
+
+```terraform
+provider "spotlight" {
+  url = "https://spotlight.example.com"
+}
+```
+
+The provider reads the login that `spotlight login` keeps for that address in `~/.config/spotlight/credentials.json` (in `$XDG_CONFIG_HOME/spotlight` when `XDG_CONFIG_HOME` is set, and in `$SPOTLIGHT_CONFIG_DIR` when that is set). It acts with your role in the workspace. When your login expires, run `spotlight login` again. A login is for a person at a terminal; in CI, use `oidc`.
 
 **A stored API token.** Create one in the web app and give it to the provider through the environment:
 
@@ -32,7 +48,7 @@ export SPOTLIGHT_OIDC_TRUST=<trust id>
 
 or `oidc { trust = "<trust id>" }` in the provider block. On other platforms, give the job's OIDC token in `SPOTLIGHT_OIDC_TOKEN` too. [GitHub Actions without a stored token](guides/github-actions-without-a-stored-token) sets up a pipeline that plans pull requests and applies `main` this way. A stored token and a trust are never used together.
 
-A token, stored or minted, acts only inside the workspace it was created in, and only as its scopes allow. `read`, `plan` and `configure` are a ladder, each allowing what the one before it does: `read` refreshes and imports, `plan` also checks expressions, and `configure` also creates, updates and deletes configuration. Three grants go beside them:
+A workspace token, stored or minted, acts only inside the workspace it was created in, and only as its scopes allow. `read`, `plan` and `configure` are a ladder, each allowing what the one before it does: `read` refreshes and imports, `plan` also checks expressions, and `configure` also creates, updates and deletes configuration. Three grants go beside them:
 
 | Scope | Lets the token write |
 | --- | --- |
@@ -97,7 +113,8 @@ terraform {
 }
 
 # If you do not set url and token, the provider uses SPOTLIGHT_URL and
-# SPOTLIGHT_API_TOKEN.
+# SPOTLIGHT_API_TOKEN. With no token, it uses the login that spotlight login
+# keeps for url.
 provider "spotlight" {
   url   = "https://spotlight.example.com"
   token = var.spotlight_token
@@ -115,7 +132,7 @@ variable "spotlight_token" {
 ### Optional
 
 - `oidc` (Block, Optional) Authenticate from CI with no stored token: the OIDC token the CI platform issues the job is exchanged, through a `spotlight_oidc_trust`, for a short-lived token, renewed before it expires. In GitHub Actions, a job granted `permissions: id-token: write` needs only `trust`; elsewhere, set the platform's OIDC token as `token`. (see [below for nested schema](#nestedblock--oidc))
-- `token` (String, Sensitive) A Spotlight API token. Defaults to `SPOTLIGHT_API_TOKEN`. Leave it unset to authenticate through `oidc`.
+- `token` (String, Sensitive) A Spotlight API token. Defaults to `SPOTLIGHT_API_TOKEN`. Leave it unset to authenticate through `oidc`, or as the person who ran `spotlight login` for `url`.
 - `url` (String) The control plane's URL, as in `https://spotlight.example.com`. Defaults to `SPOTLIGHT_URL`, which the `spotlight` CLI reads too.
 
 <a id="nestedblock--oidc"></a>

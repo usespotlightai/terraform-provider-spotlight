@@ -81,7 +81,8 @@ func (p *SpotlightProvider) Metadata(_ context.Context, _ provider.MetadataReque
 func (p *SpotlightProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Configure a Spotlight workspace as code: its teams, lines, skills, integrations and harness profiles, its secrets, and its runner pools and trusts. " +
-			"It authenticates with a stored API token, or from CI with none: through `oidc`, it exchanges the OIDC token the CI platform issues the job for a short-lived token, through an OIDC trust. " +
+			"On your machine, it authenticates as you after `spotlight login`, with only `url` set. " +
+			"It also authenticates with a stored API token, or from CI with none: through `oidc`, it exchanges the OIDC token the CI platform issues the job for a short-lived token, through an OIDC trust. " +
 			"One token granted the `configure`, `secrets`, `runners` and `trusts` scopes manages all of it.",
 		Attributes: map[string]schema.Attribute{
 			"url": schema.StringAttribute{
@@ -91,7 +92,7 @@ func (p *SpotlightProvider) Schema(_ context.Context, _ provider.SchemaRequest, 
 			"token": schema.StringAttribute{
 				Optional:            true,
 				Sensitive:           true,
-				MarkdownDescription: "A Spotlight API token. Defaults to `" + TokenEnv + "`. Leave it unset to authenticate through `oidc`.",
+				MarkdownDescription: "A Spotlight API token. Defaults to `" + TokenEnv + "`. Leave it unset to authenticate through `oidc`, or as the person who ran `spotlight login` for `url`.",
 			},
 		},
 		Blocks: map[string]schema.Block{
@@ -185,9 +186,25 @@ func (p *SpotlightProvider) Configure(ctx context.Context, req provider.Configur
 		return
 	}
 
-	if cfg.Token == "" && cfg.OIDC == nil {
+	if cfg.Token == "" && cfg.OIDC == nil && cfg.URL != "" {
+		login, found, err := client.StoredLogin(cfg.URL)
+		if err != nil {
+			resp.Diagnostics.AddError("Could not read the Spotlight login", err.Error())
+
+			return
+		}
+
+		if found {
+			cfg.Login = &login
+		}
+	}
+
+	if cfg.Token == "" && cfg.OIDC == nil && cfg.Login == nil {
 		resp.Diagnostics.AddAttributeError(path.Root("token"), "No API token",
-			"Set token, or "+TokenEnv+", to a Spotlight API token; or, in CI, set oidc.trust, or "+OIDCTrustEnv+", to the id of an OIDC trust to authenticate through.")
+			"The provider has no API token, OIDC trust or login for this Spotlight. "+
+				"On your machine, run spotlight login. "+
+				"Or set token, or "+TokenEnv+", to a Spotlight API token. "+
+				"In CI, set oidc.trust, or "+OIDCTrustEnv+", to the id of an OIDC trust.")
 
 		return
 	}

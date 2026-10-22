@@ -29,12 +29,13 @@ const (
 const DefaultBackoff = 500 * time.Millisecond
 
 // Config tells where the control plane is and who calls it. The caller is a
-// stored Token, or OIDC that exchanges the tokens of a CI workload for
-// short-lived tokens. Now tells the time. If Now is nil, the client uses
+// stored Token, the Login of a person, or OIDC that exchanges the tokens of a
+// CI workload for short-lived tokens. Now tells the time. If Now is nil, the client uses
 // time.Now.
 type Config struct {
 	URL             string
 	Token           string
+	Login           *Login
 	OIDC            *OIDC
 	ProviderVersion string
 	HTTPClient      *http.Client
@@ -116,6 +117,8 @@ func tokenSourceOf(cfg Config, base string, doer apigen.HttpRequestDoer) (TokenS
 		return nil, errors.New("a Spotlight API token and an OIDC trust were both set; authenticate with one")
 	case cfg.Token != "":
 		return StaticToken(cfg.Token), nil
+	case cfg.OIDC == nil && cfg.Login != nil:
+		return signedIn{login: *cfg.Login}, nil
 	case cfg.OIDC == nil:
 		return nil, errors.New("a Spotlight API token, or an OIDC trust to exchange a workload token through, is needed")
 	case cfg.OIDC.Trust == "" || cfg.OIDC.Workload == nil:

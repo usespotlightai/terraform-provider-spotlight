@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"sync"
@@ -99,13 +101,14 @@ func TestTheProviderNeedsAToken(t *testing.T) {
 	fake := fakeapi.New(t)
 	t.Setenv(provider.URLEnv, fake.URL)
 	t.Setenv(provider.TokenEnv, "")
+	withoutLogin(t)
 
 	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: providerFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config:      providerWorkspace,
-				ExpectError: regexp.MustCompile(`No API token`),
+				ExpectError: regexp.MustCompile(`(?s)No API token.*run\s+spotlight\s+login`),
 			},
 		},
 	})
@@ -114,6 +117,7 @@ func TestTheProviderNeedsAToken(t *testing.T) {
 func TestValidateNeedsNoControlPlane(t *testing.T) {
 	t.Setenv(provider.URLEnv, "")
 	t.Setenv(provider.TokenEnv, "")
+	withoutLogin(t)
 
 	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: providerFactories(),
@@ -141,6 +145,14 @@ func withoutCredentials(t *testing.T) {
 	} {
 		t.Setenv(env, "")
 	}
+
+	withoutLogin(t)
+}
+
+func withoutLogin(t *testing.T) {
+	t.Helper()
+
+	t.Setenv(client.ConfigDirEnv, t.TempDir())
 }
 
 func trustedGitHub(t *testing.T, fake *fakeapi.Server) string {
@@ -361,6 +373,141 @@ provider "spotlight" {
 ` + providerWorkspace,
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`OIDC trust not known`),
+			},
+		},
+	})
+}
+
+func signedIn(t *testing.T, address, token string) string {
+	t.Helper()
+
+	dir := t.TempDir()
+	t.Setenv(client.ConfigDirEnv, dir)
+
+	content := fmt.Sprintf(`{"logins": {%q: {"token": %q, "user": "person@example.com"}}}`, address, token)
+	path := filepath.Join(dir, "credentials.json")
+	if err := os.WriteFile(path, []byte(content), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	return path
+}
+
+func TestASpotlightLoginAuthenticatesTheProvider(t *testing.T) {
+	fake := fakeapi.New(t)
+	withoutCredentials(t)
+	signedIn(t, fake.URL, fakeapi.Token)
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: providerFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+provider "spotlight" {
+  url = %q
+}
+`, strings.Replace(fake.URL, "http://", "HTTP://", 1)+"/api/") + providerWorkspace,
+				Check: func(*terraform.State) error {
+					for _, each := range fake.Requests() {
+						if got := each.Headers.Get("Authorization"); got != "Bearer "+fakeapi.Token {
+							return fmt.Errorf("%s %s sent Authorization %q, not the login's token", each.Method, each.Path, got)
+						}
+					}
+
+					return nil
+				},
+			},
+		},
+	})
+}
+
+func TestAStoredTokenWinsOverALogin(t *testing.T) {
+	fake := fakeapi.New(t)
+	withoutCredentials(t)
+	signedIn(t, fake.URL, "a-login-token-it-does-not-know")
+	t.Setenv(provider.URLEnv, fake.URL)
+	t.Setenv(provider.TokenEnv, fakeapi.Token)
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: providerFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: providerWorkspace,
+				Check:  resource.TestCheckResourceAttr("spotlight_workspace.acme", "slug", "acme"),
+			},
+		},
+	})
+}
+
+func TestATrustWinsOverALogin(t *testing.T) {
+	fake := fakeapi.New(t)
+	withoutCredentials(t)
+	signedIn(t, fake.URL, fakeapi.Token)
+
+	t.Setenv(provider.URLEnv, fake.URL)
+	t.Setenv(provider.OIDCTrustEnv, trustedGitHub(t, fake))
+	t.Setenv(provider.OIDCTokenEnv, fakeapi.WorkloadToken)
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: providerFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: providerWorkspace,
+				Check:  everyCallUsedAnIssuedToken(fake),
+			},
+		},
+	})
+}
+
+func TestARejectedLoginSaysToRunSpotlightLogin(t *testing.T) {
+	fake := fakeapi.New(t)
+	withoutCredentials(t)
+	signedIn(t, fake.URL, "an-expired-session")
+	t.Setenv(provider.URLEnv, fake.URL)
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: providerFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config:      providerWorkspace,
+				ExpectError: regexp.MustCompile(`(?s)did\s+not\s+accept\s+the\s+login\s+of\s+person@example.com.*run\s+spotlight\s+login\s+to\s+sign\s+in\s+again`),
+			},
+		},
+	})
+}
+
+func TestALoginForAnotherSpotlightIsNotUsed(t *testing.T) {
+	fake := fakeapi.New(t)
+	withoutCredentials(t)
+	signedIn(t, "https://app.usespotlight.ai", fakeapi.Token)
+	t.Setenv(provider.URLEnv, fake.URL)
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: providerFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config:      providerWorkspace,
+				ExpectError: regexp.MustCompile(`(?s)No API token.*run\s+spotlight\s+login`),
+			},
+		},
+	})
+}
+
+func TestACredentialsFileThatDoesNotParseIsNamed(t *testing.T) {
+	fake := fakeapi.New(t)
+	withoutCredentials(t)
+	path := signedIn(t, fake.URL, fakeapi.Token)
+	if err := os.WriteFile(path, []byte(`{"logins": `), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv(provider.URLEnv, fake.URL)
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: providerFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config:      providerWorkspace,
+				ExpectError: regexp.MustCompile(`(?s)Could not read the Spotlight login.*` + regexp.QuoteMeta(path)),
 			},
 		},
 	})
