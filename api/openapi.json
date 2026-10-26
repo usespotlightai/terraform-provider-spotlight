@@ -29674,6 +29674,33 @@
           "done"
         ]
       },
+      "SetupCiResponseDto": {
+        "type": "object",
+        "properties": {
+          "defaultBranch": {
+            "type": "string",
+            "example": "main",
+            "description": "The default branch, whose pushes may apply"
+          },
+          "defaultBranchProtected": {
+            "type": "boolean",
+            "description": "Whether the default branch has branch protection or a ruleset that requires a pull request review"
+          },
+          "variables": {
+            "type": "string",
+            "enum": [
+              "written",
+              "not-permitted"
+            ],
+            "description": "Whether Spotlight wrote the GitHub Actions variables, or the GitHub App may not write variables"
+          }
+        },
+        "required": [
+          "defaultBranch",
+          "defaultBranchProtected",
+          "variables"
+        ]
+      },
       "SetupChatResponseDto": {
         "type": "object",
         "properties": {
@@ -29682,11 +29709,26 @@
             "nullable": true,
             "description": "The team’s setup chat, when the caller started it. Chats are seen only by whoever started them"
           },
+          "repository": {
+            "type": "string",
+            "example": "acme/infra",
+            "description": "The repository that holds the configuration"
+          },
           "pullRequest": {
             "type": "string",
             "nullable": true,
             "example": "https://github.com/acme/infra/pull/12",
             "description": "The pull request it opened with the configuration"
+          },
+          "ci": {
+            "nullable": true,
+            "description": "The GitHub Actions trusts that the setup created for the repository. Pull requests plan, and pushes to the default branch apply",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SetupCiResponseDto"
+              }
+            ]
           },
           "startedBy": {
             "type": "string",
@@ -29696,7 +29738,9 @@
         },
         "required": [
           "id",
+          "repository",
           "pullRequest",
+          "ci",
           "startedBy"
         ]
       },
@@ -29724,6 +29768,10 @@
             "type": "boolean",
             "description": "Whether a setup chat can start: the GitHub App is installed and a host runs sandboxes"
           },
+          "viewerIsAdmin": {
+            "type": "boolean",
+            "description": "Whether the viewer is a workspace owner or admin. Only they may set up configuration as code, because the setup creates OIDC trusts"
+          },
           "setupChat": {
             "nullable": true,
             "description": "The chat setting up the team’s configuration as code, the one with a pull request first",
@@ -29739,6 +29787,7 @@
           "provisioning",
           "steps",
           "canSetUp",
+          "viewerIsAdmin",
           "setupChat"
         ]
       },
