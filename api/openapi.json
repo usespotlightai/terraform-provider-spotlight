@@ -2964,64 +2964,6 @@
         ]
       }
     },
-    "/teams/{teamId}/traces": {
-      "get": {
-        "operationId": "listTeamTraces",
-        "parameters": [
-          {
-            "name": "teamId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "example": "9c2e6d5a-1f47-4c8b-9a3d-2b7e5f0c1d84",
-              "type": "string"
-            }
-          },
-          {
-            "name": "range",
-            "required": false,
-            "in": "query",
-            "description": "How far back from now to look, counting runs started since; 30d by default",
-            "schema": {
-              "enum": [
-                "30m",
-                "1h",
-                "6h",
-                "1d",
-                "3d",
-                "7d",
-                "14d",
-                "30d",
-                "90d"
-              ],
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TeamTracesResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "No valid session"
-          },
-          "422": {
-            "description": "No such range"
-          }
-        },
-        "summary": "Every task of the team, as one trace each",
-        "tags": [
-          "tasks"
-        ]
-      }
-    },
     "/teams/{teamId}/runs/{runId}/config": {
       "get": {
         "operationId": "readRunConfig",
@@ -7504,6 +7446,9 @@
               }
             }
           },
+          "400": {
+            "description": "A survey without a job function, or with answers that are not text"
+          },
           "401": {
             "description": "No valid session"
           },
@@ -7511,7 +7456,7 @@
             "description": "That workspace URL is already taken"
           },
           "422": {
-            "description": "Invalid name or URL"
+            "description": "Invalid name, URL, job function or referral source"
           }
         },
         "summary": "Create a workspace, along with the team it starts with",
@@ -19562,9 +19507,9 @@
         ]
       }
     },
-    "/teams/{teamId}/insights/runs": {
+    "/teams/{teamId}/insights/traces": {
       "get": {
-        "operationId": "listInsightsRuns",
+        "operationId": "listInsightsTraces",
         "parameters": [
           {
             "name": "teamId",
@@ -19572,24 +19517,6 @@
             "in": "path",
             "schema": {
               "type": "string"
-            }
-          },
-          {
-            "name": "size",
-            "required": false,
-            "in": "query",
-            "description": "Runs per page: 50 by default, 200 at most",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "description": "Which page, from 1 to the last with runs, 10000 at most",
-            "schema": {
-              "type": "number"
             }
           },
           {
@@ -19811,17 +19738,24 @@
             }
           },
           {
-            "name": "period",
+            "name": "range",
             "required": false,
             "in": "query",
-            "description": "How many whole UTC days, up to and including today, to look at; 30d by default. Every answer also covers the period before, as long",
+            "description": "How far back from now to look, counting runs that ended since; 30d by default",
             "schema": {
               "enum": [
+                "30m",
+                "1h",
+                "6h",
+                "1d",
+                "3d",
                 "7d",
+                "14d",
                 "30d",
                 "90d"
               ],
-              "type": "string"
+              "type": "string",
+              "example": "7d"
             }
           }
         ],
@@ -19831,7 +19765,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/InsightsRunsResponseDto"
+                  "$ref": "#/components/schemas/InsightsTracesResponseDto"
                 }
               }
             }
@@ -19843,7 +19777,7 @@
             "description": "No such team for this caller"
           },
           "422": {
-            "description": "No such period, or a filter it does not take: more tasks or repositories than it takes, a value longer than it takes, an unknown value, a value repeated where it takes one, a day outside the period, or a page past the last"
+            "description": "No such range, or a filter that is not valid"
           }
         },
         "security": [
@@ -19851,7 +19785,7 @@
             "bearer": []
           }
         ],
-        "summary": "Every run that ended in the period, the newest first, a page at a time; every filter narrows it further",
+        "summary": "Every task with a run in the range, as one trace each, with the runs that match the filter",
         "tags": [
           "insights"
         ]
@@ -28191,222 +28125,6 @@
           "taskDescription"
         ]
       },
-      "TraceVolumeBucketResponseDto": {
-        "type": "object",
-        "properties": {
-          "from": {
-            "type": "string",
-            "example": "2026-08-29T12:00:00.000Z",
-            "description": "When the bar starts"
-          },
-          "to": {
-            "type": "string",
-            "example": "2026-08-29T13:00:00.000Z",
-            "description": "When the bar ends, not included"
-          },
-          "count": {
-            "type": "number",
-            "example": 4,
-            "description": "How many traces started in it"
-          },
-          "errors": {
-            "type": "number",
-            "example": 1,
-            "description": "Every error in the traces that started in it"
-          }
-        },
-        "required": [
-          "from",
-          "to",
-          "count",
-          "errors"
-        ]
-      },
-      "TraceStationResponseDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "example": "Implementation"
-          },
-          "color": {
-            "type": "string",
-            "example": "#edc12b"
-          },
-          "position": {
-            "type": "number",
-            "example": 1
-          },
-          "count": {
-            "type": "number",
-            "example": 3,
-            "description": "How many stations the line has"
-          }
-        },
-        "required": [
-          "name",
-          "color",
-          "position",
-          "count"
-        ]
-      },
-      "TeamTraceResponseDto": {
-        "type": "object",
-        "properties": {
-          "taskId": {
-            "type": "string",
-            "example": "a17c4e02-9b3d-4f61-8e5a-0c2d7b9f4a13"
-          },
-          "title": {
-            "type": "string",
-            "example": "Fix the queue"
-          },
-          "station": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/TraceStationResponseDto"
-              }
-            ]
-          },
-          "stations": {
-            "description": "Every station that has run it, in the line’s order",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TraceStationResponseDto"
-            }
-          },
-          "harness": {
-            "type": "string",
-            "example": "claude-code"
-          },
-          "state": {
-            "type": "string",
-            "example": "completed",
-            "enum": [
-              "queued",
-              "claimed",
-              "waiting",
-              "suspended",
-              "completed",
-              "failed",
-              "cancelled",
-              "superseded"
-            ]
-          },
-          "startedAt": {
-            "type": "string",
-            "example": "2026-08-29T12:00:00.000Z"
-          },
-          "runs": {
-            "type": "number",
-            "example": 3,
-            "description": "How many runs the task has had"
-          },
-          "input": {
-            "type": "string",
-            "nullable": true,
-            "description": "What the last run was put to"
-          },
-          "output": {
-            "type": "string",
-            "nullable": true,
-            "description": "The last note that the run wrote on the task"
-          },
-          "ms": {
-            "type": "number",
-            "nullable": true,
-            "example": 143000
-          },
-          "steps": {
-            "type": "number",
-            "example": 128
-          },
-          "errors": {
-            "type": "number",
-            "example": 2
-          },
-          "cost": {
-            "type": "number",
-            "nullable": true,
-            "example": 0.4213
-          },
-          "currency": {
-            "type": "string",
-            "nullable": true,
-            "example": "USD"
-          }
-        },
-        "required": [
-          "taskId",
-          "title",
-          "station",
-          "stations",
-          "harness",
-          "state",
-          "startedAt",
-          "runs",
-          "input",
-          "output",
-          "ms",
-          "steps",
-          "errors",
-          "cost",
-          "currency"
-        ]
-      },
-      "TeamTracesResponseDto": {
-        "type": "object",
-        "properties": {
-          "range": {
-            "type": "string",
-            "example": "7d",
-            "enum": [
-              "30m",
-              "1h",
-              "6h",
-              "1d",
-              "3d",
-              "7d",
-              "14d",
-              "30d",
-              "90d"
-            ]
-          },
-          "from": {
-            "type": "string",
-            "example": "2026-08-22T12:00:00.000Z",
-            "description": "Where the range starts"
-          },
-          "to": {
-            "type": "string",
-            "example": "2026-08-29T12:00:00.000Z",
-            "description": "Where the range ends: when it was requested"
-          },
-          "volume": {
-            "description": "Every trace in the range, counted into evenly long bars from start to end, empty bars included",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TraceVolumeBucketResponseDto"
-            }
-          },
-          "traces": {
-            "description": "Every trace in the range, latest first",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TeamTraceResponseDto"
-            }
-          }
-        },
-        "required": [
-          "range",
-          "from",
-          "to",
-          "volume",
-          "traces"
-        ]
-      },
       "ConfigChangeResponseDto": {
         "type": "object",
         "properties": {
@@ -29956,6 +29674,33 @@
           "done"
         ]
       },
+      "SetupCiResponseDto": {
+        "type": "object",
+        "properties": {
+          "defaultBranch": {
+            "type": "string",
+            "example": "main",
+            "description": "The default branch, whose pushes may apply"
+          },
+          "defaultBranchProtected": {
+            "type": "boolean",
+            "description": "Whether the default branch has branch protection or a ruleset that requires a pull request review"
+          },
+          "variables": {
+            "type": "string",
+            "enum": [
+              "written",
+              "not-permitted"
+            ],
+            "description": "Whether Spotlight wrote the GitHub Actions variables, or the GitHub App may not write variables"
+          }
+        },
+        "required": [
+          "defaultBranch",
+          "defaultBranchProtected",
+          "variables"
+        ]
+      },
       "SetupChatResponseDto": {
         "type": "object",
         "properties": {
@@ -29964,11 +29709,26 @@
             "nullable": true,
             "description": "The team’s setup chat, when the caller started it. Chats are seen only by whoever started them"
           },
+          "repository": {
+            "type": "string",
+            "example": "acme/infra",
+            "description": "The repository that holds the configuration"
+          },
           "pullRequest": {
             "type": "string",
             "nullable": true,
             "example": "https://github.com/acme/infra/pull/12",
             "description": "The pull request it opened with the configuration"
+          },
+          "ci": {
+            "nullable": true,
+            "description": "The GitHub Actions trusts that the setup created for the repository. Pull requests plan, and pushes to the default branch apply",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SetupCiResponseDto"
+              }
+            ]
           },
           "startedBy": {
             "type": "string",
@@ -29978,7 +29738,9 @@
         },
         "required": [
           "id",
+          "repository",
           "pullRequest",
+          "ci",
           "startedBy"
         ]
       },
@@ -30006,6 +29768,10 @@
             "type": "boolean",
             "description": "Whether a setup chat can start: the GitHub App is installed and a host runs sandboxes"
           },
+          "viewerIsAdmin": {
+            "type": "boolean",
+            "description": "Whether the viewer is a workspace owner or admin. Only they may set up configuration as code, because the setup creates OIDC trusts"
+          },
           "setupChat": {
             "nullable": true,
             "description": "The chat setting up the team’s configuration as code, the one with a pull request first",
@@ -30021,6 +29787,7 @@
           "provisioning",
           "steps",
           "canSetUp",
+          "viewerIsAdmin",
           "setupChat"
         ]
       },
@@ -30444,6 +30211,37 @@
           "expiresAt"
         ]
       },
+      "SignupSurveyRequestDto": {
+        "type": "object",
+        "properties": {
+          "jobFunction": {
+            "type": "string",
+            "enum": [
+              "marketing",
+              "leadership",
+              "product-management",
+              "sales-success",
+              "data",
+              "student",
+              "engineering",
+              "founder",
+              "other"
+            ],
+            "example": "engineering",
+            "description": "The job function of the person who creates the workspace"
+          },
+          "referralSource": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 200,
+            "example": "A colleague",
+            "description": "How the person heard about Spotlight, in their own words"
+          }
+        },
+        "required": [
+          "jobFunction"
+        ]
+      },
       "CreateWorkspaceRequestDto": {
         "type": "object",
         "properties": {
@@ -30463,12 +30261,21 @@
             "example": "Platform",
             "maxLength": 100,
             "description": "Names the team the workspace starts with. A workspace with no team has nowhere to put work."
+          },
+          "survey": {
+            "description": "The answers of the person who creates the workspace",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SignupSurveyRequestDto"
+              }
+            ]
           }
         },
         "required": [
           "name",
           "slug",
-          "teamName"
+          "teamName",
+          "survey"
         ]
       },
       "TeamResponseDto": {
@@ -30768,7 +30575,8 @@
               "replay-set",
               "replay-search",
               "replay-check",
-              "config-pull-request"
+              "config-pull-request",
+              "terraform-state"
             ]
           },
           "resourceId": {
@@ -41498,143 +41306,96 @@
           "pullRequests"
         ]
       },
-      "TokenCountsResponseDto": {
+      "TraceVolumeBucketResponseDto": {
         "type": "object",
         "properties": {
-          "input": {
-            "type": "number",
-            "nullable": true,
-            "example": 1200
+          "from": {
+            "type": "string",
+            "example": "2026-08-29T12:00:00.000Z",
+            "description": "When the bar starts"
           },
-          "output": {
-            "type": "number",
-            "nullable": true,
-            "example": 900
+          "to": {
+            "type": "string",
+            "example": "2026-08-29T13:00:00.000Z",
+            "description": "When the bar ends, not included"
           },
-          "cacheRead": {
+          "count": {
             "type": "number",
-            "nullable": true,
-            "example": 80000
+            "example": 4,
+            "description": "How many traces had their latest run in it"
           },
-          "cacheWrite": {
+          "errors": {
             "type": "number",
-            "nullable": true,
-            "example": null
+            "example": 1,
+            "description": "Every error in those traces"
           }
         },
         "required": [
-          "input",
-          "output",
-          "cacheRead",
-          "cacheWrite"
+          "from",
+          "to",
+          "count",
+          "errors"
         ]
       },
-      "InsightsRunResponseDto": {
+      "TraceStationResponseDto": {
+        "type": "object",
+        "properties": {
+          "stationId": {
+            "type": "string",
+            "example": "d41f0a2c-8b7e-4f19-9d3a-6c5e2b1a4f80"
+          },
+          "name": {
+            "type": "string",
+            "example": "Implementation"
+          },
+          "color": {
+            "type": "string",
+            "example": "#edc12b"
+          },
+          "position": {
+            "type": "number",
+            "example": 1
+          },
+          "count": {
+            "type": "number",
+            "example": 3,
+            "description": "How many stations the line has"
+          }
+        },
+        "required": [
+          "stationId",
+          "name",
+          "color",
+          "position",
+          "count"
+        ]
+      },
+      "TraceRunResponseDto": {
         "type": "object",
         "properties": {
           "runId": {
             "type": "string",
             "example": "4e1e84a2-0c39-406d-bbbb-559f29e450be"
           },
-          "taskId": {
-            "type": "string",
-            "example": "a17c4e02-9b3d-4f61-8e5a-0c2d7b9f4a13"
-          },
-          "lineId": {
-            "type": "string",
-            "example": "b0c7e1f4-1a2b-4c3d-9e8f-7a6b5c4d3e2f"
-          },
-          "stationId": {
-            "type": "string",
-            "example": "d41f0a2c-8b7e-4f19-9d3a-6c5e2b1a4f80"
-          },
-          "fingerprint": {
-            "type": "string",
+          "station": {
             "nullable": true,
-            "example": "a3f9…"
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TraceStationResponseDto"
+              }
+            ]
           },
-          "harness": {
+          "progress": {
             "type": "string",
-            "example": "claude-code"
-          },
-          "model": {
-            "type": "string",
-            "nullable": true,
-            "example": "claude-sonnet-4",
-            "description": "None where the harness chose its own"
-          },
-          "effort": {
-            "type": "string",
-            "nullable": true,
-            "example": "high"
-          },
-          "profileKey": {
-            "type": "string",
-            "nullable": true,
-            "example": "careful"
-          },
-          "repositories": {
-            "example": [
-              "acme/api"
+            "enum": [
+              "queued",
+              "in-progress",
+              "stopping",
+              null
             ],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "openedBy": {
-            "type": "string",
             "nullable": true,
-            "example": "user_ada",
-            "description": "Who opened the run’s task; none where no person did; their name is in people"
-          },
-          "queuedAt": {
-            "type": "string",
-            "nullable": true
-          },
-          "startedAt": {
-            "type": "string",
-            "nullable": true,
-            "description": "When a runner first claimed it; none if none did"
-          },
-          "endedAt": {
-            "type": "string",
-            "example": "2026-09-30T10:00:00.000Z"
-          },
-          "queuedMs": {
-            "type": "number",
-            "nullable": true,
-            "example": 30000
-          },
-          "runningMs": {
-            "type": "number",
-            "nullable": true,
-            "example": 190000
-          },
-          "ms": {
-            "type": "number",
-            "nullable": true,
-            "example": 184000,
-            "description": "How long it worked, by its recorded usage"
-          },
-          "cost": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/MoneyResponseDto"
-              }
-            ]
-          },
-          "tokens": {
-            "nullable": true,
-            "description": "None until its usage is recorded",
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/TokenCountsResponseDto"
-              }
-            ]
+            "description": "None when the run ended"
           },
           "ending": {
             "type": "string",
@@ -41644,106 +41405,221 @@
               "stopped",
               "exhausted",
               "cancelled",
-              "superseded"
-            ]
+              "superseded",
+              null
+            ],
+            "nullable": true,
+            "description": "None until the run ends"
           },
           "failure": {
             "type": "string",
             "nullable": true,
             "example": "exited"
           },
-          "checks": {
+          "openedBy": {
             "type": "string",
-            "enum": [
-              "passed",
-              "failed",
-              "skipped",
-              null
-            ],
-            "nullable": true
+            "nullable": true,
+            "example": "user_ada",
+            "description": "Who opened the run’s task; none where no person did; their name is in people"
           },
-          "firstHumanAction": {
+          "harness": {
+            "type": "string",
+            "example": "claude-code"
+          },
+          "model": {
+            "type": "string",
+            "nullable": true,
+            "example": "claude-sonnet-4",
+            "description": "None until a runner claims it, or where the harness chose its own"
+          },
+          "startedAt": {
+            "type": "string",
+            "example": "2026-09-30T10:00:00.000Z",
+            "description": "When a runner claimed it, or when it was queued"
+          },
+          "endedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "None until it ends"
+          },
+          "ms": {
+            "type": "number",
+            "nullable": true,
+            "example": 143000
+          },
+          "errors": {
+            "type": "number",
+            "nullable": true,
+            "example": 2,
+            "description": "None until its usage is recorded"
+          },
+          "cost": {
             "nullable": true,
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/HumanActionResponseDto"
+                "$ref": "#/components/schemas/MoneyResponseDto"
               }
             ]
-          },
-          "passed": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/StationPassResponseDto"
-              }
-            ]
-          },
-          "pullRequestState": {
-            "type": "string",
-            "enum": [
-              "open",
-              "merged",
-              "closed",
-              null
-            ],
-            "nullable": true
           }
         },
         "required": [
           "runId",
-          "taskId",
-          "lineId",
-          "stationId",
-          "fingerprint",
-          "harness",
-          "model",
-          "effort",
-          "profileKey",
-          "repositories",
-          "openedBy",
-          "queuedAt",
-          "startedAt",
-          "endedAt",
-          "queuedMs",
-          "runningMs",
-          "ms",
-          "cost",
-          "tokens",
+          "station",
+          "progress",
           "ending",
           "failure",
-          "checks",
-          "firstHumanAction",
-          "passed",
-          "pullRequestState"
+          "openedBy",
+          "harness",
+          "model",
+          "startedAt",
+          "endedAt",
+          "ms",
+          "errors",
+          "cost"
         ]
       },
-      "InsightsRunsResponseDto": {
+      "InsightsTraceResponseDto": {
         "type": "object",
         "properties": {
-          "period": {
-            "$ref": "#/components/schemas/InsightsPeriodResponseDto"
+          "taskId": {
+            "type": "string",
+            "example": "a17c4e02-9b3d-4f61-8e5a-0c2d7b9f4a13"
+          },
+          "title": {
+            "type": "string",
+            "example": "Fix the queue"
+          },
+          "input": {
+            "type": "string",
+            "nullable": true,
+            "description": "What the task asks for"
+          },
+          "output": {
+            "type": "string",
+            "nullable": true,
+            "description": "The last note that the newest listed run wrote on the task"
+          },
+          "station": {
+            "nullable": true,
+            "description": "Where the task is now",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TraceStationResponseDto"
+              }
+            ]
+          },
+          "stations": {
+            "description": "Every station of the listed runs, and where the task is now, in the line’s order",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TraceStationResponseDto"
+            }
+          },
+          "startedAt": {
+            "type": "string",
+            "example": "2026-08-29T12:00:00.000Z"
+          },
+          "ms": {
+            "type": "number",
+            "nullable": true,
+            "example": 143000,
+            "description": "From the first listed run’s start to the last one’s end; none while a run is unfinished"
+          },
+          "errors": {
+            "type": "number",
+            "example": 2
+          },
+          "cost": {
+            "nullable": true,
+            "description": "None where no listed run is priced, or where prices are in more than one currency",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyResponseDto"
+              }
+            ]
           },
           "total": {
             "type": "number",
-            "example": 64,
-            "description": "Runs matching, on every page"
-          },
-          "page": {
-            "type": "number",
-            "example": 1
-          },
-          "size": {
-            "type": "number",
-            "example": 50
+            "example": 5,
+            "description": "How many runs the task had in the range, the filter not applied"
           },
           "runs": {
-            "description": "The newest first",
+            "description": "The task’s runs that match the filter: unfinished first, then the newest first",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/InsightsRunResponseDto"
+              "$ref": "#/components/schemas/TraceRunResponseDto"
             }
+          }
+        },
+        "required": [
+          "taskId",
+          "title",
+          "input",
+          "output",
+          "station",
+          "stations",
+          "startedAt",
+          "ms",
+          "errors",
+          "cost",
+          "total",
+          "runs"
+        ]
+      },
+      "InsightsTracesResponseDto": {
+        "type": "object",
+        "properties": {
+          "range": {
+            "type": "string",
+            "example": "7d",
+            "enum": [
+              "30m",
+              "1h",
+              "6h",
+              "1d",
+              "3d",
+              "7d",
+              "14d",
+              "30d",
+              "90d"
+            ]
+          },
+          "from": {
+            "type": "string",
+            "example": "2026-08-22T12:00:00.000Z",
+            "description": "Where the range starts"
+          },
+          "to": {
+            "type": "string",
+            "example": "2026-08-29T12:00:00.000Z",
+            "description": "Where the range ends: when it was requested"
+          },
+          "volume": {
+            "description": "Every trace in the range, counted into evenly long bars from start to end, empty bars included",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TraceVolumeBucketResponseDto"
+            }
+          },
+          "traces": {
+            "description": "Every task with a run that matches the filter: one that is unfinished, or one that ended in the range. Unfinished first, then the latest first",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InsightsTraceResponseDto"
+            }
+          },
+          "matched": {
+            "type": "number",
+            "example": 64,
+            "description": "How many runs match the filter: those that ended in the range, and those that are unfinished"
+          },
+          "truncated": {
+            "type": "boolean",
+            "example": false,
+            "description": "true when more runs match than the list holds"
           },
           "people": {
             "type": "array",
@@ -41753,11 +41629,13 @@
           }
         },
         "required": [
-          "period",
-          "total",
-          "page",
-          "size",
-          "runs",
+          "range",
+          "from",
+          "to",
+          "volume",
+          "traces",
+          "matched",
+          "truncated",
           "people"
         ]
       },
