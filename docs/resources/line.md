@@ -176,7 +176,7 @@ Required:
 Optional:
 
 - `image` (String) The runner image every station of this line runs in, built FROM `ghcr.io/usespotlightai/spotlight-runner`; unset runs on the host's default image.
-- `setup` (String) Runs in the checkout as the agent before each run's agent starts, and before a change stack check wherever a layer changes a lockfile. Every repository says it when a station has a `check` and `diffs`.
+- `setup` (String) Runs in the checkout as the agent before each run's agent starts, and before a change stack check wherever a layer changes a lockfile. Every repository says it when a station has a `check` and `diffs`. A shell command or script of one or more lines, at most 65536 characters.
 
 
 <a id="nestedblock--reviews"></a>
@@ -220,7 +220,7 @@ Required:
 Optional:
 
 - `alert` (Block List) Warns when a measure of the station's runs moves past a threshold. An alert sets exactly one of `rises_by`, `above`, `falls_by` and `below`. For a rate, amounts are shares from 0 to 1, so 0.2 is 20 percentage points; for `cost_per_run`, they are amounts in the workspace's currency. (see [below for nested schema](#nestedblock--station--alert))
-- `check` (String) A command that must pass before a task moves on, as in `npm test`.
+- `check` (String) A command that must pass before a task moves on, as in `npm test`. A shell command or script of one or more lines, at most 65536 characters.
 - `color` (String) A six digit hex colour, as in `#6d78d5`. Spotlight picks one when it is left out.
 - `decisions` (Boolean) Whether the station records the agent's decisions for review.
 - `description` (String) What the station is for.

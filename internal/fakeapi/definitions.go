@@ -292,8 +292,8 @@ func repositories(definition map[string]any, errs *[]fieldError) {
 			repository["image"] = image
 		}
 		if setup := textOf(input["setup"]); setup != "" {
-			if command := strings.TrimSpace(setup); command == "" || len(command) > 500 || strings.ContainsAny(command, "\r\n") {
-				*errs = append(*errs, fieldError{fmt.Sprintf("repositories[%d].setup", at), "Invalid repository setup: is one line of at most 500 characters"})
+			if command := strings.TrimSpace(setup); command == "" || len(command) > 65536 {
+				*errs = append(*errs, fieldError{fmt.Sprintf("repositories[%d].setup", at), "Invalid repository setup: must be at most 65536 characters"})
 			}
 			repository["setup"] = setup
 		}
