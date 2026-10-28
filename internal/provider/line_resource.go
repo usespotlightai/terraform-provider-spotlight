@@ -75,6 +75,16 @@ func lineOptional(description string) schema.StringAttribute {
 	return schema.StringAttribute{Optional: true, MarkdownDescription: description}
 }
 
+const maxCommandLength = 65536
+
+func lineCommand(description string) schema.StringAttribute {
+	return schema.StringAttribute{
+		Optional:            true,
+		MarkdownDescription: description,
+		Validators:          []validator.String{stringvalidator.LengthBetween(1, maxCommandLength)},
+	}
+}
+
 func lineFlag(description string, fallback bool) schema.BoolAttribute {
 	return schema.BoolAttribute{
 		Optional:            true,
@@ -179,7 +189,7 @@ func lineSchema() schema.Schema {
 							MarkdownDescription: "The repository, named `owner/name`.",
 						},
 						"image": lineOptional("The runner image every station of this line runs in, built FROM `ghcr.io/usespotlightai/spotlight-runner`; unset runs on the host's default image."),
-						"setup": lineOptional("Runs in the checkout as the agent before each run's agent starts, and before a change stack check wherever a layer changes a lockfile. Every repository says it when a station has a `check` and `diffs`."),
+						"setup": lineCommand("Runs in the checkout as the agent before each run's agent starts, and before a change stack check wherever a layer changes a lockfile. Every repository says it when a station has a `check` and `diffs`. A shell command or script of one or more lines, at most 65536 characters."),
 					},
 				},
 			},
@@ -212,7 +222,7 @@ func lineSchema() schema.Schema {
 						"effort":      lineOptional("How hard the agent thinks: `low`, `medium`, `high`, `xhigh` or `max`."),
 						"profile":     lineOptional("The harness profile the station's agent runs with, by key, as in `careful`."),
 						"prompt":      lineOptional("The instructions for the agent, usually read with `file()`."),
-						"check":       lineOptional("A command that must pass before a task moves on, as in `npm test`."),
+						"check":       lineCommand("A command that must pass before a task moves on, as in `npm test`. A shell command or script of one or more lines, at most 65536 characters."),
 						"diffs":       lineDerived("Whether Spotlight generates a change stack from the diff of each run of the station."),
 						"decisions":   lineDerived("Whether the station records the agent's decisions for review."),
 						"memories":    lineDerived("Whether the station drafts proposed team memories from each run it completes, for people to approve."),

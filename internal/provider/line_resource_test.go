@@ -671,6 +671,72 @@ func TestLineRepositoriesCarryTheImageAndSetup(t *testing.T) {
 	})
 }
 
+func TestLineKeepsAScriptOfManyLines(t *testing.T) {
+	fake := fakeapi.New(t)
+
+	scripted := acctest.Workspace + `
+resource "spotlight_line" "core_delivery" {
+  team_id = spotlight_team.core.id
+  key     = "delivery"
+  name    = "Delivery"
+
+  repository {
+    name  = "acme/web"
+    setup = <<-EOT
+      set -e
+      npm ci
+      npm run build
+    EOT
+  }
+
+  station {
+    key   = "implementation"
+    name  = "Implementation"
+    check = <<-EOT
+      set -e
+      if [ -f GNUmakefile ]; then
+        make check
+      else
+        npm test
+      fi
+    EOT
+    diffs = true
+  }
+}
+`
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
+		CheckDestroy:             acctest.NoneLeft(fake, "line", "team", "workspace"),
+		Steps: []resource.TestStep{
+			{
+				Config: scripted,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("repository"), knownvalue.SetExact([]knownvalue.Check{
+						lineRepository("acme/web", knownvalue.Null(), knownvalue.StringExact("set -e\nnpm ci\nnpm run build\n")),
+					})),
+					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("station").AtSliceIndex(0).AtMapKey("check"),
+						knownvalue.StringExact("set -e\nif [ -f GNUmakefile ]; then\n  make check\nelse\n  npm test\nfi\n")),
+				},
+			},
+			{
+				Config:   scripted,
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
+func TestLineRejectsACheckLongerThanTheLimitAtPlan(t *testing.T) {
+	lineRejected(t, `
+  station {
+    key   = "implementation"
+    name  = "Implementation"
+    check = "`+strings.Repeat("x", 65537)+`"
+  }
+`, regexp.MustCompile(`(?s)station\[0\]\.check.*string length must be between 1 and 65536`))
+}
+
 func TestLineRunsInOneImage(t *testing.T) {
 	lineRejected(t, `
   repository {
