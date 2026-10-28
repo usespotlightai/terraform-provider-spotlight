@@ -94,6 +94,18 @@ resource "spotlight_line" "core_delivery" {
       below   = 0.4
       over    = 20
     }
+
+    search {
+      ceiling    = 20
+      cooldown   = "12h"
+      iterations = 4
+      objective  = "cost"
+
+      agent {
+        harness = "claude-code"
+        effort  = "high"
+      }
+    }
   }
 
   station {
@@ -147,6 +159,16 @@ resource "spotlight_line" "core_delivery" {
     ceiling         = 12.5
     currency        = "USD"
     min_gain        = 0.05
+  }
+
+  search {
+    enabled         = true
+    monthly_ceiling = 100
+    currency        = "USD"
+    ceiling         = 10
+    period          = "7d"
+    on_alert        = false
+    cooldown        = "3d"
   }
 
   source {
@@ -1617,6 +1639,337 @@ func TestAccLineReplayCheckAndSource(t *testing.T) {
 			},
 			{
 				Config:           acctest.ReleasedWorkspace(cp.Workspace) + tightenedLine,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{acctest.ExpectForgotten("spotlight_workspace.acc")}},
+			},
+		},
+	})
+}
+
+func lineSearchedAt(station, line string) string {
+	return acctest.Workspace + `
+resource "spotlight_line" "core_delivery" {
+  team_id = spotlight_team.core.id
+  key     = "delivery"
+  name    = "Delivery"
+
+  station {
+    key       = "backlog"
+    name      = "Backlog"
+    kind      = "backlog"
+    passes_to = ["implementation"]
+  }
+
+  station {
+    key  = "implementation"
+    name = "Implementation"
+` + station + `
+  }
+
+  station {
+    key  = "completed"
+    name = "Completed"
+    kind = "completed"
+  }
+` + line + `
+}
+`
+}
+
+func lineSearch(enabled bool, monthlyCeiling float64, currency string, ceiling float64, period string, onAlert bool, cooldown string) knownvalue.Check {
+	return knownvalue.ObjectExact(map[string]knownvalue.Check{
+		"enabled":         knownvalue.Bool(enabled),
+		"monthly_ceiling": knownvalue.Float64Exact(monthlyCeiling),
+		"currency":        knownvalue.StringExact(currency),
+		"ceiling":         knownvalue.Float64Exact(ceiling),
+		"period":          knownvalue.StringExact(period),
+		"on_alert":        knownvalue.Bool(onAlert),
+		"cooldown":        knownvalue.StringExact(cooldown),
+	})
+}
+
+func TestLineSearchPolicy(t *testing.T) {
+	fake := fakeapi.New(t)
+
+	defaulted := lineSearchedAt("", `
+  search {}
+`)
+	tuned := lineSearchedAt(`
+    search {
+      enabled    = false
+      ceiling    = 25
+      cooldown   = "12h"
+      iterations = 4
+      objective  = "cost"
+
+      agent {
+        harness = "claude-code"
+        effort  = "high"
+      }
+    }
+`, `
+  search {
+    enabled         = false
+    monthly_ceiling = 120
+    ceiling         = 15
+    currency        = "EUR"
+    period          = "36h"
+    on_alert        = false
+    cooldown        = "1d"
+  }
+`)
+	unset := lineSearchedAt("", "")
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
+		CheckDestroy:             acctest.NoneLeft(fake, "line", "team", "workspace"),
+		Steps: []resource.TestStep{
+			{
+				Config: defaulted,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("search"), lineSearch(true, 50, "USD", 10, "7d", true, "3d")),
+					statecheck.ExpectKnownValue(lineAddress, lineStation(1, "search"), knownvalue.Null()),
+				},
+			},
+			{
+				Config:   defaulted,
+				PlanOnly: true,
+			},
+			{
+				ResourceName:      lineAddress,
+				ImportState:       true,
+				ImportStateIdFunc: lineImportID,
+				ImportStateVerify: true,
+			},
+			{
+				Config: tuned,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(lineAddress, plancheck.ResourceActionUpdate)},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("search"), lineSearch(false, 120, "EUR", 15, "36h", false, "1d")),
+					statecheck.ExpectKnownValue(lineAddress, lineStation(1, "search"), knownvalue.ObjectExact(map[string]knownvalue.Check{
+						"enabled":    knownvalue.Bool(false),
+						"ceiling":    knownvalue.Float64Exact(25),
+						"period":     knownvalue.Null(),
+						"on_alert":   knownvalue.Null(),
+						"cooldown":   knownvalue.StringExact("12h"),
+						"iterations": knownvalue.Int64Exact(4),
+						"repeats":    knownvalue.Null(),
+						"objective":  knownvalue.StringExact("cost"),
+						"agent": knownvalue.ObjectExact(map[string]knownvalue.Check{
+							"harness": knownvalue.StringExact("claude-code"),
+							"model":   knownvalue.Null(),
+							"effort":  knownvalue.StringExact("high"),
+						}),
+					})),
+				},
+			},
+			{
+				Config:   tuned,
+				PlanOnly: true,
+			},
+			{
+				ResourceName:      lineAddress,
+				ImportState:       true,
+				ImportStateIdFunc: lineImportID,
+				ImportStateVerify: true,
+			},
+			{
+				Config: unset,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(lineAddress, plancheck.ResourceActionUpdate)},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("search"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(lineAddress, lineStation(1, "search"), knownvalue.Null()),
+				},
+			},
+			{
+				Config:   unset,
+				PlanOnly: true,
+			},
+			{
+				ResourceName:      lineAddress,
+				ImportState:       true,
+				ImportStateIdFunc: lineImportID,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func lineSearchInvalid(t *testing.T, station, line string, want *regexp.Regexp) {
+	t.Helper()
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fakeapi.New(t)),
+		Steps: []resource.TestStep{
+			{
+				Config:      lineSearchedAt(station, line),
+				ExpectError: want,
+			},
+		},
+	})
+}
+
+func TestLineSearchDurationIsFromAnHourToAYear(t *testing.T) {
+	for _, period := range []string{"30m", "366d", "weekly", "1.5d"} {
+		lineSearchInvalid(t, "", fmt.Sprintf(`
+  search {
+    period = %q
+  }
+`, period), regexp.MustCompile(`(?s)Invalid Duration.*period = `))
+	}
+}
+
+func TestLineSearchCeilingIsAtMostTheMonthlyCeiling(t *testing.T) {
+	lineSearchInvalid(t, "", `
+  search {
+    monthly_ceiling = 5
+  }
+`, regexp.MustCompile(`(?s)Search Ceiling Above The Monthly Ceiling.*monthly_ceiling`))
+}
+
+func TestLineStationSearchCeilingIsAtMostTheLinesMonthlyCeiling(t *testing.T) {
+	lineSearchInvalid(t, `
+    search {
+      ceiling = 60
+    }
+`, "", regexp.MustCompile(`(?s)station\[1\]\.search\.ceiling.*monthly ceiling`))
+}
+
+func TestLineSearchCooldownIsAtMostThePeriod(t *testing.T) {
+	lineSearchInvalid(t, "", `
+  search {
+    period = "2d"
+  }
+`, regexp.MustCompile(`(?s)Search Cooldown Longer Than The Period.*period`))
+}
+
+func TestLineStationSearchCooldownIsAtMostItsPeriod(t *testing.T) {
+	lineSearchInvalid(t, `
+    search {
+      period = "1d"
+    }
+`, "", regexp.MustCompile(`(?s)station\[1\]\.search\.cooldown.*period`))
+}
+
+func TestLineStationEffortIsALevel(t *testing.T) {
+	lineSearchInvalid(t, `
+    effort = "huge"
+`, "", regexp.MustCompile(`(?s)effort.*value must be one of`))
+	lineSearchInvalid(t, `
+    search {
+      agent {
+        harness = "claude-code"
+        effort  = "huge"
+      }
+    }
+`, "", regexp.MustCompile(`(?s)effort.*value must be one of`))
+}
+
+func TestLineStationSearchCountsAreInRange(t *testing.T) {
+	for setting, want := range map[string]string{
+		"iterations = 11":     `station\[1\]\.search\.iterations`,
+		"repeats = 6":         `station\[1\]\.search\.repeats`,
+		`objective = "speed"`: `station\[1\]\.search\.objective`,
+	} {
+		lineSearchInvalid(t, fmt.Sprintf(`
+    search {
+      %s
+    }
+`, setting), "", regexp.MustCompile(`(?s)`+want))
+	}
+}
+
+func TestLineStationSearchAgentSetsItsHarness(t *testing.T) {
+	lineSearchInvalid(t, `
+    search {
+      agent {
+        model = "opus"
+      }
+    }
+`, "", regexp.MustCompile(`(?s)station\[1\]\.search\.agent.*harness`))
+}
+
+func TestAccLineSearchPolicy(t *testing.T) {
+	cp := acctest.PreCheck(t)
+	k := acctest.RandomKeys()
+	cp.Sweep(t, k)
+
+	id := cp.Workspace.ID
+	tunedLine := lineCheckedAccConfig(k, `
+  search {
+    monthly_ceiling = 120
+    currency        = "EUR"
+    period          = "36h"
+    on_alert        = false
+    cooldown        = "1d"
+  }
+`)
+	tuned := acctest.AdoptedWorkspace(cp.Workspace) + tunedLine
+	unset := acctest.AdoptedWorkspace(cp.Workspace) + lineCheckedAccConfig(k, "")
+	written := acctest.AdoptedWorkspace(cp.Workspace) + lineCheckedAccConfig(k, `
+  search {}
+`)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories(),
+		CheckDestroy:             cp.NothingLeftButTheWorkspace(k),
+		Steps: []resource.TestStep{
+			{
+				Config: unset,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("spotlight_line.delivery", tfjsonpath.New("search"), knownvalue.Null()),
+				},
+			},
+			{
+				Config:           unset,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}},
+			},
+			{
+				ResourceName:      "spotlight_line.delivery",
+				ImportState:       true,
+				ImportStateId:     acctest.ImportID(id, k.Team+"/"+k.Line),
+				ImportStateVerify: true,
+			},
+			{
+				Config: written,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("spotlight_line.delivery", tfjsonpath.New("search"), lineSearch(true, 50, "USD", 10, "7d", true, "3d")),
+				},
+			},
+			{
+				Config:           written,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}},
+			},
+			{
+				ResourceName:      "spotlight_line.delivery",
+				ImportState:       true,
+				ImportStateId:     acctest.ImportID(id, k.Team+"/"+k.Line),
+				ImportStateVerify: true,
+			},
+			{
+				Config: tuned,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("spotlight_line.delivery", plancheck.ResourceActionUpdate),
+				}},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("spotlight_line.delivery", tfjsonpath.New("search"), lineSearch(true, 120, "EUR", 10, "36h", false, "1d")),
+				},
+			},
+			{
+				Config:           tuned,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}},
+			},
+			{
+				ResourceName:      "spotlight_line.delivery",
+				ImportState:       true,
+				ImportStateId:     acctest.ImportID(id, k.Team+"/"+k.Line),
+				ImportStateVerify: true,
+			},
+			{
+				Config:           acctest.ReleasedWorkspace(cp.Workspace) + tunedLine,
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{acctest.ExpectForgotten("spotlight_workspace.acc")}},
 			},
 		},

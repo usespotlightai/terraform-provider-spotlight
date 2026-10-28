@@ -246,6 +246,18 @@ resource "spotlight_line" "core_delivery" {
       below   = 0.4
       over    = 20
     }
+
+    search {
+      ceiling    = 20
+      cooldown   = "12h"
+      iterations = 4
+      objective  = "cost"
+
+      agent {
+        harness = "claude-code"
+        effort  = "high"
+      }
+    }
   }
 
   station {
@@ -300,6 +312,16 @@ resource "spotlight_line" "core_delivery" {
     ceiling         = 12.5
     currency        = "USD"
     min_gain        = 0.05
+  }
+
+  search {
+    enabled         = true
+    monthly_ceiling = 100
+    currency        = "USD"
+    ceiling         = 10
+    period          = "7d"
+    on_alert        = false
+    cooldown        = "3d"
   }
 
   source {

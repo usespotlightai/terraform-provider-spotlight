@@ -79,6 +79,17 @@ resource "spotlight_line" "core_delivery" {
       below   = 0.4
       over    = 20
     }
+
+    search {
+      ceiling    = 20
+      iterations = 4
+      objective  = "cost"
+
+      agent {
+        harness = "claude-code"
+        effort  = "high"
+      }
+    }
   }
 
   station {
@@ -109,6 +120,15 @@ resource "spotlight_line" "core_delivery" {
     min_gain        = 0.05
   }
 
+  search {
+    monthly_ceiling = 100
+    currency        = "USD"
+    ceiling         = 10
+    period          = "7d"
+    on_alert        = true
+    cooldown        = "3d"
+  }
+
   source {
     repository = "acme/platform"
     path       = "teams/core/delivery.tf"
@@ -133,7 +153,8 @@ resource "spotlight_line" "core_delivery" {
 - `reviews` (Block, Optional) Which pull requests the line reviews, for a line whose role is `review`. (see [below for nested schema](#nestedblock--reviews))
 - `role` (String) The role the line plays for its team, as in `delivery` or `review`. A role names one line.
 - `runners` (Set of String) Where the line's work runs: the labels of a runner pool or trust, any of which a runner must answer to. A station's own `runners` replace it. Anywhere when left out.
-- `source` (Block, Optional) Where the line's Terraform lives, which Spotlight opens pull requests against when a person picks a better station config. A source sets `repository` and `path`. (see [below for nested schema](#nestedblock--source))
+- `search` (Block, Optional) How Spotlight searches for better configs of the line's work stations on its own, and how much it may spend. Every work station is searched when left out. A station's own `search` changes it for that station. (see [below for nested schema](#nestedblock--search))
+- `source` (Block, Optional) Where the line's Terraform lives, which Spotlight opens pull requests against when it finds a better station config. A source sets `repository` and `path`. (see [below for nested schema](#nestedblock--source))
 - `station` (Block List) A station along the line, in order. A line has at least one. (see [below for nested schema](#nestedblock--station))
 
 ### Read-Only
@@ -200,6 +221,20 @@ Optional:
 
 
 
+<a id="nestedblock--search"></a>
+### Nested Schema for `search`
+
+Optional:
+
+- `ceiling` (Number) The most one search may spend, in `currency`, above 0 and at most `monthly_ceiling` and 1,000. 10 when left out.
+- `cooldown` (String) The shortest time between two automatic searches of a station, as in `12h` or `3d`, from 1h to 365d, and at most `period`. `3d` when left out.
+- `currency` (String) The three-letter currency the ceilings are counted in, in upper case, as in `EUR`. `USD` when left out.
+- `enabled` (Boolean) Whether Spotlight searches the line's work stations on its own. `true` when left out.
+- `monthly_ceiling` (Number) The most all automatic searches of the line may spend in one calendar month, in `currency`, above 0. 50 when left out.
+- `on_alert` (Boolean) Whether an alert that goes off on a station starts a search. `true` when left out.
+- `period` (String) The longest time between two scheduled searches of a station, as in `12h` or `7d`, from 1h to 365d. `7d` when left out.
+
+
 <a id="nestedblock--source"></a>
 ### Nested Schema for `source`
 
@@ -225,7 +260,7 @@ Optional:
 - `decisions` (Boolean) Whether the station records the agent's decisions for review.
 - `description` (String) What the station is for.
 - `diffs` (Boolean) Whether Spotlight generates a change stack from the diff of each run of the station.
-- `effort` (String) How hard the agent thinks: `low`, `medium`, `high`, `xhigh` or `max`.
+- `effort` (String) How hard the agent thinks: `low`, `medium`, `high`, `xhigh`, `max`.
 - `ends` (Boolean) Whether a task that arrives at the station is finished.
 - `harness` (String) The agent harness that works tasks here, as in `claude-code`.
 - `judge` (Block, Optional) Scores the station's runs against a rubric or checkable claims, for Insights. A judge sets `sample`, `min_agreement` and at least one of `rubric` and `claims`. No run is judged when left out. (see [below for nested schema](#nestedblock--station--judge))
@@ -236,6 +271,7 @@ Optional:
 - `profile` (String) The harness profile the station's agent runs with, by key, as in `careful`.
 - `prompt` (String) The instructions for the agent, usually read with `file()`.
 - `runners` (Set of String) Where the station's work runs, in place of the line's `runners`: the labels of a runner pool or trust, any of which a runner must answer to. The line's apply when left out.
+- `search` (Block, Optional) How Spotlight searches for a better config of this work station on its own, in place of the line's `search`. What it leaves out comes from the line's `search`. When `agent`, `iterations`, `repeats` or `objective` is left out, Spotlight picks it. (see [below for nested schema](#nestedblock--station--search))
 - `skills` (List of String) The skills the station enables for its agent, by key.
 - `tools` (List of String) The tools the station enables for its agent, as in `linear.comment`.
 
@@ -265,6 +301,31 @@ Optional:
 - `pass_threshold` (Number) Share of claims a change must meet to pass, from 0 to 1, set only with `claims`. 1 means every claim. 1 when left out.
 - `rubric` (String) What a good run looks like, at most 20,000 characters, usually read with `file()`, as in `file("judges/implement.md")`. Optional when `claims` is set.
 - `sample` (Number) The share of runs judged, from 0 to 1.
+
+
+<a id="nestedblock--station--search"></a>
+### Nested Schema for `station.search`
+
+Optional:
+
+- `agent` (Block, Optional) The agent that proposes candidate configs. An agent sets `harness`. (see [below for nested schema](#nestedblock--station--search--agent))
+- `ceiling` (Number) The most one search of this station may spend, in the line's `currency`, above 0 and at most the line's `monthly_ceiling` and 1,000.
+- `cooldown` (String) The shortest time between two automatic searches of this station, as in `12h` or `3d`, from 1h to 365d.
+- `enabled` (Boolean) Whether Spotlight searches this station on its own.
+- `iterations` (Number) How many iterations one search runs, from 1 to 10.
+- `objective` (String) What a search improves: `success` or `cost`. The station's health decides when left out.
+- `on_alert` (Boolean) Whether an alert that goes off on this station starts a search.
+- `period` (String) The longest time between two scheduled searches of this station, as in `12h` or `7d`, from 1h to 365d.
+- `repeats` (Number) How many times a search replays each task, from 1 to 5.
+
+<a id="nestedblock--station--search--agent"></a>
+### Nested Schema for `station.search.agent`
+
+Optional:
+
+- `effort` (String) How hard the agent thinks: `low`, `medium`, `high`, `xhigh`, `max`.
+- `harness` (String) The agent harness, as in `claude-code`.
+- `model` (String) The model the harness uses.
 
 ## Import
 

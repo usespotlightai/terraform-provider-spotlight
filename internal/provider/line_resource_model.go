@@ -25,6 +25,7 @@ type LineResourceModel struct {
 	Reactions    []lineReaction   `tfsdk:"reaction"`
 	Reviews      *lineReviews     `tfsdk:"reviews"`
 	ReplayCheck  *lineReplayCheck `tfsdk:"replay_check"`
+	Search       *lineSearch      `tfsdk:"search"`
 	Source       *lineSource      `tfsdk:"source"`
 }
 
@@ -35,27 +36,28 @@ type lineRepository struct {
 }
 
 type lineStation struct {
-	Key         types.String `tfsdk:"key"`
-	Name        types.String `tfsdk:"name"`
-	Kind        types.String `tfsdk:"kind"`
-	Color       types.String `tfsdk:"color"`
-	Description types.String `tfsdk:"description"`
-	Harness     types.String `tfsdk:"harness"`
-	Model       types.String `tfsdk:"model"`
-	Effort      types.String `tfsdk:"effort"`
-	Profile     types.String `tfsdk:"profile"`
-	Prompt      types.String `tfsdk:"prompt"`
-	Check       types.String `tfsdk:"check"`
-	Diffs       types.Bool   `tfsdk:"diffs"`
-	Decisions   types.Bool   `tfsdk:"decisions"`
-	Memories    types.Bool   `tfsdk:"memories"`
-	Tools       types.List   `tfsdk:"tools"`
-	Skills      types.List   `tfsdk:"skills"`
-	Runners     types.Set    `tfsdk:"runners"`
-	PassesTo    types.Set    `tfsdk:"passes_to"`
-	Ends        types.Bool   `tfsdk:"ends"`
-	Judge       *lineJudge   `tfsdk:"judge"`
-	Alerts      []lineAlert  `tfsdk:"alert"`
+	Key         types.String       `tfsdk:"key"`
+	Name        types.String       `tfsdk:"name"`
+	Kind        types.String       `tfsdk:"kind"`
+	Color       types.String       `tfsdk:"color"`
+	Description types.String       `tfsdk:"description"`
+	Harness     types.String       `tfsdk:"harness"`
+	Model       types.String       `tfsdk:"model"`
+	Effort      types.String       `tfsdk:"effort"`
+	Profile     types.String       `tfsdk:"profile"`
+	Prompt      types.String       `tfsdk:"prompt"`
+	Check       types.String       `tfsdk:"check"`
+	Diffs       types.Bool         `tfsdk:"diffs"`
+	Decisions   types.Bool         `tfsdk:"decisions"`
+	Memories    types.Bool         `tfsdk:"memories"`
+	Tools       types.List         `tfsdk:"tools"`
+	Skills      types.List         `tfsdk:"skills"`
+	Runners     types.Set          `tfsdk:"runners"`
+	PassesTo    types.Set          `tfsdk:"passes_to"`
+	Ends        types.Bool         `tfsdk:"ends"`
+	Judge       *lineJudge         `tfsdk:"judge"`
+	Alerts      []lineAlert        `tfsdk:"alert"`
+	Search      *lineStationSearch `tfsdk:"search"`
 }
 
 type lineJudge struct {
@@ -99,6 +101,34 @@ type lineReplayCheck struct {
 	Ceiling        types.Float64 `tfsdk:"ceiling"`
 	Currency       types.String  `tfsdk:"currency"`
 	MinGain        types.Float64 `tfsdk:"min_gain"`
+}
+
+type lineSearch struct {
+	Enabled        types.Bool    `tfsdk:"enabled"`
+	MonthlyCeiling types.Float64 `tfsdk:"monthly_ceiling"`
+	Currency       types.String  `tfsdk:"currency"`
+	Ceiling        types.Float64 `tfsdk:"ceiling"`
+	Period         types.String  `tfsdk:"period"`
+	OnAlert        types.Bool    `tfsdk:"on_alert"`
+	Cooldown       types.String  `tfsdk:"cooldown"`
+}
+
+type lineStationSearch struct {
+	Enabled    types.Bool       `tfsdk:"enabled"`
+	Ceiling    types.Float64    `tfsdk:"ceiling"`
+	Period     types.String     `tfsdk:"period"`
+	OnAlert    types.Bool       `tfsdk:"on_alert"`
+	Cooldown   types.String     `tfsdk:"cooldown"`
+	Iterations types.Int64      `tfsdk:"iterations"`
+	Repeats    types.Int64      `tfsdk:"repeats"`
+	Objective  types.String     `tfsdk:"objective"`
+	Agent      *lineSearchAgent `tfsdk:"agent"`
+}
+
+type lineSearchAgent struct {
+	Harness types.String `tfsdk:"harness"`
+	Model   types.String `tfsdk:"model"`
+	Effort  types.String `tfsdk:"effort"`
 }
 
 type lineSource struct {
@@ -220,6 +250,28 @@ func lineInput(plan LineResourceModel) (client.Definition, diag.Diagnostics) {
 		}
 		station["alerts"] = alerts
 
+		if each.Search != nil {
+			search := lineWritten{}
+			search.flag("enabled", each.Search.Enabled)
+			search.number("ceiling", each.Search.Ceiling)
+			search.text("period", each.Search.Period)
+			search.flag("onAlert", each.Search.OnAlert)
+			search.text("cooldown", each.Search.Cooldown)
+			search.count("iterations", each.Search.Iterations)
+			search.count("repeats", each.Search.Repeats)
+			search.text("objective", each.Search.Objective)
+
+			if each.Search.Agent != nil {
+				agent := lineWritten{}
+				agent.text("harness", each.Search.Agent.Harness)
+				agent.text("model", each.Search.Agent.Model)
+				agent.text("effort", each.Search.Agent.Effort)
+				search["agent"] = map[string]any(agent)
+			}
+
+			station["search"] = map[string]any(search)
+		}
+
 		stations = append(stations, map[string]any(station))
 	}
 	line["stations"] = stations
@@ -258,6 +310,18 @@ func lineInput(plan LineResourceModel) (client.Definition, diag.Diagnostics) {
 		replayCheck.text("currency", plan.ReplayCheck.Currency)
 		replayCheck.number("minGain", plan.ReplayCheck.MinGain)
 		line["replayCheck"] = map[string]any(replayCheck)
+	}
+
+	if plan.Search != nil {
+		search := lineWritten{}
+		search.flag("enabled", plan.Search.Enabled)
+		search.number("monthlyCeiling", plan.Search.MonthlyCeiling)
+		search.text("currency", plan.Search.Currency)
+		search.number("ceiling", plan.Search.Ceiling)
+		search.text("period", plan.Search.Period)
+		search.flag("onAlert", plan.Search.OnAlert)
+		search.text("cooldown", plan.Search.Cooldown)
+		line["search"] = map[string]any(search)
 	}
 
 	if plan.Source != nil {
@@ -411,6 +475,18 @@ func lineAnswered(answer client.Line) LineResourceModel {
 		}
 	}
 
+	if found, ok := line.object("search"); ok {
+		model.Search = &lineSearch{
+			Enabled:        found.flag("enabled"),
+			MonthlyCeiling: found.number("monthlyCeiling"),
+			Currency:       found.text("currency"),
+			Ceiling:        found.number("ceiling"),
+			Period:         found.text("period"),
+			OnAlert:        found.flag("onAlert"),
+			Cooldown:       found.text("cooldown"),
+		}
+	}
+
 	if found, ok := line.object("source"); ok {
 		model.Source = &lineSource{Repository: found.text("repository"), Path: found.text("path")}
 	}
@@ -449,6 +525,27 @@ func lineStationOf(read lineRead) lineStation {
 			PassThreshold: judge.number("passThreshold"),
 			Sample:        judge.number("sample"),
 			MinAgreement:  judge.number("minAgreement"),
+		}
+	}
+
+	if search, ok := read.object("search"); ok {
+		station.Search = &lineStationSearch{
+			Enabled:    search.flag("enabled"),
+			Ceiling:    search.number("ceiling"),
+			Period:     search.text("period"),
+			OnAlert:    search.flag("onAlert"),
+			Cooldown:   search.text("cooldown"),
+			Iterations: search.count("iterations"),
+			Repeats:    search.count("repeats"),
+			Objective:  search.text("objective"),
+		}
+
+		if agent, ok := search.object("agent"); ok {
+			station.Search.Agent = &lineSearchAgent{
+				Harness: agent.text("harness"),
+				Model:   agent.text("model"),
+				Effort:  agent.text("effort"),
+			}
 		}
 	}
 

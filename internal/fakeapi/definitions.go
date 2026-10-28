@@ -5,6 +5,7 @@ import (
 	"maps"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 )
 
@@ -157,6 +158,7 @@ func line(body map[string]any) (map[string]any, []fieldError) {
 
 		placed(station, "runners", fmt.Sprintf("stations[%d].runners", at), &errs)
 		judged(station, at, &errs)
+		stationSearched(station, at, &errs)
 
 		stations = append(stations, station)
 	}
@@ -213,6 +215,8 @@ func line(body map[string]any) (map[string]any, []fieldError) {
 		definition["replayCheck"] = check
 	}
 
+	lineSearched(definition, &errs)
+
 	if source, ok := definition["source"].(map[string]any); ok {
 		source = maps.Clone(source)
 		source["repository"] = strings.TrimSuffix(strings.TrimSpace(textOf(source["repository"])), ".git")
@@ -225,6 +229,129 @@ func line(body map[string]any) (map[string]any, []fieldError) {
 	}
 
 	return map[string]any{"key": definition["key"], "definition": definition}, errs
+}
+
+var (
+	durationText    = regexp.MustCompile(`^(\d{1,6})([mhd])$`)
+	durationMinutes = map[string]float64{"m": 1, "h": 60, "d": 24 * 60}
+	searchDefaults  = map[string]any{
+		"enabled":        true,
+		"monthlyCeiling": float64(50),
+		"currency":       "USD",
+		"ceiling":        float64(10),
+		"period":         "7d",
+		"onAlert":        true,
+		"cooldown":       "3d",
+	}
+)
+
+func minutesOf(value any) (float64, bool) {
+	written := durationText.FindStringSubmatch(textOf(value))
+	if written == nil {
+		return 0, false
+	}
+
+	amount, _ := strconv.ParseFloat(written[1], 64)
+
+	return amount * durationMinutes[written[2]], true
+}
+
+func isDuration(value any) bool {
+	minutes, ok := minutesOf(value)
+
+	return ok && minutes >= 60 && minutes <= 365*24*60
+}
+
+func lineSearched(definition map[string]any, errs *[]fieldError) {
+	written, set := definition["search"].(map[string]any)
+	search := map[string]any{}
+	for field, fallback := range searchDefaults {
+		search[field] = fallback
+	}
+	maps.Copy(search, written)
+	search["currency"] = strings.ToUpper(strings.TrimSpace(textOf(search["currency"])))
+
+	monthly, _ := search["monthlyCeiling"].(float64)
+	ceiling, _ := search["ceiling"].(float64)
+	if monthly <= 0 {
+		*errs = append(*errs, fieldError{"search.monthlyCeiling", "must be above 0"})
+	}
+	if ceiling <= 0 || ceiling > 1000 {
+		*errs = append(*errs, fieldError{"search.ceiling", "must be above 0 and at most 1,000"})
+	} else if ceiling > monthly {
+		*errs = append(*errs, fieldError{"search.ceiling", fmt.Sprintf("must be at most the monthly ceiling, %g", monthly)})
+	}
+	for _, field := range []string{"period", "cooldown"} {
+		if !isDuration(search[field]) {
+			*errs = append(*errs, fieldError{"search." + field, "must be a whole number of minutes, hours or days from 1h to 365d, as in 90m, 12h or 7d"})
+		}
+	}
+	if longer(search["cooldown"], search["period"]) {
+		*errs = append(*errs, fieldError{"search.cooldown", fmt.Sprintf("must be at most the period, %s", textOf(search["period"]))})
+	}
+
+	for at, each := range listOf(definition["stations"]) {
+		station := objectOf(each)
+		override := objectOf(station["search"])
+		if override == nil {
+			continue
+		}
+		if stationCeiling, ok := override["ceiling"].(float64); ok && stationCeiling > monthly {
+			*errs = append(*errs, fieldError{fmt.Sprintf("stations[%d].search.ceiling", at), fmt.Sprintf("Line %s station %s search ceiling must be at most the line's monthly ceiling, %g %s", definition["key"], station["key"], monthly, search["currency"])})
+		}
+		period, cooldown := search["period"], search["cooldown"]
+		if each, ok := override["period"]; ok {
+			period = each
+		}
+		if each, ok := override["cooldown"]; ok {
+			cooldown = each
+		}
+		if longer(cooldown, period) {
+			*errs = append(*errs, fieldError{fmt.Sprintf("stations[%d].search.cooldown", at), fmt.Sprintf("Line %s station %s search cooldown must be at most its period, %s", definition["key"], station["key"], textOf(period))})
+		}
+	}
+
+	if set {
+		definition["search"] = search
+	}
+}
+
+func longer(one, other any) bool {
+	oneMinutes, oneRead := minutesOf(one)
+	otherMinutes, otherRead := minutesOf(other)
+
+	return oneRead && otherRead && oneMinutes > otherMinutes
+}
+
+func stationSearched(station map[string]any, at int, errs *[]fieldError) {
+	search, ok := station["search"].(map[string]any)
+	if !ok {
+		return
+	}
+
+	field := fmt.Sprintf("stations[%d].search", at)
+	if textOf(station["kind"]) != "work" {
+		*errs = append(*errs, fieldError{field, "has no runs to improve"})
+	}
+	if ceiling, ok := search["ceiling"].(float64); ok && (ceiling <= 0 || ceiling > 1000) {
+		*errs = append(*errs, fieldError{field + ".ceiling", "must be above 0 and at most 1,000"})
+	}
+	for _, each := range []string{"period", "cooldown"} {
+		if _, ok := search[each]; ok && !isDuration(search[each]) {
+			*errs = append(*errs, fieldError{field + "." + each, "must be a whole number of minutes, hours or days from 1h to 365d, as in 90m, 12h or 7d"})
+		}
+	}
+	for each, most := range map[string]float64{"iterations": 10, "repeats": 5} {
+		if count, ok := search[each].(float64); ok && (count < 1 || count > most || count != float64(int64(count))) {
+			*errs = append(*errs, fieldError{field + "." + each, fmt.Sprintf("must be a whole number from 1 to %g", most)})
+		}
+	}
+	if objective, ok := search["objective"]; ok && objective != "success" && objective != "cost" {
+		*errs = append(*errs, fieldError{field + ".objective", "must be one of success, cost"})
+	}
+	if agent, ok := search["agent"].(map[string]any); ok && textOf(agent["harness"]) == "" {
+		*errs = append(*errs, fieldError{field + ".agent.harness", "must not be empty"})
+	}
 }
 
 var imageReference = regexp.MustCompile(`^[a-z0-9]+([._-][a-z0-9]+)*(:[0-9]+)?(/[a-z0-9]+([._-][a-z0-9]+)*)*(:[A-Za-z0-9_][A-Za-z0-9._-]{0,127})?(@sha256:[0-9a-f]{64})?$`)
