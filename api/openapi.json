@@ -27272,6 +27272,13 @@
               }
             ]
           },
+          "coAuthors": {
+            "description": "The other people who wrote it with the author in a shared draft",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InboxAuthorResponseDto"
+            }
+          },
           "approval": {
             "nullable": true,
             "description": "The tool call this asks a person to approve, where it is one",
@@ -27316,6 +27323,7 @@
           "attachments",
           "at",
           "author",
+          "coAuthors",
           "approval",
           "failure",
           "connection"
@@ -27607,6 +27615,19 @@
             "items": {
               "$ref": "#/components/schemas/AnswerInboxItemInputRequestDto"
             }
+          },
+          "coAuthors": {
+            "description": "The other people who wrote the shared draft with the sender, by user id",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "draftGeneration": {
+            "type": "number",
+            "nullable": true,
+            "example": 0,
+            "description": "The generation of the shared draft this sends. A second send of the same generation is refused, so the draft goes only once"
           }
         },
         "required": [
@@ -28555,6 +28576,19 @@
             "items": {
               "type": "string"
             }
+          },
+          "coAuthors": {
+            "description": "The other people who wrote the shared draft with the sender, by user id",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "draftGeneration": {
+            "type": "number",
+            "nullable": true,
+            "example": 0,
+            "description": "The generation of the shared draft this sends. A second send of the same generation is refused, so the draft goes only once"
           }
         },
         "required": [
