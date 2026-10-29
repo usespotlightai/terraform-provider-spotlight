@@ -2,7 +2,9 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/float64validator"
@@ -10,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -55,10 +58,35 @@ var lineMeasures = []string{"sent_back_rate", "accepted_rate", "checks_failed_ra
 
 const lineMostCeiling = 1000
 
+const (
+	lineSearchPeriod   = "7d"
+	lineSearchCooldown = "3d"
+)
+
+const (
+	lineSearchCeiling        = 10
+	lineSearchMonthlyCeiling = 50
+	lineMostSearchIterations = 10
+	lineMostSearchRepeats    = 5
+)
+
+var lineSearchObjectives = []string{"success", "cost"}
+
+var lineEfforts = []string{"low", "medium", "high", "xhigh", "max"}
+
+func lineEffort() schema.StringAttribute {
+	return schema.StringAttribute{
+		Optional:            true,
+		Validators:          []validator.String{stringvalidator.OneOf(lineEfforts...)},
+		MarkdownDescription: "How hard the agent thinks: `" + strings.Join(lineEfforts, "`, `") + "`.",
+	}
+}
+
 var (
 	lineCurrency         = regexp.MustCompile(`^[A-Z]{3}$`)
 	lineSourceRepository = regexp.MustCompile(`^[A-Za-z0-9._-]{1,100}/[A-Za-z0-9._-]{1,100}$`)
 	lineSourcePath       = regexp.MustCompile(`^(([^/\\]*[^./\\][^/\\]*|\.{3,})/)*[^/\\]+\.tf$`)
+	lineDurationText     = regexp.MustCompile(`^(\d{1,6})([mhd])$`)
 )
 
 var lineFields = fieldpath.Locator{Schema: lineSchema().Type(), Renames: lineBlocks}
@@ -163,6 +191,120 @@ func (passThresholdWhenClaimed) PlanModifyFloat64(ctx context.Context, req planm
 	}
 }
 
+var lineDurationMinutes = map[string]int64{"m": 1, "h": 60, "d": 24 * 60}
+
+const (
+	lineShortestDuration = 60
+	lineLongestDuration  = 365 * 24 * 60
+)
+
+func lineMinutes(text string) (int64, bool) {
+	written := lineDurationText.FindStringSubmatch(text)
+	if written == nil {
+		return 0, false
+	}
+
+	amount, _ := strconv.ParseInt(written[1], 10, 64)
+
+	return amount * lineDurationMinutes[written[2]], true
+}
+
+type lineDuration struct{}
+
+func (lineDuration) Description(_ context.Context) string {
+	return "A whole number of minutes, hours or days, as in 90m, 12h or 7d, from 1h to 365d."
+}
+
+func (v lineDuration) MarkdownDescription(ctx context.Context) string {
+	return v.Description(ctx)
+}
+
+func (lineDuration) ValidateString(_ context.Context, req validator.StringRequest, resp *validator.StringResponse) {
+	if req.ConfigValue.IsNull() || req.ConfigValue.IsUnknown() {
+		return
+	}
+
+	minutes, read := lineMinutes(req.ConfigValue.ValueString())
+	if !read {
+		resp.Diagnostics.AddAttributeError(req.Path, "Invalid Duration", "Must be a whole number of minutes, hours or days, as in 90m, 12h or 7d.")
+		return
+	}
+
+	if minutes < lineShortestDuration || minutes > lineLongestDuration {
+		resp.Diagnostics.AddAttributeError(req.Path, "Invalid Duration", "Must be from 1h to 365d.")
+	}
+}
+
+func lineDurationAttribute(description, fallback string) schema.StringAttribute {
+	return schema.StringAttribute{
+		Optional:            true,
+		Computed:            true,
+		Default:             stringdefault.StaticString(fallback),
+		Validators:          []validator.String{lineDuration{}},
+		MarkdownDescription: description,
+	}
+}
+
+type lineSearchLimits struct{}
+
+func (lineSearchLimits) Description(_ context.Context) string {
+	return "The ceiling of one search is at most the monthly ceiling, and the cooldown is at most the period."
+}
+
+func (v lineSearchLimits) MarkdownDescription(ctx context.Context) string {
+	return v.Description(ctx)
+}
+
+func (lineSearchLimits) ValidateObject(_ context.Context, req validator.ObjectRequest, resp *validator.ObjectResponse) {
+	if req.ConfigValue.IsNull() || req.ConfigValue.IsUnknown() {
+		return
+	}
+
+	attributes := req.ConfigValue.Attributes()
+	ceiling, ceilingSet := attributes["ceiling"].(types.Float64)
+	monthly, monthlySet := attributes["monthly_ceiling"].(types.Float64)
+	if !ceilingSet || !monthlySet || ceiling.IsUnknown() || monthly.IsUnknown() {
+		return
+	}
+
+	perSearch, perMonth := float64(lineSearchCeiling), float64(lineSearchMonthlyCeiling)
+	if !ceiling.IsNull() {
+		perSearch = ceiling.ValueFloat64()
+	}
+	if !monthly.IsNull() {
+		perMonth = monthly.ValueFloat64()
+	}
+
+	if perSearch > perMonth {
+		resp.Diagnostics.AddAttributeError(
+			req.Path.AtName("ceiling"),
+			"Search Ceiling Above The Monthly Ceiling",
+			fmt.Sprintf("The ceiling of one search, %g, must be at most `monthly_ceiling`, %g.", perSearch, perMonth),
+		)
+	}
+
+	period := lineWrittenOr(attributes["period"], lineSearchPeriod)
+	cooldown := lineWrittenOr(attributes["cooldown"], lineSearchCooldown)
+	periodMinutes, periodRead := lineMinutes(period)
+	cooldownMinutes, cooldownRead := lineMinutes(cooldown)
+	if periodRead && cooldownRead && periodMinutes >= lineShortestDuration && cooldownMinutes > periodMinutes {
+		resp.Diagnostics.AddAttributeError(
+			req.Path.AtName("cooldown"),
+			"Search Cooldown Longer Than The Period",
+			fmt.Sprintf("The cooldown, %s, must be at most `period`, %s.", cooldown, period),
+		)
+	}
+}
+
+func lineWrittenOr(value attr.Value, fallback string) string {
+	written, ok := value.(types.String)
+	if !ok || written.IsNull() || written.IsUnknown() {
+		return fallback
+	}
+
+	return written.ValueString()
+}
+
 func lineSchema() schema.Schema {
 	return schema.Schema{
 		MarkdownDescription: "A line: the stations a team's tasks move along, in order, and how they move. Import it as `<workspace id>/<team key>/<key>`.",
@@ -219,7 +361,7 @@ func lineSchema() schema.Schema {
 						"description": lineOptional("What the station is for."),
 						"harness":     lineOptional("The agent harness that works tasks here, as in `claude-code`."),
 						"model":       lineOptional("The model the harness uses."),
-						"effort":      lineOptional("How hard the agent thinks: `low`, `medium`, `high`, `xhigh` or `max`."),
+						"effort":      lineEffort(),
 						"profile":     lineOptional("The harness profile the station's agent runs with, by key, as in `careful`."),
 						"prompt":      lineOptional("The instructions for the agent, usually read with `file()`."),
 						"check":       lineCommand("A command that must pass before a task moves on, as in `npm test`. A shell command or script of one or more lines, at most 65536 characters."),
@@ -299,6 +441,62 @@ func lineSchema() schema.Schema {
 										Required:            true,
 										Validators:          []validator.Int64{int64validator.AtLeast(1)},
 										MarkdownDescription: "How many runs are compared, at least 1.",
+									},
+								},
+							},
+						},
+						"search": schema.SingleNestedBlock{
+							MarkdownDescription: "How Spotlight searches for a better config of this work station on its own, in place of the line's `search`. What it leaves out comes from the line's `search`. When `agent`, `iterations`, `repeats` or `objective` is left out, Spotlight picks it.",
+							Attributes: map[string]schema.Attribute{
+								"enabled": schema.BoolAttribute{
+									Optional:            true,
+									MarkdownDescription: "Whether Spotlight searches this station on its own.",
+								},
+								"ceiling": schema.Float64Attribute{
+									Optional:            true,
+									Validators:          []validator.Float64{float64validator.Between(0, lineMostCeiling), float64validator.NoneOf(0)},
+									MarkdownDescription: "The most one search of this station may spend, in the line's `currency`, above 0 and at most the line's `monthly_ceiling` and 1,000.",
+								},
+								"period": schema.StringAttribute{
+									Optional:            true,
+									Validators:          []validator.String{lineDuration{}},
+									MarkdownDescription: "The longest time between two scheduled searches of this station, as in `12h` or `7d`, from 1h to 365d.",
+								},
+								"on_alert": schema.BoolAttribute{
+									Optional:            true,
+									MarkdownDescription: "Whether an alert that goes off on this station starts a search.",
+								},
+								"cooldown": schema.StringAttribute{
+									Optional:            true,
+									Validators:          []validator.String{lineDuration{}},
+									MarkdownDescription: "The shortest time between two automatic searches of this station, as in `12h` or `3d`, from 1h to 365d.",
+								},
+								"iterations": schema.Int64Attribute{
+									Optional:            true,
+									Validators:          []validator.Int64{int64validator.Between(1, lineMostSearchIterations)},
+									MarkdownDescription: "How many iterations one search runs, from 1 to 10.",
+								},
+								"repeats": schema.Int64Attribute{
+									Optional:            true,
+									Validators:          []validator.Int64{int64validator.Between(1, lineMostSearchRepeats)},
+									MarkdownDescription: "How many times a search replays each task, from 1 to 5.",
+								},
+								"objective": schema.StringAttribute{
+									Optional:            true,
+									Validators:          []validator.String{stringvalidator.OneOf(lineSearchObjectives...)},
+									MarkdownDescription: "What a search improves: `success` or `cost`. The station's health decides when left out.",
+								},
+							},
+							Blocks: map[string]schema.Block{
+								"agent": schema.SingleNestedBlock{
+									MarkdownDescription: "The agent that proposes candidate configs. An agent sets `harness`.",
+									Validators: []validator.Object{
+										objectvalidator.AlsoRequires(path.MatchRelative().AtName("harness")),
+									},
+									Attributes: map[string]schema.Attribute{
+										"harness": lineOptional("The agent harness, as in `claude-code`."),
+										"model":   lineOptional("The model the harness uses."),
+										"effort":  lineEffort(),
 									},
 								},
 							},
@@ -389,8 +587,39 @@ func lineSchema() schema.Schema {
 					},
 				},
 			},
+			"search": schema.SingleNestedBlock{
+				MarkdownDescription: "How Spotlight searches for better configs of the line's work stations on its own, and how much it may spend. Every work station is searched when left out. A station's own `search` changes it for that station.",
+				Validators:          []validator.Object{lineSearchLimits{}},
+				Attributes: map[string]schema.Attribute{
+					"enabled": lineFlag("Whether Spotlight searches the line's work stations on its own. `true` when left out.", true),
+					"monthly_ceiling": schema.Float64Attribute{
+						Optional:            true,
+						Computed:            true,
+						Default:             float64default.StaticFloat64(lineSearchMonthlyCeiling),
+						Validators:          []validator.Float64{float64validator.AtLeast(0), float64validator.NoneOf(0)},
+						MarkdownDescription: "The most all automatic searches of the line may spend in one calendar month, in `currency`, above 0. 50 when left out.",
+					},
+					"currency": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Default:             stringdefault.StaticString("USD"),
+						Validators:          []validator.String{stringvalidator.RegexMatches(lineCurrency, "must be a three-letter currency in upper case, as in USD")},
+						MarkdownDescription: "The three-letter currency the ceilings are counted in, in upper case, as in `EUR`. `USD` when left out.",
+					},
+					"ceiling": schema.Float64Attribute{
+						Optional:            true,
+						Computed:            true,
+						Default:             float64default.StaticFloat64(lineSearchCeiling),
+						Validators:          []validator.Float64{float64validator.Between(0, lineMostCeiling), float64validator.NoneOf(0)},
+						MarkdownDescription: "The most one search may spend, in `currency`, above 0 and at most `monthly_ceiling` and 1,000. 10 when left out.",
+					},
+					"period":   lineDurationAttribute("The longest time between two scheduled searches of a station, as in `12h` or `7d`, from 1h to 365d. `7d` when left out.", lineSearchPeriod),
+					"on_alert": lineFlag("Whether an alert that goes off on a station starts a search. `true` when left out.", true),
+					"cooldown": lineDurationAttribute("The shortest time between two automatic searches of a station, as in `12h` or `3d`, from 1h to 365d, and at most `period`. `3d` when left out.", lineSearchCooldown),
+				},
+			},
 			"source": schema.SingleNestedBlock{
-				MarkdownDescription: "Where the line's Terraform lives, which Spotlight opens pull requests against when a person picks a better station config. A source sets `repository` and `path`.",
+				MarkdownDescription: "Where the line's Terraform lives, which Spotlight opens pull requests against when it finds a better station config. A source sets `repository` and `path`.",
 				Validators: []validator.Object{
 					objectvalidator.AlsoRequires(
 						path.MatchRelative().AtName("repository"),
