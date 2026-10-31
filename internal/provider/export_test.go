@@ -156,7 +156,7 @@ func (e exportUnavailable) Error() string {
 func exportOf(ctx context.Context, cp acctest.ControlPlane) (acctest.Module, error) {
 	endpoint := strings.TrimSuffix(strings.TrimRight(os.Getenv(provider.URLEnv), "/"), "/api")
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint+"/api/resources/workspaces/"+cp.Workspace.ID+"/export", nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint+"/api/v1/resources/workspaces/"+cp.Workspace.ID+"/export", nil)
 	if err != nil {
 		return nil, err
 	}

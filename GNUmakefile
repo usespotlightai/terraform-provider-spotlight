@@ -37,10 +37,10 @@ fmtcheck:
 	terraform fmt -check -recursive $(TERRAFORM_EXAMPLES)
 
 openapi:
-	cp $(SPOTLIGHT_REPO)/control-plane/openapi.json api/openapi.json
+	cp $(SPOTLIGHT_REPO)/control-plane/openapi.resources.json api/openapi.resources.json
 
 client:
-	go tool oapi-codegen -config api/oapi-codegen.yaml api/openapi.json
+	go tool oapi-codegen -config api/oapi-codegen.yaml api/openapi.resources.json
 
 docs:
 	go tool tfplugindocs generate --provider-name spotlight

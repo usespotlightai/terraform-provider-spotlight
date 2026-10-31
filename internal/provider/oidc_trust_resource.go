@@ -70,7 +70,7 @@ func (r *OidcTrustResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 func oidcTrustSchema() schema.Schema {
 	return schema.Schema{
 		MarkdownDescription: "A CI workload whose OIDC tokens are exchanged for short-lived workspace tokens, so the CI platform stores no Spotlight token: " +
-			"a job whose token the trust matches calls `POST /api/workspace-tokens/exchange`, as the provider's `oidc` block does, and receives a token with the trust's scopes for its lifetime. " +
+			"a job whose token the trust matches calls `POST /api/v1/workspace-tokens/exchange`, as the provider's `oidc` block does, and receives a token with the trust's scopes for its lifetime. " +
 			"Changing or deleting the trust stops every token that it issued at once. " +
 			"Writing OIDC trusts needs a workspace admin, or a token granted the `trusts` scope that has every scope the trust grants. " +
 			"A token can grant a trust only the scopes that it has. A token can change a trust only when it has the current scopes and the new scopes of the trust. Import it as `<workspace id>/<key>`.",

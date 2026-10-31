@@ -261,33 +261,6 @@ func (e IssuedTokenResponseDtoScopes) Valid() bool {
 	}
 }
 
-// Defines values for JournalStepResponseDtoKind.
-const (
-	Hook    JournalStepResponseDtoKind = "hook"
-	Message JournalStepResponseDtoKind = "message"
-	Planned JournalStepResponseDtoKind = "planned"
-	Thought JournalStepResponseDtoKind = "thought"
-	Tool    JournalStepResponseDtoKind = "tool"
-)
-
-// Valid indicates whether the value is a known member of the JournalStepResponseDtoKind enum.
-func (e JournalStepResponseDtoKind) Valid() bool {
-	switch e {
-	case Hook:
-		return true
-	case Message:
-		return true
-	case Planned:
-		return true
-	case Thought:
-		return true
-	case Tool:
-		return true
-	default:
-		return false
-	}
-}
-
 // Defines values for OidcTrustResourceResponseDtoScopes.
 const (
 	OidcTrustResourceResponseDtoScopesConfigure OidcTrustResourceResponseDtoScopes = "configure"
@@ -417,162 +390,6 @@ func (e SecretSourceResponseDtoKind) Valid() bool {
 	case SecretSourceResponseDtoKindAwsSecretsManager:
 		return true
 	case SecretSourceResponseDtoKindBuiltIn:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for TraceConnectionResponseDtoError.
-const (
-	TraceConnectionResponseDtoErrorAuthFailed  TraceConnectionResponseDtoError = "auth-failed"
-	TraceConnectionResponseDtoErrorBlocked     TraceConnectionResponseDtoError = "blocked"
-	TraceConnectionResponseDtoErrorFailed      TraceConnectionResponseDtoError = "failed"
-	TraceConnectionResponseDtoErrorLessThannil TraceConnectionResponseDtoError = "<nil>"
-	TraceConnectionResponseDtoErrorServerError TraceConnectionResponseDtoError = "server-error"
-)
-
-// Valid indicates whether the value is a known member of the TraceConnectionResponseDtoError enum.
-func (e TraceConnectionResponseDtoError) Valid() bool {
-	switch e {
-	case TraceConnectionResponseDtoErrorAuthFailed:
-		return true
-	case TraceConnectionResponseDtoErrorBlocked:
-		return true
-	case TraceConnectionResponseDtoErrorFailed:
-		return true
-	case TraceConnectionResponseDtoErrorLessThannil:
-		return true
-	case TraceConnectionResponseDtoErrorServerError:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for TraceConnectionResponseDtoOutcome.
-const (
-	TraceConnectionResponseDtoOutcomeBlocked     TraceConnectionResponseDtoOutcome = "blocked"
-	TraceConnectionResponseDtoOutcomeFailed      TraceConnectionResponseDtoOutcome = "failed"
-	TraceConnectionResponseDtoOutcomeInjected    TraceConnectionResponseDtoOutcome = "injected"
-	TraceConnectionResponseDtoOutcomePassthrough TraceConnectionResponseDtoOutcome = "passthrough"
-)
-
-// Valid indicates whether the value is a known member of the TraceConnectionResponseDtoOutcome enum.
-func (e TraceConnectionResponseDtoOutcome) Valid() bool {
-	switch e {
-	case TraceConnectionResponseDtoOutcomeBlocked:
-		return true
-	case TraceConnectionResponseDtoOutcomeFailed:
-		return true
-	case TraceConnectionResponseDtoOutcomeInjected:
-		return true
-	case TraceConnectionResponseDtoOutcomePassthrough:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for TraceConnectionResponseDtoReason.
-const (
-	TraceConnectionResponseDtoReasonLessThannil    TraceConnectionResponseDtoReason = "<nil>"
-	TraceConnectionResponseDtoReasonNoSuchHost     TraceConnectionResponseDtoReason = "no-such-host"
-	TraceConnectionResponseDtoReasonNotAllowed     TraceConnectionResponseDtoReason = "not-allowed"
-	TraceConnectionResponseDtoReasonNotBound       TraceConnectionResponseDtoReason = "not-bound"
-	TraceConnectionResponseDtoReasonPrivateAddress TraceConnectionResponseDtoReason = "private-address"
-	TraceConnectionResponseDtoReasonTimedOut       TraceConnectionResponseDtoReason = "timed-out"
-	TraceConnectionResponseDtoReasonTlsFailed      TraceConnectionResponseDtoReason = "tls-failed"
-	TraceConnectionResponseDtoReasonUnreachable    TraceConnectionResponseDtoReason = "unreachable"
-)
-
-// Valid indicates whether the value is a known member of the TraceConnectionResponseDtoReason enum.
-func (e TraceConnectionResponseDtoReason) Valid() bool {
-	switch e {
-	case TraceConnectionResponseDtoReasonLessThannil:
-		return true
-	case TraceConnectionResponseDtoReasonNoSuchHost:
-		return true
-	case TraceConnectionResponseDtoReasonNotAllowed:
-		return true
-	case TraceConnectionResponseDtoReasonNotBound:
-		return true
-	case TraceConnectionResponseDtoReasonPrivateAddress:
-		return true
-	case TraceConnectionResponseDtoReasonTimedOut:
-		return true
-	case TraceConnectionResponseDtoReasonTlsFailed:
-		return true
-	case TraceConnectionResponseDtoReasonUnreachable:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for TraceNodeResponseDtoCategory.
-const (
-	Agent    TraceNodeResponseDtoCategory = "agent"
-	Failed   TraceNodeResponseDtoCategory = "failed"
-	Overhead TraceNodeResponseDtoCategory = "overhead"
-)
-
-// Valid indicates whether the value is a known member of the TraceNodeResponseDtoCategory enum.
-func (e TraceNodeResponseDtoCategory) Valid() bool {
-	switch e {
-	case Agent:
-		return true
-	case Failed:
-		return true
-	case Overhead:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for TraceNodeResponseDtoEgressEnforcement.
-const (
-	TraceNodeResponseDtoEgressEnforcementEnforced    TraceNodeResponseDtoEgressEnforcement = "enforced"
-	TraceNodeResponseDtoEgressEnforcementLessThannil TraceNodeResponseDtoEgressEnforcement = "<nil>"
-	TraceNodeResponseDtoEgressEnforcementNotEnforced TraceNodeResponseDtoEgressEnforcement = "not-enforced"
-)
-
-// Valid indicates whether the value is a known member of the TraceNodeResponseDtoEgressEnforcement enum.
-func (e TraceNodeResponseDtoEgressEnforcement) Valid() bool {
-	switch e {
-	case TraceNodeResponseDtoEgressEnforcementEnforced:
-		return true
-	case TraceNodeResponseDtoEgressEnforcementLessThannil:
-		return true
-	case TraceNodeResponseDtoEgressEnforcementNotEnforced:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for TraceNodeResponseDtoKind.
-const (
-	Connection TraceNodeResponseDtoKind = "connection"
-	Phase      TraceNodeResponseDtoKind = "phase"
-	Run        TraceNodeResponseDtoKind = "run"
-	Span       TraceNodeResponseDtoKind = "span"
-	Step       TraceNodeResponseDtoKind = "step"
-)
-
-// Valid indicates whether the value is a known member of the TraceNodeResponseDtoKind enum.
-func (e TraceNodeResponseDtoKind) Valid() bool {
-	switch e {
-	case Connection:
-		return true
-	case Phase:
-		return true
-	case Run:
-		return true
-	case Span:
-		return true
-	case Step:
 		return true
 	default:
 		return false
@@ -2359,36 +2176,6 @@ type IssuedTokenResponseDto struct {
 // IssuedTokenResponseDtoScopes defines model for IssuedTokenResponseDto.Scopes.
 type IssuedTokenResponseDtoScopes string
 
-// JournalStepResponseDto defines model for JournalStepResponseDto.
-type JournalStepResponseDto struct {
-	Change *StepChangeResponseDto `json:"change"`
-
-	// Detail What the tool answered with, as much of it as is worth reading
-	Detail *string `json:"detail"`
-
-	// Input The input of the call, as it was sent
-	Input     *string                    `json:"input"`
-	Kind      JournalStepResponseDtoKind `json:"kind"`
-	Locations []StepLocationResponseDto  `json:"locations"`
-
-	// Ms How long it took, in ms
-	Ms float32 `json:"ms"`
-
-	// Output The output of the call, unread
-	Output *string `json:"output"`
-
-	// StartedAt When it began, for laying the run out against a clock
-	StartedAt string  `json:"startedAt"`
-	Status    *string `json:"status"`
-	Text      string  `json:"text"`
-
-	// Tool What sort of tool it was: execute, read, edit, …
-	Tool *string `json:"tool"`
-}
-
-// JournalStepResponseDtoKind defines model for JournalStepResponseDto.Kind.
-type JournalStepResponseDtoKind string
-
 // LineResourceListResponseDto defines model for LineResourceListResponseDto.
 type LineResourceListResponseDto struct {
 	// Items Every one there is, each as a read returns it, in address order
@@ -2530,17 +2317,6 @@ type ProblemResponseDto struct {
 
 // ProblemResponseDtoPermission The permission the caller lacks, when the request is forbidden: one its role in the workspace, or its token’s scopes, do not grant
 type ProblemResponseDtoPermission string
-
-// RunSpanResponseDto defines model for RunSpanResponseDto.
-type RunSpanResponseDto struct {
-	Attributes []SpanAttributeResponseDto `json:"attributes"`
-	Failed     bool                       `json:"failed"`
-	Id         string                     `json:"id"`
-	Ms         float32                    `json:"ms"`
-	Name       string                     `json:"name"`
-	ParentId   *string                    `json:"parentId"`
-	StartedAt  string                     `json:"startedAt"`
-}
 
 // RunnerPoolResourceListResponseDto defines model for RunnerPoolResourceListResponseDto.
 type RunnerPoolResourceListResponseDto struct {
@@ -2741,28 +2517,6 @@ type SkillSecretResponseDto struct {
 	Name        string `json:"name"`
 }
 
-// SpanAttributeResponseDto defines model for SpanAttributeResponseDto.
-type SpanAttributeResponseDto struct {
-	Name  string `json:"name"`
-	Value string `json:"value"`
-}
-
-// StepChangeResponseDto defines model for StepChangeResponseDto.
-type StepChangeResponseDto struct {
-	// After The file as the agent left it
-	After string `json:"after"`
-
-	// Before The file before the agent changed it
-	Before string  `json:"before"`
-	Path   *string `json:"path"`
-}
-
-// StepLocationResponseDto defines model for StepLocationResponseDto.
-type StepLocationResponseDto struct {
-	Line *float32 `json:"line"`
-	Path string   `json:"path"`
-}
-
 // TeamResourceListResponseDto defines model for TeamResourceListResponseDto.
 type TeamResourceListResponseDto struct {
 	// Items Every one there is, each as a read returns it, in address order
@@ -2792,68 +2546,6 @@ type TeamResourceResponseDto struct {
 	// WorkspaceId The workspace it belongs to
 	WorkspaceId string `json:"workspaceId"`
 }
-
-// TraceConnectionResponseDto defines model for TraceConnectionResponseDto.
-type TraceConnectionResponseDto struct {
-	// Count How many times the same error occurred in this row. The row starts at the first time
-	Count float32 `json:"count"`
-
-	// Error The error of the connection. blocked: egress stopped it. failed: egress could not open it. auth-failed: the host answered an injected request with 401 or 403. server-error: the host answered it with 500 or more. null: no error
-	Error *TraceConnectionResponseDtoError `json:"error"`
-	Host  string                           `json:"host"`
-
-	// Outcome blocked: egress stopped it. failed: egress could not open it. injected: egress injected a secret into the request
-	Outcome TraceConnectionResponseDtoOutcome `json:"outcome"`
-	Port    float32                           `json:"port"`
-
-	// Reason Why egress blocked the connection or could not open it
-	Reason *TraceConnectionResponseDtoReason `json:"reason"`
-
-	// Status The status the host answered an injected request with
-	Status *float32 `json:"status"`
-}
-
-// TraceConnectionResponseDtoError The error of the connection. blocked: egress stopped it. failed: egress could not open it. auth-failed: the host answered an injected request with 401 or 403. server-error: the host answered it with 500 or more. null: no error
-type TraceConnectionResponseDtoError string
-
-// TraceConnectionResponseDtoOutcome blocked: egress stopped it. failed: egress could not open it. injected: egress injected a secret into the request
-type TraceConnectionResponseDtoOutcome string
-
-// TraceConnectionResponseDtoReason Why egress blocked the connection or could not open it
-type TraceConnectionResponseDtoReason string
-
-// TraceNodeResponseDto defines model for TraceNodeResponseDto.
-type TraceNodeResponseDto struct {
-	// Category The agent working, the overhead around it, or an error
-	Category TraceNodeResponseDtoCategory `json:"category"`
-	Children []TraceNodeResponseDto       `json:"children"`
-
-	// Connection On a connection row: a connection of the run with an error, as a shared egress recorded it
-	Connection *TraceConnectionResponseDto `json:"connection"`
-	Cost       *float32                    `json:"cost"`
-	Currency   *string                     `json:"currency"`
-
-	// EgressEnforcement On a run row: what the runner in the sandbox reported before the harness started. enforced: a direct connection around egress failed. not-enforced: it operated. null: the runner did not check
-	EgressEnforcement *TraceNodeResponseDtoEgressEnforcement `json:"egressEnforcement"`
-	Id                string                                 `json:"id"`
-	Kind              TraceNodeResponseDtoKind               `json:"kind"`
-
-	// Ms How long it took, in ms
-	Ms        float32                 `json:"ms"`
-	Name      string                  `json:"name"`
-	Span      *RunSpanResponseDto     `json:"span"`
-	StartedAt string                  `json:"startedAt"`
-	Step      *JournalStepResponseDto `json:"step"`
-}
-
-// TraceNodeResponseDtoCategory The agent working, the overhead around it, or an error
-type TraceNodeResponseDtoCategory string
-
-// TraceNodeResponseDtoEgressEnforcement On a run row: what the runner in the sandbox reported before the harness started. enforced: a direct connection around egress failed. not-enforced: it operated. null: the runner did not check
-type TraceNodeResponseDtoEgressEnforcement string
-
-// TraceNodeResponseDtoKind defines model for TraceNodeResponseDto.Kind.
-type TraceNodeResponseDtoKind string
 
 // WorkspaceResourceListResponseDto defines model for WorkspaceResourceListResponseDto.
 type WorkspaceResourceListResponseDto struct {
@@ -6258,7 +5950,7 @@ func NewCheckExpressionRequestWithBody(server string, params *CheckExpressionPar
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/expressions/check")
+	operationPath := fmt.Sprintf("/v1/expressions/check")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -6313,7 +6005,7 @@ func NewListExpressionPositionsRequest(server string, params *ListExpressionPosi
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/expressions/positions")
+	operationPath := fmt.Sprintf("/v1/expressions/positions")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -6373,7 +6065,7 @@ func NewDeleteEgressRequest(server string, id string, params *DeleteEgressParams
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/egresses/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/egresses/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -6442,7 +6134,7 @@ func NewReadEgressRequest(server string, id string, params *ReadEgressParams) (*
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/egresses/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/egresses/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -6513,7 +6205,7 @@ func NewUpdateEgressRequestWithBody(server string, id string, params *UpdateEgre
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/egresses/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/egresses/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -6584,7 +6276,7 @@ func NewDeleteHarnessProfileRequest(server string, id string, params *DeleteHarn
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/harness-profiles/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/harness-profiles/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -6653,7 +6345,7 @@ func NewReadHarnessProfileRequest(server string, id string, params *ReadHarnessP
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/harness-profiles/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/harness-profiles/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -6724,7 +6416,7 @@ func NewUpdateHarnessProfileRequestWithBody(server string, id string, params *Up
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/harness-profiles/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/harness-profiles/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -6795,7 +6487,7 @@ func NewDeleteHookRequest(server string, id string, params *DeleteHookParams) (*
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/hooks/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/hooks/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -6864,7 +6556,7 @@ func NewReadHookRequest(server string, id string, params *ReadHookParams) (*http
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/hooks/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/hooks/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -6935,7 +6627,7 @@ func NewUpdateHookRequestWithBody(server string, id string, params *UpdateHookPa
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/hooks/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/hooks/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -7006,7 +6698,7 @@ func NewDeleteIntegrationRequest(server string, id string, params *DeleteIntegra
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/integrations/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/integrations/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -7075,7 +6767,7 @@ func NewReadIntegrationRequest(server string, id string, params *ReadIntegration
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/integrations/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/integrations/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -7146,7 +6838,7 @@ func NewUpdateIntegrationRequestWithBody(server string, id string, params *Updat
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/integrations/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/integrations/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -7217,7 +6909,7 @@ func NewDeleteLineRequest(server string, id string, params *DeleteLineParams) (*
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/lines/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/lines/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -7286,7 +6978,7 @@ func NewReadLineRequest(server string, id string, params *ReadLineParams) (*http
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/lines/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/lines/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -7357,7 +7049,7 @@ func NewUpdateLineRequestWithBody(server string, id string, params *UpdateLinePa
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/lines/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/lines/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -7428,7 +7120,7 @@ func NewDeleteOidcTrustRequest(server string, id string, params *DeleteOidcTrust
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/oidc-trusts/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/oidc-trusts/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -7497,7 +7189,7 @@ func NewReadOidcTrustRequest(server string, id string, params *ReadOidcTrustPara
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/oidc-trusts/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/oidc-trusts/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -7568,7 +7260,7 @@ func NewUpdateOidcTrustRequestWithBody(server string, id string, params *UpdateO
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/oidc-trusts/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/oidc-trusts/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -7639,7 +7331,7 @@ func NewDeleteRunnerPoolRequest(server string, id string, params *DeleteRunnerPo
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/runner-pools/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/runner-pools/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -7708,7 +7400,7 @@ func NewReadRunnerPoolRequest(server string, id string, params *ReadRunnerPoolPa
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/runner-pools/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/runner-pools/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -7779,7 +7471,7 @@ func NewUpdateRunnerPoolRequestWithBody(server string, id string, params *Update
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/runner-pools/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/runner-pools/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -7850,7 +7542,7 @@ func NewDeleteRunnerTrustRequest(server string, id string, params *DeleteRunnerT
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/runner-trusts/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/runner-trusts/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -7919,7 +7611,7 @@ func NewReadRunnerTrustRequest(server string, id string, params *ReadRunnerTrust
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/runner-trusts/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/runner-trusts/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -7990,7 +7682,7 @@ func NewUpdateRunnerTrustRequestWithBody(server string, id string, params *Updat
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/runner-trusts/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/runner-trusts/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -8061,7 +7753,7 @@ func NewDeleteSecretRequest(server string, id string, params *DeleteSecretParams
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/secrets/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/secrets/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -8130,7 +7822,7 @@ func NewReadSecretRequest(server string, id string, params *ReadSecretParams) (*
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/secrets/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/secrets/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -8201,7 +7893,7 @@ func NewUpdateSecretRequestWithBody(server string, id string, params *UpdateSecr
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/secrets/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/secrets/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -8272,7 +7964,7 @@ func NewDeleteSkillRequest(server string, id string, params *DeleteSkillParams) 
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/skills/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/skills/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -8341,7 +8033,7 @@ func NewReadSkillRequest(server string, id string, params *ReadSkillParams) (*ht
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/skills/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/skills/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -8412,7 +8104,7 @@ func NewUpdateSkillRequestWithBody(server string, id string, params *UpdateSkill
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/skills/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/skills/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -8483,7 +8175,7 @@ func NewDeleteTeamRequest(server string, id string, params *DeleteTeamParams) (*
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/teams/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/teams/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -8552,7 +8244,7 @@ func NewReadTeamRequest(server string, id string, params *ReadTeamParams) (*http
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/teams/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/teams/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -8623,7 +8315,7 @@ func NewUpdateTeamRequestWithBody(server string, id string, params *UpdateTeamPa
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/teams/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/teams/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -8705,7 +8397,7 @@ func NewCreateHarnessProfileRequestWithBody(server string, teamId string, params
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/teams/%s/harness-profiles", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/teams/%s/harness-profiles", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -8787,7 +8479,7 @@ func NewCreateHookRequestWithBody(server string, teamId string, params *CreateHo
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/teams/%s/hooks", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/teams/%s/hooks", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -8869,7 +8561,7 @@ func NewCreateIntegrationRequestWithBody(server string, teamId string, params *C
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/teams/%s/integrations", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/teams/%s/integrations", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -8951,7 +8643,7 @@ func NewCreateLineRequestWithBody(server string, teamId string, params *CreateLi
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/teams/%s/lines", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/teams/%s/lines", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -9033,7 +8725,7 @@ func NewCreateSkillRequestWithBody(server string, teamId string, params *CreateS
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/teams/%s/skills", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/teams/%s/skills", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -9104,7 +8796,7 @@ func NewDeleteWorkspaceRunnersRequest(server string, id string, params *DeleteWo
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspace-runners/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspace-runners/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -9173,7 +8865,7 @@ func NewReadWorkspaceRunnersRequest(server string, id string, params *ReadWorksp
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspace-runners/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspace-runners/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -9244,7 +8936,7 @@ func NewUpdateWorkspaceRunnersRequestWithBody(server string, id string, params *
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspace-runners/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspace-runners/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -9308,7 +9000,7 @@ func NewListWorkspacesRequest(server string, params *ListWorkspacesParams) (*htt
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces")
+	operationPath := fmt.Sprintf("/v1/resources/workspaces")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -9372,7 +9064,7 @@ func NewCreateWorkspaceRequestWithBody(server string, params *CreateWorkspacePar
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces")
+	operationPath := fmt.Sprintf("/v1/resources/workspaces")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -9436,7 +9128,7 @@ func NewImportWorkspaceRequest(server string, params *ImportWorkspaceParams) (*h
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/import")
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/import")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -9519,7 +9211,7 @@ func NewDeleteWorkspaceRequest(server string, id string, params *DeleteWorkspace
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -9588,7 +9280,7 @@ func NewReadWorkspaceRequest(server string, id string, params *ReadWorkspacePara
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -9659,7 +9351,7 @@ func NewUpdateWorkspaceRequestWithBody(server string, id string, params *UpdateW
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -9730,7 +9422,7 @@ func NewListEgressesRequest(server string, workspaceId string, params *ListEgres
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/egresses", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/egresses", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -9801,7 +9493,7 @@ func NewCreateEgressRequestWithBody(server string, workspaceId string, params *C
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/egresses", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/egresses", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -9872,7 +9564,7 @@ func NewImportEgressRequest(server string, workspaceId string, params *ImportEgr
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/egresses/import", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/egresses/import", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -9955,7 +9647,7 @@ func NewListHarnessProfilesRequest(server string, workspaceId string, params *Li
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/harness-profiles", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/harness-profiles", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -10015,7 +9707,7 @@ func NewImportHarnessProfileRequest(server string, workspaceId string, params *I
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/harness-profiles/import", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/harness-profiles/import", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -10098,7 +9790,7 @@ func NewListHooksRequest(server string, workspaceId string, params *ListHooksPar
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/hooks", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/hooks", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -10158,7 +9850,7 @@ func NewImportHookRequest(server string, workspaceId string, params *ImportHookP
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/hooks/import", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/hooks/import", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -10241,7 +9933,7 @@ func NewListIntegrationsRequest(server string, workspaceId string, params *ListI
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/integrations", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/integrations", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -10301,7 +9993,7 @@ func NewImportIntegrationRequest(server string, workspaceId string, params *Impo
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/integrations/import", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/integrations/import", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -10384,7 +10076,7 @@ func NewListLinesRequest(server string, workspaceId string, params *ListLinesPar
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/lines", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/lines", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -10444,7 +10136,7 @@ func NewImportLineRequest(server string, workspaceId string, params *ImportLineP
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/lines/import", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/lines/import", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -10527,7 +10219,7 @@ func NewListOidcTrustsRequest(server string, workspaceId string, params *ListOid
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/oidc-trusts", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/oidc-trusts", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -10598,7 +10290,7 @@ func NewCreateOidcTrustRequestWithBody(server string, workspaceId string, params
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/oidc-trusts", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/oidc-trusts", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -10669,7 +10361,7 @@ func NewImportOidcTrustRequest(server string, workspaceId string, params *Import
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/oidc-trusts/import", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/oidc-trusts/import", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -10752,7 +10444,7 @@ func NewListRunnerPoolsRequest(server string, workspaceId string, params *ListRu
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/runner-pools", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/runner-pools", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -10823,7 +10515,7 @@ func NewCreateRunnerPoolRequestWithBody(server string, workspaceId string, param
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/runner-pools", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/runner-pools", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -10894,7 +10586,7 @@ func NewImportRunnerPoolRequest(server string, workspaceId string, params *Impor
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/runner-pools/import", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/runner-pools/import", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -10977,7 +10669,7 @@ func NewListRunnerTrustsRequest(server string, workspaceId string, params *ListR
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/runner-trusts", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/runner-trusts", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -11048,7 +10740,7 @@ func NewCreateRunnerTrustRequestWithBody(server string, workspaceId string, para
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/runner-trusts", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/runner-trusts", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -11119,7 +10811,7 @@ func NewImportRunnerTrustRequest(server string, workspaceId string, params *Impo
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/runner-trusts/import", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/runner-trusts/import", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -11202,7 +10894,7 @@ func NewListSecretsRequest(server string, workspaceId string, params *ListSecret
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/secrets", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/secrets", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -11273,7 +10965,7 @@ func NewCreateSecretRequestWithBody(server string, workspaceId string, params *C
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/secrets", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/secrets", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -11344,7 +11036,7 @@ func NewImportSecretRequest(server string, workspaceId string, params *ImportSec
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/secrets/import", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/secrets/import", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -11427,7 +11119,7 @@ func NewListSkillsRequest(server string, workspaceId string, params *ListSkillsP
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/skills", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/skills", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -11487,7 +11179,7 @@ func NewImportSkillRequest(server string, workspaceId string, params *ImportSkil
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/skills/import", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/skills/import", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -11570,7 +11262,7 @@ func NewListTeamsRequest(server string, workspaceId string, params *ListTeamsPar
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/teams", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/teams", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -11641,7 +11333,7 @@ func NewCreateTeamRequestWithBody(server string, workspaceId string, params *Cre
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/teams", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/teams", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -11712,7 +11404,7 @@ func NewImportTeamRequest(server string, workspaceId string, params *ImportTeamP
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/teams/import", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/teams/import", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -11795,7 +11487,7 @@ func NewListWorkspaceRunnersRequest(server string, workspaceId string, params *L
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/workspace-runners", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/workspace-runners", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -11866,7 +11558,7 @@ func NewCreateWorkspaceRunnersRequestWithBody(server string, workspaceId string,
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/workspace-runners", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/workspace-runners", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -11937,7 +11629,7 @@ func NewImportWorkspaceRunnersRequest(server string, workspaceId string, params 
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resources/workspaces/%s/workspace-runners/import", pathParam0)
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/workspace-runners/import", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -12024,7 +11716,7 @@ func NewExchangeWorkloadTokenRequestWithBody(server string, contentType string, 
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/workspace-tokens/exchange")
+	operationPath := fmt.Sprintf("/v1/workspace-tokens/exchange")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}

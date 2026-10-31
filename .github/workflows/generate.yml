@@ -1,6 +1,6 @@
 name: Generated client
 
-# This workflow regenerates the API client from the openapi.json of the
+# This workflow regenerates the API client from the openapi.resources.json of the
 # control plane on develop. It fails if the result is different from the
 # committed client, so that a schema change shows as a client diff to review.
 # The control plane repository is private. The checkout uses a token minted by
@@ -53,13 +53,13 @@ jobs:
           ref: ${{ inputs.ref || 'develop' }}
           token: ${{ steps.app-token.outputs.token }}
           path: spotlight
-          sparse-checkout: control-plane/openapi.json
+          sparse-checkout: control-plane/openapi.resources.json
           sparse-checkout-cone-mode: false
       - uses: actions/setup-go@v7
         if: env.APP_ID != '' && env.PRIVATE_KEY != ''
         with:
           go-version-file: go.mod
-      - name: Vendor openapi.json
+      - name: Vendor openapi.resources.json
         if: env.APP_ID != '' && env.PRIVATE_KEY != ''
         run: make openapi SPOTLIGHT_REPO=spotlight
       - name: Regenerate the client

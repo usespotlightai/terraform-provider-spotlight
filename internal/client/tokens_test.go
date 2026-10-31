@@ -61,7 +61,7 @@ func (i *issuing) serve(w http.ResponseWriter, r *http.Request) {
 		i.mu.Unlock()
 
 		reply(w, http.StatusOK, "application/json", map[string]any{"count": 1, "value": jwt})
-	case "/api/workspace-tokens/exchange":
+	case "/api/v1/workspace-tokens/exchange":
 		token, _ := body["token"].(string)
 		if i.matches != "" && !strings.HasPrefix(token, i.matches) {
 			reply(w, http.StatusUnauthorized, "application/problem+json", map[string]any{
@@ -102,7 +102,7 @@ func (i *issuing) serve(w http.ResponseWriter, r *http.Request) {
 func (i *issuing) exchanges() []seen {
 	var out []seen
 	for _, each := range i.seen {
-		if each.Path == "/api/workspace-tokens/exchange" {
+		if each.Path == "/api/v1/workspace-tokens/exchange" {
 			out = append(out, each)
 		}
 	}
@@ -212,7 +212,7 @@ func TestTheWorkloadTokenIsExchangedThroughTheTrust(t *testing.T) {
 		t.Errorf("exchanged with Authorization %q, want none", got)
 	}
 
-	read := issued.at("/api/resources/workspaces/ws-1")
+	read := issued.at("/api/v1/resources/workspaces/ws-1")
 	if got := read[0].Headers.Get("Authorization"); got != "Bearer issued-1" {
 		t.Errorf("read with Authorization %q, want the issued token", got)
 	}
@@ -268,7 +268,7 @@ func TestAnIssuedTokenIsReusedUntilAMinuteBeforeItExpires(t *testing.T) {
 		t.Errorf("GitHub received %d requests, want a fresh token for each exchange", requests)
 	}
 
-	reads := issued.at("/api/resources/workspaces/ws-1")
+	reads := issued.at("/api/v1/resources/workspaces/ws-1")
 	if got := reads[len(reads)-1].Headers.Get("Authorization"); got != "Bearer issued-2" {
 		t.Errorf("read with Authorization %q, want the renewed token", got)
 	}
@@ -304,7 +304,7 @@ func TestAnUnauthorizedIssuedTokenIsRenewedAndTheCallRepeated(t *testing.T) {
 		t.Errorf("created %+v", created)
 	}
 
-	creates := issued.at("/api/resources/workspaces")
+	creates := issued.at("/api/v1/resources/workspaces")
 	if len(creates) != 2 {
 		t.Fatalf("%d attempts, want 2", len(creates))
 	}
@@ -360,7 +360,7 @@ func TestAFailedExchangeNamesTheTrust(t *testing.T) {
 		t.Fatalf("got %v", err)
 	}
 
-	if reads := issued.at("/api/resources/workspaces/ws-1"); len(reads) != 0 {
+	if reads := issued.at("/api/v1/resources/workspaces/ws-1"); len(reads) != 0 {
 		t.Errorf("read %d times without a token", len(reads))
 	}
 }
@@ -460,9 +460,9 @@ func TestAChangeToTheTrustMidApplyIsRecoveredFrom(t *testing.T) {
 	var exchanges, creates []fakeapi.Request
 	for _, each := range fake.Requests() {
 		switch {
-		case each.Path == "/api/workspace-tokens/exchange":
+		case each.Path == "/api/v1/workspace-tokens/exchange":
 			exchanges = append(exchanges, each)
-		case each.Path == "/api/resources/workspaces/"+workspace.ID+"/teams" && each.Body["key"] == "platform":
+		case each.Path == "/api/v1/resources/workspaces/"+workspace.ID+"/teams" && each.Body["key"] == "platform":
 			creates = append(creates, each)
 		}
 	}

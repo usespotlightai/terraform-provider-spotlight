@@ -210,7 +210,7 @@ func everyCallUsedAnIssuedToken(fake *fakeapi.Server) resource.TestCheckFunc {
 	return func(*terraform.State) error {
 		exchanges := 0
 		for _, each := range fake.Requests() {
-			if each.Path == "/api/workspace-tokens/exchange" {
+			if each.Path == "/api/v1/workspace-tokens/exchange" {
 				exchanges++
 				if got := each.Headers.Get("Spotlight-Client"); got != "terraform-provider/9.9.9" {
 					return fmt.Errorf("exchanged with Spotlight-Client %q", got)

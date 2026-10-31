@@ -80,7 +80,7 @@ The layout follows HashiCorp's [provider scaffold](https://github.com/hashicorp/
 | Path | Contains |
 | --- | --- |
 | `internal/provider/` | The provider, plus `<name>_resource.go`, `<name>_data_source.go` and `<name>_list_resource.go` for each type, with tests beside them and sweepers in `sweep_test.go` |
-| `internal/client/` | The API client; `apigen/` is generated from `api/openapi.json` |
+| `internal/client/` | The API client; `apigen/` is generated from `api/openapi.resources.json` |
 | `internal/acctest/` | Test helpers: provider factories and `PreCheck` |
 | `internal/fakeapi/` | An in-memory control plane for unit tests |
 | `internal/expressions/`, `fieldpath/`, `dynamic/`, `writeonly/` | Expression checks, API paths mapped to attributes, dynamic values, write-only attributes |
@@ -103,7 +103,7 @@ make sweep SWEEP=<slug>    # delete what an interrupted acceptance run left behi
 ## Generate
 
 ```shell
-make openapi SPOTLIGHT_REPO=../spotlight   # copy the control plane's openapi.json
+make openapi SPOTLIGHT_REPO=../spotlight   # copy the control plane's openapi.resources.json
 make client                                # regenerate internal/client/apigen
 make docs                                  # regenerate docs/
 ```
