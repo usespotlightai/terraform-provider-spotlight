@@ -95,22 +95,22 @@ func New(t interface{ Cleanup(func()) }) *Server {
 	s.Grant("configure", "secrets", "runners", "trusts")
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /api/resources/workspaces", s.listWorkspaces)
-	mux.HandleFunc("POST /api/resources/workspaces", s.create("workspace"))
-	mux.HandleFunc("GET /api/resources/workspaces/import", s.importWorkspace)
-	mux.HandleFunc("GET /api/resources/workspaces/{id}", s.read("workspace"))
-	mux.HandleFunc("PUT /api/resources/workspaces/{id}", s.update("workspace"))
-	mux.HandleFunc("DELETE /api/resources/workspaces/{id}", s.remove("workspace"))
-	mux.HandleFunc("POST /api/resources/workspaces/{owner}/{kinds}", s.createByKind("workspace"))
-	mux.HandleFunc("GET /api/resources/workspaces/{workspace}/{kinds}", s.listByKind)
-	mux.HandleFunc("GET /api/resources/workspaces/{workspace}/{kinds}/import", s.importByKind)
-	mux.HandleFunc("POST /api/resources/teams/{owner}/{kinds}", s.createByKind("team"))
-	mux.HandleFunc("GET /api/resources/{kinds}/{id}", s.readByKind)
-	mux.HandleFunc("PUT /api/resources/{kinds}/{id}", s.updateByKind)
-	mux.HandleFunc("DELETE /api/resources/{kinds}/{id}", s.removeByKind)
-	mux.HandleFunc("GET /api/expressions/positions", s.positions)
-	mux.HandleFunc("POST /api/expressions/check", s.check)
-	mux.HandleFunc("POST /api/workspace-tokens/exchange", s.exchange)
+	mux.HandleFunc("GET /api/v1/resources/workspaces", s.listWorkspaces)
+	mux.HandleFunc("POST /api/v1/resources/workspaces", s.create("workspace"))
+	mux.HandleFunc("GET /api/v1/resources/workspaces/import", s.importWorkspace)
+	mux.HandleFunc("GET /api/v1/resources/workspaces/{id}", s.read("workspace"))
+	mux.HandleFunc("PUT /api/v1/resources/workspaces/{id}", s.update("workspace"))
+	mux.HandleFunc("DELETE /api/v1/resources/workspaces/{id}", s.remove("workspace"))
+	mux.HandleFunc("POST /api/v1/resources/workspaces/{owner}/{kinds}", s.createByKind("workspace"))
+	mux.HandleFunc("GET /api/v1/resources/workspaces/{workspace}/{kinds}", s.listByKind)
+	mux.HandleFunc("GET /api/v1/resources/workspaces/{workspace}/{kinds}/import", s.importByKind)
+	mux.HandleFunc("POST /api/v1/resources/teams/{owner}/{kinds}", s.createByKind("team"))
+	mux.HandleFunc("GET /api/v1/resources/{kinds}/{id}", s.readByKind)
+	mux.HandleFunc("PUT /api/v1/resources/{kinds}/{id}", s.updateByKind)
+	mux.HandleFunc("DELETE /api/v1/resources/{kinds}/{id}", s.removeByKind)
+	mux.HandleFunc("GET /api/v1/expressions/positions", s.positions)
+	mux.HandleFunc("POST /api/v1/expressions/check", s.check)
+	mux.HandleFunc("POST /api/v1/workspace-tokens/exchange", s.exchange)
 	mux.HandleFunc("/", noRoute)
 
 	s.Server = httptest.NewServer(s.guard(mux))
@@ -260,7 +260,7 @@ func (s *Server) guard(next http.Handler) http.Handler {
 	})
 }
 
-const exchangePath = "/api/workspace-tokens/exchange"
+const exchangePath = "/api/v1/workspace-tokens/exchange"
 
 func (s *Server) authenticates(authorization string) bool {
 	bearer, ok := strings.CutPrefix(authorization, "Bearer ")

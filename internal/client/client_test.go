@@ -79,7 +79,7 @@ func TestEveryRequestSaysWhoIsCalling(t *testing.T) {
 	}
 
 	got := recorded.all()[0]
-	if got.Path != "/api/resources/workspaces/ws-1" {
+	if got.Path != "/api/v1/resources/workspaces/ws-1" {
 		t.Errorf("path %q", got.Path)
 	}
 
@@ -197,7 +197,7 @@ func TestImportRequestsByAddress(t *testing.T) {
 	}
 
 	got := recorded.all()[0]
-	if got.Path != "/api/resources/workspaces/ws-1/lines/import" || got.Query != "address=core%2Fdelivery" {
+	if got.Path != "/api/v1/resources/workspaces/ws-1/lines/import" || got.Query != "address=core%2Fdelivery" {
 		t.Errorf("requested %s?%s", got.Path, got.Query)
 	}
 
@@ -341,7 +341,7 @@ func TestURLMayNameTheAPIPath(t *testing.T) {
 	}
 
 	for _, each := range paths {
-		if each != "/api/resources/workspaces/ws-1" {
+		if each != "/api/v1/resources/workspaces/ws-1" {
 			t.Errorf("requested %s", each)
 		}
 	}
