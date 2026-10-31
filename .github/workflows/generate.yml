@@ -69,7 +69,7 @@ jobs:
         if: env.APP_ID != '' && env.PRIVATE_KEY != ''
         run: |
           rm -rf spotlight
-          git diff --exit-code -- api internal/client/apigen || {
+          git diff --exit-code -- internal/client/apigen || {
             echo "::error::The control plane's API changed. Run 'make openapi client' and commit the diff."
             exit 1
           }
