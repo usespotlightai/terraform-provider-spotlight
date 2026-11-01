@@ -70,11 +70,11 @@ SQL
   cookie="better-auth.session_token=${session}.$(printf '%s' "$signature" | sed 's/+/%2B/g; s#/#%2F#g; s/=/%3D/g')"
 
   local workspace
-  workspace=$(api POST /workspaces "{\"name\":\"Acceptance\",\"slug\":\"${slug}\",\"teamName\":\"Acceptance\"}" \
+  workspace=$(api POST /workspaces "{\"name\":\"Acceptance\",\"slug\":\"${slug}\",\"teamName\":\"Acceptance\",\"survey\":{\"jobFunction\":\"engineering\",\"referralSource\":null}}" \
     -H "Cookie: ${cookie}" | jq -er .id)
 
   local token
-  token=$(api POST "/resources/workspaces/${workspace}/tokens" '{"name":"acceptance","scopes":["configure","secrets","runners","trusts"]}' \
+  token=$(api POST "/v1/resources/workspaces/${workspace}/tokens" '{"name":"acceptance","scopes":["configure","secrets","runners","trusts"]}' \
     -H "Cookie: ${cookie}" -H "Idempotency-Key: $(random 16)" -o /dev/null -D - |
     tr -d '\r' | sed -n 's/^[Ss]potlight-[Ww]orkspace-[Tt]oken: //p')
   if [ -z "$token" ]; then
