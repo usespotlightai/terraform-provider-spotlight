@@ -4,11 +4,15 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"slices"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/acctest"
 	"github.com/usespotlightai/terraform-provider-spotlight/internal/fakeapi"
@@ -83,6 +87,118 @@ func TestWorkspaceLifecycle(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(workspaceAddress, plancheck.ResourceActionCreate)},
 				},
+			},
+		},
+	})
+}
+
+func workspaceHostsConfig(hosts string) string {
+	return fmt.Sprintf(`
+resource "spotlight_workspace" "acme" {
+  name           = "Acme"
+  slug           = "acme"
+  outbound_hosts = [%s]
+}
+`, hosts)
+}
+
+func TestWorkspaceOutboundHosts(t *testing.T) {
+	fake := fakeapi.New(t)
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
+		Steps: []resource.TestStep{
+			{
+				Config: workspaceConfig("Acme", "acme"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(workspaceAddress, tfjsonpath.New("outbound_hosts"), knownvalue.SetExact([]knownvalue.Check{})),
+				},
+			},
+			{
+				Config: workspaceHostsConfig(`"api.example.com", "*.acme.io"`),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(workspaceAddress, plancheck.ResourceActionUpdate)},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(workspaceAddress, tfjsonpath.New("outbound_hosts"), knownvalue.SetExact([]knownvalue.Check{
+						knownvalue.StringExact("api.example.com"),
+						knownvalue.StringExact("*.acme.io"),
+					})),
+				},
+				Check: func(*terraform.State) error {
+					var sent []string
+					for _, each := range fake.Requests() {
+						if each.Method == http.MethodPut {
+							listed, _ := each.Body["outboundHosts"].([]any)
+							sent = sent[:0]
+							for _, host := range listed {
+								text, _ := host.(string)
+								sent = append(sent, text)
+							}
+						}
+					}
+					slices.Sort(sent)
+					if !slices.Equal(sent, []string{"*.acme.io", "api.example.com"}) {
+						return fmt.Errorf("the update sent outbound hosts %v", sent)
+					}
+
+					return nil
+				},
+			},
+			{
+				ResourceName:      workspaceAddress,
+				ImportState:       true,
+				ImportStateId:     "acme",
+				ImportStateVerify: true,
+			},
+			{
+				Config: workspaceHostsConfig(`"API.Example.com.", "*.acme.io"`),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(workspaceAddress, plancheck.ResourceActionUpdate)},
+				},
+			},
+			{
+				Config:   workspaceHostsConfig(`"API.Example.com.", "*.acme.io"`),
+				PlanOnly: true,
+			},
+			{
+				PreConfig: func() {
+					fake.Change(fake.IDOf("workspace", "acme"), func(fields map[string]any) { fields["outboundHosts"] = []any{"elsewhere.example.com"} })
+				},
+				Config: workspaceHostsConfig(`"api.example.com", "*.acme.io"`),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(workspaceAddress, plancheck.ResourceActionUpdate)},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(workspaceAddress, tfjsonpath.New("outbound_hosts"), knownvalue.SetSizeExact(2)),
+				},
+			},
+			{
+				Config: workspaceConfig("Acme", "acme"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(workspaceAddress, plancheck.ResourceActionUpdate)},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(workspaceAddress, tfjsonpath.New("outbound_hosts"), knownvalue.SetExact([]knownvalue.Check{})),
+				},
+			},
+		},
+	})
+}
+
+func TestWorkspaceOutboundHostProblemNamesTheAttribute(t *testing.T) {
+	fake := fakeapi.New(t)
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
+		Steps: []resource.TestStep{
+			{
+				Config:      workspaceHostsConfig(`"*"`),
+				ExpectError: regexp.MustCompile(`(?s)with spotlight_workspace\.acme,.*outbound_hosts: Allowed host "\*" permits every\s+host`),
+			},
+			{
+				Config:      workspaceHostsConfig(`"bücher.example"`),
+				ExpectError: regexp.MustCompile(`(?s)with spotlight_workspace\.acme,.*outbound_hosts: Allowed host\s+"bücher\.example"\s+has\s+a\s+character\s+a\s+host\s+name\s+cannot\s+have`),
 			},
 		},
 	})

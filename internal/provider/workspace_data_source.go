@@ -28,10 +28,11 @@ type WorkspaceDataSource struct {
 
 // WorkspaceDataSourceModel is the spotlight_workspace data source.
 type WorkspaceDataSourceModel struct {
-	ID      types.String `tfsdk:"id"`
-	Address types.String `tfsdk:"address"`
-	Name    types.String `tfsdk:"name"`
-	Slug    types.String `tfsdk:"slug"`
+	ID            types.String `tfsdk:"id"`
+	Address       types.String `tfsdk:"address"`
+	Name          types.String `tfsdk:"name"`
+	Slug          types.String `tfsdk:"slug"`
+	OutboundHosts types.Set    `tfsdk:"outbound_hosts"`
 }
 
 func (d *WorkspaceDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -58,6 +59,11 @@ func (d *WorkspaceDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 				Required:            true,
 				MarkdownDescription: "Where the workspace lives in the web app, as in `acme`.",
 			},
+			"outbound_hosts": schema.SetAttribute{
+				Computed:            true,
+				ElementType:         types.StringType,
+				MarkdownDescription: "The hosts Spotlight may call for the workspace's configuration, as exact hosts, as in `api.example.com`, or patterns, as in `*.example.com`. The deployment must allow a host too. An empty set narrows nothing.",
+			},
 		},
 	}
 }
@@ -80,9 +86,10 @@ func (d *WorkspaceDataSource) Read(ctx context.Context, req datasource.ReadReque
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, WorkspaceDataSourceModel{
-		ID:      types.StringValue(workspace.ID),
-		Address: types.StringValue(workspace.Address),
-		Name:    types.StringValue(workspace.Name),
-		Slug:    types.StringValue(workspace.Slug),
+		ID:            types.StringValue(workspace.ID),
+		Address:       types.StringValue(workspace.Address),
+		Name:          types.StringValue(workspace.Name),
+		Slug:          types.StringValue(workspace.Slug),
+		OutboundHosts: stringSet(workspace.OutboundHosts),
 	})...)
 }

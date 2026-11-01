@@ -8,6 +8,7 @@ import (
 	"maps"
 	"net/http"
 	"net/http/httptest"
+	"slices"
 	"strings"
 	"sync"
 	"testing"
@@ -66,7 +67,26 @@ func reply(w http.ResponseWriter, status int, contentType string, body any) {
 }
 
 var workspace = map[string]any{
-	"id": "ws-1", "version": 3, "address": "acme", "warnings": []any{}, "name": "Acme", "slug": "acme",
+	"id": "ws-1", "version": 3, "address": "acme", "warnings": []any{}, "name": "Acme", "slug": "acme", "outboundHosts": []any{"api.example.com"},
+}
+
+func TestAWorkspaceWriteSendsItsOutboundHostsEvenWhenThereAreNone(t *testing.T) {
+	api, recorded := serve(t, func(w http.ResponseWriter, _ *http.Request, _ int) {
+		reply(w, http.StatusOK, "application/json", workspace)
+	})
+
+	updated, err := api.UpdateWorkspace(context.Background(), "ws-1", 3, client.WorkspaceInput{Name: "Acme", Slug: "acme"})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !slices.Equal(updated.OutboundHosts, []string{"api.example.com"}) {
+		t.Errorf("read outbound hosts %v", updated.OutboundHosts)
+	}
+
+	if sent := recorded.all()[0].Body; !strings.Contains(sent, `"outboundHosts":[]`) {
+		t.Errorf("sent %s, want an empty outboundHosts", sent)
+	}
 }
 
 func TestEveryRequestSaysWhoIsCalling(t *testing.T) {

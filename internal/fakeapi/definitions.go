@@ -38,7 +38,7 @@ var colors = map[string]string{
 func normalized(kind string, body map[string]any) (map[string]any, []fieldError) {
 	switch kind {
 	case "workspace":
-		return named(body, "slug", "name")
+		return workspace(body)
 	case "team":
 		return named(body, "key", "name")
 	case "line":
@@ -80,6 +80,52 @@ func named(body map[string]any, fields ...string) (map[string]any, []fieldError)
 
 	return out, errs
 }
+
+func workspace(body map[string]any) (map[string]any, []fieldError) {
+	out, errs := named(body, "slug", "name")
+
+	hosts := []string{}
+	for at, each := range texts(body["outboundHosts"]) {
+		host := strings.TrimSuffix(strings.ToLower(strings.TrimSpace(textOf(each))), ".")
+		if wrong := outboundHostWrong(host); wrong != "" {
+			errs = append(errs, fieldError{fmt.Sprintf("outboundHosts[%d]", at), fmt.Sprintf("Allowed host %q %s.", host, wrong)})
+			continue
+		}
+		hosts = append(hosts, host)
+	}
+	slices.Sort(hosts)
+
+	listed := []any{}
+	for _, each := range slices.Compact(hosts) {
+		listed = append(listed, each)
+	}
+	out["outboundHosts"] = listed
+
+	return out, errs
+}
+
+func outboundHostWrong(host string) string {
+	switch {
+	case host == "":
+		return "is empty. Write a host such as api.example.com"
+	case host == "*":
+		return "permits every host. Leave the list empty to permit every public host"
+	case strings.HasPrefix(host, "*."):
+		if suffix := host[2:]; strings.Contains(suffix, "*") || !strings.Contains(suffix, ".") {
+			return "is not a pattern such as *.example.com"
+		}
+	case strings.ContainsAny(host, "*/: "):
+		return "is not a host such as api.example.com or a pattern such as *.example.com"
+	}
+
+	if !hostLetters.MatchString(host) {
+		return "has a character a host name cannot have. Write an internationalised host in its xn-- form"
+	}
+
+	return ""
+}
+
+var hostLetters = regexp.MustCompile(`^[a-z0-9._*-]+$`)
 
 func texts(value any) []any {
 	listed, _ := value.([]any)

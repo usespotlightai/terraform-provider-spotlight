@@ -30,3 +30,4 @@ data "spotlight_workspace" "acme" {
 - `address` (String) Names the workspace, as in `acme`.
 - `id` (String) The id Spotlight issued the workspace.
 - `name` (String) What the workspace is called.
+- `outbound_hosts` (Set of String) The hosts Spotlight may call for the workspace's configuration, as exact hosts, as in `api.example.com`, or patterns, as in `*.example.com`. The deployment must allow a host too. An empty set narrows nothing.

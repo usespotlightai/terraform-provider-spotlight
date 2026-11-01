@@ -10,17 +10,19 @@ import (
 
 func workspaceOf(dto apigen.WorkspaceResourceResponseDto) Workspace {
 	return Workspace{
-		Meta: meta(dto.Id, dto.Version, dto.Address, dto.Warnings),
-		Name: dto.Name,
-		Slug: dto.Slug,
+		Meta:          meta(dto.Id, dto.Version, dto.Address, dto.Warnings),
+		Name:          dto.Name,
+		Slug:          dto.Slug,
+		OutboundHosts: orNone(dto.OutboundHosts),
 	}
 }
 
 // CreateWorkspace creates a workspace.
 func (c *Client) CreateWorkspace(ctx context.Context, in WorkspaceInput) (Workspace, error) {
+	hosts := orNone(in.OutboundHosts)
 	resp, err := c.api.CreateWorkspaceWithResponse(ctx,
 		&apigen.CreateWorkspaceParams{IdempotencyKey: uuid.NewString()},
-		apigen.CreateWorkspaceJSONRequestBody{Name: in.Name, Slug: in.Slug})
+		apigen.CreateWorkspaceJSONRequestBody{Name: in.Name, Slug: in.Slug, OutboundHosts: &hosts})
 	if err != nil {
 		return Workspace{}, err
 	}
@@ -45,9 +47,10 @@ func (c *Client) ReadWorkspace(ctx context.Context, id string) (Workspace, error
 // UpdateWorkspace writes the workspace over version, the version from the last
 // read.
 func (c *Client) UpdateWorkspace(ctx context.Context, id string, version int64, in WorkspaceInput) (Workspace, error) {
+	hosts := orNone(in.OutboundHosts)
 	resp, err := c.api.UpdateWorkspaceWithResponse(ctx, id,
 		&apigen.UpdateWorkspaceParams{IfMatch: entityTag(version)},
-		apigen.UpdateWorkspaceJSONRequestBody{Name: in.Name, Slug: in.Slug})
+		apigen.UpdateWorkspaceJSONRequestBody{Name: in.Name, Slug: in.Slug, OutboundHosts: &hosts})
 	if err != nil {
 		return Workspace{}, err
 	}

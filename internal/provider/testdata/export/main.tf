@@ -12,8 +12,9 @@ import {
 }
 
 resource "spotlight_workspace" "acme" {
-  name = "Acme"
-  slug = "acme"
+  name           = "Acme"
+  slug           = "acme"
+  outbound_hosts = ["*.acme.io", "api.example.com"]
 }
 
 import {
