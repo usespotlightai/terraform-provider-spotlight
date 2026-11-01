@@ -12549,7 +12549,7 @@
               "api.example.com",
               "*.example.com"
             ],
-            "description": "The hosts Spotlight may call for this workspace, as exact hosts or *.example.com patterns. The deployment's allowed list applies too. An empty list adds no limit. A change applies to calls in at most 30 seconds",
+            "description": "The hosts Spotlight may call for this workspace's configuration, as exact hosts or *.example.com patterns. The deployment's allowed list applies too. An empty list adds no limit. A change applies to calls in at most 30 seconds",
             "type": "array",
             "items": {
               "type": "string"
