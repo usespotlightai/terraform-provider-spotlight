@@ -26,14 +26,16 @@ type Meta struct {
 // Workspace is a workspace resource.
 type Workspace struct {
 	Meta
-	Name string
-	Slug string
+	Name          string
+	Slug          string
+	OutboundHosts []string
 }
 
 // WorkspaceInput is the input to write a workspace.
 type WorkspaceInput struct {
-	Name string `json:"name"`
-	Slug string `json:"slug"`
+	Name          string   `json:"name"`
+	Slug          string   `json:"slug"`
+	OutboundHosts []string `json:"outboundHosts"`
 }
 
 // Team is a team resource.

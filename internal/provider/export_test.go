@@ -46,7 +46,7 @@ func TestAnExportAppliesFromScratchAndAdoptsWithNoDiff(t *testing.T) {
 
 	api := acctest.FakeClient(t, fake)
 
-	workspace, err := api.CreateWorkspace(t.Context(), client.WorkspaceInput{Name: "Acme", Slug: "acme"})
+	workspace, err := api.CreateWorkspace(t.Context(), client.WorkspaceInput{Name: "Acme", Slug: "acme", OutboundHosts: []string{"*.acme.io", "api.example.com"}})
 	if err != nil {
 		t.Fatal(err)
 	}

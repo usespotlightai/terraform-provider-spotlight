@@ -28,6 +28,20 @@ resource "spotlight_workspace" "acme" {
 }
 ```
 
+## Limit the hosts Spotlight calls
+
+`outbound_hosts` limits the hosts that Spotlight calls for the workspace's configuration: its integrations, hooks and MCP servers, their OAuth servers, the provision URLs of its runner pools, and the issuers of its OIDC trusts. Spotlight calls a host only when the deployment and the workspace both allow it. An empty set narrows nothing, so the deployment's allowed hosts apply alone. A change applies to calls in at most 30 seconds.
+
+Each entry is an exact host, as in `api.linear.app`, or a pattern, as in `*.acme.io`, which matches every host below `acme.io` but not `acme.io` itself. Write the hosts in lower case, without a trailing dot, and with no scheme, port or path. Write an internationalised host in its `xn--` form. `*` alone is refused: to permit every host, leave the set empty.
+
+```terraform
+resource "spotlight_workspace" "acme" {
+  name           = "Acme"
+  slug           = "acme"
+  outbound_hosts = ["*.acme.io", "api.linear.app"]
+}
+```
+
 ## Creating a workspace
 
 Creating a workspace from Terraform needs a caller allowed to create workspaces. API tokens are not: a token acts only inside its own workspace, and creating one fails with `403 Forbidden`. The provider reports that error with the `import` block to write instead.
@@ -53,6 +67,10 @@ removed {
 
 - `name` (String) What the workspace is called.
 - `slug` (String) Where the workspace lives in the web app. It is immutable, so changing it replaces the workspace.
+
+### Optional
+
+- `outbound_hosts` (Set of String) The hosts Spotlight may call for the workspace's configuration, as exact hosts, as in `api.example.com`, or patterns, as in `*.example.com`. Write them in lower case, without a trailing dot, and with no scheme, port or path. The deployment must allow a host too. An empty set narrows nothing. A change applies to calls in at most 30 seconds.
 
 ### Read-Only
 

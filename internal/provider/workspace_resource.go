@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -36,11 +37,12 @@ type WorkspaceResource struct {
 
 // WorkspaceResourceModel is a spotlight_workspace as Terraform stores it.
 type WorkspaceResourceModel struct {
-	ID      types.String `tfsdk:"id"`
-	Version types.Int64  `tfsdk:"version"`
-	Address types.String `tfsdk:"address"`
-	Name    types.String `tfsdk:"name"`
-	Slug    types.String `tfsdk:"slug"`
+	ID            types.String `tfsdk:"id"`
+	Version       types.Int64  `tfsdk:"version"`
+	Address       types.String `tfsdk:"address"`
+	Name          types.String `tfsdk:"name"`
+	Slug          types.String `tfsdk:"slug"`
+	OutboundHosts types.Set    `tfsdk:"outbound_hosts"`
 }
 
 var workspaceFields = fieldpath.Locator{Schema: workspaceSchema().Type()}
@@ -70,9 +72,14 @@ func workspaceSchema() schema.Schema {
 				MarkdownDescription: "Where the workspace lives in the web app. It is immutable, so changing it replaces the workspace.",
 				PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
+			"outbound_hosts": stringSetAttribute(workspaceOutboundHostsDescription),
 		},
 	}
 }
+
+const workspaceOutboundHostsDescription = "The hosts Spotlight may call for the workspace's configuration, as exact hosts, as in `api.example.com`, or patterns, as in `*.example.com`. " +
+	"Write them in lower case, without a trailing dot, and with no scheme, port or path. " +
+	"The deployment must allow a host too. An empty set narrows nothing. A change applies to calls in at most 30 seconds."
 
 func (r *WorkspaceResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
 	resp.IdentitySchema = idIdentitySchema("workspace")
@@ -89,7 +96,13 @@ func (r *WorkspaceResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	workspace, err := r.client.CreateWorkspace(ctx, workspaceInput(plan))
+	in, diags := workspaceInput(plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	workspace, err := r.client.CreateWorkspace(ctx, in)
 	if client.IsForbidden(err) {
 		resp.Diagnostics.AddError("Could not create the workspace", workspaceForbiddenToCreate)
 		return
@@ -140,7 +153,13 @@ func (r *WorkspaceResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	workspace, err := r.client.UpdateWorkspace(ctx, state.ID.ValueString(), state.Version.ValueInt64(), workspaceInput(plan))
+	in, diags := workspaceInput(plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	workspace, err := r.client.UpdateWorkspace(ctx, state.ID.ValueString(), state.Version.ValueInt64(), in)
 	if err != nil {
 		addAPIError(&resp.Diagnostics, "Could not update the workspace", err, workspaceFields, client.ScopeConfigure)
 		return
@@ -188,26 +207,34 @@ func (r *WorkspaceResource) ImportState(ctx context.Context, req resource.Import
 	resp.Diagnostics.Append(rememberAnswer(ctx, resp.Private, workspaceSettable(workspace))...)
 }
 
-func workspaceInput(plan WorkspaceResourceModel) client.WorkspaceInput {
-	return client.WorkspaceInput{Name: plan.Name.ValueString(), Slug: plan.Slug.ValueString()}
+func workspaceInput(plan WorkspaceResourceModel) (client.WorkspaceInput, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	return client.WorkspaceInput{
+		Name:          plan.Name.ValueString(),
+		Slug:          plan.Slug.ValueString(),
+		OutboundHosts: stringsIn(plan.OutboundHosts, &diags),
+	}, diags
 }
 
 func workspaceSettable(workspace client.Workspace) any {
-	return client.WorkspaceInput{Name: workspace.Name, Slug: workspace.Slug}
+	return client.WorkspaceInput{Name: workspace.Name, Slug: workspace.Slug, OutboundHosts: workspace.OutboundHosts}
 }
 
 func workspaceModel(workspace client.Workspace, prior *WorkspaceResourceModel) WorkspaceResourceModel {
 	model := WorkspaceResourceModel{
-		ID:      types.StringValue(workspace.ID),
-		Version: types.Int64Value(workspace.Version),
-		Address: types.StringValue(workspace.Address),
-		Name:    types.StringValue(workspace.Name),
-		Slug:    types.StringValue(workspace.Slug),
+		ID:            types.StringValue(workspace.ID),
+		Version:       types.Int64Value(workspace.Version),
+		Address:       types.StringValue(workspace.Address),
+		Name:          types.StringValue(workspace.Name),
+		Slug:          types.StringValue(workspace.Slug),
+		OutboundHosts: stringSet(workspace.OutboundHosts),
 	}
 
 	if prior != nil {
 		model.Name = prior.Name
 		model.Slug = prior.Slug
+		model.OutboundHosts = prior.OutboundHosts
 	}
 
 	return model

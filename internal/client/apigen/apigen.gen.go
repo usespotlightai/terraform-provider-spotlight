@@ -2564,6 +2564,9 @@ type WorkspaceResourceResponseDto struct {
 	// Name What the workspace is called
 	Name string `json:"name"`
 
+	// OutboundHosts The hosts Spotlight may call for this workspace's configuration, as exact hosts or *.example.com patterns. The deployment's allowed list applies too. An empty list adds no limit. A change applies to calls in at most 30 seconds
+	OutboundHosts []string `json:"outboundHosts"`
+
 	// Slug Where the workspace lives in the web app. Immutable: changing it means replacing the workspace
 	Slug string `json:"slug"`
 
@@ -3400,8 +3403,9 @@ type ListWorkspacesParamsSpotlightApiVersion string
 
 // CreateWorkspaceJSONBody defines parameters for CreateWorkspace.
 type CreateWorkspaceJSONBody struct {
-	Name string `json:"name"`
-	Slug string `json:"slug"`
+	Name          string    `json:"name"`
+	OutboundHosts *[]string `json:"outboundHosts,omitempty"`
+	Slug          string    `json:"slug"`
 }
 
 // CreateWorkspaceParams defines parameters for CreateWorkspace.
@@ -3463,8 +3467,9 @@ type ReadWorkspaceParamsSpotlightApiVersion string
 
 // UpdateWorkspaceJSONBody defines parameters for UpdateWorkspace.
 type UpdateWorkspaceJSONBody struct {
-	Name string `json:"name"`
-	Slug string `json:"slug"`
+	Name          string    `json:"name"`
+	OutboundHosts *[]string `json:"outboundHosts,omitempty"`
+	Slug          string    `json:"slug"`
 }
 
 // UpdateWorkspaceParams defines parameters for UpdateWorkspace.

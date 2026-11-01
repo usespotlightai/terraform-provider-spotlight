@@ -32,6 +32,7 @@ data "spotlight_workspace" "acme" {
 					statecheck.CompareValuePairs(workspaceDataSourceAddress, tfjsonpath.New("id"), "spotlight_workspace.acme", tfjsonpath.New("id"), compare.ValuesSame()),
 					statecheck.ExpectKnownValue(workspaceDataSourceAddress, tfjsonpath.New("address"), knownvalue.StringExact("acme")),
 					statecheck.ExpectKnownValue(workspaceDataSourceAddress, tfjsonpath.New("name"), knownvalue.StringExact("Acme")),
+					statecheck.ExpectKnownValue(workspaceDataSourceAddress, tfjsonpath.New("outbound_hosts"), knownvalue.SetExact([]knownvalue.Check{})),
 				},
 			},
 		},
