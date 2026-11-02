@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.0-rc.5](https://github.com/usespotlightai/terraform-provider-spotlight/compare/v0.1.0-rc.4...v0.1.0-rc.5) (2026-11-01)
+
+
+### Features
+
+* add outbound_hosts to spotlight_workspace ([#65](https://github.com/usespotlightai/terraform-provider-spotlight/issues/65)) ([f6d9961](https://github.com/usespotlightai/terraform-provider-spotlight/commit/f6d99616cc8ce10e11ed5c3fd32c7f95a1b1dc5f))
+
 ## [0.1.0-rc.4](https://github.com/usespotlightai/terraform-provider-spotlight/compare/v0.1.0-rc.3...v0.1.0-rc.4) (2026-11-01)
 
 
