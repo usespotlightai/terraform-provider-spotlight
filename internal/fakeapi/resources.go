@@ -656,6 +656,12 @@ func oidcTrust(body map[string]any) (map[string]any, []fieldError) {
 		errs = append(errs, fieldError{"lifetimeMinutes", "is a whole number of minutes from 1 to 60"})
 	}
 
+	description, _ := body["description"].(string)
+	description = strings.TrimSpace(description)
+	if len(description) > 1000 {
+		errs = append(errs, fieldError{"description", "must be at most 1000 characters"})
+	}
+
 	return map[string]any{
 		"key":             key,
 		"issuer":          strings.TrimSpace(issued),
@@ -664,5 +670,6 @@ func oidcTrust(body map[string]any) (map[string]any, []fieldError) {
 		"claims":          claims,
 		"scopes":          scopes,
 		"lifetimeMinutes": lifetime,
+		"description":     description,
 	}, errs
 }

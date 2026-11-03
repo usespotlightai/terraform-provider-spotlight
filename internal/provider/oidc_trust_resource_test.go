@@ -3,6 +3,7 @@ package provider_test
 import (
 	"fmt"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -46,6 +47,7 @@ func TestOidcTrustLifecycle(t *testing.T) {
 				Config: oidcTrustConfig("github-main", "repo:acme/platform:ref:refs/heads/main", `"configure", "secrets"`, ""),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(oidcTrustAddress, tfjsonpath.New("address"), knownvalue.StringExact("github-main")),
+					statecheck.ExpectKnownValue(oidcTrustAddress, tfjsonpath.New("description"), knownvalue.StringExact("")),
 					statecheck.ExpectKnownValue(oidcTrustAddress, tfjsonpath.New("audience"), knownvalue.StringExact("spotlight")),
 					statecheck.ExpectKnownValue(oidcTrustAddress, tfjsonpath.New("claims"), knownvalue.MapExact(map[string]knownvalue.Check{})),
 					statecheck.ExpectKnownValue(oidcTrustAddress, tfjsonpath.New("lifetime_minutes"), knownvalue.Int64Exact(15)),
@@ -153,9 +155,10 @@ func TestOidcTrustIsCheckedWhenPlanned(t *testing.T) {
 		scopes, more string
 		rejected     *regexp.Regexp
 	}{
-		"a lifetime over an hour": {`"plan"`, "lifetime_minutes = 61", regexp.MustCompile(`(?s)lifetime_minutes.*between 1 and 60`)},
-		"no scopes":               {"", "", regexp.MustCompile(`(?s)scopes.*at least 1`)},
-		"a scope that is not one": {`"administer"`, "", regexp.MustCompile(`(?s)scopes.*administer`)},
+		"a lifetime over an hour":            {`"plan"`, "lifetime_minutes = 61", regexp.MustCompile(`(?s)lifetime_minutes.*between 1 and 60`)},
+		"a description over 1000 characters": {`"plan"`, fmt.Sprintf("description = %q", strings.Repeat("a", 1001)), regexp.MustCompile(`(?s)description.*at most 1000`)},
+		"no scopes":                          {"", "", regexp.MustCompile(`(?s)scopes.*at least 1`)},
+		"a scope that is not one":            {`"administer"`, "", regexp.MustCompile(`(?s)scopes.*administer`)},
 	} {
 		t.Run(name, func(t *testing.T) {
 			fake := fakeapi.New(t)
@@ -272,6 +275,35 @@ func TestAccOidcTrust(t *testing.T) {
 					acctest.ExpectForgotten("spotlight_workspace.acc"),
 					plancheck.ExpectResourceAction(oidcTrustAddress, plancheck.ResourceActionNoop),
 				}},
+			},
+		},
+	})
+}
+
+func TestOidcTrustDescriptionChangesInPlace(t *testing.T) {
+	fake := fakeapi.New(t)
+	subject := "repo:acme/platform:ref:refs/heads/main"
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
+		CheckDestroy:             acctest.NoneLeft(fake, "oidc-trust", "team", "workspace"),
+		Steps: []resource.TestStep{
+			{
+				Config: oidcTrustConfig("github-main", subject, `"plan"`, `description = "Plans the platform"`),
+				Check:  resource.TestCheckResourceAttr(oidcTrustAddress, "description", "Plans the platform"),
+			},
+			{
+				Config: oidcTrustConfig("github-main", subject, `"plan"`, `description = "Plans every pull request"`),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(oidcTrustAddress, plancheck.ResourceActionUpdate)},
+				},
+				Check: resource.TestCheckResourceAttr(oidcTrustAddress, "description", "Plans every pull request"),
+			},
+			{
+				ResourceName:      oidcTrustAddress,
+				ImportState:       true,
+				ImportStateIdFunc: oidcTrustImportID,
+				ImportStateVerify: true,
 			},
 		},
 	})

@@ -23,6 +23,7 @@ resource "spotlight_oidc_trust" "github_main" {
   }
   scopes           = ["configure", "secrets"]
   lifetime_minutes = 15
+  description      = "Applies the platform from the main branch"
 }
 ```
 
@@ -41,6 +42,7 @@ resource "spotlight_oidc_trust" "github_main" {
 
 - `audience` (String) The audience the workload must request from its issuer.
 - `claims` (Map of String) Further claims the workload's token must carry, by name, each matching its pattern the way `subject` does, as in `{ repository = "acme/platform" }`.
+- `description` (String) Why the trust exists, at most 1000 characters. The trust list in the web app shows it.
 - `lifetime_minutes` (Number) How many minutes a token the trust issues stays valid, from 1 to 60.
 
 ### Read-Only

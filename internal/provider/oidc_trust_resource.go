@@ -54,6 +54,7 @@ type OidcTrustResourceModel struct {
 	Claims          types.Map    `tfsdk:"claims"`
 	Scopes          types.Set    `tfsdk:"scopes"`
 	LifetimeMinutes types.Int64  `tfsdk:"lifetime_minutes"`
+	Description     types.String `tfsdk:"description"`
 	CreatedBy       types.String `tfsdk:"created_by"`
 }
 
@@ -122,6 +123,13 @@ func oidcTrustSchema() schema.Schema {
 				Default:             int64default.StaticInt64(15),
 				Validators:          []validator.Int64{int64validator.Between(1, 60)},
 				MarkdownDescription: "How many minutes a token the trust issues stays valid, from 1 to 60.",
+			},
+			"description": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Default:             stringdefault.StaticString(""),
+				Validators:          []validator.String{stringvalidator.LengthAtMost(1000)},
+				MarkdownDescription: "Why the trust exists, at most 1000 characters. The trust list in the web app shows it.",
 			},
 			"created_by": schema.StringAttribute{
 				Computed:            true,
@@ -274,6 +282,7 @@ func oidcTrustInput(ctx context.Context, plan OidcTrustResourceModel) (client.Oi
 		Claims:          claims,
 		Scopes:          stringsIn(plan.Scopes, &diags),
 		LifetimeMinutes: plan.LifetimeMinutes.ValueInt64(),
+		Description:     plan.Description.ValueString(),
 	}, diags
 }
 
@@ -290,6 +299,7 @@ func oidcTrustModel(trust client.OidcTrust, prior *OidcTrustResourceModel) OidcT
 		Claims:          stringMap(trust.Claims),
 		Scopes:          stringSet(trust.Scopes),
 		LifetimeMinutes: types.Int64Value(trust.LifetimeMinutes),
+		Description:     types.StringValue(trust.Description),
 		CreatedBy:       types.StringValue(trust.CreatedBy),
 	}
 
@@ -301,6 +311,7 @@ func oidcTrustModel(trust client.OidcTrust, prior *OidcTrustResourceModel) OidcT
 		model.Claims = prior.Claims
 		model.Scopes = prior.Scopes
 		model.LifetimeMinutes = prior.LifetimeMinutes
+		model.Description = prior.Description
 	}
 
 	return model

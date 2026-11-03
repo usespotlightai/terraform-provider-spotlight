@@ -8,4 +8,5 @@ resource "spotlight_oidc_trust" "github_main" {
   }
   scopes           = ["configure", "secrets"]
   lifetime_minutes = 15
+  description      = "Applies the platform from the main branch"
 }

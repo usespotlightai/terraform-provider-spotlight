@@ -31,6 +31,7 @@ func oidcTrustOf(dto apigen.OidcTrustResourceResponseDto) OidcTrust {
 			Claims:          claims,
 			Scopes:          scopes,
 			LifetimeMinutes: int64(dto.LifetimeMinutes),
+			Description:     dto.Description,
 		},
 	}
 }

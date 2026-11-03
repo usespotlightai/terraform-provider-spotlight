@@ -233,6 +233,7 @@ type OidcTrustInput struct {
 	Claims          map[string]string `json:"claims"`
 	Scopes          []string          `json:"scopes"`
 	LifetimeMinutes int64             `json:"lifetimeMinutes"`
+	Description     string            `json:"description"`
 }
 
 // RunnerPool is a pool of runners that each do one run. In pull mode, hosts

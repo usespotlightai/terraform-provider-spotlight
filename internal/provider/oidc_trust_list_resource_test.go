@@ -19,7 +19,7 @@ func seededOidcTrusts(t *testing.T, seeded acctest.Seeded) (first, second acctes
 
 		created, err := seeded.Client.CreateOidcTrust(t.Context(), workspace.ID, client.OidcTrustInput{
 			Key: key, Issuer: "https://token.actions.githubusercontent.com", Audience: "spotlight", Subject: "repo:acme/platform:*",
-			Claims: map[string]string{}, Scopes: []string{"plan"}, LifetimeMinutes: 15,
+			Claims: map[string]string{}, Scopes: []string{"plan"}, LifetimeMinutes: 15, Description: "Plans pull requests",
 		})
 		acctest.Must(t, err)
 
