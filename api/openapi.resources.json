@@ -145,7 +145,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the line: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the line; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -436,7 +436,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the line: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the line; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -571,7 +571,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the line: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the line; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1131,7 +1131,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the workspace: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the workspace; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1410,7 +1410,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the workspace: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the workspace; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1545,7 +1545,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the workspace: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the workspace; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1721,7 +1721,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the team: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the team; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2081,7 +2081,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the team: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the team; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2216,7 +2216,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the team: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the team; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2538,7 +2538,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the workspace-token: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the workspace-token; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2925,7 +2925,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the workspace-token: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the workspace-token; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -3060,7 +3060,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the workspace-token: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the workspace-token; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -3337,6 +3337,12 @@
                     "minimum": 1,
                     "maximum": 60,
                     "default": 15
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "default": "",
+                    "example": "Deploys the platform from the main branch"
                   }
                 }
               }
@@ -3393,7 +3399,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the oidc-trust: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the oidc-trust; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -3751,6 +3757,12 @@
                     "minimum": 1,
                     "maximum": 60,
                     "default": 15
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "default": "",
+                    "example": "Deploys the platform from the main branch"
                   }
                 }
               }
@@ -3798,7 +3810,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the oidc-trust: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the oidc-trust; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -3933,7 +3945,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the oidc-trust: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the oidc-trust; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -4135,6 +4147,268 @@
         ]
       }
     },
+    "/v1/resources/workspaces/{workspaceId}/catalog/tools": {
+      "get": {
+        "operationId": "readCatalogTool",
+        "parameters": [
+          {
+            "name": "Spotlight-Api-Version",
+            "in": "header",
+            "description": "The API version the client was written against; every response names the version that it uses",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2026-09-23"
+              ],
+              "default": "2026-09-23"
+            }
+          },
+          {
+            "name": "Spotlight-Client",
+            "in": "header",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "terraform-provider/0.1.0"
+            }
+          },
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "5b1e9d2c-7a43-4f8e-b6c0-3d9a8e1f2b57",
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "required": true,
+            "in": "query",
+            "description": "Its name in the catalog",
+            "schema": {
+              "example": "web-search"
+            }
+          },
+          {
+            "name": "version",
+            "required": true,
+            "in": "query",
+            "description": "The versions you accept, as Terraform writes a constraint; Spotlight returns the newest version that matches",
+            "schema": {
+              "example": "~> 1.0"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The catalog-tool it resolves to",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogToolResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed, or requests an API version this server does not serve",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid credentials",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The workspace’s plan does not include the catalog-tool; the detail names the plan that it requires",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such catalog-tool, or no workspace here that you may see",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "What is wrong with the query, field by field",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Resolve a catalog tool by name and version constraint, if the workspace’s plan includes it",
+        "tags": [
+          "catalog"
+        ],
+        "x-spotlight-data-source": {
+          "kind": "catalog-tool"
+        }
+      }
+    },
+    "/v1/resources/workspaces/{workspaceId}/catalog/skills": {
+      "get": {
+        "operationId": "readCatalogSkill",
+        "parameters": [
+          {
+            "name": "Spotlight-Api-Version",
+            "in": "header",
+            "description": "The API version the client was written against; every response names the version that it uses",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2026-09-23"
+              ],
+              "default": "2026-09-23"
+            }
+          },
+          {
+            "name": "Spotlight-Client",
+            "in": "header",
+            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "terraform-provider/0.1.0"
+            }
+          },
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "5b1e9d2c-7a43-4f8e-b6c0-3d9a8e1f2b57",
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "required": true,
+            "in": "query",
+            "description": "Its name in the catalog",
+            "schema": {
+              "example": "research"
+            }
+          },
+          {
+            "name": "version",
+            "required": true,
+            "in": "query",
+            "description": "The versions you accept, as Terraform writes a constraint; Spotlight returns the newest version that matches",
+            "schema": {
+              "example": "~> 1.0"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The catalog-skill it resolves to",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogSkillResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed, or requests an API version this server does not serve",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid credentials",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The workspace’s plan does not include the catalog-skill; the detail names the plan that it requires",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such catalog-skill, or no workspace here that you may see",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "What is wrong with the query, field by field",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Resolve a catalog skill by name and version constraint, if the workspace’s plan includes it",
+        "tags": [
+          "catalog"
+        ],
+        "x-spotlight-data-source": {
+          "kind": "catalog-skill"
+        }
+      }
+    },
     "/v1/resources/workspaces/{workspaceId}/secrets": {
       "post": {
         "operationId": "createSecret",
@@ -4317,7 +4591,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the secret: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the secret; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -4738,7 +5012,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the secret: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the secret; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -4873,7 +5147,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the secret: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the secret; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -5040,268 +5314,6 @@
         }
       }
     },
-    "/v1/resources/workspaces/{workspaceId}/catalog/tools": {
-      "get": {
-        "operationId": "readCatalogTool",
-        "parameters": [
-          {
-            "name": "Spotlight-Api-Version",
-            "in": "header",
-            "description": "The API version the client was written against; every response names the version that it uses",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "2026-09-23"
-              ],
-              "default": "2026-09-23"
-            }
-          },
-          {
-            "name": "Spotlight-Client",
-            "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "example": "terraform-provider/0.1.0"
-            }
-          },
-          {
-            "name": "workspaceId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "example": "5b1e9d2c-7a43-4f8e-b6c0-3d9a8e1f2b57",
-              "type": "string"
-            }
-          },
-          {
-            "name": "name",
-            "required": true,
-            "in": "query",
-            "description": "Its name in the catalog",
-            "schema": {
-              "example": "web-search"
-            }
-          },
-          {
-            "name": "version",
-            "required": true,
-            "in": "query",
-            "description": "The versions you accept, as Terraform writes a constraint; Spotlight returns the newest version that matches",
-            "schema": {
-              "example": "~> 1.0"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "The catalog-tool it resolves to",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CatalogToolResponseDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Malformed, or requests an API version this server does not serve",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "No valid credentials",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "The workspace’s plan does not include the catalog-tool; the detail names the plan that it requires",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "No such catalog-tool, or no workspace here that you may see",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemResponseDto"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "What is wrong with the query, field by field",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Resolve a catalog tool by name and version constraint, if the workspace’s plan includes it",
-        "tags": [
-          "catalog"
-        ],
-        "x-spotlight-data-source": {
-          "kind": "catalog-tool"
-        }
-      }
-    },
-    "/v1/resources/workspaces/{workspaceId}/catalog/skills": {
-      "get": {
-        "operationId": "readCatalogSkill",
-        "parameters": [
-          {
-            "name": "Spotlight-Api-Version",
-            "in": "header",
-            "description": "The API version the client was written against; every response names the version that it uses",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "2026-09-23"
-              ],
-              "default": "2026-09-23"
-            }
-          },
-          {
-            "name": "Spotlight-Client",
-            "in": "header",
-            "description": "Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "example": "terraform-provider/0.1.0"
-            }
-          },
-          {
-            "name": "workspaceId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "example": "5b1e9d2c-7a43-4f8e-b6c0-3d9a8e1f2b57",
-              "type": "string"
-            }
-          },
-          {
-            "name": "name",
-            "required": true,
-            "in": "query",
-            "description": "Its name in the catalog",
-            "schema": {
-              "example": "research"
-            }
-          },
-          {
-            "name": "version",
-            "required": true,
-            "in": "query",
-            "description": "The versions you accept, as Terraform writes a constraint; Spotlight returns the newest version that matches",
-            "schema": {
-              "example": "~> 1.0"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "The catalog-skill it resolves to",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CatalogSkillResponseDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Malformed, or requests an API version this server does not serve",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "No valid credentials",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "The workspace’s plan does not include the catalog-skill; the detail names the plan that it requires",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "No such catalog-skill, or no workspace here that you may see",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemResponseDto"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "What is wrong with the query, field by field",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Resolve a catalog skill by name and version constraint, if the workspace’s plan includes it",
-        "tags": [
-          "catalog"
-        ],
-        "x-spotlight-data-source": {
-          "kind": "catalog-skill"
-        }
-      }
-    },
     "/v1/resources/workspaces/{workspaceId}/runner-trusts": {
       "post": {
         "operationId": "createRunnerTrust",
@@ -5441,7 +5453,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the runner-trust: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the runner-trust; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -5819,7 +5831,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the runner-trust: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the runner-trust; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -5954,7 +5966,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the runner-trust: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the runner-trust; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -6312,7 +6324,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the runner-pool: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the runner-pool; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -6736,7 +6748,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the runner-pool: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the runner-pool; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -6871,7 +6883,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the runner-pool: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the runner-pool; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -7179,7 +7191,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the egress: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the egress; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -7553,7 +7565,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the egress: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the egress; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -7688,7 +7700,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the egress: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the egress; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -7991,7 +8003,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the workspace-runners: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the workspace-runners; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -8366,7 +8378,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the workspace-runners: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the workspace-runners; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -8501,7 +8513,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the workspace-runners: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the workspace-runners; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -8794,7 +8806,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the skill: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the skill; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -9067,7 +9079,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the skill: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the skill; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -9202,7 +9214,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the skill: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the skill; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -9657,7 +9669,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the harness-profile: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the harness-profile; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -9998,7 +10010,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the harness-profile: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the harness-profile; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -10133,7 +10145,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the harness-profile: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the harness-profile; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -10716,7 +10728,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the integration: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the integration; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -10982,7 +10994,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the integration: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the integration; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -11117,7 +11129,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the integration: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the integration; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -11660,7 +11672,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the hook: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the hook; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -11914,7 +11926,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the hook: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the hook; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -12049,7 +12061,7 @@
             }
           },
           "403": {
-            "description": "Not allowed to do this to the hook: your role in its workspace or your token’s scopes fall short, or only a person may do it; the detail says which",
+            "description": "Not allowed to do this to the hook; the detail says why",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -12313,7 +12325,7 @@
   },
   "info": {
     "title": "Spotlight Control Plane",
-    "description": "HTTP API for the Spotlight Control Plane.\n\n## Resource conventions\n\nOperations marked `x-spotlight-resource` manage configuration resources, the ones the Terraform provider writes. They live under `/v1/resources` and address everything by id. Every resource follows these rules, and a conformance suite checks each one against them.\n\n- **Stable ids.** Spotlight issues a resource's `id` when it is created. It never changes for the resource's life, whatever else does.\n- **Reads return every field.** A read returns the whole resource, defaults filled in, so a client comparing it with what it wrote sees any drift. A write returns exactly what a read returns.\n- **Versions.** Every resource carries a `version` that rises with each change, and each response carries it as a strong `ETag` (`\"3\"`). An update or delete must send it back as `If-Match`: without one it fails with 428, and against a version that is no longer current with 409, whose body gives the `currentVersion` and whose `ETag` names it. A write that would remove something another resource still uses fails with 409 `in-use`.\n- **Idempotent creates.** A create must carry an `Idempotency-Key`. Retrying with the same key and body within 24 hours returns the resource that the first attempt created, marked `Idempotent-Replayed: true`, and creates nothing more; the same key with a different body fails with 422.\n- **Problems name fields.** Errors are `application/problem+json` (RFC 9457). `type` is stable and safe to branch on. An invalid request lists `errors`, each with the `path` of the attribute it is about, as in `stations[2].check`; a key that is not a plain name is quoted, as Terraform addresses it: `on[\"task.opened\"].to.thread`.\n- **API versions.** The path names the major version, as in `/v1`; a change that is not additive gets a new path. Within it, a client may send `Spotlight-Api-Version`; every response names the version that it uses, currently `2026-09-23`. Changes within a version are additive only: fields and operations are added, never removed, renamed or given a new meaning.\n- **Expression checks.** `POST /v1/expressions/check` type-checks one CEL expression at the attribute that contains it, named within the resource's whole definition (`integration.webhook.events[0].when`), as `terraform plan` needs. What the expression may read is worked out from that definition exactly as applying it would, so a plan fails where an apply would; a definition that has an error fails with 422, each error under `definition`. It returns the type and any errors, each with the span it is about and a suggestion where a declared name is near, and warnings about the definition, such as a capture shadowing a built-in name. `GET /v1/expressions/positions` lists every position, with `[*]` for any index or key, and the variables an expression there can read. They follow these headers and problems, but are not resources.\n- **Credentials.** A client calls with a person's session or with a workspace token. A script or Terraform sends a workspace token, or the login that `spotlight login` stores, as `Authorization: Bearer <token>`. A login acts as its person, with that person's role. A token acts only within its own workspace and only as its scopes allow. `read`, `plan` and `configure` are a ladder: `read` reads, `plan` also checks expressions, and `configure` also creates, updates and deletes configuration as a workspace admin may, except secrets, runners and OIDC trusts. `secrets` is granted beside one of them and lets the token create, rebind, rotate and delete secrets; Terraform that manages secrets uses `[\"configure\", \"secrets\"]`. `runners` is granted the same way and lets the token create, rekey and delete runners and runner trusts and create, update and delete the workspace's runners, since a runner claims runs, checks out repositories and keeps git credentials; Terraform that manages runners uses `[\"configure\", \"runners\"]`. `trusts` is granted the same way and lets the token create, update and delete OIDC trusts, since a trust hands out tokens; a token can only create a trust that grants scopes it has itself, so bootstrap the trusts once with a token that has `trusts` and every scope they grant, as in `[\"configure\", \"secrets\", \"trusts\"]`, and revoke it. No token manages members or tokens, or reads the audit.\n- **CI without a stored token.** A workspace admin, or a token granted `trusts`, creates an OIDC trust naming an OIDC issuer, audience, subject and claims, and the scopes and lifetime (at most an hour) of the tokens it issues. A CI job exchanges the OIDC token its platform issues it at `POST /v1/workspace-tokens/exchange` with `{ \"trust\": <trust id>, \"token\": <OIDC token> }`, and calls with the short-lived token it gets back. Deleting the trust stops every token that it issued at once, and the audit names the trust and the workload's subject beside each exchange and each change made with an issued token.\n- **Forbidden changes.** A change by someone who may read the resource but not change it, person or token, fails with 403 `forbidden`, whose `permission` names what the caller lacks, one of `configure`, `secrets`, `runners`, `trusts`, `administer`, `create-workspaces`, `plan`. Anything they may not see at all returns 404.\n- **Who changed what.** A client names itself in `Spotlight-Client` (`terraform-provider/<version>` or `web`), and every configuration change is recorded with who made it, person or token, and through which client. A secret's change also records the value version it moved to and the hosts it is bound to, never its value.\n- **Import by address.** Each resource has an `address` that names it within its workspace, such as `core/linear`, and an import operation that returns the resource at that address, as `terraform import` needs. A workspace's address is its slug; a team's is its key; anything a team owns is the team's key and its own, as in `core/delivery`.",
+    "description": "HTTP API for the Spotlight Control Plane.\n\n## Resource conventions\n\nOperations marked `x-spotlight-resource` manage configuration resources, the ones the Terraform provider writes. They live under `/v1/resources` and address everything by id. Every resource follows these rules, and a conformance suite checks each one against them.\n\n- **Stable ids.** Spotlight issues a resource's `id` when it is created. It never changes for the resource's life, whatever else does.\n- **Reads return every field.** A read returns the whole resource, defaults filled in, so a client comparing it with what it wrote sees any drift. A write returns exactly what a read returns.\n- **Versions.** Every resource carries a `version` that rises with each change, and each response carries it as a strong `ETag` (`\"3\"`). An update or delete must send it back as `If-Match`: without one it fails with 428, and against a version that is no longer current with 409, whose body gives the `currentVersion` and whose `ETag` names it. A write that would remove something another resource still uses fails with 409 `in-use`.\n- **Idempotent creates.** A create must carry an `Idempotency-Key`. Retrying with the same key and body within 24 hours returns the resource that the first attempt created, marked `Idempotent-Replayed: true`, and creates nothing more; the same key with a different body fails with 422.\n- **Problems name fields.** Errors are `application/problem+json` (RFC 9457). `type` is stable and safe to branch on. An invalid request lists `errors`, each with the `path` of the attribute it is about, as in `stations[2].check`; a key that is not a plain name is quoted, as Terraform addresses it: `on[\"task.opened\"][0].to.thread`.\n- **API versions.** The path names the major version, as in `/v1`; a change that is not additive gets a new path. Within it, a client may send `Spotlight-Api-Version`; every response names the version that it uses, currently `2026-09-23`. Changes within a version are additive only: fields and operations are added, never removed, renamed or given a new meaning.\n- **Forbidden changes.** A change by someone who may read the resource but not change it, person or token, fails with 403 `forbidden`, whose `permission` names what the caller lacks, one of `configure`, `secrets`, `runners`, `trusts`, `administer`, `create-workspaces`, `plan`. Anything they may not see at all returns 404.\n- **Who changed what.** A client names itself in `Spotlight-Client` (`terraform-provider/<version>` or `web`), and every configuration change is recorded with who made it, person or token, and through which client.\n- **Import by address.** Each resource has an `address` that names it within its workspace, such as `core/linear`, and an import operation that returns the resource at that address, as `terraform import` needs. A workspace's address is its slug; a team's is its key; anything a team owns is the team's key and its own, as in `core/delivery`.\n- **CI without a stored token.** A workspace admin, or a token granted `trusts`, creates an OIDC trust naming an OIDC issuer, audience, subject and claims, and the scopes and lifetime (at most an hour) of the tokens it issues. A CI job exchanges the OIDC token its platform issues it at `POST /v1/workspace-tokens/exchange` with `{ \"trust\": <trust id>, \"token\": <OIDC token> }`, and calls with the short-lived token it gets back. Deleting the trust stops every token that it issued at once, and the audit names the trust and the workload's subject beside each exchange and each change made with an issued token.\n- **Credentials.** A client calls with a person's session or with a workspace token. A script or Terraform sends a workspace token, or the login that `spotlight login` stores, as `Authorization: Bearer <token>`. A login acts as its person, with that person's role. A token acts only within its own workspace and only as its scopes allow. `read`, `plan` and `configure` are a ladder: `read` reads, `plan` also checks expressions, and `configure` also creates, updates and deletes configuration as a workspace admin may, except secrets, runners and OIDC trusts. `secrets` is granted beside one of them and lets the token create, rebind, rotate and delete secrets; Terraform that manages secrets uses `[\"configure\", \"secrets\"]`. `runners` is granted the same way and lets the token create, rekey and delete runners and runner trusts and create, update and delete the workspace's runners, since a runner claims runs, checks out repositories and keeps git credentials; Terraform that manages runners uses `[\"configure\", \"runners\"]`. `trusts` is granted the same way and lets the token create, update and delete OIDC trusts, since a trust hands out tokens; a token can only create a trust that grants scopes it has itself, so bootstrap the trusts once with a token that has `trusts` and every scope they grant, as in `[\"configure\", \"secrets\", \"trusts\"]`, and revoke it. No token manages members or tokens, or reads the audit.\n- **Expression checks.** `POST /v1/expressions/check` type-checks one CEL expression at the attribute that contains it, named within the resource's whole definition (`integration.webhook.events[0].when`), as `terraform plan` needs. What the expression may read is worked out from that definition exactly as applying it would, so a plan fails where an apply would; a definition that has an error fails with 422, each error under `definition`. It returns the type and any errors, each with the span it is about and a suggestion where a declared name is near, and warnings about the definition, such as a capture shadowing a built-in name. `GET /v1/expressions/positions` lists every position, with `[*]` for any index or key, and the variables an expression there can read. They follow these headers and problems, but are not resources.\n- **Secret changes.** A secret's change is recorded like any configuration change, and also records the value version it moved to and the hosts it is bound to, never its value.",
     "version": "2026-09-23",
     "contact": {}
   },
@@ -12456,6 +12468,7 @@
               "key": "delivery",
               "name": "Delivery",
               "repositories": [],
+              "warmSandboxes": 0,
               "stations": [
                 {
                   "key": "backlog",
@@ -12838,6 +12851,11 @@
             "maximum": 60,
             "description": "How many minutes a token it issues stays valid"
           },
+          "description": {
+            "type": "string",
+            "example": "Deploys the platform from the main branch",
+            "description": "Why the trust exists. Empty when not set"
+          },
           "createdBy": {
             "type": "string",
             "example": "kR3vUzPq9sY2mB8nT1wXcA",
@@ -12857,6 +12875,7 @@
           "claims",
           "scopes",
           "lifetimeMinutes",
+          "description",
           "createdBy"
         ]
       },
@@ -12939,6 +12958,110 @@
           "workspaceId",
           "scopes",
           "expiresAt"
+        ]
+      },
+      "CatalogToolResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "catalog.web-search@1.1.0",
+            "description": "What a station enables it by; it carries the version, so an upgrade shows as a change to the station"
+          },
+          "name": {
+            "type": "string",
+            "example": "web-search"
+          },
+          "version": {
+            "type": "string",
+            "example": "1.1.0",
+            "description": "The newest version the constraint accepts"
+          },
+          "constraint": {
+            "type": "string",
+            "example": "~> 1.0",
+            "description": "The constraint it was resolved against"
+          },
+          "plan": {
+            "type": "string",
+            "example": "team",
+            "enum": [
+              "free",
+              "team",
+              "enterprise"
+            ],
+            "description": "The lowest plan that includes the item"
+          },
+          "description": {
+            "type": "string",
+            "example": "Search the web, and answer with the pages…"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "version",
+          "constraint",
+          "plan",
+          "description"
+        ]
+      },
+      "CatalogSkillResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "catalog.web-search@1.1.0",
+            "description": "What a station enables it by; it carries the version, so an upgrade shows as a change to the station"
+          },
+          "name": {
+            "type": "string",
+            "example": "web-search"
+          },
+          "version": {
+            "type": "string",
+            "example": "1.1.0",
+            "description": "The newest version the constraint accepts"
+          },
+          "constraint": {
+            "type": "string",
+            "example": "~> 1.0",
+            "description": "The constraint it was resolved against"
+          },
+          "plan": {
+            "type": "string",
+            "example": "team",
+            "enum": [
+              "free",
+              "team",
+              "enterprise"
+            ],
+            "description": "The lowest plan that includes the item"
+          },
+          "description": {
+            "type": "string",
+            "example": "Search the web, and answer with the pages…"
+          },
+          "tools": {
+            "example": [
+              "catalog.web-search@1.1.0",
+              "catalog.fetch-page@1.0.0"
+            ],
+            "description": "The catalog tools that the skill uses, enabled wherever the skill is; its files never leave Spotlight except into a run",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "version",
+          "constraint",
+          "plan",
+          "description",
+          "tools"
         ]
       },
       "SecretSourceResponseDto": {
@@ -13090,110 +13213,6 @@
         },
         "required": [
           "items"
-        ]
-      },
-      "CatalogToolResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "example": "catalog.web-search@1.1.0",
-            "description": "What a station enables it by; it carries the version, so an upgrade shows as a change to the station"
-          },
-          "name": {
-            "type": "string",
-            "example": "web-search"
-          },
-          "version": {
-            "type": "string",
-            "example": "1.1.0",
-            "description": "The newest version the constraint accepts"
-          },
-          "constraint": {
-            "type": "string",
-            "example": "~> 1.0",
-            "description": "The constraint it was resolved against"
-          },
-          "plan": {
-            "type": "string",
-            "example": "team",
-            "enum": [
-              "free",
-              "team",
-              "enterprise"
-            ],
-            "description": "The lowest plan that includes the item"
-          },
-          "description": {
-            "type": "string",
-            "example": "Search the web, and answer with the pages…"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "version",
-          "constraint",
-          "plan",
-          "description"
-        ]
-      },
-      "CatalogSkillResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "example": "catalog.web-search@1.1.0",
-            "description": "What a station enables it by; it carries the version, so an upgrade shows as a change to the station"
-          },
-          "name": {
-            "type": "string",
-            "example": "web-search"
-          },
-          "version": {
-            "type": "string",
-            "example": "1.1.0",
-            "description": "The newest version the constraint accepts"
-          },
-          "constraint": {
-            "type": "string",
-            "example": "~> 1.0",
-            "description": "The constraint it was resolved against"
-          },
-          "plan": {
-            "type": "string",
-            "example": "team",
-            "enum": [
-              "free",
-              "team",
-              "enterprise"
-            ],
-            "description": "The lowest plan that includes the item"
-          },
-          "description": {
-            "type": "string",
-            "example": "Search the web, and answer with the pages…"
-          },
-          "tools": {
-            "example": [
-              "catalog.web-search@1.1.0",
-              "catalog.fetch-page@1.0.0"
-            ],
-            "description": "The catalog tools that the skill uses, enabled wherever the skill is; its files never leave Spotlight except into a run",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "version",
-          "constraint",
-          "plan",
-          "description",
-          "tools"
         ]
       },
       "RunnerTrustResourceResponseDto": {

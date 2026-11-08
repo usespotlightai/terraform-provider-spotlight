@@ -819,6 +819,35 @@ func TestLineKeepsFromNoneToFiveWarmSandboxes(t *testing.T) {
 	}
 }
 
+func TestLineChangesItsWarmSandboxesInPlace(t *testing.T) {
+	fake := fakeapi.New(t)
+	warm := func(count string) string {
+		return acctest.Workspace + strings.Replace(lineExported, "warm_sandboxes = 2", "warm_sandboxes = "+count, 1)
+	}
+	changed := func(count string, want int64) resource.TestStep {
+		return resource.TestStep{
+			Config: warm(count),
+			ConfigPlanChecks: resource.ConfigPlanChecks{
+				PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(lineAddress, plancheck.ResourceActionUpdate)},
+			},
+			ConfigStateChecks: []statecheck.StateCheck{
+				statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("warm_sandboxes"), knownvalue.Int64Exact(want)),
+			},
+		}
+	}
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
+		Steps: []resource.TestStep{
+			{Config: warm("2")},
+			changed("5", 5),
+			{Config: warm("5"), PlanOnly: true},
+			changed("0", 0),
+			{Config: warm("0"), PlanOnly: true},
+		},
+	})
+}
+
 func TestLineImportsByIdentity(t *testing.T) {
 	fake := fakeapi.New(t)
 

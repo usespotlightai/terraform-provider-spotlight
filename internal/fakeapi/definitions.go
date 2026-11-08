@@ -181,7 +181,7 @@ func line(body map[string]any) (map[string]any, []fieldError) {
 	placed(definition, "runners", "runners", &errs)
 
 	orDefault(definition, "warmSandboxes", float64(0))
-	if warm, _ := definition["warmSandboxes"].(float64); warm < 0 || warm > 5 || warm != math.Trunc(warm) {
+	if warm, ok := definition["warmSandboxes"].(float64); !ok || warm < 0 || warm > 5 || warm != math.Trunc(warm) {
 		errs = append(errs, fieldError{"warmSandboxes", "is how many warm sandboxes a host keeps ready for the line, a whole number from 0 to 5"})
 	}
 

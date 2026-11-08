@@ -2236,6 +2236,9 @@ type OidcTrustResourceResponseDto struct {
 	// CreatedBy The person who created the trust, or who issued the token that did; the tokens it issues act on their behalf
 	CreatedBy string `json:"createdBy"`
 
+	// Description Why the trust exists. Empty when not set
+	Description string `json:"description"`
+
 	// Id Issued by Spotlight when the resource is created, and never changed
 	Id string `json:"id"`
 
@@ -2914,6 +2917,7 @@ type ReadOidcTrustParamsSpotlightApiVersion string
 type UpdateOidcTrustJSONBody struct {
 	Audience        *string                         `json:"audience,omitempty"`
 	Claims          *map[string]string              `json:"claims,omitempty"`
+	Description     *string                         `json:"description,omitempty"`
 	Issuer          string                          `json:"issuer"`
 	Key             string                          `json:"key"`
 	LifetimeMinutes *int                            `json:"lifetimeMinutes,omitempty"`
@@ -3667,6 +3671,7 @@ type ListOidcTrustsParamsSpotlightApiVersion string
 type CreateOidcTrustJSONBody struct {
 	Audience        *string                         `json:"audience,omitempty"`
 	Claims          *map[string]string              `json:"claims,omitempty"`
+	Description     *string                         `json:"description,omitempty"`
 	Issuer          string                          `json:"issuer"`
 	Key             string                          `json:"key"`
 	LifetimeMinutes *int                            `json:"lifetimeMinutes,omitempty"`
