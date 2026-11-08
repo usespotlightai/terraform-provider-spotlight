@@ -3,6 +3,7 @@ package fakeapi
 import (
 	"fmt"
 	"maps"
+	"math"
 	"regexp"
 	"slices"
 	"strconv"
@@ -178,6 +179,11 @@ func line(body map[string]any) (map[string]any, []fieldError) {
 	}
 
 	placed(definition, "runners", "runners", &errs)
+
+	orDefault(definition, "warmSandboxes", float64(0))
+	if warm, _ := definition["warmSandboxes"].(float64); warm < 0 || warm > 5 || warm != math.Trunc(warm) {
+		errs = append(errs, fieldError{"warmSandboxes", "is how many warm sandboxes a host keeps ready for the line, a whole number from 0 to 5"})
+	}
 
 	stations := make([]any, 0, len(listed))
 	for at, each := range listed {

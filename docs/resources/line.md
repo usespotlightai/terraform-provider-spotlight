@@ -14,11 +14,12 @@ A line: the stations a team's tasks move along, in order, and how they move. Imp
 
 ```terraform
 resource "spotlight_line" "core_delivery" {
-  team_id = spotlight_team.core.id
-  key     = "delivery"
-  name    = "Delivery"
-  role    = "delivery"
-  runners = ["vpc-internal"]
+  team_id        = spotlight_team.core.id
+  key            = "delivery"
+  name           = "Delivery"
+  role           = "delivery"
+  runners        = ["vpc-internal"]
+  warm_sandboxes = 2
 
   repository {
     name  = "acme/api"
@@ -156,6 +157,7 @@ resource "spotlight_line" "core_delivery" {
 - `search` (Block, Optional) How Spotlight searches for better configs of the line's work stations on its own, and how much it may spend. Every work station is searched when left out. A station's own `search` changes it for that station. (see [below for nested schema](#nestedblock--search))
 - `source` (Block, Optional) Where the line's Terraform lives, which Spotlight opens pull requests against when it finds a better station config. A source sets `repository` and `path`. (see [below for nested schema](#nestedblock--source))
 - `station` (Block List) A station along the line, in order. A line has at least one. (see [below for nested schema](#nestedblock--station))
+- `warm_sandboxes` (Number) How many warm sandboxes a host keeps ready for the line: its repositories cloned at the default branch and set up, so that a task's first run starts with no setup. A whole number from 0 to 5. 0 when left out.
 
 ### Read-Only
 

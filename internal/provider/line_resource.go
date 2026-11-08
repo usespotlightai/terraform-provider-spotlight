@@ -58,6 +58,8 @@ var lineMeasures = []string{"sent_back_rate", "accepted_rate", "checks_failed_ra
 
 const lineMostCeiling = 1000
 
+const lineMostWarmSandboxes = 5
+
 const (
 	lineSearchPeriod   = "7d"
 	lineSearchCooldown = "3d"
@@ -320,6 +322,13 @@ func lineSchema() schema.Schema {
 			},
 			"role":    lineOptional("The role the line plays for its team, as in `delivery` or `review`. A role names one line."),
 			"runners": stringSetAttribute("Where the line's work runs: the labels of a runner pool or trust, any of which a runner must answer to. A station's own `runners` replace it. Anywhere when left out."),
+			"warm_sandboxes": schema.Int64Attribute{
+				Optional:            true,
+				Computed:            true,
+				Default:             int64default.StaticInt64(0),
+				Validators:          []validator.Int64{int64validator.Between(0, lineMostWarmSandboxes)},
+				MarkdownDescription: "How many warm sandboxes a host keeps ready for the line: its repositories cloned at the default branch and set up, so that a task's first run starts with no setup. A whole number from 0 to 5. 0 when left out.",
+			},
 		},
 		Blocks: map[string]schema.Block{
 			"repository": schema.SetNestedBlock{
