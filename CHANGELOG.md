@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.0-rc.6](https://github.com/usespotlightai/terraform-provider-spotlight/compare/v0.1.0-rc.5...v0.1.0-rc.6) (2026-11-08)
+
+
+### Features
+
+* add warm_sandboxes to spotlight_line ([#67](https://github.com/usespotlightai/terraform-provider-spotlight/issues/67)) ([c1df884](https://github.com/usespotlightai/terraform-provider-spotlight/commit/c1df884c6cf5f555c974ca81d4c179b6a5d1f634))
+
 ## [0.1.0-rc.5](https://github.com/usespotlightai/terraform-provider-spotlight/compare/v0.1.0-rc.4...v0.1.0-rc.5) (2026-11-01)
 
 
