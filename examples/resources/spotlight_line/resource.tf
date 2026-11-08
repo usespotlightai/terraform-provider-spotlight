@@ -1,9 +1,10 @@
 resource "spotlight_line" "core_delivery" {
-  team_id = spotlight_team.core.id
-  key     = "delivery"
-  name    = "Delivery"
-  role    = "delivery"
-  runners = ["vpc-internal"]
+  team_id        = spotlight_team.core.id
+  key            = "delivery"
+  name           = "Delivery"
+  role           = "delivery"
+  runners        = ["vpc-internal"]
+  warm_sandboxes = 2
 
   repository {
     name  = "acme/api"

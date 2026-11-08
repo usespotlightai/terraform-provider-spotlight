@@ -27,6 +27,8 @@ resource "spotlight_line" "core_delivery" {
   role    = "review"
   runners = ["vpc-internal", "linux"]
 
+  warm_sandboxes = 2
+
   repository {
     name  = "acme/api"
     image = "ghcr.io/acme/api-runner:main"
@@ -326,6 +328,7 @@ func TestLineExportedShapeRoundTrips(t *testing.T) {
 					})),
 					statecheck.ExpectKnownValue(lineAddress, lineStation(1, "runners"), knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact("gpu")})),
 					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("runners"), knownvalue.SetSizeExact(2)),
+					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("warm_sandboxes"), knownvalue.Int64Exact(2)),
 					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("reaction"), knownvalue.SetSizeExact(1)),
 					statecheck.ExpectKnownValue(lineAddress, lineStation(1, "judge").AtMapKey("sample"), knownvalue.Float64Exact(0.2)),
 					statecheck.ExpectKnownValue(lineAddress, lineStation(1, "alert"), knownvalue.ListExact([]knownvalue.Check{
@@ -370,6 +373,7 @@ func TestLineFillsWhatItLeavesOutWithoutDrift(t *testing.T) {
 					statecheck.ExpectKnownValue(lineAddress, lineStation(2, "tools"), knownvalue.ListSizeExact(0)),
 					statecheck.ExpectKnownValue(lineAddress, lineStation(2, "runners"), knownvalue.SetSizeExact(0)),
 					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("runners"), knownvalue.SetSizeExact(0)),
+					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("warm_sandboxes"), knownvalue.Int64Exact(0)),
 					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("reviews").AtMapKey("skip").AtMapKey("authors"), knownvalue.SetSizeExact(2)),
 					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("reviews").AtMapKey("label"), knownvalue.StringExact("spotlight")),
 					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("replay_check"), knownvalue.Null()),
@@ -805,6 +809,43 @@ func TestLineThatChecksLayersSetsUpEveryRepository(t *testing.T) {
     diffs = true
   }
 `, regexp.MustCompile(`(?s)repository: The delivery line has implementation, which checks its layers,\s+so\s+acme/api has to say how its checkout is made ready`))
+}
+
+func TestLineKeepsFromNoneToFiveWarmSandboxes(t *testing.T) {
+	for _, warm := range []string{"-1", "6"} {
+		lineCheckInvalid(t, `
+  warm_sandboxes = `+warm+`
+`, regexp.MustCompile(`(?s)warm_sandboxes.*between 0 and 5`))
+	}
+}
+
+func TestLineChangesItsWarmSandboxesInPlace(t *testing.T) {
+	fake := fakeapi.New(t)
+	warm := func(count string) string {
+		return acctest.Workspace + strings.Replace(lineExported, "warm_sandboxes = 2", "warm_sandboxes = "+count, 1)
+	}
+	changed := func(count string, want int64) resource.TestStep {
+		return resource.TestStep{
+			Config: warm(count),
+			ConfigPlanChecks: resource.ConfigPlanChecks{
+				PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(lineAddress, plancheck.ResourceActionUpdate)},
+			},
+			ConfigStateChecks: []statecheck.StateCheck{
+				statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("warm_sandboxes"), knownvalue.Int64Exact(want)),
+			},
+		}
+	}
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
+		Steps: []resource.TestStep{
+			{Config: warm("2")},
+			changed("5", 5),
+			{Config: warm("5"), PlanOnly: true},
+			changed("0", 0),
+			{Config: warm("0"), PlanOnly: true},
+		},
+	})
 }
 
 func TestLineImportsByIdentity(t *testing.T) {
