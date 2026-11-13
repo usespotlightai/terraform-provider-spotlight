@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.0-rc.7](https://github.com/usespotlightai/terraform-provider-spotlight/compare/v0.1.0-rc.6...v0.1.0-rc.7) (2026-11-13)
+
+
+### Features
+
+* use the address of the one spotlight login when no url is set ([#69](https://github.com/usespotlightai/terraform-provider-spotlight/issues/69)) ([00c60bb](https://github.com/usespotlightai/terraform-provider-spotlight/commit/00c60bba759931ca57191622262df52a5249f93c))
+
 ## [0.1.0-rc.6](https://github.com/usespotlightai/terraform-provider-spotlight/compare/v0.1.0-rc.5...v0.1.0-rc.6) (2026-11-08)
 
 
