@@ -40,7 +40,14 @@ var titled = []struct {
 	{"Not allowed to create a workspace", client.PermissionCreateWorkspaces},
 }
 
+const personNeedsAdmin = "You are signed in with spotlight login, so Terraform acts with your role in the workspace, and your role does not allow this. " +
+	"Runner pools, secrets and trusts need a workspace admin. Ask an admin of the workspace to make you one, or give the provider an API token with the scopes this needs."
+
 func forbiddenDetail(problem *client.Problem, needs client.Scope) string {
+	if problem.Person {
+		return withDetail(problem, personNeedsAdmin)
+	}
+
 	return withDetail(problem, lacked(permissionOf(problem), needs)+" "+oneTokenForAll)
 }
 

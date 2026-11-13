@@ -152,8 +152,13 @@ func (a *authenticating) Do(req *http.Request) (*http.Response, error) {
 
 	req.Header.Set("Authorization", "Bearer "+token)
 
+	login, person := a.tokens.(signedIn)
+	if person {
+		req = asPerson(req)
+	}
+
 	resp, err := a.next.Do(req)
-	if login, ok := a.tokens.(signedIn); ok && err == nil && resp.StatusCode == http.StatusUnauthorized {
+	if person && err == nil && resp.StatusCode == http.StatusUnauthorized {
 		_, _ = io.Copy(io.Discard, resp.Body)
 		_ = resp.Body.Close()
 

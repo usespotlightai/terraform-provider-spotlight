@@ -165,18 +165,130 @@ func TestARejectedLoginSaysToSignInAgain(t *testing.T) {
 	}))
 	t.Cleanup(server.Close)
 
-	login := client.Login{Address: server.URL, Token: "expired", User: "person@example.com"}
+	login := client.Login{Address: server.URL, Token: "expired-session-token", User: "person@example.com"}
 	api, err := client.New(client.Config{URL: server.URL, Login: &login, Retries: 2})
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	_, err = api.ReadWorkspace(context.Background(), "ws-1")
-	if err == nil || !strings.Contains(err.Error(), "login of person@example.com for "+server.URL) || !strings.Contains(err.Error(), "run spotlight login to sign in again") {
-		t.Fatalf("got %v", err)
+	want := "the login of person@example.com for " + server.URL + " expired or was revoked; run spotlight login --url " + server.URL + " to sign in again"
+	if err == nil || !strings.Contains(err.Error(), want) {
+		t.Fatalf("got %v, want %q", err, want)
+	}
+
+	if strings.Contains(err.Error(), "expired-session-token") {
+		t.Error("the error shows the token")
 	}
 
 	if attempts != 1 {
 		t.Errorf("%d attempts, want 1", attempts)
+	}
+}
+
+func TestWithNoURLTheOnlyLoginIsUsed(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv(client.ConfigDirEnv, dir)
+	writeCredentials(t, dir, `{"logins": {
+		"https://app.usespotlight.ai": {"token": "session-1", "user": "person@example.com"},
+		"https://broken.example.com": {"token": 7},
+		"https://empty.example.com": {"token": ""}
+	}}`)
+
+	login, found, err := client.StoredLogin("")
+	if err != nil || !found {
+		t.Fatalf("got %v, %v", found, err)
+	}
+
+	if want := (client.Login{Address: "https://app.usespotlight.ai", Token: "session-1", User: "person@example.com"}); login != want {
+		t.Errorf("got %+v, want %+v", login, want)
+	}
+}
+
+func TestWithNoURLSeveralLoginsAreNamed(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv(client.ConfigDirEnv, dir)
+	writeCredentials(t, dir, `{"logins": {
+		"https://spotlight.example.com": {"token": "session-1", "user": "person@example.com"},
+		"http://localhost:3000": {"token": "session-2", "user": "dev@example.com"}
+	}}`)
+
+	_, found, err := client.StoredLogin("")
+	if err == nil || found {
+		t.Fatalf("got %v, %v; want an error", found, err)
+	}
+
+	for _, want := range []string{"http://localhost:3000, https://spotlight.example.com", "url", "SPOTLIGHT_URL"} {
+		if !strings.Contains(err.Error(), want) {
+			t.Errorf("%q does not contain %q", err, want)
+		}
+	}
+
+	if strings.Contains(err.Error(), "session-") {
+		t.Error("the error shows a token")
+	}
+}
+
+func TestWithNoURLAndNoLoginThereIsNone(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv(client.ConfigDirEnv, dir)
+
+	if _, found, err := client.StoredLogin(""); err != nil || found {
+		t.Errorf("with no file, got %v, %v", found, err)
+	}
+
+	writeCredentials(t, dir, `{"logins": {}, "other": true}`)
+	if _, found, err := client.StoredLogin(""); err != nil || found {
+		t.Errorf("with no logins, got %v, %v", found, err)
+	}
+}
+
+func TestALoginThatDoesNotParseIsSkipped(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv(client.ConfigDirEnv, dir)
+	writeCredentials(t, dir, `{"logins": {
+		"https://app.usespotlight.ai": "not a login",
+		"https://spotlight.example.com": {"token": "session-1", "user": "person@example.com", "expires": "later"}
+	}}`)
+
+	if _, found, err := client.StoredLogin("https://app.usespotlight.ai"); err != nil || found {
+		t.Errorf("used a login that does not parse: %v, %v", found, err)
+	}
+
+	if login, found, err := client.StoredLogin("https://spotlight.example.com"); err != nil || !found || login.Token != "session-1" {
+		t.Errorf("did not use the login beside it: %v, %v", found, err)
+	}
+}
+
+func TestAForbiddenCallSaysWhetherAPersonMadeIt(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		reply(w, http.StatusForbidden, "application/problem+json", map[string]any{
+			"type": "urn:spotlight:problem:forbidden", "title": "Not allowed", "status": 403,
+		})
+	}))
+	t.Cleanup(server.Close)
+
+	login := client.Login{Address: server.URL, Token: "session-1", User: "person@example.com"}
+	for _, each := range []struct {
+		cfg    client.Config
+		person bool
+	}{
+		{client.Config{URL: server.URL, Login: &login}, true},
+		{client.Config{URL: server.URL, Token: "token-1"}, false},
+	} {
+		api, err := client.New(each.cfg)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		_, err = api.ReadWorkspace(context.Background(), "ws-1")
+		problem, ok := client.ProblemOf(err)
+		if !ok || !client.IsForbidden(problem) {
+			t.Fatalf("got %v", err)
+		}
+
+		if problem.Person != each.person {
+			t.Errorf("with a login %v, Person is %v", each.cfg.Login != nil, problem.Person)
+		}
 	}
 }

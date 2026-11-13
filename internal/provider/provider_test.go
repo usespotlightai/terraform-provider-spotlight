@@ -470,7 +470,7 @@ func TestARejectedLoginSaysToRunSpotlightLogin(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      providerWorkspace,
-				ExpectError: regexp.MustCompile(`(?s)did\s+not\s+accept\s+the\s+login\s+of\s+person@example.com.*run\s+spotlight\s+login\s+to\s+sign\s+in\s+again`),
+				ExpectError: regexp.MustCompile(`(?s)login\s+of\s+person@example.com.*expired\s+or\s+was\s+revoked.*run\s+spotlight\s+login\s+--url\s+` + regexp.QuoteMeta(fake.URL) + `\s+to\s+sign\s+in\s+again`),
 			},
 		},
 	})
@@ -507,7 +507,109 @@ func TestACredentialsFileThatDoesNotParseIsNamed(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      providerWorkspace,
-				ExpectError: regexp.MustCompile(`(?s)Could not read the Spotlight login.*` + regexp.QuoteMeta(path)),
+				ExpectError: regexp.MustCompile(`(?s)Could not use the Spotlight login.*` + regexp.QuoteMeta(path)),
+			},
+		},
+	})
+}
+
+func loggedIn(t *testing.T, logins map[string]string) {
+	t.Helper()
+
+	entries := map[string]map[string]string{}
+	for address, token := range logins {
+		entries[address] = map[string]string{"token": token, "user": "person@example.com"}
+	}
+
+	content, err := json.Marshal(map[string]any{"logins": entries})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dir := t.TempDir()
+	t.Setenv(client.ConfigDirEnv, dir)
+	if err := os.WriteFile(filepath.Join(dir, "credentials.json"), content, 0o600); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestWithNoURLTheOnlyLoginGivesTheAddress(t *testing.T) {
+	fake := fakeapi.New(t)
+	withoutCredentials(t)
+	loggedIn(t, map[string]string{fake.URL: fakeapi.Token})
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: providerFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: providerWorkspace,
+				Check: func(*terraform.State) error {
+					requests := fake.Requests()
+					if len(requests) == 0 {
+						return fmt.Errorf("the provider called nothing")
+					}
+
+					for _, each := range requests {
+						if got := each.Headers.Get("Authorization"); got != "Bearer "+fakeapi.Token {
+							return fmt.Errorf("%s %s sent Authorization %q, not the login's token", each.Method, each.Path, got)
+						}
+					}
+
+					return nil
+				},
+			},
+		},
+	})
+}
+
+func TestWithNoURLSeveralLoginsSayWhichToSet(t *testing.T) {
+	withoutCredentials(t)
+	loggedIn(t, map[string]string{
+		"https://spotlight.example.com": "session-1",
+		"http://localhost:3000":         "session-2",
+	})
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: providerFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config:      providerWorkspace,
+				ExpectError: regexp.MustCompile(`(?s)logins\s+for\s+http://localhost:3000,\s+https://spotlight.example.com.*set\s+url,\s+or\s+SPOTLIGHT_URL`),
+			},
+		},
+	})
+}
+
+func TestWithNoURLAndNoLoginTheProviderSaysToRunSpotlightLogin(t *testing.T) {
+	withoutCredentials(t)
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: providerFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config:      providerWorkspace,
+				ExpectError: regexp.MustCompile(`(?s)No API token.*run\s+spotlight\s+login`),
+			},
+		},
+	})
+}
+
+func TestAStoredTokenDoesNotReadTheLogins(t *testing.T) {
+	fake := fakeapi.New(t)
+	withoutCredentials(t)
+	path := signedIn(t, fake.URL, "a-login-token-it-does-not-know")
+	if err := os.WriteFile(path, []byte(`{"logins": `), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv(provider.URLEnv, fake.URL)
+	t.Setenv(provider.TokenEnv, fakeapi.Token)
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: providerFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: providerWorkspace,
+				Check:  resource.TestCheckResourceAttr("spotlight_workspace.acme", "slug", "acme"),
 			},
 		},
 	})

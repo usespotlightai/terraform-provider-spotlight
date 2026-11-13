@@ -263,3 +263,29 @@ func TestWithoutAPermissionTheTitleThenTheKindSays(t *testing.T) {
 		}
 	}
 }
+
+func TestAPersonWhoIsNotAnAdminIsToldSo(t *testing.T) {
+	forbidden := client.Problem{Status: 403, Type: client.ProblemForbidden, Title: "Not allowed", Permission: client.PermissionAdminister}
+
+	var diags diag.Diagnostics
+	person := forbidden
+	person.Person = true
+	addAPIError(&diags, "Could not create the secret", &person, diagnosedLineFields, client.ScopeSecrets)
+
+	detail := diags.Errors()[0].Detail()
+	for _, want := range []string{"spotlight login", "your role", "workspace admin"} {
+		if !strings.Contains(detail, want) {
+			t.Errorf("%q does not contain %q", detail, want)
+		}
+	}
+
+	if strings.Contains(detail, "API token lacks") {
+		t.Errorf("%q speaks of a token's scopes to a person", detail)
+	}
+
+	diags = nil
+	addAPIError(&diags, "Could not create the secret", &forbidden, diagnosedLineFields, client.ScopeSecrets)
+	if detail := diags.Errors()[0].Detail(); strings.Contains(detail, "spotlight login") {
+		t.Errorf("%q speaks of a login to a token", detail)
+	}
+}

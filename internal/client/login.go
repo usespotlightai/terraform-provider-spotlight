@@ -7,9 +7,11 @@ import (
 	"fmt"
 	"io/fs"
 	"net"
+	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 )
 
@@ -28,13 +30,6 @@ type Login struct {
 	Address string
 	Token   string
 	User    string
-}
-
-type credentials struct {
-	Logins map[string]struct {
-		Token string `json:"token"`
-		User  string `json:"user"`
-	} `json:"logins"`
 }
 
 // CredentialsPath returns the path of the file where spotlight login keeps its logins.
@@ -76,38 +71,87 @@ func Address(raw string) (string, error) {
 }
 
 // StoredLogin returns the login that spotlight login keeps for the Spotlight at a URL.
-// It reports false when there is no login for that address.
+// With no URL, it returns the only login there is, and fails when there are several.
+// It reports false when there is no login to use.
 func StoredLogin(raw string) (Login, bool, error) {
+	logins, err := storedLogins()
+	if err != nil {
+		return Login{}, false, err
+	}
+
+	if raw == "" {
+		return onlyLogin(logins)
+	}
+
 	address, err := Address(raw)
 	if err != nil {
 		return Login{}, false, err
 	}
 
+	login, ok := logins[address]
+	if !ok || !secure(address) {
+		return Login{}, false, nil
+	}
+
+	return login, true, nil
+}
+
+func onlyLogin(logins map[string]Login) (Login, bool, error) {
+	var addresses []string
+	for address := range logins {
+		if secure(address) {
+			addresses = append(addresses, address)
+		}
+	}
+
+	slices.Sort(addresses)
+
+	switch len(addresses) {
+	case 0:
+		return Login{}, false, nil
+	case 1:
+		return logins[addresses[0]], true, nil
+	default:
+		return Login{}, false, fmt.Errorf("there are logins for %s; set url, or SPOTLIGHT_URL, to the one to use", strings.Join(addresses, ", "))
+	}
+}
+
+func storedLogins() (map[string]Login, error) {
 	path, err := CredentialsPath()
 	if err != nil {
-		return Login{}, false, err
+		return nil, err
 	}
 
 	content, err := os.ReadFile(path)
 	if errors.Is(err, fs.ErrNotExist) {
-		return Login{}, false, nil
+		return nil, nil
 	}
 
 	if err != nil {
-		return Login{}, false, fmt.Errorf("could not read %s: %w", path, err)
+		return nil, fmt.Errorf("could not read %s: %w", path, err)
 	}
 
-	var stored credentials
+	var stored struct {
+		Logins map[string]json.RawMessage `json:"logins"`
+	}
 	if err := json.Unmarshal(content, &stored); err != nil {
-		return Login{}, false, fmt.Errorf("%s is not a Spotlight credentials file: %v; run spotlight login to write it again", path, err)
+		return nil, fmt.Errorf("%s is not a Spotlight credentials file: %v; run spotlight login to write it again", path, err)
 	}
 
-	entry, ok := stored.Logins[address]
-	if !ok || entry.Token == "" || !secure(address) {
-		return Login{}, false, nil
+	logins := map[string]Login{}
+	for address, raw := range stored.Logins {
+		var entry struct {
+			Token string `json:"token"`
+			User  string `json:"user"`
+		}
+		if json.Unmarshal(raw, &entry) != nil || entry.Token == "" {
+			continue
+		}
+
+		logins[address] = Login{Address: address, Token: entry.Token, User: entry.User}
 	}
 
-	return Login{Address: address, Token: entry.Token, User: entry.User}, true, nil
+	return logins, nil
 }
 
 func secure(address string) bool {
@@ -141,9 +185,26 @@ func (s signedIn) Unauthorized(string) bool {
 }
 
 func (s signedIn) rejected() error {
-	if s.login.User == "" {
-		return fmt.Errorf("the control plane did not accept the login for %s; run spotlight login to sign in again", s.login.Address)
+	whose := "the login"
+	if s.login.User != "" {
+		whose = "the login of " + s.login.User
 	}
 
-	return fmt.Errorf("the control plane did not accept the login of %s for %s; run spotlight login to sign in again", s.login.User, s.login.Address)
+	return fmt.Errorf("%s for %s expired or was revoked; run spotlight login --url %s to sign in again", whose, s.login.Address, s.login.Address)
+}
+
+type personKey struct{}
+
+func asPerson(req *http.Request) *http.Request {
+	return req.WithContext(context.WithValue(req.Context(), personKey{}, true))
+}
+
+func byPerson(req *http.Request) bool {
+	if req == nil {
+		return false
+	}
+
+	person, _ := req.Context().Value(personKey{}).(bool)
+
+	return person
 }

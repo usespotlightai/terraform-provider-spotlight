@@ -20,15 +20,15 @@ The provider calls the Spotlight control plane with a token, sent as `Authorizat
 spotlight login
 ```
 
-Then a provider block with only `url` works on your machine, with no token:
+Then `terraform plan` works with no token and no environment variables:
 
 ```terraform
-provider "spotlight" {
-  url = "https://spotlight.example.com"
-}
+provider "spotlight" {}
 ```
 
-The provider reads the login that `spotlight login` keeps for that address in `~/.config/spotlight/credentials.json` (in `$XDG_CONFIG_HOME/spotlight` when `XDG_CONFIG_HOME` is set, and in `$SPOTLIGHT_CONFIG_DIR` when that is set). It acts with your role in the workspace. When your login expires, run `spotlight login` again. A login is for a person at a terminal; in CI, use `oidc`.
+The provider reads the login that `spotlight login` keeps in `~/.config/spotlight/credentials.json` (in `$XDG_CONFIG_HOME/spotlight` when `XDG_CONFIG_HOME` is set, and in `$SPOTLIGHT_CONFIG_DIR` when that is set). It uses the login for `url`, or for `SPOTLIGHT_URL`. When neither is set, it uses your one login and its address. When you are signed in to more than one address, set `url` or `SPOTLIGHT_URL` to say which one.
+
+A login acts as you, with your role in the workspace. Runner pools, secrets and trusts need a workspace admin. When your login expires or is revoked, run `spotlight login --url <address>` again. A login is for a person at a terminal; in CI, use `oidc`.
 
 **A stored API token.** Create one in the web app and give it to the provider through the environment:
 
