@@ -80,6 +80,7 @@ func problemOf(resp *http.Response, body []byte) *Problem {
 			Status: resp.StatusCode,
 			Title:  http.StatusText(resp.StatusCode),
 			Detail: detail,
+			Person: byPerson(resp.Request),
 		}
 	}
 
@@ -88,6 +89,7 @@ func problemOf(resp *http.Response, body []byte) *Problem {
 		Type:   decoded.Type,
 		Title:  decoded.Title,
 		Detail: decoded.Detail,
+		Person: byPerson(resp.Request),
 	}
 
 	if decoded.Permission != nil {

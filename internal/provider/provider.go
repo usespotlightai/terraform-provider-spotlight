@@ -81,18 +81,19 @@ func (p *SpotlightProvider) Metadata(_ context.Context, _ provider.MetadataReque
 func (p *SpotlightProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Configure a Spotlight workspace as code: its teams, lines, skills, integrations and harness profiles, its secrets, and its runner pools and trusts. " +
-			"On your machine, it authenticates as you after `spotlight login`, with only `url` set. " +
+			"On your machine, it authenticates as you after `spotlight login`, with no other setting. " +
 			"It also authenticates with a stored API token, or from CI with none: through `oidc`, it exchanges the OIDC token the CI platform issues the job for a short-lived token, through an OIDC trust. " +
 			"One token granted the `configure`, `secrets`, `runners` and `trusts` scopes manages all of it.",
 		Attributes: map[string]schema.Attribute{
 			"url": schema.StringAttribute{
-				Optional:            true,
-				MarkdownDescription: "The control plane's URL, as in `https://spotlight.example.com`. Defaults to `" + URLEnv + "`, which the `spotlight` CLI reads too.",
+				Optional: true,
+				MarkdownDescription: "The control plane's URL, as in `https://spotlight.example.com`. Defaults to `" + URLEnv + "`, which the `spotlight` CLI reads too. " +
+					"With neither, and with no token or OIDC trust, it is the address of the one login that `spotlight login` keeps.",
 			},
 			"token": schema.StringAttribute{
 				Optional:            true,
 				Sensitive:           true,
-				MarkdownDescription: "A Spotlight API token. Defaults to `" + TokenEnv + "`. Leave it unset to authenticate through `oidc`, or as the person who ran `spotlight login` for `url`.",
+				MarkdownDescription: "A Spotlight API token. Defaults to `" + TokenEnv + "`. Leave it unset to authenticate through `oidc`, or as the person who ran `spotlight login`.",
 			},
 		},
 		Blocks: map[string]schema.Block{
@@ -186,16 +187,19 @@ func (p *SpotlightProvider) Configure(ctx context.Context, req provider.Configur
 		return
 	}
 
-	if cfg.Token == "" && cfg.OIDC == nil && cfg.URL != "" {
+	if cfg.Token == "" && cfg.OIDC == nil {
 		login, found, err := client.StoredLogin(cfg.URL)
 		if err != nil {
-			resp.Diagnostics.AddError("Could not read the Spotlight login", err.Error())
+			resp.Diagnostics.AddAttributeError(path.Root("url"), "Could not use the Spotlight login", err.Error())
 
 			return
 		}
 
 		if found {
 			cfg.Login = &login
+			if cfg.URL == "" {
+				cfg.URL = login.Address
+			}
 		}
 	}
 

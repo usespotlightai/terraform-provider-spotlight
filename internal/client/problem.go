@@ -19,7 +19,8 @@ const (
 
 // Problem is an RFC 9457 problem that the API returned. Permission is the
 // permission that a 403 says the caller does not have. It is empty if the
-// 403 does not identify a permission.
+// 403 does not identify a permission. Person is true when the caller is a
+// person signed in with spotlight login, not a token.
 type Problem struct {
 	Status         int
 	Type           string
@@ -28,6 +29,7 @@ type Problem struct {
 	Errors         []FieldError
 	CurrentVersion *int64
 	Permission     Permission
+	Person         bool
 }
 
 // Error writes the problem with each field error that it contains.

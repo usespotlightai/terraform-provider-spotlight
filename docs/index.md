@@ -20,15 +20,15 @@ The provider calls the Spotlight control plane with a token, sent as `Authorizat
 spotlight login
 ```
 
-Then a provider block with only `url` works on your machine, with no token:
+Then `terraform plan` works with no token and no environment variables:
 
 ```terraform
-provider "spotlight" {
-  url = "https://spotlight.example.com"
-}
+provider "spotlight" {}
 ```
 
-The provider reads the login that `spotlight login` keeps for that address in `~/.config/spotlight/credentials.json` (in `$XDG_CONFIG_HOME/spotlight` when `XDG_CONFIG_HOME` is set, and in `$SPOTLIGHT_CONFIG_DIR` when that is set). It acts with your role in the workspace. When your login expires, run `spotlight login` again. A login is for a person at a terminal; in CI, use `oidc`.
+The provider reads the login that `spotlight login` keeps in `~/.config/spotlight/credentials.json` (in `$XDG_CONFIG_HOME/spotlight` when `XDG_CONFIG_HOME` is set, and in `$SPOTLIGHT_CONFIG_DIR` when that is set). It uses the login for `url`, or for `SPOTLIGHT_URL`. When neither is set, it uses your one login and its address. When you are signed in to more than one address, set `url` or `SPOTLIGHT_URL` to say which one.
+
+A login acts as you, with your role in the workspace. Runner pools, secrets and trusts need a workspace admin. When your login expires or is revoked, run `spotlight login --url <address>` again. A login is for a person at a terminal; in CI, use `oidc`.
 
 **A stored API token.** Create one in the web app and give it to the provider through the environment:
 
@@ -114,7 +114,7 @@ terraform {
 
 # If you do not set url and token, the provider uses SPOTLIGHT_URL and
 # SPOTLIGHT_API_TOKEN. With no token, it uses the login that spotlight login
-# keeps for url.
+# keeps for url. With no url either, it uses the one login there is.
 provider "spotlight" {
   url   = "https://spotlight.example.com"
   token = var.spotlight_token
@@ -132,8 +132,8 @@ variable "spotlight_token" {
 ### Optional
 
 - `oidc` (Block, Optional) Authenticate from CI with no stored token: the OIDC token the CI platform issues the job is exchanged, through a `spotlight_oidc_trust`, for a short-lived token, renewed before it expires. In GitHub Actions, a job granted `permissions: id-token: write` needs only `trust`; elsewhere, set the platform's OIDC token as `token`. (see [below for nested schema](#nestedblock--oidc))
-- `token` (String, Sensitive) A Spotlight API token. Defaults to `SPOTLIGHT_API_TOKEN`. Leave it unset to authenticate through `oidc`, or as the person who ran `spotlight login` for `url`.
-- `url` (String) The control plane's URL, as in `https://spotlight.example.com`. Defaults to `SPOTLIGHT_URL`, which the `spotlight` CLI reads too.
+- `token` (String, Sensitive) A Spotlight API token. Defaults to `SPOTLIGHT_API_TOKEN`. Leave it unset to authenticate through `oidc`, or as the person who ran `spotlight login`.
+- `url` (String) The control plane's URL, as in `https://spotlight.example.com`. Defaults to `SPOTLIGHT_URL`, which the `spotlight` CLI reads too. With neither, and with no token or OIDC trust, it is the address of the one login that `spotlight login` keeps.
 
 <a id="nestedblock--oidc"></a>
 ### Nested Schema for `oidc`

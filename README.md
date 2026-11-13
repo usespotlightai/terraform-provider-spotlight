@@ -49,6 +49,7 @@ resource "spotlight_workspace" "acme" {
 }
 ```
 
+- **On your machine:** after `spotlight login`, the provider needs no `url` and no `token`. It acts as you, with your role in the workspace.
 - **Workspaces:** a workspace is created by signing up in the web app, then adopted with an `import` block. A token cannot create one.
 - **Scopes:** one token with `configure`, `secrets`, `runners` and `trusts` manages everything.
 - **CI without a stored token:** `oidc { trust = "<trust id>" }`, or `SPOTLIGHT_OIDC_TRUST`, exchanges the CI job's OIDC token for a short-lived one through a `spotlight_oidc_trust`.
