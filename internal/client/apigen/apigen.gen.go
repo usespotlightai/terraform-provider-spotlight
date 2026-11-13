@@ -42,6 +42,36 @@ func (e ApiSpecResponseDtoKind) Valid() bool {
 	}
 }
 
+// Defines values for ExpressionCallResponseDtoBy.
+const (
+	Chat         ExpressionCallResponseDtoBy = "chat"
+	InboxRequest ExpressionCallResponseDtoBy = "inbox-request"
+	Notice       ExpressionCallResponseDtoBy = "notice"
+	Schedule     ExpressionCallResponseDtoBy = "schedule"
+	Task         ExpressionCallResponseDtoBy = "task"
+	Tool         ExpressionCallResponseDtoBy = "tool"
+)
+
+// Valid indicates whether the value is a known member of the ExpressionCallResponseDtoBy enum.
+func (e ExpressionCallResponseDtoBy) Valid() bool {
+	switch e {
+	case Chat:
+		return true
+	case InboxRequest:
+		return true
+	case Notice:
+		return true
+	case Schedule:
+		return true
+	case Task:
+		return true
+	case Tool:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ExpressionPositionResponseDtoAddedVariables.
 const (
 	Captures ExpressionPositionResponseDtoAddedVariables = "captures"
@@ -1839,6 +1869,18 @@ type ExchangeWorkloadTokenRequestDto struct {
 	Trust string `json:"trust"`
 }
 
+// ExpressionCallResponseDto defines model for ExpressionCallResponseDto.
+type ExpressionCallResponseDto struct {
+	// By What calls the expression: a binding of a task, chat, inbox-request or notice event, a tool, or a schedule
+	By ExpressionCallResponseDtoBy `json:"by"`
+
+	// Variables The variables that depend on what calls the expression, and that this caller gives
+	Variables []string `json:"variables"`
+}
+
+// ExpressionCallResponseDtoBy What calls the expression: a binding of a task, chat, inbox-request or notice event, a tool, or a schedule
+type ExpressionCallResponseDtoBy string
+
 // ExpressionCheckResponseDto defines model for ExpressionCheckResponseDto.
 type ExpressionCheckResponseDto struct {
 	// Errors Empty when the expression is sound where it is written
@@ -1875,6 +1917,9 @@ type ExpressionErrorResponseDto struct {
 type ExpressionPositionResponseDto struct {
 	// AddedVariables What the definition adds here: item where the event has a forEach, the names its lookup captures, the inputs of the tools that do the action
 	AddedVariables []ExpressionPositionResponseDtoAddedVariables `json:"addedVariables"`
+
+	// Calls What can call an expression here, each with the variables it gives. The expression is checked for each caller that the definition has: a binding for the events whose bindings name it, a tool or a schedule for the actions they name. Where the definition has no such caller, it is checked against all of them. Empty where the variables do not depend on what calls the expression
+	Calls []ExpressionCallResponseDto `json:"calls"`
 
 	// Position Where an expression is written, with [*] for any list index or map key; a check names the concrete attribute and resolves it against the supplied definition
 	Position string `json:"position"`
