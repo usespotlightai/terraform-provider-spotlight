@@ -14219,6 +14219,40 @@
           "fields"
         ]
       },
+      "ExpressionCallResponseDto": {
+        "type": "object",
+        "properties": {
+          "by": {
+            "type": "string",
+            "enum": [
+              "task",
+              "chat",
+              "inbox-request",
+              "notice",
+              "tool",
+              "schedule"
+            ],
+            "example": "notice",
+            "description": "What calls the expression: a binding of a task, chat, inbox-request or notice event, a tool, or a schedule"
+          },
+          "variables": {
+            "example": [
+              "notice",
+              "target",
+              "uploaded"
+            ],
+            "description": "The variables that depend on what calls the expression, and that this caller gives",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "by",
+          "variables"
+        ]
+      },
       "ExpressionPositionResponseDto": {
         "type": "object",
         "properties": {
@@ -14254,13 +14288,21 @@
                 "inputs"
               ]
             }
+          },
+          "calls": {
+            "description": "What can call an expression here, each with the variables it gives. The expression is checked for each caller that the definition has: a binding for the events whose bindings name it, a tool or a schedule for the actions they name. Where the definition has no such caller, it is checked against all of them. Empty where the variables do not depend on what calls the expression",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExpressionCallResponseDto"
+            }
           }
         },
         "required": [
           "position",
           "returns",
           "variables",
-          "addedVariables"
+          "addedVariables",
+          "calls"
         ]
       },
       "HookMatchDto": {
