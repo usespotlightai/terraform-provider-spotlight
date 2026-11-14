@@ -29,6 +29,8 @@ resource "spotlight_line" "core_delivery" {
 
   warm_sandboxes = 2
 
+  default_assignee = "ada@example.com"
+
   repository {
     name  = "acme/api"
     image = "ghcr.io/acme/api-runner:main"
@@ -329,6 +331,7 @@ func TestLineExportedShapeRoundTrips(t *testing.T) {
 					statecheck.ExpectKnownValue(lineAddress, lineStation(1, "runners"), knownvalue.SetExact([]knownvalue.Check{knownvalue.StringExact("gpu")})),
 					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("runners"), knownvalue.SetSizeExact(2)),
 					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("warm_sandboxes"), knownvalue.Int64Exact(2)),
+					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("default_assignee"), knownvalue.StringExact("ada@example.com")),
 					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("reaction"), knownvalue.SetSizeExact(1)),
 					statecheck.ExpectKnownValue(lineAddress, lineStation(1, "judge").AtMapKey("sample"), knownvalue.Float64Exact(0.2)),
 					statecheck.ExpectKnownValue(lineAddress, lineStation(1, "alert"), knownvalue.ListExact([]knownvalue.Check{
@@ -374,6 +377,7 @@ func TestLineFillsWhatItLeavesOutWithoutDrift(t *testing.T) {
 					statecheck.ExpectKnownValue(lineAddress, lineStation(2, "runners"), knownvalue.SetSizeExact(0)),
 					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("runners"), knownvalue.SetSizeExact(0)),
 					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("warm_sandboxes"), knownvalue.Int64Exact(0)),
+					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("default_assignee"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("reviews").AtMapKey("skip").AtMapKey("authors"), knownvalue.SetSizeExact(2)),
 					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("reviews").AtMapKey("label"), knownvalue.StringExact("spotlight")),
 					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("replay_check"), knownvalue.Null()),
@@ -844,6 +848,53 @@ func TestLineChangesItsWarmSandboxesInPlace(t *testing.T) {
 			{Config: warm("5"), PlanOnly: true},
 			changed("0", 0),
 			{Config: warm("0"), PlanOnly: true},
+		},
+	})
+}
+
+func TestLineDefaultAssigneeIsNotEmpty(t *testing.T) {
+	lineCheckInvalid(t, `
+  default_assignee = ""
+`, regexp.MustCompile(`(?s)default_assignee.*at least 1`))
+}
+
+func TestLineRejectsADefaultAssigneeThatIsNotAnEmail(t *testing.T) {
+	lineRejected(t, `
+  default_assignee = "ada"
+
+  station {
+    key  = "implementation"
+    name = "Implementation"
+  }
+`, regexp.MustCompile(`(?s)default_assignee: must be an email address`))
+}
+
+func TestLineChangesItsDefaultAssigneeInPlace(t *testing.T) {
+	fake := fakeapi.New(t)
+	assigned := func(line string) string {
+		return acctest.Workspace + strings.Replace(lineExported, `default_assignee = "ada@example.com"`, line, 1)
+	}
+	changed := func(line string, want knownvalue.Check) resource.TestStep {
+		return resource.TestStep{
+			Config: assigned(line),
+			ConfigPlanChecks: resource.ConfigPlanChecks{
+				PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(lineAddress, plancheck.ResourceActionUpdate)},
+			},
+			ConfigStateChecks: []statecheck.StateCheck{
+				statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("default_assignee"), want),
+			},
+		}
+	}
+	grace := `default_assignee = "grace@example.com"`
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
+		Steps: []resource.TestStep{
+			{Config: assigned(`default_assignee = "ada@example.com"`)},
+			changed(grace, knownvalue.StringExact("grace@example.com")),
+			{Config: assigned(grace), PlanOnly: true},
+			changed("", knownvalue.Null()),
+			{Config: assigned(""), PlanOnly: true},
 		},
 	})
 }

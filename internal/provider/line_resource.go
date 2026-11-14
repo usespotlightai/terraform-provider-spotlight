@@ -329,6 +329,11 @@ func lineSchema() schema.Schema {
 				Validators:          []validator.Int64{int64validator.Between(0, lineMostWarmSandboxes)},
 				MarkdownDescription: "How many warm sandboxes a host keeps ready for the line: its repositories cloned at the default branch and set up, so that a task's first run starts with no setup. A whole number from 0 to 5. 0 when left out.",
 			},
+			"default_assignee": schema.StringAttribute{
+				Optional:            true,
+				Validators:          []validator.String{stringvalidator.LengthAtLeast(1)},
+				MarkdownDescription: "The email of the team member who gets a task that opens on this line without a person, such as a task an integration opens. Spotlight assigns the person the event names first. With no such member, the task opens with no assignee.",
+			},
 		},
 		Blocks: map[string]schema.Block{
 			"repository": schema.SetNestedBlock{

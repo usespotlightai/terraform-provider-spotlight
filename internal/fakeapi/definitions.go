@@ -147,6 +147,25 @@ func orDefault(object map[string]any, field string, fallback any) {
 	}
 }
 
+var emailShape = regexp.MustCompile(`^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$`)
+
+func assigned(definition map[string]any, errs *[]fieldError) {
+	written, ok := definition["defaultAssignee"]
+	if !ok {
+		return
+	}
+
+	email := strings.TrimSpace(textOf(written))
+	switch {
+	case email == "":
+		*errs = append(*errs, fieldError{"defaultAssignee", "is the email of a team member, and it is empty"})
+	case len(email) > 254 || !emailShape.MatchString(email):
+		*errs = append(*errs, fieldError{"defaultAssignee", fmt.Sprintf("must be an email address, like ada@example.com, not %q", email)})
+	default:
+		definition["defaultAssignee"] = email
+	}
+}
+
 func line(body map[string]any) (map[string]any, []fieldError) {
 	definition := maps.Clone(body)
 	var errs []fieldError
@@ -184,6 +203,8 @@ func line(body map[string]any) (map[string]any, []fieldError) {
 	if warm, ok := definition["warmSandboxes"].(float64); !ok || warm < 0 || warm > 5 || warm != math.Trunc(warm) {
 		errs = append(errs, fieldError{"warmSandboxes", "is how many warm sandboxes a host keeps ready for the line, a whole number from 0 to 5"})
 	}
+
+	assigned(definition, &errs)
 
 	stations := make([]any, 0, len(listed))
 	for at, each := range listed {

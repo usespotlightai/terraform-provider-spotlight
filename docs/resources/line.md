@@ -14,12 +14,13 @@ A line: the stations a team's tasks move along, in order, and how they move. Imp
 
 ```terraform
 resource "spotlight_line" "core_delivery" {
-  team_id        = spotlight_team.core.id
-  key            = "delivery"
-  name           = "Delivery"
-  role           = "delivery"
-  runners        = ["vpc-internal"]
-  warm_sandboxes = 2
+  team_id          = spotlight_team.core.id
+  key              = "delivery"
+  name             = "Delivery"
+  role             = "delivery"
+  runners          = ["vpc-internal"]
+  warm_sandboxes   = 2
+  default_assignee = "ada@example.com"
 
   repository {
     name  = "acme/api"
@@ -148,6 +149,7 @@ resource "spotlight_line" "core_delivery" {
 
 ### Optional
 
+- `default_assignee` (String) The email of the team member who gets a task that opens on this line without a person, such as a task an integration opens. Spotlight assigns the person the event names first. With no such member, the task opens with no assignee.
 - `reaction` (Block Set) Moves a task when something happens, as when a pull request's checks fail. (see [below for nested schema](#nestedblock--reaction))
 - `replay_check` (Block, Optional) When a planned change to the line passes `spotlight replay check`, which replays the changed station's replay set under the change and compares it with the live config. `spotlight replay check` checks no change to a line without one. (see [below for nested schema](#nestedblock--replay_check))
 - `repository` (Block Set) A repository the line works on. Spotlight stores them sorted by name, so they are a set. The repositories of a line name at most one `image`. (see [below for nested schema](#nestedblock--repository))
