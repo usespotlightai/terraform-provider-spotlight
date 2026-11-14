@@ -60,6 +60,8 @@ func normalized(kind string, body map[string]any) (map[string]any, []fieldError)
 		return egress(body)
 	case "workspace-runners":
 		return workspaceRunners(body)
+	case "inference-endpoint":
+		return inferenceEndpoint(body)
 	case "hook":
 		return hook(body)
 	default:

@@ -238,6 +238,7 @@ func (p *SpotlightProvider) Resources(_ context.Context) []func() resource.Resou
 		NewEgressResource,
 		NewRunnerPoolResource,
 		NewWorkspaceRunnersResource,
+		NewInferenceEndpointResource,
 	}
 }
 
@@ -266,6 +267,7 @@ func (p *SpotlightProvider) ListResources(_ context.Context) []func() list.ListR
 		NewEgressListResource,
 		NewRunnerPoolListResource,
 		NewWorkspaceRunnersListResource,
+		NewInferenceEndpointListResource,
 	}
 }
 

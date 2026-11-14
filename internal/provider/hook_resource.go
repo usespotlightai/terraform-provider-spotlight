@@ -553,31 +553,14 @@ func hookSigningOf(signing types.Object, known *knownOnly) *client.HookSigning {
 }
 
 func sendHookSecret(ctx context.Context, config tfsdk.Config, plan tfsdk.Plan, state *tfsdk.State, in *client.HookInput) diag.Diagnostics {
-	field := writeonly.SigningSecret
-
-	var diags diag.Diagnostics
-
 	if in.Signing == nil || in.Signing.OIDC != nil {
-		return diags
+		return nil
 	}
 
-	if state != nil {
-		rewritten, more := field.Rewritten(ctx, plan, *state)
-		diags.Append(more...)
-
-		if !rewritten {
-			return diags
-		}
+	value, diags := writeonly.SigningSecret.Pending(ctx, config, plan, state)
+	if !value.IsNull() {
+		in.Signing.Secret = value.ValueString()
 	}
-
-	value, more := field.Read(ctx, config)
-	diags.Append(more...)
-
-	if value.IsNull() || value.IsUnknown() {
-		return diags
-	}
-
-	in.Signing.Secret = value.ValueString()
 
 	return diags
 }

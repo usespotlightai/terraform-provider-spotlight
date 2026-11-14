@@ -220,23 +220,8 @@ func egressInput(plan EgressResourceModel) client.EgressInput {
 }
 
 func sendEgressToken(ctx context.Context, config tfsdk.Config, plan tfsdk.Plan, state *tfsdk.State, in *client.EgressInput) diag.Diagnostics {
-	field := writeonly.EgressToken
-
-	var diags diag.Diagnostics
-
-	if state != nil {
-		rewritten, more := field.Rewritten(ctx, plan, *state)
-		diags.Append(more...)
-
-		if !rewritten {
-			return diags
-		}
-	}
-
-	value, more := field.Read(ctx, config)
-	diags.Append(more...)
-
-	if !value.IsNull() && !value.IsUnknown() {
+	value, diags := writeonly.EgressToken.Pending(ctx, config, plan, state)
+	if !value.IsNull() {
 		in.Token = value.ValueString()
 	}
 

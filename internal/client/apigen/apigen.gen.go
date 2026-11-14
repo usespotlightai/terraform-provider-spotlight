@@ -42,6 +42,36 @@ func (e ApiSpecResponseDtoKind) Valid() bool {
 	}
 }
 
+// Defines values for ExpressionCallResponseDtoBy.
+const (
+	Chat         ExpressionCallResponseDtoBy = "chat"
+	InboxRequest ExpressionCallResponseDtoBy = "inbox-request"
+	Notice       ExpressionCallResponseDtoBy = "notice"
+	Schedule     ExpressionCallResponseDtoBy = "schedule"
+	Task         ExpressionCallResponseDtoBy = "task"
+	Tool         ExpressionCallResponseDtoBy = "tool"
+)
+
+// Valid indicates whether the value is a known member of the ExpressionCallResponseDtoBy enum.
+func (e ExpressionCallResponseDtoBy) Valid() bool {
+	switch e {
+	case Chat:
+		return true
+	case InboxRequest:
+		return true
+	case Notice:
+		return true
+	case Schedule:
+		return true
+	case Task:
+		return true
+	case Tool:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ExpressionPositionResponseDtoAddedVariables.
 const (
 	Captures ExpressionPositionResponseDtoAddedVariables = "captures"
@@ -555,6 +585,51 @@ const (
 func (e UpdateHookParamsSpotlightApiVersion) Valid() bool {
 	switch e {
 	case UpdateHookParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DeleteInferenceEndpointParamsSpotlightApiVersion.
+const (
+	DeleteInferenceEndpointParamsSpotlightApiVersionN20260923 DeleteInferenceEndpointParamsSpotlightApiVersion = "2026-09-23"
+)
+
+// Valid indicates whether the value is a known member of the DeleteInferenceEndpointParamsSpotlightApiVersion enum.
+func (e DeleteInferenceEndpointParamsSpotlightApiVersion) Valid() bool {
+	switch e {
+	case DeleteInferenceEndpointParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReadInferenceEndpointParamsSpotlightApiVersion.
+const (
+	ReadInferenceEndpointParamsSpotlightApiVersionN20260923 ReadInferenceEndpointParamsSpotlightApiVersion = "2026-09-23"
+)
+
+// Valid indicates whether the value is a known member of the ReadInferenceEndpointParamsSpotlightApiVersion enum.
+func (e ReadInferenceEndpointParamsSpotlightApiVersion) Valid() bool {
+	switch e {
+	case ReadInferenceEndpointParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateInferenceEndpointParamsSpotlightApiVersion.
+const (
+	UpdateInferenceEndpointParamsSpotlightApiVersionN20260923 UpdateInferenceEndpointParamsSpotlightApiVersion = "2026-09-23"
+)
+
+// Valid indicates whether the value is a known member of the UpdateInferenceEndpointParamsSpotlightApiVersion enum.
+func (e UpdateInferenceEndpointParamsSpotlightApiVersion) Valid() bool {
+	switch e {
+	case UpdateInferenceEndpointParamsSpotlightApiVersionN20260923:
 		return true
 	default:
 		return false
@@ -1320,6 +1395,51 @@ func (e ImportHookParamsSpotlightApiVersion) Valid() bool {
 	}
 }
 
+// Defines values for ListInferenceEndpointsParamsSpotlightApiVersion.
+const (
+	ListInferenceEndpointsParamsSpotlightApiVersionN20260923 ListInferenceEndpointsParamsSpotlightApiVersion = "2026-09-23"
+)
+
+// Valid indicates whether the value is a known member of the ListInferenceEndpointsParamsSpotlightApiVersion enum.
+func (e ListInferenceEndpointsParamsSpotlightApiVersion) Valid() bool {
+	switch e {
+	case ListInferenceEndpointsParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CreateInferenceEndpointParamsSpotlightApiVersion.
+const (
+	CreateInferenceEndpointParamsSpotlightApiVersionN20260923 CreateInferenceEndpointParamsSpotlightApiVersion = "2026-09-23"
+)
+
+// Valid indicates whether the value is a known member of the CreateInferenceEndpointParamsSpotlightApiVersion enum.
+func (e CreateInferenceEndpointParamsSpotlightApiVersion) Valid() bool {
+	switch e {
+	case CreateInferenceEndpointParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ImportInferenceEndpointParamsSpotlightApiVersion.
+const (
+	ImportInferenceEndpointParamsSpotlightApiVersionN20260923 ImportInferenceEndpointParamsSpotlightApiVersion = "2026-09-23"
+)
+
+// Valid indicates whether the value is a known member of the ImportInferenceEndpointParamsSpotlightApiVersion enum.
+func (e ImportInferenceEndpointParamsSpotlightApiVersion) Valid() bool {
+	switch e {
+	case ImportInferenceEndpointParamsSpotlightApiVersionN20260923:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ListIntegrationsParamsSpotlightApiVersion.
 const (
 	ListIntegrationsParamsSpotlightApiVersionN20260923 ListIntegrationsParamsSpotlightApiVersion = "2026-09-23"
@@ -1839,6 +1959,18 @@ type ExchangeWorkloadTokenRequestDto struct {
 	Trust string `json:"trust"`
 }
 
+// ExpressionCallResponseDto defines model for ExpressionCallResponseDto.
+type ExpressionCallResponseDto struct {
+	// By What calls the expression: a binding of a task, chat, inbox-request or notice event, a tool, or a schedule
+	By ExpressionCallResponseDtoBy `json:"by"`
+
+	// Variables The variables that depend on what calls the expression, and that this caller gives
+	Variables []string `json:"variables"`
+}
+
+// ExpressionCallResponseDtoBy What calls the expression: a binding of a task, chat, inbox-request or notice event, a tool, or a schedule
+type ExpressionCallResponseDtoBy string
+
 // ExpressionCheckResponseDto defines model for ExpressionCheckResponseDto.
 type ExpressionCheckResponseDto struct {
 	// Errors Empty when the expression is sound where it is written
@@ -1875,6 +2007,9 @@ type ExpressionErrorResponseDto struct {
 type ExpressionPositionResponseDto struct {
 	// AddedVariables What the definition adds here: item where the event has a forEach, the names its lookup captures, the inputs of the tools that do the action
 	AddedVariables []ExpressionPositionResponseDtoAddedVariables `json:"addedVariables"`
+
+	// Calls What can call an expression here, each with the variables it gives. The expression is checked for each caller that the definition has: a binding for the events whose bindings name it, a tool or a schedule for the actions they name. Where the definition has no such caller, it is checked against all of them. Empty where the variables do not depend on what calls the expression
+	Calls []ExpressionCallResponseDto `json:"calls"`
 
 	// Position Where an expression is written, with [*] for any list index or map key; a check names the concrete attribute and resolves it against the supplied definition
 	Position string `json:"position"`
@@ -2123,6 +2258,45 @@ type HookStepDto struct {
 
 	// With The inputs the step sends to its tool
 	With *map[string]interface{} `json:"with,omitempty"`
+}
+
+// InferenceEndpointResourceListResponseDto defines model for InferenceEndpointResourceListResponseDto.
+type InferenceEndpointResourceListResponseDto struct {
+	// Items Every one there is, each as a read returns it, in address order
+	Items []InferenceEndpointResourceResponseDto `json:"items"`
+}
+
+// InferenceEndpointResourceResponseDto defines model for InferenceEndpointResourceResponseDto.
+type InferenceEndpointResourceResponseDto struct {
+	// Address Names the resource within its workspace; terraform import takes it
+	Address string `json:"address"`
+
+	// ApiKeySet Whether Spotlight holds an API key. The key is write-only and never returned
+	ApiKeySet bool `json:"apiKeySet"`
+
+	// ApiKeyVersion Changed, with a new key, to rotate the API key, which is write-only and never returned
+	ApiKeyVersion *int `json:"apiKeyVersion"`
+
+	// BaseUrl The base URL of an OpenAI-compatible API. Spotlight calls its /chat/completions
+	BaseUrl string `json:"baseUrl"`
+
+	// Id Issued by Spotlight when the resource is created, and never changed
+	Id string `json:"id"`
+
+	// Model The one model every Spotlight feature of the workspace uses
+	Model string `json:"model"`
+
+	// SupportsReasoningEffort Whether the model accepts the reasoning_effort parameter
+	SupportsReasoningEffort bool `json:"supportsReasoningEffort"`
+
+	// Version Rises with every change; the ETag carries it, and a write sends it back as If-Match
+	Version float32 `json:"version"`
+
+	// Warnings What would work better, though nothing stops it working; not settable
+	Warnings []FieldErrorResponseDto `json:"warnings"`
+
+	// WorkspaceId The workspace it belongs to
+	WorkspaceId string `json:"workspaceId"`
 }
 
 // IntegrationResourceListResponseDto defines model for IntegrationResourceListResponseDto.
@@ -2795,6 +2969,60 @@ type UpdateHookParams struct {
 
 // UpdateHookParamsSpotlightApiVersion defines parameters for UpdateHook.
 type UpdateHookParamsSpotlightApiVersion string
+
+// DeleteInferenceEndpointParams defines parameters for DeleteInferenceEndpoint.
+type DeleteInferenceEndpointParams struct {
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
+	SpotlightApiVersion *DeleteInferenceEndpointParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
+
+	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
+	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
+
+	// IfMatch The ETag of the version this write was based on; a write to any other version fails with 409
+	IfMatch string `json:"If-Match"`
+}
+
+// DeleteInferenceEndpointParamsSpotlightApiVersion defines parameters for DeleteInferenceEndpoint.
+type DeleteInferenceEndpointParamsSpotlightApiVersion string
+
+// ReadInferenceEndpointParams defines parameters for ReadInferenceEndpoint.
+type ReadInferenceEndpointParams struct {
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
+	SpotlightApiVersion *ReadInferenceEndpointParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
+
+	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
+	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
+}
+
+// ReadInferenceEndpointParamsSpotlightApiVersion defines parameters for ReadInferenceEndpoint.
+type ReadInferenceEndpointParamsSpotlightApiVersion string
+
+// UpdateInferenceEndpointJSONBody defines parameters for UpdateInferenceEndpoint.
+type UpdateInferenceEndpointJSONBody struct {
+	// ApiKeyWo The API key to store; accepted on create and whenever it is sent, and never returned
+	ApiKeyWo *string `json:"apiKeyWo,omitempty"`
+
+	// ApiKeyWoVersion Change it to rotate the key to the apiKeyWo sent with it
+	ApiKeyWoVersion         *int   `json:"apiKeyWoVersion,omitempty"`
+	BaseUrl                 string `json:"baseUrl"`
+	Model                   string `json:"model"`
+	SupportsReasoningEffort *bool  `json:"supportsReasoningEffort,omitempty"`
+}
+
+// UpdateInferenceEndpointParams defines parameters for UpdateInferenceEndpoint.
+type UpdateInferenceEndpointParams struct {
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
+	SpotlightApiVersion *UpdateInferenceEndpointParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
+
+	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
+	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
+
+	// IfMatch The ETag of the version this write was based on; a write to any other version fails with 409
+	IfMatch string `json:"If-Match"`
+}
+
+// UpdateInferenceEndpointParamsSpotlightApiVersion defines parameters for UpdateInferenceEndpoint.
+type UpdateInferenceEndpointParamsSpotlightApiVersion string
 
 // DeleteIntegrationParams defines parameters for DeleteIntegration.
 type DeleteIntegrationParams struct {
@@ -3601,6 +3829,60 @@ type ImportHookParams struct {
 // ImportHookParamsSpotlightApiVersion defines parameters for ImportHook.
 type ImportHookParamsSpotlightApiVersion string
 
+// ListInferenceEndpointsParams defines parameters for ListInferenceEndpoints.
+type ListInferenceEndpointsParams struct {
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
+	SpotlightApiVersion *ListInferenceEndpointsParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
+
+	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
+	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
+}
+
+// ListInferenceEndpointsParamsSpotlightApiVersion defines parameters for ListInferenceEndpoints.
+type ListInferenceEndpointsParamsSpotlightApiVersion string
+
+// CreateInferenceEndpointJSONBody defines parameters for CreateInferenceEndpoint.
+type CreateInferenceEndpointJSONBody struct {
+	// ApiKeyWo The API key to store; accepted on create and whenever it is sent, and never returned
+	ApiKeyWo *string `json:"apiKeyWo,omitempty"`
+
+	// ApiKeyWoVersion Change it to rotate the key to the apiKeyWo sent with it
+	ApiKeyWoVersion         *int   `json:"apiKeyWoVersion,omitempty"`
+	BaseUrl                 string `json:"baseUrl"`
+	Model                   string `json:"model"`
+	SupportsReasoningEffort *bool  `json:"supportsReasoningEffort,omitempty"`
+}
+
+// CreateInferenceEndpointParams defines parameters for CreateInferenceEndpoint.
+type CreateInferenceEndpointParams struct {
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
+	SpotlightApiVersion *CreateInferenceEndpointParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
+
+	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
+	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
+
+	// IdempotencyKey Unique per create; a retry with the same key and body returns the resource that the first attempt created, and creates nothing more
+	IdempotencyKey string `json:"Idempotency-Key"`
+}
+
+// CreateInferenceEndpointParamsSpotlightApiVersion defines parameters for CreateInferenceEndpoint.
+type CreateInferenceEndpointParamsSpotlightApiVersion string
+
+// ImportInferenceEndpointParams defines parameters for ImportInferenceEndpoint.
+type ImportInferenceEndpointParams struct {
+	// Address The inference-endpoint's address within the workspace
+	Address interface{} `form:"address" json:"address"`
+
+	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
+	SpotlightApiVersion *ImportInferenceEndpointParamsSpotlightApiVersion `json:"Spotlight-Api-Version,omitempty"`
+
+	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
+	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
+}
+
+// ImportInferenceEndpointParamsSpotlightApiVersion defines parameters for ImportInferenceEndpoint.
+type ImportInferenceEndpointParamsSpotlightApiVersion string
+
 // ListIntegrationsParams defines parameters for ListIntegrations.
 type ListIntegrationsParams struct {
 	// SpotlightApiVersion The API version the client was written against; every response names the version that it uses
@@ -4047,6 +4329,9 @@ type UpdateHarnessProfileJSONRequestBody UpdateHarnessProfileJSONBody
 // UpdateHookJSONRequestBody defines body for UpdateHook for application/json ContentType.
 type UpdateHookJSONRequestBody = HookDefinitionRequestDto
 
+// UpdateInferenceEndpointJSONRequestBody defines body for UpdateInferenceEndpoint for application/json ContentType.
+type UpdateInferenceEndpointJSONRequestBody UpdateInferenceEndpointJSONBody
+
 // UpdateIntegrationJSONRequestBody defines body for UpdateIntegration for application/json ContentType.
 type UpdateIntegrationJSONRequestBody UpdateIntegrationJSONBody
 
@@ -4097,6 +4382,9 @@ type UpdateWorkspaceJSONRequestBody UpdateWorkspaceJSONBody
 
 // CreateEgressJSONRequestBody defines body for CreateEgress for application/json ContentType.
 type CreateEgressJSONRequestBody CreateEgressJSONBody
+
+// CreateInferenceEndpointJSONRequestBody defines body for CreateInferenceEndpoint for application/json ContentType.
+type CreateInferenceEndpointJSONRequestBody CreateInferenceEndpointJSONBody
 
 // CreateOidcTrustJSONRequestBody defines body for CreateOidcTrust for application/json ContentType.
 type CreateOidcTrustJSONRequestBody CreateOidcTrustJSONBody
@@ -4373,6 +4661,17 @@ type ClientInterface interface {
 
 	UpdateHook(ctx context.Context, id string, params *UpdateHookParams, body UpdateHookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// DeleteInferenceEndpoint request
+	DeleteInferenceEndpoint(ctx context.Context, id string, params *DeleteInferenceEndpointParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ReadInferenceEndpoint request
+	ReadInferenceEndpoint(ctx context.Context, id string, params *ReadInferenceEndpointParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateInferenceEndpointWithBody request with any body
+	UpdateInferenceEndpointWithBody(ctx context.Context, id string, params *UpdateInferenceEndpointParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateInferenceEndpoint(ctx context.Context, id string, params *UpdateInferenceEndpointParams, body UpdateInferenceEndpointJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// DeleteIntegration request
 	DeleteIntegration(ctx context.Context, id string, params *DeleteIntegrationParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -4541,6 +4840,17 @@ type ClientInterface interface {
 
 	// ImportHook request
 	ImportHook(ctx context.Context, workspaceId string, params *ImportHookParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListInferenceEndpoints request
+	ListInferenceEndpoints(ctx context.Context, workspaceId string, params *ListInferenceEndpointsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateInferenceEndpointWithBody request with any body
+	CreateInferenceEndpointWithBody(ctx context.Context, workspaceId string, params *CreateInferenceEndpointParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateInferenceEndpoint(ctx context.Context, workspaceId string, params *CreateInferenceEndpointParams, body CreateInferenceEndpointJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ImportInferenceEndpoint request
+	ImportInferenceEndpoint(ctx context.Context, workspaceId string, params *ImportInferenceEndpointParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListIntegrations request
 	ListIntegrations(ctx context.Context, workspaceId string, params *ListIntegrationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -4802,6 +5112,54 @@ func (c *Client) UpdateHookWithBody(ctx context.Context, id string, params *Upda
 
 func (c *Client) UpdateHook(ctx context.Context, id string, params *UpdateHookParams, body UpdateHookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateHookRequest(c.Server, id, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteInferenceEndpoint(ctx context.Context, id string, params *DeleteInferenceEndpointParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteInferenceEndpointRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ReadInferenceEndpoint(ctx context.Context, id string, params *ReadInferenceEndpointParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewReadInferenceEndpointRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateInferenceEndpointWithBody(ctx context.Context, id string, params *UpdateInferenceEndpointParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateInferenceEndpointRequestWithBody(c.Server, id, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateInferenceEndpoint(ctx context.Context, id string, params *UpdateInferenceEndpointParams, body UpdateInferenceEndpointJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateInferenceEndpointRequest(c.Server, id, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -5546,6 +5904,54 @@ func (c *Client) ListHooks(ctx context.Context, workspaceId string, params *List
 
 func (c *Client) ImportHook(ctx context.Context, workspaceId string, params *ImportHookParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewImportHookRequest(c.Server, workspaceId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListInferenceEndpoints(ctx context.Context, workspaceId string, params *ListInferenceEndpointsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListInferenceEndpointsRequest(c.Server, workspaceId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateInferenceEndpointWithBody(ctx context.Context, workspaceId string, params *CreateInferenceEndpointParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateInferenceEndpointRequestWithBody(c.Server, workspaceId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateInferenceEndpoint(ctx context.Context, workspaceId string, params *CreateInferenceEndpointParams, body CreateInferenceEndpointJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateInferenceEndpointRequest(c.Server, workspaceId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ImportInferenceEndpoint(ctx context.Context, workspaceId string, params *ImportInferenceEndpointParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewImportInferenceEndpointRequest(c.Server, workspaceId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -6638,6 +7044,217 @@ func NewUpdateHookRequestWithBody(server string, id string, params *UpdateHookPa
 	}
 
 	operationPath := fmt.Sprintf("/v1/resources/hooks/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		if params.SpotlightApiVersion != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Api-Version", headerParam0)
+		}
+
+		if params.SpotlightClient != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Client", headerParam1)
+		}
+
+		var headerParam2 string
+
+		headerParam2, err = runtime.StyleParamWithOptions("simple", false, "If-Match", params.IfMatch, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("If-Match", headerParam2)
+
+	}
+
+	return req, nil
+}
+
+// NewDeleteInferenceEndpointRequest generates requests for DeleteInferenceEndpoint
+func NewDeleteInferenceEndpointRequest(server string, id string, params *DeleteInferenceEndpointParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/resources/inference-endpoints/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+
+		if params.SpotlightApiVersion != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Api-Version", headerParam0)
+		}
+
+		if params.SpotlightClient != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Client", headerParam1)
+		}
+
+		var headerParam2 string
+
+		headerParam2, err = runtime.StyleParamWithOptions("simple", false, "If-Match", params.IfMatch, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("If-Match", headerParam2)
+
+	}
+
+	return req, nil
+}
+
+// NewReadInferenceEndpointRequest generates requests for ReadInferenceEndpoint
+func NewReadInferenceEndpointRequest(server string, id string, params *ReadInferenceEndpointParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/resources/inference-endpoints/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+
+		if params.SpotlightApiVersion != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Api-Version", headerParam0)
+		}
+
+		if params.SpotlightClient != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Client", headerParam1)
+		}
+
+	}
+
+	return req, nil
+}
+
+// NewUpdateInferenceEndpointRequest calls the generic UpdateInferenceEndpoint builder with application/json body
+func NewUpdateInferenceEndpointRequest(server string, id string, params *UpdateInferenceEndpointParams, body UpdateInferenceEndpointJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateInferenceEndpointRequestWithBody(server, id, params, "application/json", bodyReader)
+}
+
+// NewUpdateInferenceEndpointRequestWithBody generates requests for UpdateInferenceEndpoint with any type of body
+func NewUpdateInferenceEndpointRequestWithBody(server string, id string, params *UpdateInferenceEndpointParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/resources/inference-endpoints/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -9927,6 +10544,231 @@ func NewImportHookRequest(server string, workspaceId string, params *ImportHookP
 	return req, nil
 }
 
+// NewListInferenceEndpointsRequest generates requests for ListInferenceEndpoints
+func NewListInferenceEndpointsRequest(server string, workspaceId string, params *ListInferenceEndpointsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/inference-endpoints", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+
+		if params.SpotlightApiVersion != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Api-Version", headerParam0)
+		}
+
+		if params.SpotlightClient != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Client", headerParam1)
+		}
+
+	}
+
+	return req, nil
+}
+
+// NewCreateInferenceEndpointRequest calls the generic CreateInferenceEndpoint builder with application/json body
+func NewCreateInferenceEndpointRequest(server string, workspaceId string, params *CreateInferenceEndpointParams, body CreateInferenceEndpointJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateInferenceEndpointRequestWithBody(server, workspaceId, params, "application/json", bodyReader)
+}
+
+// NewCreateInferenceEndpointRequestWithBody generates requests for CreateInferenceEndpoint with any type of body
+func NewCreateInferenceEndpointRequestWithBody(server string, workspaceId string, params *CreateInferenceEndpointParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/inference-endpoints", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		if params.SpotlightApiVersion != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Api-Version", headerParam0)
+		}
+
+		if params.SpotlightClient != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Client", headerParam1)
+		}
+
+		var headerParam2 string
+
+		headerParam2, err = runtime.StyleParamWithOptions("simple", false, "Idempotency-Key", params.IdempotencyKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("Idempotency-Key", headerParam2)
+
+	}
+
+	return req, nil
+}
+
+// NewImportInferenceEndpointRequest generates requests for ImportInferenceEndpoint
+func NewImportInferenceEndpointRequest(server string, workspaceId string, params *ImportInferenceEndpointParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/resources/workspaces/%s/inference-endpoints/import", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "address", params.Address, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+
+		if params.SpotlightApiVersion != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Api-Version", *params.SpotlightApiVersion, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Api-Version", headerParam0)
+		}
+
+		if params.SpotlightClient != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Client", *params.SpotlightClient, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Client", headerParam1)
+		}
+
+	}
+
+	return req, nil
+}
+
 // NewListIntegrationsRequest generates requests for ListIntegrations
 func NewListIntegrationsRequest(server string, workspaceId string, params *ListIntegrationsParams) (*http.Request, error) {
 	var err error
@@ -11830,6 +12672,17 @@ type ClientWithResponsesInterface interface {
 
 	UpdateHookWithResponse(ctx context.Context, id string, params *UpdateHookParams, body UpdateHookJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateHookResponse, error)
 
+	// DeleteInferenceEndpointWithResponse request
+	DeleteInferenceEndpointWithResponse(ctx context.Context, id string, params *DeleteInferenceEndpointParams, reqEditors ...RequestEditorFn) (*DeleteInferenceEndpointResponse, error)
+
+	// ReadInferenceEndpointWithResponse request
+	ReadInferenceEndpointWithResponse(ctx context.Context, id string, params *ReadInferenceEndpointParams, reqEditors ...RequestEditorFn) (*ReadInferenceEndpointResponse, error)
+
+	// UpdateInferenceEndpointWithBodyWithResponse request with any body
+	UpdateInferenceEndpointWithBodyWithResponse(ctx context.Context, id string, params *UpdateInferenceEndpointParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateInferenceEndpointResponse, error)
+
+	UpdateInferenceEndpointWithResponse(ctx context.Context, id string, params *UpdateInferenceEndpointParams, body UpdateInferenceEndpointJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateInferenceEndpointResponse, error)
+
 	// DeleteIntegrationWithResponse request
 	DeleteIntegrationWithResponse(ctx context.Context, id string, params *DeleteIntegrationParams, reqEditors ...RequestEditorFn) (*DeleteIntegrationResponse, error)
 
@@ -11998,6 +12851,17 @@ type ClientWithResponsesInterface interface {
 
 	// ImportHookWithResponse request
 	ImportHookWithResponse(ctx context.Context, workspaceId string, params *ImportHookParams, reqEditors ...RequestEditorFn) (*ImportHookResponse, error)
+
+	// ListInferenceEndpointsWithResponse request
+	ListInferenceEndpointsWithResponse(ctx context.Context, workspaceId string, params *ListInferenceEndpointsParams, reqEditors ...RequestEditorFn) (*ListInferenceEndpointsResponse, error)
+
+	// CreateInferenceEndpointWithBodyWithResponse request with any body
+	CreateInferenceEndpointWithBodyWithResponse(ctx context.Context, workspaceId string, params *CreateInferenceEndpointParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateInferenceEndpointResponse, error)
+
+	CreateInferenceEndpointWithResponse(ctx context.Context, workspaceId string, params *CreateInferenceEndpointParams, body CreateInferenceEndpointJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateInferenceEndpointResponse, error)
+
+	// ImportInferenceEndpointWithResponse request
+	ImportInferenceEndpointWithResponse(ctx context.Context, workspaceId string, params *ImportInferenceEndpointParams, reqEditors ...RequestEditorFn) (*ImportInferenceEndpointResponse, error)
 
 	// ListIntegrationsWithResponse request
 	ListIntegrationsWithResponse(ctx context.Context, workspaceId string, params *ListIntegrationsParams, reqEditors ...RequestEditorFn) (*ListIntegrationsResponse, error)
@@ -12464,6 +13328,111 @@ func (r UpdateHookResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r UpdateHookResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DeleteInferenceEndpointResponse struct {
+	Body                      []byte
+	HTTPResponse              *http.Response
+	ApplicationproblemJSON400 *ProblemResponseDto
+	ApplicationproblemJSON401 *ProblemResponseDto
+	ApplicationproblemJSON403 *ProblemResponseDto
+	ApplicationproblemJSON404 *ProblemResponseDto
+	ApplicationproblemJSON409 *ProblemResponseDto
+	ApplicationproblemJSON428 *ProblemResponseDto
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteInferenceEndpointResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteInferenceEndpointResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteInferenceEndpointResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ReadInferenceEndpointResponse struct {
+	Body                      []byte
+	HTTPResponse              *http.Response
+	JSON200                   *InferenceEndpointResourceResponseDto
+	ApplicationproblemJSON400 *ProblemResponseDto
+	ApplicationproblemJSON401 *ProblemResponseDto
+	ApplicationproblemJSON404 *ProblemResponseDto
+}
+
+// Status returns HTTPResponse.Status
+func (r ReadInferenceEndpointResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ReadInferenceEndpointResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ReadInferenceEndpointResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type UpdateInferenceEndpointResponse struct {
+	Body                      []byte
+	HTTPResponse              *http.Response
+	JSON200                   *InferenceEndpointResourceResponseDto
+	ApplicationproblemJSON400 *ProblemResponseDto
+	ApplicationproblemJSON401 *ProblemResponseDto
+	ApplicationproblemJSON403 *ProblemResponseDto
+	ApplicationproblemJSON404 *ProblemResponseDto
+	ApplicationproblemJSON409 *ProblemResponseDto
+	ApplicationproblemJSON422 *ProblemResponseDto
+	ApplicationproblemJSON428 *ProblemResponseDto
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateInferenceEndpointResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateInferenceEndpointResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r UpdateInferenceEndpointResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -14035,6 +15004,108 @@ func (r ImportHookResponse) ContentType() string {
 	return ""
 }
 
+type ListInferenceEndpointsResponse struct {
+	Body                      []byte
+	HTTPResponse              *http.Response
+	JSON200                   *InferenceEndpointResourceListResponseDto
+	ApplicationproblemJSON400 *ProblemResponseDto
+	ApplicationproblemJSON401 *ProblemResponseDto
+	ApplicationproblemJSON404 *ProblemResponseDto
+}
+
+// Status returns HTTPResponse.Status
+func (r ListInferenceEndpointsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListInferenceEndpointsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListInferenceEndpointsResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type CreateInferenceEndpointResponse struct {
+	Body                      []byte
+	HTTPResponse              *http.Response
+	JSON201                   *InferenceEndpointResourceResponseDto
+	ApplicationproblemJSON400 *ProblemResponseDto
+	ApplicationproblemJSON401 *ProblemResponseDto
+	ApplicationproblemJSON403 *ProblemResponseDto
+	ApplicationproblemJSON404 *ProblemResponseDto
+	ApplicationproblemJSON409 *ProblemResponseDto
+	ApplicationproblemJSON422 *ProblemResponseDto
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateInferenceEndpointResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateInferenceEndpointResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateInferenceEndpointResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ImportInferenceEndpointResponse struct {
+	Body                      []byte
+	HTTPResponse              *http.Response
+	JSON200                   *InferenceEndpointResourceResponseDto
+	ApplicationproblemJSON400 *ProblemResponseDto
+	ApplicationproblemJSON401 *ProblemResponseDto
+	ApplicationproblemJSON404 *ProblemResponseDto
+}
+
+// Status returns HTTPResponse.Status
+func (r ImportInferenceEndpointResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ImportInferenceEndpointResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ImportInferenceEndpointResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type ListIntegrationsResponse struct {
 	Body                      []byte
 	HTTPResponse              *http.Response
@@ -15006,6 +16077,41 @@ func (c *ClientWithResponses) UpdateHookWithResponse(ctx context.Context, id str
 	return ParseUpdateHookResponse(rsp)
 }
 
+// DeleteInferenceEndpointWithResponse request returning *DeleteInferenceEndpointResponse
+func (c *ClientWithResponses) DeleteInferenceEndpointWithResponse(ctx context.Context, id string, params *DeleteInferenceEndpointParams, reqEditors ...RequestEditorFn) (*DeleteInferenceEndpointResponse, error) {
+	rsp, err := c.DeleteInferenceEndpoint(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteInferenceEndpointResponse(rsp)
+}
+
+// ReadInferenceEndpointWithResponse request returning *ReadInferenceEndpointResponse
+func (c *ClientWithResponses) ReadInferenceEndpointWithResponse(ctx context.Context, id string, params *ReadInferenceEndpointParams, reqEditors ...RequestEditorFn) (*ReadInferenceEndpointResponse, error) {
+	rsp, err := c.ReadInferenceEndpoint(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseReadInferenceEndpointResponse(rsp)
+}
+
+// UpdateInferenceEndpointWithBodyWithResponse request with arbitrary body returning *UpdateInferenceEndpointResponse
+func (c *ClientWithResponses) UpdateInferenceEndpointWithBodyWithResponse(ctx context.Context, id string, params *UpdateInferenceEndpointParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateInferenceEndpointResponse, error) {
+	rsp, err := c.UpdateInferenceEndpointWithBody(ctx, id, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateInferenceEndpointResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateInferenceEndpointWithResponse(ctx context.Context, id string, params *UpdateInferenceEndpointParams, body UpdateInferenceEndpointJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateInferenceEndpointResponse, error) {
+	rsp, err := c.UpdateInferenceEndpoint(ctx, id, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateInferenceEndpointResponse(rsp)
+}
+
 // DeleteIntegrationWithResponse request returning *DeleteIntegrationResponse
 func (c *ClientWithResponses) DeleteIntegrationWithResponse(ctx context.Context, id string, params *DeleteIntegrationParams, reqEditors ...RequestEditorFn) (*DeleteIntegrationResponse, error) {
 	rsp, err := c.DeleteIntegration(ctx, id, params, reqEditors...)
@@ -15545,6 +16651,41 @@ func (c *ClientWithResponses) ImportHookWithResponse(ctx context.Context, worksp
 		return nil, err
 	}
 	return ParseImportHookResponse(rsp)
+}
+
+// ListInferenceEndpointsWithResponse request returning *ListInferenceEndpointsResponse
+func (c *ClientWithResponses) ListInferenceEndpointsWithResponse(ctx context.Context, workspaceId string, params *ListInferenceEndpointsParams, reqEditors ...RequestEditorFn) (*ListInferenceEndpointsResponse, error) {
+	rsp, err := c.ListInferenceEndpoints(ctx, workspaceId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListInferenceEndpointsResponse(rsp)
+}
+
+// CreateInferenceEndpointWithBodyWithResponse request with arbitrary body returning *CreateInferenceEndpointResponse
+func (c *ClientWithResponses) CreateInferenceEndpointWithBodyWithResponse(ctx context.Context, workspaceId string, params *CreateInferenceEndpointParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateInferenceEndpointResponse, error) {
+	rsp, err := c.CreateInferenceEndpointWithBody(ctx, workspaceId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateInferenceEndpointResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateInferenceEndpointWithResponse(ctx context.Context, workspaceId string, params *CreateInferenceEndpointParams, body CreateInferenceEndpointJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateInferenceEndpointResponse, error) {
+	rsp, err := c.CreateInferenceEndpoint(ctx, workspaceId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateInferenceEndpointResponse(rsp)
+}
+
+// ImportInferenceEndpointWithResponse request returning *ImportInferenceEndpointResponse
+func (c *ClientWithResponses) ImportInferenceEndpointWithResponse(ctx context.Context, workspaceId string, params *ImportInferenceEndpointParams, reqEditors ...RequestEditorFn) (*ImportInferenceEndpointResponse, error) {
+	rsp, err := c.ImportInferenceEndpoint(ctx, workspaceId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseImportInferenceEndpointResponse(rsp)
 }
 
 // ListIntegrationsWithResponse request returning *ListIntegrationsResponse
@@ -16412,6 +17553,189 @@ func ParseUpdateHookResponse(rsp *http.Response) (*UpdateHookResponse, error) {
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest HookResourceResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 428:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON428 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteInferenceEndpointResponse parses an HTTP response from a DeleteInferenceEndpointWithResponse call
+func ParseDeleteInferenceEndpointResponse(rsp *http.Response) (*DeleteInferenceEndpointResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteInferenceEndpointResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 428:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON428 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseReadInferenceEndpointResponse parses an HTTP response from a ReadInferenceEndpointWithResponse call
+func ParseReadInferenceEndpointResponse(rsp *http.Response) (*ReadInferenceEndpointResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ReadInferenceEndpointResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest InferenceEndpointResourceResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateInferenceEndpointResponse parses an HTTP response from a UpdateInferenceEndpointWithResponse call
+func ParseUpdateInferenceEndpointResponse(rsp *http.Response) (*UpdateInferenceEndpointResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateInferenceEndpointResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest InferenceEndpointResourceResponseDto
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -19115,6 +20439,168 @@ func ParseImportHookResponse(rsp *http.Response) (*ImportHookResponse, error) {
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest HookResourceResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListInferenceEndpointsResponse parses an HTTP response from a ListInferenceEndpointsWithResponse call
+func ParseListInferenceEndpointsResponse(rsp *http.Response) (*ListInferenceEndpointsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListInferenceEndpointsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest InferenceEndpointResourceListResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateInferenceEndpointResponse parses an HTTP response from a CreateInferenceEndpointWithResponse call
+func ParseCreateInferenceEndpointResponse(rsp *http.Response) (*CreateInferenceEndpointResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateInferenceEndpointResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest InferenceEndpointResourceResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest ProblemResponseDto
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseImportInferenceEndpointResponse parses an HTTP response from a ImportInferenceEndpointWithResponse call
+func ParseImportInferenceEndpointResponse(rsp *http.Response) (*ImportInferenceEndpointResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ImportInferenceEndpointResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest InferenceEndpointResourceResponseDto
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

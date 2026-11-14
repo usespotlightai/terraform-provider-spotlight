@@ -44,6 +44,8 @@ var ProvisionSecret = Field{Within: "provision", Name: "secret", Version: "secre
 // SigningSecret is the HMAC secret that a hook signs its requests with.
 var SigningSecret = Field{Within: "signing", Name: "secret_wo", Version: "secret_wo_version", FromOne: true}
 
+var InferenceAPIKey = Field{Name: "api_key_wo", Version: "api_key_wo_version"}
+
 // Path returns the Terraform path of the write-only attribute.
 func (f Field) Path() path.Path {
 	return f.at(f.Name)
@@ -100,4 +102,20 @@ func (f Field) Rewritten(ctx context.Context, plan tfsdk.Plan, state tfsdk.State
 	diags.Append(state.GetAttribute(ctx, f.at(f.Version), &prior)...)
 
 	return !planned.Equal(prior), diags
+}
+
+func (f Field) Pending(ctx context.Context, config tfsdk.Config, plan tfsdk.Plan, state *tfsdk.State) (types.String, diag.Diagnostics) {
+	if state != nil {
+		rewritten, diags := f.Rewritten(ctx, plan, *state)
+		if diags.HasError() || !rewritten {
+			return types.StringNull(), diags
+		}
+	}
+
+	value, diags := f.Read(ctx, config)
+	if value.IsUnknown() {
+		value = types.StringNull()
+	}
+
+	return value, diags
 }

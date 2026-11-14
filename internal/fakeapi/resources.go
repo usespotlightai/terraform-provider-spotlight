@@ -164,6 +164,8 @@ func written(kind string, existing *resource, fields, body map[string]any) (stri
 		return egressToken(existing, fields, body)
 	case "hook":
 		return hookSecret(existing, fields, body)
+	case "inference-endpoint":
+		return inferenceKey(existing, fields, body)
 	default:
 		return "", nil
 	}
@@ -436,6 +438,58 @@ func workspaceRunners(body map[string]any) (map[string]any, []fieldError) {
 		"trusts": onceEach(texts(body["trusts"]), "trusts", wordsLike("production-cluster"), &errs),
 		"pools":  onceEach(texts(body["pools"]), "pools", wordsLike("ephemeral"), &errs),
 	}, errs
+}
+
+func inferenceEndpoint(body map[string]any) (map[string]any, []fieldError) {
+	var errs []fieldError
+
+	written, _ := body["baseUrl"].(string)
+	written = strings.TrimRight(strings.TrimSpace(written), "/")
+	sent, err := url.Parse(written)
+	switch {
+	case err != nil || !sent.IsAbs() || sent.Host == "":
+		errs = append(errs, fieldError{"baseUrl", "must be a URL, such as https://openrouter.ai/api/v1"})
+	case sent.Scheme != "https" && sent.Scheme != "http":
+		errs = append(errs, fieldError{"baseUrl", "must start with http:// or https://, such as https://openrouter.ai/api/v1"})
+	case sent.User != nil:
+		errs = append(errs, fieldError{"baseUrl", "must not hold a user name or a password. Use the API key"})
+	case sent.RawQuery != "" || sent.Fragment != "" || len(written) > 2048:
+		errs = append(errs, fieldError{"baseUrl", "must have no query or fragment, and at most 2048 characters"})
+	}
+
+	model, _ := body["model"].(string)
+	model = strings.TrimSpace(model)
+	if model == "" || len(model) > 200 || strings.ContainsAny(model, " \t\n") {
+		errs = append(errs, fieldError{"model", "must be one name of at most 200 characters, such as openai/gpt-5-mini"})
+	}
+
+	reasoning, _ := body["supportsReasoningEffort"].(bool)
+
+	return map[string]any{"baseUrl": written, "model": model, "supportsReasoningEffort": reasoning, "apiKeyVersion": nil}, errs
+}
+
+func inferenceKey(existing *resource, fields, body map[string]any) (string, []fieldError) {
+	var kept any
+	if existing != nil {
+		kept = existing.fields["apiKeyVersion"]
+	}
+
+	key, _ := body["apiKeyWo"].(string)
+	if key == "" {
+		fields["apiKeyVersion"] = kept
+
+		return "", nil
+	}
+
+	previous, _ := kept.(float64)
+
+	if sent := versionOf(body["apiKeyWoVersion"]); sent != nil {
+		fields["apiKeyVersion"] = sent
+	} else {
+		fields["apiKeyVersion"] = previous + 1
+	}
+
+	return key, nil
 }
 
 func (s *Server) unansweredOf(declared *resource) []any {

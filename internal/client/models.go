@@ -311,6 +311,21 @@ type WorkspaceRunnersInput struct {
 	Pools  []string `json:"pools"`
 }
 
+type InferenceEndpoint struct {
+	Meta
+	WorkspaceID string
+	APIKeySet   bool
+	InferenceEndpointInput
+}
+
+type InferenceEndpointInput struct {
+	BaseURL                 string `json:"baseUrl"`
+	Model                   string `json:"model"`
+	SupportsReasoningEffort bool   `json:"supportsReasoningEffort"`
+	APIKey                  string `json:"apiKeyWo,omitempty"`
+	APIKeyVersion           *int64 `json:"apiKeyWoVersion,omitempty"`
+}
+
 // HarnessProfile contains the settings of a team. Spotlight sends the
 // settings to each harness in the terms of that harness.
 type HarnessProfile struct {

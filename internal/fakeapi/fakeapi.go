@@ -317,18 +317,19 @@ func (s *Server) exchange(w http.ResponseWriter, r *http.Request) {
 }
 
 var kinds = map[string]string{
-	"teams":             "team",
-	"lines":             "line",
-	"skills":            "skill",
-	"integrations":      "integration",
-	"harness-profiles":  "harness-profile",
-	"secrets":           "secret",
-	"runner-trusts":     "runner-trust",
-	"runner-pools":      "runner-pool",
-	"egresses":          "egress",
-	"workspace-runners": "workspace-runners",
-	"oidc-trusts":       "oidc-trust",
-	"hooks":             "hook",
+	"teams":               "team",
+	"lines":               "line",
+	"skills":              "skill",
+	"integrations":        "integration",
+	"harness-profiles":    "harness-profile",
+	"secrets":             "secret",
+	"runner-trusts":       "runner-trust",
+	"runner-pools":        "runner-pool",
+	"egresses":            "egress",
+	"workspace-runners":   "workspace-runners",
+	"inference-endpoints": "inference-endpoint",
+	"oidc-trusts":         "oidc-trust",
+	"hooks":               "hook",
 }
 
 func ownerKind(kind string) string {
@@ -341,11 +342,12 @@ func ownerKind(kind string) string {
 }
 
 var grants = map[string]string{
-	"secret":            "secrets",
-	"runner-trust":      "runners",
-	"runner-pool":       "runners",
-	"egress":            "runners",
-	"workspace-runners": "runners",
+	"secret":             "secrets",
+	"runner-trust":       "runners",
+	"runner-pool":        "runners",
+	"egress":             "runners",
+	"workspace-runners":  "runners",
+	"inference-endpoint": "secrets",
 }
 
 func (s *Server) allowed(w http.ResponseWriter, kind string) bool {
@@ -856,7 +858,7 @@ func (s *Server) addressOf(stored *resource) string {
 		return textOf(stored.fields["key"])
 	case "secret":
 		return textOf(stored.fields["name"])
-	case "workspace-runners":
+	case "workspace-runners", "inference-endpoint":
 		return s.slugOf(stored.owner)
 	case "integration":
 		return s.teamKeyOf(stored) + "/" + textOf(stored.fields["integration"])
@@ -918,6 +920,10 @@ func (s *Server) bodyOf(stored *resource) map[string]any {
 
 	if stored.kind == "workspace-runners" {
 		body["warnings"] = s.unansweredOf(stored)
+	}
+
+	if stored.kind == "inference-endpoint" {
+		body["apiKeySet"] = stored.fields["apiKeyVersion"] != nil
 	}
 
 	if stored.kind == "oidc-trust" {
