@@ -12,22 +12,23 @@ import (
 
 // LineResourceModel is a spotlight_line as Terraform stores it.
 type LineResourceModel struct {
-	ID            types.String     `tfsdk:"id"`
-	Version       types.Int64      `tfsdk:"version"`
-	Address       types.String     `tfsdk:"address"`
-	TeamID        types.String     `tfsdk:"team_id"`
-	Key           types.String     `tfsdk:"key"`
-	Name          types.String     `tfsdk:"name"`
-	Role          types.String     `tfsdk:"role"`
-	Runners       types.Set        `tfsdk:"runners"`
-	WarmSandboxes types.Int64      `tfsdk:"warm_sandboxes"`
-	Repositories  []lineRepository `tfsdk:"repository"`
-	Stations      []lineStation    `tfsdk:"station"`
-	Reactions     []lineReaction   `tfsdk:"reaction"`
-	Reviews       *lineReviews     `tfsdk:"reviews"`
-	ReplayCheck   *lineReplayCheck `tfsdk:"replay_check"`
-	Search        *lineSearch      `tfsdk:"search"`
-	Source        *lineSource      `tfsdk:"source"`
+	ID              types.String     `tfsdk:"id"`
+	Version         types.Int64      `tfsdk:"version"`
+	Address         types.String     `tfsdk:"address"`
+	TeamID          types.String     `tfsdk:"team_id"`
+	Key             types.String     `tfsdk:"key"`
+	Name            types.String     `tfsdk:"name"`
+	Role            types.String     `tfsdk:"role"`
+	Runners         types.Set        `tfsdk:"runners"`
+	WarmSandboxes   types.Int64      `tfsdk:"warm_sandboxes"`
+	DefaultAssignee types.String     `tfsdk:"default_assignee"`
+	Repositories    []lineRepository `tfsdk:"repository"`
+	Stations        []lineStation    `tfsdk:"station"`
+	Reactions       []lineReaction   `tfsdk:"reaction"`
+	Reviews         *lineReviews     `tfsdk:"reviews"`
+	ReplayCheck     *lineReplayCheck `tfsdk:"replay_check"`
+	Search          *lineSearch      `tfsdk:"search"`
+	Source          *lineSource      `tfsdk:"source"`
 }
 
 type lineRepository struct {
@@ -195,6 +196,7 @@ func lineInput(plan LineResourceModel) (client.Definition, diag.Diagnostics) {
 	line.text("role", plan.Role)
 	line.texts("runners", plan.Runners, &diags)
 	line.count("warmSandboxes", plan.WarmSandboxes)
+	line.text("defaultAssignee", plan.DefaultAssignee)
 
 	repositories := make([]any, 0, len(plan.Repositories))
 	for _, each := range plan.Repositories {
@@ -423,18 +425,19 @@ func lineAnswered(answer client.Line) LineResourceModel {
 	line := lineRead(answer.Definition)
 
 	model := LineResourceModel{
-		ID:            types.StringValue(answer.ID),
-		Version:       types.Int64Value(answer.Version),
-		Address:       types.StringValue(answer.Address),
-		TeamID:        types.StringValue(answer.TeamID),
-		Key:           types.StringValue(answer.Key),
-		Name:          line.text("name"),
-		Role:          line.text("role"),
-		Runners:       line.set("runners"),
-		WarmSandboxes: line.count("warmSandboxes"),
-		Repositories:  []lineRepository{},
-		Stations:      []lineStation{},
-		Reactions:     []lineReaction{},
+		ID:              types.StringValue(answer.ID),
+		Version:         types.Int64Value(answer.Version),
+		Address:         types.StringValue(answer.Address),
+		TeamID:          types.StringValue(answer.TeamID),
+		Key:             types.StringValue(answer.Key),
+		Name:            line.text("name"),
+		Role:            line.text("role"),
+		Runners:         line.set("runners"),
+		WarmSandboxes:   line.count("warmSandboxes"),
+		DefaultAssignee: line.text("defaultAssignee"),
+		Repositories:    []lineRepository{},
+		Stations:        []lineStation{},
+		Reactions:       []lineReaction{},
 	}
 
 	for _, each := range line.each("repositories") {
