@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.0-rc.8](https://github.com/usespotlightai/terraform-provider-spotlight/compare/v0.1.0-rc.7...v0.1.0-rc.8) (2026-11-14)
+
+
+### Features
+
+* set the member a line assigns tasks to with default_assignee ([#72](https://github.com/usespotlightai/terraform-provider-spotlight/issues/72)) ([ae7971b](https://github.com/usespotlightai/terraform-provider-spotlight/commit/ae7971b66f4a3b18db80480dceb5c2d1f6eae246))
+
 ## [0.1.0-rc.7](https://github.com/usespotlightai/terraform-provider-spotlight/compare/v0.1.0-rc.6...v0.1.0-rc.7) (2026-11-13)
 
 
