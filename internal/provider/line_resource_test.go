@@ -70,7 +70,7 @@ resource "spotlight_line" "core_delivery" {
     ends      = false
 
     judge {
-      rubric        = "A good run changes only what the task requires.\n"
+      claims        = ["The change touches only files the task names."]
       sample        = 0.2
       min_agreement = 0.6
     }
@@ -936,7 +936,7 @@ func TestLineStationsJudgeAndAlert(t *testing.T) {
 
 	judged := lineJudged(`
     judge {
-      rubric        = "A good run changes only what the task requires."
+      claims        = ["The change touches only files the task names."]
       sample        = 0.2
       min_agreement = 0.6
     }
@@ -949,7 +949,7 @@ func TestLineStationsJudgeAndAlert(t *testing.T) {
 `)
 	retuned := lineJudged(`
     judge {
-      rubric        = "A good run changes only what the task requires."
+      claims        = ["The change touches only files the task names."]
       sample        = 1
       min_agreement = 0.6
     }
@@ -988,9 +988,8 @@ func TestLineStationsJudgeAndAlert(t *testing.T) {
 				Config: judged,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "judge"), knownvalue.ObjectExact(map[string]knownvalue.Check{
-						"rubric":         knownvalue.StringExact("A good run changes only what the task requires."),
-						"claims":         knownvalue.Null(),
-						"pass_threshold": knownvalue.Null(),
+						"claims":         knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("The change touches only files the task names.")}),
+						"pass_threshold": knownvalue.Float64Exact(1),
 						"sample":         knownvalue.Float64Exact(0.2),
 						"min_agreement":  knownvalue.Float64Exact(0.6),
 					})),
@@ -1065,11 +1064,13 @@ func TestLineJudgeChecksClaims(t *testing.T) {
       min_agreement = 0.6
     }
 `)
-	shared := lineJudged(`
+	lenient := lineJudged(`
     judge {
-      rubric         = "A good run changes only what the task requires."
-      claims         = ["The change touches only files the task names."]
-      pass_threshold = 0.75
+      claims = [
+        "The change touches only files the task names.",
+        "Every new function has a test.",
+      ]
+      pass_threshold = 0.5
       sample         = 0.2
       min_agreement  = 0.6
     }
@@ -1083,7 +1084,6 @@ func TestLineJudgeChecksClaims(t *testing.T) {
 				Config: claimed,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "judge"), knownvalue.ObjectExact(map[string]knownvalue.Check{
-						"rubric": knownvalue.Null(),
 						"claims": knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.StringExact("The change touches only files the task names."),
 							knownvalue.StringExact("Every new function has a test."),
@@ -1105,23 +1105,21 @@ func TestLineJudgeChecksClaims(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
-				Config: shared,
+				Config: lenient,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(lineAddress, plancheck.ResourceActionUpdate)},
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "judge").AtMapKey("rubric"), knownvalue.StringExact("A good run changes only what the task requires.")),
-					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "judge").AtMapKey("pass_threshold"), knownvalue.Float64Exact(0.75)),
+					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "judge").AtMapKey("pass_threshold"), knownvalue.Float64Exact(0.5)),
 				},
 			},
 			{
-				Config:   shared,
+				Config:   lenient,
 				PlanOnly: true,
 			},
 			{
 				Config: claimed,
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "judge").AtMapKey("rubric"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(lineAddress, lineStation(0, "judge").AtMapKey("pass_threshold"), knownvalue.Float64Exact(1)),
 				},
 			},
@@ -1133,24 +1131,14 @@ func TestLineJudgeChecksClaims(t *testing.T) {
 	})
 }
 
-func TestLineJudgeSetsARubricOrClaims(t *testing.T) {
+func TestLineJudgeSetsItsClaims(t *testing.T) {
 	lineInvalid(t, `
     judge {
-      sample        = 0.2
-      min_agreement = 0.6
-    }
-`, regexp.MustCompile(`(?s)Missing Judge Criteria.*rubric.*claims`))
-}
-
-func TestLineJudgePassThresholdNeedsClaims(t *testing.T) {
-	lineInvalid(t, `
-    judge {
-      rubric         = "A good run."
       pass_threshold = 0.5
       sample         = 0.2
       min_agreement  = 0.6
     }
-`, regexp.MustCompile(`(?s)station\[0\]\.judge\.claims"?\s+must be specified when\s+"?station\[0\]\.judge\.pass_threshold`))
+`, regexp.MustCompile(`(?s)station\[0\]\.judge\.claims"?\s+must be specified`))
 }
 
 func TestLineJudgePassThresholdIsAShare(t *testing.T) {
@@ -1162,6 +1150,17 @@ func TestLineJudgePassThresholdIsAShare(t *testing.T) {
       min_agreement  = 0.6
     }
 `, regexp.MustCompile(`(?s)station\[0\]\.judge\.pass_threshold value must be between 0\.0+ and\s+1\.0+`))
+}
+
+func TestLineJudgePassThresholdIsAboveZero(t *testing.T) {
+	lineInvalid(t, `
+    judge {
+      claims         = ["Every new function has a test."]
+      pass_threshold = 0
+      sample         = 0.2
+      min_agreement  = 0.6
+    }
+`, regexp.MustCompile(`(?s)station\[0\]\.judge\.pass_threshold value must be none of`))
 }
 
 func TestLineJudgeClaimsAreFew(t *testing.T) {
@@ -1209,17 +1208,17 @@ func lineInvalid(t *testing.T, station string, want *regexp.Regexp) {
 func TestLineJudgeSamplesAShare(t *testing.T) {
 	lineInvalid(t, `
     judge {
-      rubric        = "A good run."
+      claims        = ["The change is good."]
       sample        = 1.5
       min_agreement = 0.6
     }
 `, regexp.MustCompile(`(?s)station\[0\]\.judge\.sample value must be between 0\.0+ and\s+1\.0+`))
 }
 
-func TestLineJudgeSetsItsRubricSampleAndMinAgreement(t *testing.T) {
+func TestLineJudgeSetsItsSampleAndMinAgreement(t *testing.T) {
 	lineInvalid(t, `
     judge {
-      rubric = "A good run."
+      claims = ["The change is good."]
       sample = 0.2
     }
 `, regexp.MustCompile(`(?s)station\[0\]\.judge\.min_agreement.*must be specified`))
@@ -1272,16 +1271,6 @@ func TestLineAlertThresholdsAreNotNegative(t *testing.T) {
 	}
 }
 
-func TestLineJudgeRubricIsNotEmpty(t *testing.T) {
-	lineInvalid(t, `
-    judge {
-      rubric        = ""
-      sample        = 0.2
-      min_agreement = 0.6
-    }
-`, regexp.MustCompile(`(?s)station\[0\]\.judge\.rubric.*at least 1`))
-}
-
 func TestLineAlertComparesAtLeastOneRun(t *testing.T) {
 	lineInvalid(t, `
     alert {
@@ -1319,7 +1308,7 @@ resource "spotlight_line" "delivery" {
     prompt  = "Implement the task."
 
     judge {
-      rubric        = "A good run changes only what the task requires."
+      claims        = ["The change touches only files the task names."]
       sample        = %[3]s
       min_agreement = 0.6
     }

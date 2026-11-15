@@ -437,28 +437,20 @@ func judged(station map[string]any, at int, errs *[]fieldError) {
 
 	judge = maps.Clone(judge)
 	field := fmt.Sprintf("stations[%d].judge", at)
-	claims, claimed := judge["claims"].([]any)
+	claims, _ := judge["claims"].([]any)
 
-	if !claimed && textOf(judge["rubric"]) == "" {
-		*errs = append(*errs, fieldError{field, "needs a rubric, claims, or both"})
+	orDefault(judge, "passThreshold", float64(1))
+	if len(claims) < 1 || len(claims) > 20 {
+		*errs = append(*errs, fieldError{field + ".claims", "is the checkable claims the judge answers yes or no, from 1 to 20"})
+	}
+	for each, claim := range claims {
+		if text := textOf(claim); text == "" || len([]rune(text)) > 500 {
+			*errs = append(*errs, fieldError{fmt.Sprintf("%s.claims[%d]", field, each), "is a checkable claim from 1 to 500 characters"})
+		}
 	}
 
-	if claimed {
-		orDefault(judge, "passThreshold", float64(1))
-		if len(claims) < 1 || len(claims) > 20 {
-			*errs = append(*errs, fieldError{field + ".claims", "is the checkable claims the judge answers yes or no, from 1 to 20"})
-		}
-		for each, claim := range claims {
-			if text := textOf(claim); text == "" || len([]rune(text)) > 500 {
-				*errs = append(*errs, fieldError{fmt.Sprintf("%s.claims[%d]", field, each), "is a checkable claim from 1 to 500 characters"})
-			}
-		}
-	} else if _, ok := judge["passThreshold"]; ok {
-		*errs = append(*errs, fieldError{field + ".passThreshold", "is only set with claims"})
-	}
-
-	if share, ok := judge["passThreshold"].(float64); ok && (share < 0 || share > 1) {
-		*errs = append(*errs, fieldError{field + ".passThreshold", "is the share of claims a change must meet to pass, from 0 to 1"})
+	if share, ok := judge["passThreshold"].(float64); ok && (share <= 0 || share > 1) {
+		*errs = append(*errs, fieldError{field + ".passThreshold", "is the share of claims a change must meet to pass, above 0 and at most 1"})
 	}
 
 	station["judge"] = judge

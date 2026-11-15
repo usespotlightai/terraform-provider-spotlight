@@ -19,7 +19,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/float64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -141,55 +140,6 @@ func lineThreshold(description string, also ...validator.Float64) schema.Float64
 		Optional:            true,
 		Validators:          append([]validator.Float64{float64validator.AtLeast(0)}, also...),
 		MarkdownDescription: description,
-	}
-}
-
-type judgeRubricOrClaims struct{}
-
-func (judgeRubricOrClaims) Description(_ context.Context) string {
-	return "A judge sets rubric, claims, or both."
-}
-
-func (v judgeRubricOrClaims) MarkdownDescription(ctx context.Context) string {
-	return v.Description(ctx)
-}
-
-func (judgeRubricOrClaims) ValidateObject(_ context.Context, req validator.ObjectRequest, resp *validator.ObjectResponse) {
-	if req.ConfigValue.IsNull() || req.ConfigValue.IsUnknown() {
-		return
-	}
-
-	attributes := req.ConfigValue.Attributes()
-	if attributes["rubric"].IsNull() && attributes["claims"].IsNull() {
-		resp.Diagnostics.AddAttributeError(req.Path, "Missing Judge Criteria", "A judge sets `rubric`, `claims`, or both.")
-	}
-}
-
-type passThresholdWhenClaimed struct{}
-
-func (passThresholdWhenClaimed) Description(_ context.Context) string {
-	return "Defaults to 1 when claims are set."
-}
-
-func (m passThresholdWhenClaimed) MarkdownDescription(ctx context.Context) string {
-	return m.Description(ctx)
-}
-
-func (passThresholdWhenClaimed) PlanModifyFloat64(ctx context.Context, req planmodifier.Float64Request, resp *planmodifier.Float64Response) {
-	if !req.ConfigValue.IsNull() {
-		return
-	}
-
-	var claims types.List
-	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, req.Path.ParentPath().AtName("claims"), &claims)...)
-
-	switch {
-	case claims.IsUnknown():
-		resp.PlanValue = types.Float64Unknown()
-	case claims.IsNull():
-		resp.PlanValue = types.Float64Null()
-	default:
-		resp.PlanValue = float64AsWritten(1)
 	}
 }
 
@@ -390,22 +340,15 @@ func lineSchema() schema.Schema {
 					},
 					Blocks: map[string]schema.Block{
 						"judge": schema.SingleNestedBlock{
-							MarkdownDescription: "Scores the station's runs against a rubric or checkable claims, for Insights. A judge sets `sample`, `min_agreement` and at least one of `rubric` and `claims`. No run is judged when left out.",
+							MarkdownDescription: "Judges the station's runs against checkable claims, for Insights and replays. A judge sets `claims`, `sample` and `min_agreement`. No run is judged when left out.",
 							Validators: []validator.Object{
 								objectvalidator.AlsoRequires(
+									path.MatchRelative().AtName("claims"),
 									path.MatchRelative().AtName("sample"),
 									path.MatchRelative().AtName("min_agreement"),
 								),
-								judgeRubricOrClaims{},
 							},
 							Attributes: map[string]schema.Attribute{
-								"rubric": schema.StringAttribute{
-									Optional: true,
-									Validators: []validator.String{
-										stringvalidator.LengthAtLeast(1),
-									},
-									MarkdownDescription: "What a good run looks like, at most 20,000 characters, usually read with `file()`, as in `file(\"judges/implement.md\")`. Optional when `claims` is set.",
-								},
 								"claims": schema.ListAttribute{
 									Optional:    true,
 									ElementType: types.StringType,
@@ -413,20 +356,20 @@ func lineSchema() schema.Schema {
 										listvalidator.SizeBetween(1, 20),
 										listvalidator.ValueStringsAre(stringvalidator.LengthBetween(1, 500)),
 									},
-									MarkdownDescription: "Checkable claims the judge answers yes or no about each change, from 1 to 20, each at most 500 characters. A change passes when the share of claims met is at least `pass_threshold`.",
+									MarkdownDescription: "Checkable claims the judge answers yes or no about each run, from 1 to 20, each at most 500 characters. A run passes when the share of claims met is at least `pass_threshold`.",
 								},
 								"pass_threshold": schema.Float64Attribute{
 									Optional: true,
 									Computed: true,
 									Validators: []validator.Float64{
 										float64validator.Between(0, 1),
-										float64validator.AlsoRequires(path.MatchRelative().AtParent().AtName("claims")),
+										float64validator.NoneOf(0),
 									},
-									PlanModifiers:       []planmodifier.Float64{passThresholdWhenClaimed{}},
-									MarkdownDescription: "Share of claims a change must meet to pass, from 0 to 1, set only with `claims`. 1 means every claim. 1 when left out.",
+									Default:             float64default.StaticFloat64(1),
+									MarkdownDescription: "Share of claims a run must meet to pass, above 0 and at most 1. 1 means every claim. 1 when left out.",
 								},
 								"sample":        lineShare("The share of runs judged, from 0 to 1."),
-								"min_agreement": lineShare("How often the judge must agree with people, from 0 to 1, before Insights shows its scores."),
+								"min_agreement": lineShare("How often the judge must agree with people, from 0 to 1, before its verdicts show on runs."),
 							},
 						},
 						"alert": schema.ListNestedBlock{

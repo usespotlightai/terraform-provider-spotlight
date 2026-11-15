@@ -63,7 +63,6 @@ type lineStation struct {
 }
 
 type lineJudge struct {
-	Rubric        types.String  `tfsdk:"rubric"`
 	Claims        types.List    `tfsdk:"claims"`
 	PassThreshold types.Float64 `tfsdk:"pass_threshold"`
 	Sample        types.Float64 `tfsdk:"sample"`
@@ -233,7 +232,6 @@ func lineInput(plan LineResourceModel) (client.Definition, diag.Diagnostics) {
 
 		if each.Judge != nil {
 			judge := lineWritten{}
-			judge.text("rubric", each.Judge.Rubric)
 			judge.texts("claims", each.Judge.Claims, &diags)
 			judge.number("passThreshold", each.Judge.PassThreshold)
 			judge.number("sample", each.Judge.Sample)
@@ -526,7 +524,6 @@ func lineStationOf(read lineRead) lineStation {
 
 	if judge, ok := read.object("judge"); ok {
 		station.Judge = &lineJudge{
-			Rubric:        judge.text("rubric"),
 			Claims:        judge.claims(),
 			PassThreshold: judge.number("passThreshold"),
 			Sample:        judge.number("sample"),

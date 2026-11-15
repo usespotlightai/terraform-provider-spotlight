@@ -220,7 +220,6 @@ resource "spotlight_line" "core_delivery" {
     ends      = false
 
     judge {
-      rubric = file("${path.module}/judges/core/delivery/implementation.md")
       claims = [
         "The change touches only the files the task names.",
         "Every new function has a test.",

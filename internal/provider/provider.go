@@ -36,6 +36,14 @@ const (
 	GitHubTokenRequestTokenEnv = "ACTIONS_ID_TOKEN_REQUEST_TOKEN"
 )
 
+// Environment variables that GitHub Actions sets in every job. The provider
+// names the commit they give on each line it creates or updates.
+const (
+	GitHubRepositoryEnv = "GITHUB_REPOSITORY"
+	GitHubSHAEnv        = "GITHUB_SHA"
+	GitHubServerURLEnv  = "GITHUB_SERVER_URL"
+)
+
 var (
 	_ provider.Provider                  = &SpotlightProvider{}
 	_ provider.ProviderWithListResources = &SpotlightProvider{}
@@ -160,6 +168,7 @@ func (p *SpotlightProvider) Configure(ctx context.Context, req provider.Configur
 		URL:             orEnv(config.URL, URLEnv),
 		Token:           orEnv(config.Token, TokenEnv),
 		ProviderVersion: p.version,
+		SourceCommit:    sourceCommit(os.Getenv),
 		Retries:         3,
 		Backoff:         client.DefaultBackoff,
 	}
