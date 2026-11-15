@@ -125,6 +125,8 @@ provider "spotlight" {
 }
 ```
 
+The apply job also names its commit on each line it writes, from `GITHUB_REPOSITORY` and `GITHUB_SHA`, so Insights links each new claims version of a station to the pull request that merged it (see [The commit behind a line](../#the-commit-behind-a-line)).
+
 A trust and a stored token are never used together: with `SPOTLIGHT_API_TOKEN` or `token` set as well, the provider stops and says so. The OIDC token is requested for the audience `spotlight`, the trust's default; a trust with another `audience` needs the same in `oidc.audience` or `SPOTLIGHT_OIDC_AUDIENCE`. Terraform's state backend authenticates on its own, and is not covered here.
 
 ## Other CI platforms

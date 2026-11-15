@@ -30,14 +30,16 @@ const DefaultBackoff = 500 * time.Millisecond
 
 // Config tells where the control plane is and who calls it. The caller is a
 // stored Token, the Login of a person, or OIDC that exchanges the tokens of a
-// CI workload for short-lived tokens. Now tells the time. If Now is nil, the client uses
-// time.Now.
+// CI workload for short-lived tokens. SourceCommit names the commit that the
+// configuration comes from, as owner/name@sha, or is empty when no commit is
+// known. Now tells the time. If Now is nil, the client uses time.Now.
 type Config struct {
 	URL             string
 	Token           string
 	Login           *Login
 	OIDC            *OIDC
 	ProviderVersion string
+	SourceCommit    string
 	HTTPClient      *http.Client
 	Retries         int
 	Backoff         time.Duration
@@ -46,7 +48,8 @@ type Config struct {
 
 // Client calls the control plane.
 type Client struct {
-	api *apigen.ClientWithResponses
+	api          *apigen.ClientWithResponses
+	sourceCommit *string
 }
 
 // New returns a client for the control plane at cfg.URL.
@@ -81,7 +84,15 @@ func New(cfg Config) (*Client, error) {
 		return nil, err
 	}
 
-	return &Client{api: generated}, nil
+	return &Client{api: generated, sourceCommit: sourceCommitOf(cfg.SourceCommit)}, nil
+}
+
+func sourceCommitOf(commit string) *string {
+	if commit == "" {
+		return nil
+	}
+
+	return &commit
 }
 
 // ClientName is the name of the provider in the Spotlight-Client header.

@@ -17,10 +17,11 @@ func lineOf(dto apigen.LineResourceResponseDto) Line {
 	}
 }
 
-// CreateLine creates a line in a team.
+// CreateLine creates a line in a team. It names the commit the line comes
+// from when the client knows one.
 func (c *Client) CreateLine(ctx context.Context, teamID string, in Definition) (Line, error) {
 	resp, err := c.api.CreateLineWithResponse(ctx, teamID,
-		&apigen.CreateLineParams{IdempotencyKey: uuid.NewString()},
+		&apigen.CreateLineParams{IdempotencyKey: uuid.NewString(), SpotlightSourceCommit: c.sourceCommit},
 		apigen.CreateLineJSONRequestBody(in))
 	if err != nil {
 		return Line{}, err
@@ -44,9 +45,10 @@ func (c *Client) ReadLine(ctx context.Context, id string) (Line, error) {
 }
 
 // UpdateLine writes the line over version, the version from the last read.
+// It names the commit the line comes from when the client knows one.
 func (c *Client) UpdateLine(ctx context.Context, id string, version int64, in Definition) (Line, error) {
 	resp, err := c.api.UpdateLineWithResponse(ctx, id,
-		&apigen.UpdateLineParams{IfMatch: entityTag(version)},
+		&apigen.UpdateLineParams{IfMatch: entityTag(version), SpotlightSourceCommit: c.sourceCommit},
 		apigen.UpdateLineJSONRequestBody(in))
 	if err != nil {
 		return Line{}, err

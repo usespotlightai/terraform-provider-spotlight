@@ -48,7 +48,6 @@ resource "spotlight_line" "core_delivery" {
     passes_to = ["code-review"]
 
     judge {
-      rubric = file("${path.module}/judges/core/delivery/implementation.md")
       claims = [
         "The change touches only the files the task names.",
         "Every new function has a test.",
@@ -267,7 +266,7 @@ Optional:
 - `effort` (String) How hard the agent thinks: `low`, `medium`, `high`, `xhigh`, `max`.
 - `ends` (Boolean) Whether a task that arrives at the station is finished.
 - `harness` (String) The agent harness that works tasks here, as in `claude-code`.
-- `judge` (Block, Optional) Scores the station's runs against a rubric or checkable claims, for Insights. A judge sets `sample`, `min_agreement` and at least one of `rubric` and `claims`. No run is judged when left out. (see [below for nested schema](#nestedblock--station--judge))
+- `judge` (Block, Optional) Judges the station's runs against checkable claims, for Insights and replays. A judge sets `claims`, `sample` and `min_agreement`. No run is judged when left out. (see [below for nested schema](#nestedblock--station--judge))
 - `kind` (String) `backlog`, `work` or `completed`.
 - `memories` (Boolean) Whether the station drafts proposed team memories from each run it completes, for people to approve.
 - `model` (String) The model the harness uses.
@@ -300,10 +299,9 @@ Optional:
 
 Optional:
 
-- `claims` (List of String) Checkable claims the judge answers yes or no about each change, from 1 to 20, each at most 500 characters. A change passes when the share of claims met is at least `pass_threshold`.
-- `min_agreement` (Number) How often the judge must agree with people, from 0 to 1, before Insights shows its scores.
-- `pass_threshold` (Number) Share of claims a change must meet to pass, from 0 to 1, set only with `claims`. 1 means every claim. 1 when left out.
-- `rubric` (String) What a good run looks like, at most 20,000 characters, usually read with `file()`, as in `file("judges/implement.md")`. Optional when `claims` is set.
+- `claims` (List of String) Checkable claims the judge answers yes or no about each run, from 1 to 20, each at most 500 characters. A run passes when the share of claims met is at least `pass_threshold`.
+- `min_agreement` (Number) How often the judge must agree with people, from 0 to 1, before its verdicts show on runs.
+- `pass_threshold` (Number) Share of claims a run must meet to pass, above 0 and at most 1. 1 means every claim. 1 when left out.
 - `sample` (Number) The share of runs judged, from 0 to 1.
 
 
