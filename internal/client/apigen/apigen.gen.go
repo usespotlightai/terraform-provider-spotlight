@@ -2286,9 +2286,6 @@ type InferenceEndpointResourceResponseDto struct {
 	// Model The one model every Spotlight feature of the workspace uses
 	Model string `json:"model"`
 
-	// SupportsReasoningEffort Whether the model accepts the reasoning_effort parameter
-	SupportsReasoningEffort bool `json:"supportsReasoningEffort"`
-
 	// Version Rises with every change; the ETag carries it, and a write sends it back as If-Match
 	Version float32 `json:"version"`
 
@@ -2999,14 +2996,13 @@ type ReadInferenceEndpointParamsSpotlightApiVersion string
 
 // UpdateInferenceEndpointJSONBody defines parameters for UpdateInferenceEndpoint.
 type UpdateInferenceEndpointJSONBody struct {
-	// ApiKeyWo The API key to store; accepted on create and whenever it is sent, and never returned
+	// ApiKeyWo The API key to store; accepted with apiKeyWoVersion on create and whenever apiKeyWoVersion changes, and never returned
 	ApiKeyWo *string `json:"apiKeyWo,omitempty"`
 
-	// ApiKeyWoVersion Change it to rotate the key to the apiKeyWo sent with it
-	ApiKeyWoVersion         *int   `json:"apiKeyWoVersion,omitempty"`
-	BaseUrl                 string `json:"baseUrl"`
-	Model                   string `json:"model"`
-	SupportsReasoningEffort *bool  `json:"supportsReasoningEffort,omitempty"`
+	// ApiKeyWoVersion Required with apiKeyWo. Change it to rotate the key to the apiKeyWo sent with it; leave it out with apiKeyWo to remove the stored key
+	ApiKeyWoVersion *int   `json:"apiKeyWoVersion,omitempty"`
+	BaseUrl         string `json:"baseUrl"`
+	Model           string `json:"model"`
 }
 
 // UpdateInferenceEndpointParams defines parameters for UpdateInferenceEndpoint.
@@ -3843,14 +3839,13 @@ type ListInferenceEndpointsParamsSpotlightApiVersion string
 
 // CreateInferenceEndpointJSONBody defines parameters for CreateInferenceEndpoint.
 type CreateInferenceEndpointJSONBody struct {
-	// ApiKeyWo The API key to store; accepted on create and whenever it is sent, and never returned
+	// ApiKeyWo The API key to store; accepted with apiKeyWoVersion on create and whenever apiKeyWoVersion changes, and never returned
 	ApiKeyWo *string `json:"apiKeyWo,omitempty"`
 
-	// ApiKeyWoVersion Change it to rotate the key to the apiKeyWo sent with it
-	ApiKeyWoVersion         *int   `json:"apiKeyWoVersion,omitempty"`
-	BaseUrl                 string `json:"baseUrl"`
-	Model                   string `json:"model"`
-	SupportsReasoningEffort *bool  `json:"supportsReasoningEffort,omitempty"`
+	// ApiKeyWoVersion Required with apiKeyWo. Change it to rotate the key to the apiKeyWo sent with it; leave it out with apiKeyWo to remove the stored key
+	ApiKeyWoVersion *int   `json:"apiKeyWoVersion,omitempty"`
+	BaseUrl         string `json:"baseUrl"`
+	Model           string `json:"model"`
 }
 
 // CreateInferenceEndpointParams defines parameters for CreateInferenceEndpoint.

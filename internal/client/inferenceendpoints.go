@@ -14,9 +14,8 @@ func inferenceEndpointOf(dto apigen.InferenceEndpointResourceResponseDto) Infere
 		WorkspaceID: dto.WorkspaceId,
 		APIKeySet:   dto.ApiKeySet,
 		InferenceEndpointInput: InferenceEndpointInput{
-			BaseURL:                 dto.BaseUrl,
-			Model:                   dto.Model,
-			SupportsReasoningEffort: dto.SupportsReasoningEffort,
+			BaseURL: dto.BaseUrl,
+			Model:   dto.Model,
 		},
 	}
 

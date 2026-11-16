@@ -6,7 +6,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -31,16 +30,15 @@ type InferenceEndpointResource struct {
 }
 
 type InferenceEndpointResourceModel struct {
-	ID                      types.String `tfsdk:"id"`
-	Version                 types.Int64  `tfsdk:"version"`
-	Address                 types.String `tfsdk:"address"`
-	WorkspaceID             types.String `tfsdk:"workspace_id"`
-	BaseURL                 types.String `tfsdk:"base_url"`
-	Model                   types.String `tfsdk:"model"`
-	SupportsReasoningEffort types.Bool   `tfsdk:"supports_reasoning_effort"`
-	APIKey                  types.String `tfsdk:"api_key_wo"`
-	APIKeyVersion           types.Int64  `tfsdk:"api_key_wo_version"`
-	APIKeySet               types.Bool   `tfsdk:"api_key_set"`
+	ID            types.String `tfsdk:"id"`
+	Version       types.Int64  `tfsdk:"version"`
+	Address       types.String `tfsdk:"address"`
+	WorkspaceID   types.String `tfsdk:"workspace_id"`
+	BaseURL       types.String `tfsdk:"base_url"`
+	Model         types.String `tfsdk:"model"`
+	APIKey        types.String `tfsdk:"api_key_wo"`
+	APIKeyVersion types.Int64  `tfsdk:"api_key_wo_version"`
+	APIKeySet     types.Bool   `tfsdk:"api_key_set"`
 }
 
 var inferenceEndpointFields = fieldpath.Locator{Schema: inferenceEndpointSchema().Type()}
@@ -55,7 +53,9 @@ func (r *InferenceEndpointResource) Schema(_ context.Context, _ resource.SchemaR
 
 func inferenceEndpointSchema() schema.Schema {
 	attributes := writeonly.InferenceAPIKey.Attributes("The API key that Spotlight sends to the endpoint. Spotlight stores it and never returns it. " +
-		"Leave it out to keep the stored key. To remove the key, replace the endpoint.")
+		"Set it together with `api_key_wo_version`; to rotate the key, change both. " +
+		"When `base_url` changes, give the key again with a changed `api_key_wo_version`. " +
+		"To remove the key, remove both; Spotlight then calls the endpoint without an `Authorization` header, as a local endpoint without a key needs.")
 	attributes["id"] = idAttribute("inference endpoint")
 	attributes["version"] = versionAttribute("inference endpoint")
 	attributes["address"] = addressAttribute("acme")
@@ -66,13 +66,7 @@ func inferenceEndpointSchema() schema.Schema {
 	}
 	attributes["model"] = schema.StringAttribute{
 		Required:            true,
-		MarkdownDescription: "The one model that every Spotlight feature of the workspace uses.",
-	}
-	attributes["supports_reasoning_effort"] = schema.BoolAttribute{
-		Optional:            true,
-		Computed:            true,
-		Default:             booldefault.StaticBool(false),
-		MarkdownDescription: "Whether the model accepts the `reasoning_effort` parameter. The default is `false`.",
+		MarkdownDescription: "The one model that every Spotlight feature of the workspace uses. Spotlight finds out from the first request whether the model accepts `reasoning_effort`.",
 	}
 	attributes["api_key_set"] = schema.BoolAttribute{
 		Computed:            true,
@@ -81,6 +75,7 @@ func inferenceEndpointSchema() schema.Schema {
 
 	return schema.Schema{
 		MarkdownDescription: "The OpenAI-compatible inference endpoint and the model that a workspace uses for its Spotlight features. A workspace has one. " +
+			"After each create and update, Spotlight sends one test request to the endpoint. If the test request fails, the apply shows a warning, not an error, and Spotlight keeps the change. " +
 			"The API key is write-only, so it never enters the plan or the state. It needs Terraform 1.11 or later. " +
 			"Writing the endpoint needs a token granted the `secrets` scope. Import it as `<workspace id>/<workspace slug>`.",
 		Attributes: attributes,
@@ -213,19 +208,17 @@ func (r *InferenceEndpointResource) ImportState(ctx context.Context, req resourc
 
 func inferenceEndpointSettable(endpoint client.InferenceEndpoint) any {
 	return map[string]any{
-		"baseUrl":                 endpoint.BaseURL,
-		"model":                   endpoint.Model,
-		"supportsReasoningEffort": endpoint.SupportsReasoningEffort,
-		"apiKeyWoVersion":         endpoint.APIKeyVersion,
+		"baseUrl":         endpoint.BaseURL,
+		"model":           endpoint.Model,
+		"apiKeyWoVersion": endpoint.APIKeyVersion,
 	}
 }
 
 func inferenceEndpointInput(plan InferenceEndpointResourceModel) client.InferenceEndpointInput {
 	return client.InferenceEndpointInput{
-		BaseURL:                 plan.BaseURL.ValueString(),
-		Model:                   plan.Model.ValueString(),
-		SupportsReasoningEffort: plan.SupportsReasoningEffort.ValueBool(),
-		APIKeyVersion:           plan.APIKeyVersion.ValueInt64Pointer(),
+		BaseURL:       plan.BaseURL.ValueString(),
+		Model:         plan.Model.ValueString(),
+		APIKeyVersion: plan.APIKeyVersion.ValueInt64Pointer(),
 	}
 }
 
@@ -240,22 +233,20 @@ func sendInferenceAPIKey(ctx context.Context, config tfsdk.Config, plan tfsdk.Pl
 
 func inferenceEndpointModel(endpoint client.InferenceEndpoint, prior *InferenceEndpointResourceModel) InferenceEndpointResourceModel {
 	model := InferenceEndpointResourceModel{
-		ID:                      types.StringValue(endpoint.ID),
-		Version:                 types.Int64Value(endpoint.Version),
-		Address:                 types.StringValue(endpoint.Address),
-		WorkspaceID:             types.StringValue(endpoint.WorkspaceID),
-		BaseURL:                 types.StringValue(endpoint.BaseURL),
-		Model:                   types.StringValue(endpoint.Model),
-		SupportsReasoningEffort: types.BoolValue(endpoint.SupportsReasoningEffort),
-		APIKey:                  types.StringNull(),
-		APIKeyVersion:           types.Int64PointerValue(endpoint.APIKeyVersion),
-		APIKeySet:               types.BoolValue(endpoint.APIKeySet),
+		ID:            types.StringValue(endpoint.ID),
+		Version:       types.Int64Value(endpoint.Version),
+		Address:       types.StringValue(endpoint.Address),
+		WorkspaceID:   types.StringValue(endpoint.WorkspaceID),
+		BaseURL:       types.StringValue(endpoint.BaseURL),
+		Model:         types.StringValue(endpoint.Model),
+		APIKey:        types.StringNull(),
+		APIKeyVersion: types.Int64PointerValue(endpoint.APIKeyVersion),
+		APIKeySet:     types.BoolValue(endpoint.APIKeySet),
 	}
 
 	if prior != nil {
 		model.BaseURL = prior.BaseURL
 		model.Model = prior.Model
-		model.SupportsReasoningEffort = prior.SupportsReasoningEffort
 		model.APIKeyVersion = prior.APIKeyVersion
 	}
 

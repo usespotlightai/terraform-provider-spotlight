@@ -463,33 +463,42 @@ func inferenceEndpoint(body map[string]any) (map[string]any, []fieldError) {
 		errs = append(errs, fieldError{"model", "must be one name of at most 200 characters, such as openai/gpt-5-mini"})
 	}
 
-	reasoning, _ := body["supportsReasoningEffort"].(bool)
-
-	return map[string]any{"baseUrl": written, "model": model, "supportsReasoningEffort": reasoning, "apiKeyVersion": nil}, errs
+	return map[string]any{"baseUrl": written, "model": model, "apiKeyVersion": nil}, errs
 }
 
 func inferenceKey(existing *resource, fields, body map[string]any) (string, []fieldError) {
-	var kept any
-	if existing != nil {
-		kept = existing.fields["apiKeyVersion"]
+	key, _ := body["apiKeyWo"].(string)
+	version := versionOf(body["apiKeyWoVersion"])
+	fields["apiKeyVersion"] = version
+
+	if key != "" && version == nil {
+		return "", []fieldError{{"apiKeyWoVersion", "is required with apiKeyWo"}}
 	}
 
-	key, _ := body["apiKeyWo"].(string)
-	if key == "" {
-		fields["apiKeyVersion"] = kept
+	if existing == nil {
+		if key == "" && version != nil {
+			return "", []fieldError{{"apiKeyWo", "is required when apiKeyWoVersion is set"}}
+		}
+
+		return key, nil
+	}
+
+	stored := existing.fields["apiKeyVersion"]
+
+	switch {
+	case version == stored:
+		if stored != nil && fields["baseUrl"] != existing.fields["baseUrl"] {
+			return "", []fieldError{{"apiKeyWo", "is required, with a changed apiKeyWoVersion, when baseUrl changes"}}
+		}
 
 		return "", nil
+	case version == nil:
+		return "", nil
+	case key == "":
+		return "", []fieldError{{"apiKeyWo", "is required when apiKeyWoVersion changes"}}
+	default:
+		return key, nil
 	}
-
-	previous, _ := kept.(float64)
-
-	if sent := versionOf(body["apiKeyWoVersion"]); sent != nil {
-		fields["apiKeyVersion"] = sent
-	} else {
-		fields["apiKeyVersion"] = previous + 1
-	}
-
-	return key, nil
 }
 
 func (s *Server) unansweredOf(declared *resource) []any {

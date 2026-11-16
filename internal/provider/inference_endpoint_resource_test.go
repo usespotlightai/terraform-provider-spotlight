@@ -6,9 +6,12 @@ import (
 	"io"
 	"net/http"
 	"regexp"
+	"slices"
 	"strings"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -29,20 +32,19 @@ const (
 	inferenceKeySecond = "sk-second-0123456789abcdef"
 )
 
-func inferenceEndpointAt(baseURL, model string, reasoning bool, key string, version int) string {
+func inferenceEndpointAt(baseURL, model, key string, version int) string {
 	return acctest.Workspace + fmt.Sprintf(`
 resource "spotlight_inference_endpoint" "acme" {
-  workspace_id              = spotlight_workspace.acme.id
-  base_url                  = %q
-  model                     = %q
-  supports_reasoning_effort = %t
-  api_key_wo                = %q
-  api_key_wo_version        = %d
+  workspace_id       = spotlight_workspace.acme.id
+  base_url           = %q
+  model              = %q
+  api_key_wo         = %q
+  api_key_wo_version = %d
 }
-`, baseURL, model, reasoning, key, version)
+`, baseURL, model, key, version)
 }
 
-func inferenceEndpointKeepingKey(baseURL, model string, version int) string {
+func inferenceEndpointVersionOnly(baseURL, model string, version int) string {
 	return acctest.Workspace + fmt.Sprintf(`
 resource "spotlight_inference_endpoint" "acme" {
   workspace_id       = spotlight_workspace.acme.id
@@ -51,6 +53,17 @@ resource "spotlight_inference_endpoint" "acme" {
   api_key_wo_version = %d
 }
 `, baseURL, model, version)
+}
+
+func inferenceEndpointKeyOnly(baseURL, model, key string) string {
+	return acctest.Workspace + fmt.Sprintf(`
+resource "spotlight_inference_endpoint" "acme" {
+  workspace_id = spotlight_workspace.acme.id
+  base_url     = %q
+  model        = %q
+  api_key_wo   = %q
+}
+`, baseURL, model, key)
 }
 
 func inferenceEndpointKeyless(baseURL, model string) string {
@@ -139,12 +152,11 @@ func TestInferenceEndpointKeyIsWrittenButNeverStored(t *testing.T) {
 		CheckDestroy:             acctest.NoneLeft(fake, "inference-endpoint", "team", "workspace"),
 		Steps: []resource.TestStep{
 			{
-				Config: inferenceEndpointAt("https://api.openai.com/v1", "gpt-5", true, inferenceKeyFirst, 1),
+				Config: inferenceEndpointAt("https://api.openai.com/v1", "gpt-5", inferenceKeyFirst, 1),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(inferenceEndpointAddress, tfjsonpath.New("address"), knownvalue.StringExact("acme")),
 					statecheck.ExpectKnownValue(inferenceEndpointAddress, tfjsonpath.New("base_url"), knownvalue.StringExact("https://api.openai.com/v1")),
 					statecheck.ExpectKnownValue(inferenceEndpointAddress, tfjsonpath.New("model"), knownvalue.StringExact("gpt-5")),
-					statecheck.ExpectKnownValue(inferenceEndpointAddress, tfjsonpath.New("supports_reasoning_effort"), knownvalue.Bool(true)),
 					statecheck.ExpectKnownValue(inferenceEndpointAddress, tfjsonpath.New("api_key_wo"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(inferenceEndpointAddress, tfjsonpath.New("api_key_wo_version"), knownvalue.Int64Exact(1)),
 					statecheck.ExpectKnownValue(inferenceEndpointAddress, tfjsonpath.New("api_key_set"), knownvalue.Bool(true)),
@@ -152,24 +164,23 @@ func TestInferenceEndpointKeyIsWrittenButNeverStored(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(inferenceEndpointStores(fake, inferenceKeyFirst), neverStored, inferenceEndpointAnswer(fake)),
 			},
 			{
-				Config:   inferenceEndpointAt("https://api.openai.com/v1", "gpt-5", true, inferenceKeyFirst, 1),
+				Config:   inferenceEndpointAt("https://api.openai.com/v1", "gpt-5", inferenceKeyFirst, 1),
 				PlanOnly: true,
 			},
 			{
-				Config:           inferenceEndpointKeepingKey("https://api.openai.com/v1", "gpt-5-mini", 1),
+				Config:           inferenceEndpointAt("https://api.openai.com/v1", "gpt-5-mini", inferenceKeyFirst, 1),
 				ConfigPlanChecks: updated,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(inferenceEndpointAddress, tfjsonpath.New("model"), knownvalue.StringExact("gpt-5-mini")),
-					statecheck.ExpectKnownValue(inferenceEndpointAddress, tfjsonpath.New("supports_reasoning_effort"), knownvalue.Bool(false)),
 					statecheck.ExpectKnownValue(inferenceEndpointAddress, tfjsonpath.New("api_key_set"), knownvalue.Bool(true)),
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
 					inferenceEndpointStores(fake, inferenceKeyFirst),
-					sentTimes(fake, inferenceEndpointKey, 1, "an update that omits the key sends no key"),
+					sentTimes(fake, inferenceEndpointKey, 1, "an update with the same api_key_wo_version sends no key"),
 				),
 			},
 			{
-				Config:           inferenceEndpointAt("https://api.openai.com/v1", "gpt-5-mini", false, inferenceKeySecond, 2),
+				Config:           inferenceEndpointAt("https://api.openai.com/v1", "gpt-5-mini", inferenceKeySecond, 2),
 				ConfigPlanChecks: updated,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					inferenceEndpointStores(fake, inferenceKeySecond),
@@ -179,7 +190,7 @@ func TestInferenceEndpointKeyIsWrittenButNeverStored(t *testing.T) {
 				),
 			},
 			{
-				Config:           inferenceEndpointAt("https://api.openai.com/v1", "gpt-5-nano", false, inferenceKeyFirst, 2),
+				Config:           inferenceEndpointAt("https://api.openai.com/v1", "gpt-5-nano", inferenceKeyFirst, 2),
 				ConfigPlanChecks: updated,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					inferenceEndpointStores(fake, inferenceKeySecond),
@@ -196,7 +207,7 @@ func TestInferenceEndpointKeyIsWrittenButNeverStored(t *testing.T) {
 				PreConfig: func() {
 					fake.Change(fake.IDOf("inference-endpoint", "acme"), func(fields map[string]any) { fields["model"] = "elsewhere" })
 				},
-				Config:           inferenceEndpointAt("https://api.openai.com/v1", "gpt-5-nano", false, inferenceKeyFirst, 2),
+				Config:           inferenceEndpointAt("https://api.openai.com/v1", "gpt-5-nano", inferenceKeyFirst, 2),
 				ConfigPlanChecks: updated,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(inferenceEndpointAddress, tfjsonpath.New("model"), knownvalue.StringExact("gpt-5-nano")),
@@ -219,7 +230,6 @@ func TestAnInferenceEndpointWithoutAKeyHoldsNone(t *testing.T) {
 				Config: inferenceEndpointKeyless("http://localhost:11434/v1/", "llama3"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(inferenceEndpointAddress, tfjsonpath.New("base_url"), knownvalue.StringExact("http://localhost:11434/v1/")),
-					statecheck.ExpectKnownValue(inferenceEndpointAddress, tfjsonpath.New("supports_reasoning_effort"), knownvalue.Bool(false)),
 					statecheck.ExpectKnownValue(inferenceEndpointAddress, tfjsonpath.New("api_key_wo_version"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(inferenceEndpointAddress, tfjsonpath.New("api_key_set"), knownvalue.Bool(false)),
 				},
@@ -230,11 +240,23 @@ func TestAnInferenceEndpointWithoutAKeyHoldsNone(t *testing.T) {
 				PlanOnly: true,
 			},
 			{
-				Config: inferenceEndpointAt("http://localhost:11434/v1/", "llama3", false, inferenceKeyFirst, 1),
+				Config: inferenceEndpointAt("http://localhost:11434/v1/", "llama3", inferenceKeyFirst, 1),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(inferenceEndpointAddress, tfjsonpath.New("api_key_set"), knownvalue.Bool(true)),
 				},
 				Check: inferenceEndpointStores(fake, inferenceKeyFirst),
+			},
+			{
+				Config: inferenceEndpointKeyless("http://localhost:11434/v1/", "llama3"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(inferenceEndpointAddress, tfjsonpath.New("api_key_wo_version"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(inferenceEndpointAddress, tfjsonpath.New("api_key_set"), knownvalue.Bool(false)),
+				},
+				Check: inferenceEndpointStores(fake, ""),
+			},
+			{
+				Config:   inferenceEndpointKeyless("http://localhost:11434/v1/", "llama3"),
+				PlanOnly: true,
 			},
 		},
 	})
@@ -248,16 +270,60 @@ func TestSpotlightRejectsWhatAnInferenceEndpointCannotTake(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
 		Steps: []resource.TestStep{
 			{
-				Config:      inferenceEndpointAt("ftp://api.example.com", "gpt-5", false, inferenceKeyFirst, 1),
+				Config:      inferenceEndpointAt("ftp://api.example.com", "gpt-5", inferenceKeyFirst, 1),
 				ExpectError: regexp.MustCompile(`(?s)base_url: must start with http:// or https://`),
 			},
 			{
-				Config:      inferenceEndpointAt("https://api.example.com/v1?x=1", "gpt-5", false, inferenceKeyFirst, 1),
+				Config:      inferenceEndpointAt("https://api.example.com/v1?x=1", "gpt-5", inferenceKeyFirst, 1),
 				ExpectError: regexp.MustCompile(`(?s)base_url: must have no query or fragment`),
 			},
 			{
-				Config:      inferenceEndpointAt("https://api.example.com/v1", "two words", false, inferenceKeyFirst, 1),
+				Config:      inferenceEndpointAt("https://api.example.com/v1", "two words", inferenceKeyFirst, 1),
 				ExpectError: regexp.MustCompile(`(?s)model: must be one name`),
+			},
+		},
+	})
+}
+
+func TestAnInferenceKeyAndItsVersionGoTogether(t *testing.T) {
+	resource.UnitTest(t, resource.TestCase{
+		TerraformVersionChecks:   acctest.WriteOnly,
+		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fakeapi.New(t)),
+		Steps: []resource.TestStep{
+			{
+				Config:      inferenceEndpointKeyOnly("https://api.example.com/v1", "gpt-5", inferenceKeyFirst),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`(?s)"?api_key_wo_version"?\s+must be specified when\s+"?api_key_wo"?`),
+			},
+			{
+				Config:      inferenceEndpointVersionOnly("https://api.example.com/v1", "gpt-5", 1),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`(?s)"?api_key_wo"?\s+must be specified when\s+"?api_key_wo_version"?`),
+			},
+		},
+	})
+}
+
+func TestANewBaseURLNeedsTheKeyAgain(t *testing.T) {
+	fake := fakeapi.New(t)
+
+	resource.UnitTest(t, resource.TestCase{
+		TerraformVersionChecks:   acctest.WriteOnly,
+		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
+		Steps: []resource.TestStep{
+			{
+				Config: inferenceEndpointAt("https://api.example.com/v1", "gpt-5", inferenceKeyFirst, 1),
+			},
+			{
+				Config:      inferenceEndpointAt("https://api.elsewhere.example.com/v1", "gpt-5", inferenceKeyFirst, 1),
+				ExpectError: regexp.MustCompile(`(?s)api_key_wo: is required, with a changed apiKeyWoVersion, when baseUrl\s+changes`),
+			},
+			{
+				Config: inferenceEndpointAt("https://api.elsewhere.example.com/v1", "gpt-5", inferenceKeySecond, 2),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(inferenceEndpointAddress, tfjsonpath.New("base_url"), knownvalue.StringExact("https://api.elsewhere.example.com/v1")),
+				},
+				Check: inferenceEndpointStores(fake, inferenceKeySecond),
 			},
 		},
 	})
@@ -294,7 +360,7 @@ func TestInferenceEndpointWritesNeedTheSecretsScope(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig:   func() { fake.Grant("configure", "runners") },
-				Config:      inferenceEndpointAt("https://api.example.com/v1", "gpt-5", false, inferenceKeyFirst, 1),
+				Config:      inferenceEndpointAt("https://api.example.com/v1", "gpt-5", inferenceKeyFirst, 1),
 				ExpectError: regexp.MustCompile(`(?s)Not allowed to change the inference-endpoint.*lacks the secrets scope`),
 			},
 		},
@@ -315,6 +381,101 @@ func TestInferenceEndpointImportsByIdentity(t *testing.T) {
 			acctest.ImportedByIdentity(inferenceEndpointAddress),
 		},
 	})
+}
+
+func appliedInferenceEndpoint(t *testing.T, server tfprotov6.ProviderServer, kind tftypes.Type, prior *tfprotov6.DynamicValue, config tftypes.Value) (*tfprotov6.DynamicValue, []string) {
+	t.Helper()
+
+	ctx := t.Context()
+	written, err := tfprotov6.NewDynamicValue(kind, config)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if prior == nil {
+		none, err := tfprotov6.NewDynamicValue(kind, tftypes.NewValue(kind, nil))
+		if err != nil {
+			t.Fatal(err)
+		}
+		prior = &none
+	}
+
+	planned, err := server.PlanResourceChange(ctx, &tfprotov6.PlanResourceChangeRequest{
+		TypeName: "spotlight_inference_endpoint", PriorState: prior, ProposedNewState: &written, Config: &written,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	applied, err := server.ApplyResourceChange(ctx, &tfprotov6.ApplyResourceChangeRequest{
+		TypeName: "spotlight_inference_endpoint", PriorState: prior, PlannedState: planned.PlannedState, Config: &written,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var warnings []string
+	for _, each := range append(planned.Diagnostics, applied.Diagnostics...) {
+		if each.Severity == tfprotov6.DiagnosticSeverityError {
+			t.Fatalf("the apply failed: %s: %s", each.Summary, each.Detail)
+		}
+		warnings = append(warnings, each.Detail)
+	}
+
+	return applied.NewState, warnings
+}
+
+func TestAFailedTestRequestWarnsButKeepsTheWrite(t *testing.T) {
+	fake := fakeapi.New(t)
+	fake.FailTestRequests("The endpoint refused the API key (401). Check the key.")
+
+	workspace, err := acctest.FakeClient(t, fake).CreateWorkspace(t.Context(), client.WorkspaceInput{Name: "Acme", Slug: "acme"})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	server, schemas := acctest.ConfiguredServer(t, fake)
+	kind, ok := schemas.ResourceSchemas["spotlight_inference_endpoint"].ValueType().(tftypes.Object)
+	if !ok {
+		t.Fatal("the inference endpoint schema is not an object")
+	}
+
+	written := func(model string) tftypes.Value {
+		values := map[string]tftypes.Value{}
+		for name, each := range kind.AttributeTypes {
+			values[name] = tftypes.NewValue(each, nil)
+		}
+		values["workspace_id"] = tftypes.NewValue(tftypes.String, workspace.ID)
+		values["base_url"] = tftypes.NewValue(tftypes.String, "https://api.example.com/v1")
+		values["model"] = tftypes.NewValue(tftypes.String, model)
+
+		return tftypes.NewValue(kind, values)
+	}
+	want := "The test request to the endpoint failed. Spotlight saved the change. The endpoint refused the API key (401). Check the key."
+
+	created, warnings := appliedInferenceEndpoint(t, server, kind, nil, written("gpt-5"))
+	if !slices.Contains(warnings, want) {
+		t.Errorf("the create did not warn %q; it said %q", want, warnings)
+	}
+
+	if fake.Count("inference-endpoint") != 1 {
+		t.Fatalf("the create stored %d inference endpoints", fake.Count("inference-endpoint"))
+	}
+
+	_, warnings = appliedInferenceEndpoint(t, server, kind, created, written("gpt-5-mini"))
+	if !slices.Contains(warnings, want) {
+		t.Errorf("the update did not warn %q; it said %q", want, warnings)
+	}
+
+	api := acctest.FakeClient(t, fake)
+	stored, err := api.ReadInferenceEndpoint(t.Context(), fake.IDOf("inference-endpoint", "acme"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if stored.Model != "gpt-5-mini" {
+		t.Errorf("the update stored the model %q", stored.Model)
+	}
 }
 
 func inferenceEndpointAccConfig(model string, version int) string {
@@ -375,7 +536,6 @@ func TestAccInferenceEndpoint(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(address, "address", cp.Workspace.Slug),
 					resource.TestCheckResourceAttr(address, "model", "tf-acc-model"),
-					resource.TestCheckResourceAttr(address, "supports_reasoning_effort", "false"),
 					resource.TestCheckResourceAttr(address, "api_key_set", "true"),
 					resource.TestCheckNoResourceAttr(address, "api_key_wo"),
 					acctest.NothingContains(acctest.Value(firstKey)),

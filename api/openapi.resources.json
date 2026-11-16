@@ -8746,20 +8746,16 @@
                     "type": "string",
                     "example": "openai/gpt-5-mini"
                   },
-                  "supportsReasoningEffort": {
-                    "type": "boolean",
-                    "default": false
-                  },
                   "apiKeyWo": {
                     "type": "string",
                     "writeOnly": true,
-                    "description": "The API key to store; accepted on create and whenever it is sent, and never returned"
+                    "description": "The API key to store; accepted with apiKeyWoVersion on create and whenever apiKeyWoVersion changes, and never returned"
                   },
                   "apiKeyWoVersion": {
                     "type": "integer",
                     "minimum": 0,
                     "example": 1,
-                    "description": "Change it to rotate the key to the apiKeyWo sent with it"
+                    "description": "Required with apiKeyWo. Change it to rotate the key to the apiKeyWo sent with it; leave it out with apiKeyWo to remove the stored key"
                   }
                 }
               }
@@ -8861,7 +8857,7 @@
             "bearer": []
           }
         ],
-        "summary": "Create the inference endpoint: the OpenAI-compatible API and model a workspace uses for Spotlight features",
+        "summary": "Create the inference endpoint: the OpenAI-compatible API and model a workspace uses for Spotlight features. Spotlight then sends it one test request; a failed test is a warning and does not undo the write",
         "tags": [
           "inference"
         ],
@@ -9130,20 +9126,16 @@
                     "type": "string",
                     "example": "openai/gpt-5-mini"
                   },
-                  "supportsReasoningEffort": {
-                    "type": "boolean",
-                    "default": false
-                  },
                   "apiKeyWo": {
                     "type": "string",
                     "writeOnly": true,
-                    "description": "The API key to store; accepted on create and whenever it is sent, and never returned"
+                    "description": "The API key to store; accepted with apiKeyWoVersion on create and whenever apiKeyWoVersion changes, and never returned"
                   },
                   "apiKeyWoVersion": {
                     "type": "integer",
                     "minimum": 0,
                     "example": 1,
-                    "description": "Change it to rotate the key to the apiKeyWo sent with it"
+                    "description": "Required with apiKeyWo. Change it to rotate the key to the apiKeyWo sent with it; leave it out with apiKeyWo to remove the stored key"
                   }
                 }
               }
@@ -9246,7 +9238,7 @@
             "bearer": []
           }
         ],
-        "summary": "Update the inference endpoint",
+        "summary": "Update the inference endpoint. Spotlight then sends it one test request; a failed test is a warning and does not undo the write",
         "tags": [
           "inference"
         ],
@@ -9549,20 +9541,16 @@
                     "type": "string",
                     "example": "openai/gpt-5-mini"
                   },
-                  "supportsReasoningEffort": {
-                    "type": "boolean",
-                    "default": false
-                  },
                   "apiKeyWo": {
                     "type": "string",
                     "writeOnly": true,
-                    "description": "The API key to store; accepted on create and whenever it is sent, and never returned"
+                    "description": "The API key to store; accepted with apiKeyWoVersion on create and whenever apiKeyWoVersion changes, and never returned"
                   },
                   "apiKeyWoVersion": {
                     "type": "integer",
                     "minimum": 0,
                     "example": 1,
-                    "description": "Change it to rotate the key to the apiKeyWo sent with it"
+                    "description": "Required with apiKeyWo. Change it to rotate the key to the apiKeyWo sent with it; leave it out with apiKeyWo to remove the stored key"
                   }
                 }
               }
@@ -11503,7 +11491,8 @@
                 "runner-trusts",
                 "runner-pools",
                 "egresses",
-                "workspace-runners"
+                "workspace-runners",
+                "inference-endpoints"
               ],
               "type": "string"
             }
@@ -14598,11 +14587,6 @@
             "example": "openai/gpt-5-mini",
             "description": "The one model every Spotlight feature of the workspace uses"
           },
-          "supportsReasoningEffort": {
-            "type": "boolean",
-            "example": false,
-            "description": "Whether the model accepts the reasoning_effort parameter"
-          },
           "apiKeySet": {
             "type": "boolean",
             "example": true,
@@ -14623,7 +14607,6 @@
           "workspaceId",
           "baseUrl",
           "model",
-          "supportsReasoningEffort",
           "apiKeySet",
           "apiKeyVersion"
         ]

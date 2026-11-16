@@ -3,12 +3,12 @@
 page_title: "spotlight_inference_endpoint Resource - spotlight"
 subcategory: ""
 description: |-
-  The OpenAI-compatible inference endpoint and the model that a workspace uses for its Spotlight features. A workspace has one. The API key is write-only, so it never enters the plan or the state. It needs Terraform 1.11 or later. Writing the endpoint needs a token granted the secrets scope. Import it as <workspace id>/<workspace slug>.
+  The OpenAI-compatible inference endpoint and the model that a workspace uses for its Spotlight features. A workspace has one. After each create and update, Spotlight sends one test request to the endpoint. If the test request fails, the apply shows a warning, not an error, and Spotlight keeps the change. The API key is write-only, so it never enters the plan or the state. It needs Terraform 1.11 or later. Writing the endpoint needs a token granted the secrets scope. Import it as <workspace id>/<workspace slug>.
 ---
 
 # spotlight_inference_endpoint (Resource)
 
-The OpenAI-compatible inference endpoint and the model that a workspace uses for its Spotlight features. A workspace has one. The API key is write-only, so it never enters the plan or the state. It needs Terraform 1.11 or later. Writing the endpoint needs a token granted the `secrets` scope. Import it as `<workspace id>/<workspace slug>`.
+The OpenAI-compatible inference endpoint and the model that a workspace uses for its Spotlight features. A workspace has one. After each create and update, Spotlight sends one test request to the endpoint. If the test request fails, the apply shows a warning, not an error, and Spotlight keeps the change. The API key is write-only, so it never enters the plan or the state. It needs Terraform 1.11 or later. Writing the endpoint needs a token granted the `secrets` scope. Import it as `<workspace id>/<workspace slug>`.
 
 ## Example Usage
 
@@ -20,12 +20,11 @@ variable "inference_api_key" {
 }
 
 resource "spotlight_inference_endpoint" "acme" {
-  workspace_id              = spotlight_workspace.acme.id
-  base_url                  = "https://api.openai.com/v1"
-  model                     = "gpt-5"
-  supports_reasoning_effort = true
-  api_key_wo                = var.inference_api_key
-  api_key_wo_version        = 1
+  workspace_id       = spotlight_workspace.acme.id
+  base_url           = "https://api.openai.com/v1"
+  model              = "gpt-5"
+  api_key_wo         = var.inference_api_key
+  api_key_wo_version = 1
 }
 ```
 
@@ -35,16 +34,15 @@ resource "spotlight_inference_endpoint" "acme" {
 ### Required
 
 - `base_url` (String) The base URL of an OpenAI-compatible API, as in `https://api.openai.com/v1`. Spotlight calls its `/chat/completions`.
-- `model` (String) The one model that every Spotlight feature of the workspace uses.
+- `model` (String) The one model that every Spotlight feature of the workspace uses. Spotlight finds out from the first request whether the model accepts `reasoning_effort`.
 - `workspace_id` (String) The workspace the inference endpoint belongs to. Changing it replaces the inference endpoint.
 
 ### Optional
 
 > **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
 
-- `api_key_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The API key that Spotlight sends to the endpoint. Spotlight stores it and never returns it. Leave it out to keep the stored key. To remove the key, replace the endpoint. It is sent to Spotlight and never stored in the plan or the state, so it needs Terraform 1.11 or later; change `api_key_wo_version` to send it again.
-- `api_key_wo_version` (Number) Any number; change it whenever `api_key_wo` changes, so Terraform sends the new value.
-- `supports_reasoning_effort` (Boolean) Whether the model accepts the `reasoning_effort` parameter. The default is `false`.
+- `api_key_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The API key that Spotlight sends to the endpoint. Spotlight stores it and never returns it. Set it together with `api_key_wo_version`; to rotate the key, change both. When `base_url` changes, give the key again with a changed `api_key_wo_version`. To remove the key, remove both; Spotlight then calls the endpoint without an `Authorization` header, as a local endpoint without a key needs. It is sent to Spotlight and never stored in the plan or the state, so it needs Terraform 1.11 or later; change `api_key_wo_version` to send it again.
+- `api_key_wo_version` (Number) Any number, set exactly when `api_key_wo` is set; change it whenever `api_key_wo` changes, so Terraform sends the new value.
 
 ### Read-Only
 

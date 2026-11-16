@@ -5,10 +5,9 @@ variable "inference_api_key" {
 }
 
 resource "spotlight_inference_endpoint" "acme" {
-  workspace_id              = spotlight_workspace.acme.id
-  base_url                  = "https://api.openai.com/v1"
-  model                     = "gpt-5"
-  supports_reasoning_effort = true
-  api_key_wo                = var.inference_api_key
-  api_key_wo_version        = 1
+  workspace_id       = spotlight_workspace.acme.id
+  base_url           = "https://api.openai.com/v1"
+  model              = "gpt-5"
+  api_key_wo         = var.inference_api_key
+  api_key_wo_version = 1
 }

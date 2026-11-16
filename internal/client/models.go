@@ -319,11 +319,10 @@ type InferenceEndpoint struct {
 }
 
 type InferenceEndpointInput struct {
-	BaseURL                 string `json:"baseUrl"`
-	Model                   string `json:"model"`
-	SupportsReasoningEffort bool   `json:"supportsReasoningEffort"`
-	APIKey                  string `json:"apiKeyWo,omitempty"`
-	APIKeyVersion           *int64 `json:"apiKeyWoVersion,omitempty"`
+	BaseURL       string `json:"baseUrl"`
+	Model         string `json:"model"`
+	APIKey        string `json:"apiKeyWo,omitempty"`
+	APIKeyVersion *int64 `json:"apiKeyWoVersion,omitempty"`
 }
 
 // HarnessProfile contains the settings of a team. Spotlight sends the
