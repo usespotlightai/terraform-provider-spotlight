@@ -3103,6 +3103,9 @@ type UpdateLineParams struct {
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
 
+	// SpotlightSourceCommit The commit the definition comes from, as owner/name@sha on GitHub. Each new claims version of a station keeps the first commit that wrote it, and the pull request that merged it
+	SpotlightSourceCommit *string `json:"Spotlight-Source-Commit,omitempty"`
+
 	// IfMatch The ETag of the version this write was based on; a write to any other version fails with 409
 	IfMatch string `json:"If-Match"`
 }
@@ -3539,6 +3542,9 @@ type CreateLineParams struct {
 
 	// SpotlightClient Who is calling, recorded against every configuration change: terraform-provider/<version>, cli/<version> or web; anything else is recorded as unknown
 	SpotlightClient *string `json:"Spotlight-Client,omitempty"`
+
+	// SpotlightSourceCommit The commit the definition comes from, as owner/name@sha on GitHub. Each new claims version of a station keeps the first commit that wrote it, and the pull request that merged it
+	SpotlightSourceCommit *string `json:"Spotlight-Source-Commit,omitempty"`
 
 	// IdempotencyKey Unique per create; a retry with the same key and body returns the resource that the first attempt created, and creates nothing more
 	IdempotencyKey string `json:"Idempotency-Key"`
@@ -7712,14 +7718,25 @@ func NewUpdateLineRequestWithBody(server string, id string, params *UpdateLinePa
 			req.Header.Set("Spotlight-Client", headerParam1)
 		}
 
-		var headerParam2 string
+		if params.SpotlightSourceCommit != nil {
+			var headerParam2 string
 
-		headerParam2, err = runtime.StyleParamWithOptions("simple", false, "If-Match", params.IfMatch, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			headerParam2, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Source-Commit", *params.SpotlightSourceCommit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Source-Commit", headerParam2)
+		}
+
+		var headerParam3 string
+
+		headerParam3, err = runtime.StyleParamWithOptions("simple", false, "If-Match", params.IfMatch, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
 		if err != nil {
 			return nil, err
 		}
 
-		req.Header.Set("If-Match", headerParam2)
+		req.Header.Set("If-Match", headerParam3)
 
 	}
 
@@ -9306,14 +9323,25 @@ func NewCreateLineRequestWithBody(server string, teamId string, params *CreateLi
 			req.Header.Set("Spotlight-Client", headerParam1)
 		}
 
-		var headerParam2 string
+		if params.SpotlightSourceCommit != nil {
+			var headerParam2 string
 
-		headerParam2, err = runtime.StyleParamWithOptions("simple", false, "Idempotency-Key", params.IdempotencyKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			headerParam2, err = runtime.StyleParamWithOptions("simple", false, "Spotlight-Source-Commit", *params.SpotlightSourceCommit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Spotlight-Source-Commit", headerParam2)
+		}
+
+		var headerParam3 string
+
+		headerParam3, err = runtime.StyleParamWithOptions("simple", false, "Idempotency-Key", params.IdempotencyKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
 		if err != nil {
 			return nil, err
 		}
 
-		req.Header.Set("Idempotency-Key", headerParam2)
+		req.Header.Set("Idempotency-Key", headerParam3)
 
 	}
 
