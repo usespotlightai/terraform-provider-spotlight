@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.0-rc.9](https://github.com/usespotlightai/terraform-provider-spotlight/compare/v0.1.0-rc.8...v0.1.0-rc.9) (2026-11-16)
+
+
+### Features
+
+* add the spotlight_inference_endpoint resource ([#74](https://github.com/usespotlightai/terraform-provider-spotlight/issues/74)) ([bc1bf7b](https://github.com/usespotlightai/terraform-provider-spotlight/commit/bc1bf7bb2017e2ad32b4f95cd06da90fc31126b9))
+
 ## [0.1.0-rc.8](https://github.com/usespotlightai/terraform-provider-spotlight/compare/v0.1.0-rc.7...v0.1.0-rc.8) (2026-11-15)
 
 
