@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -19,13 +20,14 @@ import (
 
 // Field is a write-only attribute and the version attribute next to it, at
 // the root or Within a nested attribute. If FromOne is true, the version is a
-// whole number from 1.
+// whole number from 1. If Paired is true, each of the two requires the other.
 type Field struct {
 	Within   string
 	Name     string
 	Version  string
 	Required bool
 	FromOne  bool
+	Paired   bool
 }
 
 // Value is the value that the provider writes to a secret.
@@ -43,6 +45,10 @@ var ProvisionSecret = Field{Within: "provision", Name: "secret", Version: "secre
 
 // SigningSecret is the HMAC secret that a hook signs its requests with.
 var SigningSecret = Field{Within: "signing", Name: "secret_wo", Version: "secret_wo_version", FromOne: true}
+
+// InferenceAPIKey is the API key that Spotlight sends to an inference
+// endpoint. Spotlight holds a key exactly when it holds a version.
+var InferenceAPIKey = Field{Name: "api_key_wo", Version: "api_key_wo_version", Paired: true}
 
 // Path returns the Terraform path of the write-only attribute.
 func (f Field) Path() path.Path {
@@ -69,15 +75,22 @@ func (f Field) Attributes(described string) map[string]schema.Attribute {
 		version.MarkdownDescription = "A whole number from 1; change it whenever `" + f.Name + "` changes, so Terraform sends the new value."
 	}
 
+	value := schema.StringAttribute{
+		Required:  f.Required,
+		Optional:  !f.Required,
+		Sensitive: true,
+		WriteOnly: true,
+		MarkdownDescription: described + " It is sent to Spotlight and never stored in the plan or the state, " +
+			"so it needs Terraform 1.11 or later; change `" + f.Version + "` to send it again.",
+	}
+	if f.Paired {
+		value.Validators = []validator.String{stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName(f.Version))}
+		version.Validators = append(version.Validators, int64validator.AlsoRequires(path.MatchRelative().AtParent().AtName(f.Name)))
+		version.MarkdownDescription = "Any number, set exactly when `" + f.Name + "` is set; change it whenever `" + f.Name + "` changes, so Terraform sends the new value."
+	}
+
 	return map[string]schema.Attribute{
-		f.Name: schema.StringAttribute{
-			Required:  f.Required,
-			Optional:  !f.Required,
-			Sensitive: true,
-			WriteOnly: true,
-			MarkdownDescription: described + " It is sent to Spotlight and never stored in the plan or the state, " +
-				"so it needs Terraform 1.11 or later; change `" + f.Version + "` to send it again.",
-		},
+		f.Name:    value,
 		f.Version: version,
 	}
 }
@@ -100,4 +113,20 @@ func (f Field) Rewritten(ctx context.Context, plan tfsdk.Plan, state tfsdk.State
 	diags.Append(state.GetAttribute(ctx, f.at(f.Version), &prior)...)
 
 	return !planned.Equal(prior), diags
+}
+
+func (f Field) Pending(ctx context.Context, config tfsdk.Config, plan tfsdk.Plan, state *tfsdk.State) (types.String, diag.Diagnostics) {
+	if state != nil {
+		rewritten, diags := f.Rewritten(ctx, plan, *state)
+		if diags.HasError() || !rewritten {
+			return types.StringNull(), diags
+		}
+	}
+
+	value, diags := f.Read(ctx, config)
+	if value.IsUnknown() {
+		value = types.StringNull()
+	}
+
+	return value, diags
 }

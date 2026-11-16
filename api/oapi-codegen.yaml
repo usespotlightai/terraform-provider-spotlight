@@ -66,6 +66,12 @@ output-options:
     - deleteWorkspaceRunners
     - importWorkspaceRunners
     - listWorkspaceRunners
+    - createInferenceEndpoint
+    - readInferenceEndpoint
+    - updateInferenceEndpoint
+    - deleteInferenceEndpoint
+    - importInferenceEndpoint
+    - listInferenceEndpoints
     - createHarnessProfile
     - readHarnessProfile
     - updateHarnessProfile

@@ -319,21 +319,8 @@ func sendRunnerPoolSecrets(ctx context.Context, config tfsdk.Config, plan tfsdk.
 		field = writeonly.ProvisionSecret
 	}
 
-	var diags diag.Diagnostics
-
-	if state != nil {
-		rewritten, more := field.Rewritten(ctx, plan, *state)
-		diags.Append(more...)
-
-		if !rewritten {
-			return diags
-		}
-	}
-
-	value, more := field.Read(ctx, config)
-	diags.Append(more...)
-
-	if value.IsNull() || value.IsUnknown() {
+	value, diags := field.Pending(ctx, config, plan, state)
+	if value.IsNull() {
 		return diags
 	}
 
