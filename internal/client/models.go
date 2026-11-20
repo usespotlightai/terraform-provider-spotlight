@@ -323,6 +323,7 @@ type HarnessProfileInput struct {
 	Permissions Permissions    `json:"permissions"`
 	MCPServers  []MCPServer    `json:"mcpServers"`
 	Native      map[string]any `json:"native"`
+	Secrets     []string       `json:"secrets"`
 }
 
 // Permissions tell what a harness can do, what it must ask a person about

@@ -35,6 +35,7 @@ resource "spotlight_harness_profile" "core_careful" {
     }
     codex = "model_verbosity = \"low\"\n"
   }
+  secrets = [spotlight_secret.staging_viewer.name]
 }
 ```
 
@@ -51,6 +52,7 @@ resource "spotlight_harness_profile" "core_careful" {
 - `mcp_servers` (Attributes List) Stdio MCP servers, handed to each harness in its own format. (see [below for nested schema](#nestedatt--mcp_servers))
 - `native` (Dynamic) Each harness's own settings by harness, passed through as it reads them: Claude Code settings as an object, Codex `config.toml` as text, Cursor CLI config as an object; as in `{ claude-code = { includeCoAuthoredBy = false } }`.
 - `permissions` (Attributes) What the harness may do, what it asks a person about first, and what it may never do. (see [below for nested schema](#nestedatt--permissions))
+- `secrets` (List of String) Workspace secrets that the runs of this profile get, by name, as in `[spotlight_secret.staging_viewer.name]`. Egress puts each value in place of its stand-in, `spotlight-egress:<NAME>`, in the requests a run sends to the hosts the secret is bound to, and the run never sees the value. The run's briefing says where to send each stand-in. Each secret must exist, and cannot be deleted while a profile names it. While a secret has no value, the answer warns, and runs with this profile do not start.
 
 ### Read-Only
 

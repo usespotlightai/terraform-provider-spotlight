@@ -36,6 +36,7 @@ func harnessProfileOf(dto apigen.HarnessProfileResourceResponseDto) HarnessProfi
 			},
 			MCPServers: servers,
 			Native:     native,
+			Secrets:    orNone(dto.Secrets),
 		},
 	}
 }

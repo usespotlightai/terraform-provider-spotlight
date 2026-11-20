@@ -597,7 +597,18 @@ func harnessProfile(body map[string]any) (map[string]any, []fieldError) {
 
 	errs = append(errs, nativeProblems(native)...)
 
-	return map[string]any{"key": key, "permissions": permissions, "mcpServers": servers, "native": native}, errs
+	secrets := texts(body["secrets"])
+	for at, each := range secrets {
+		path := fmt.Sprintf("secrets[%d]", at)
+		if !secretName.MatchString(textOf(each)) {
+			errs = append(errs, fieldError{path, fmt.Sprintf("names secret %s, but a secret name is upper case letters, digits and underscores, as in LINEAR_API_KEY", textOf(each))})
+		}
+		if slices.Contains(secrets[:at], each) {
+			errs = append(errs, fieldError{path, fmt.Sprintf("lists secret %s twice", textOf(each))})
+		}
+	}
+
+	return map[string]any{"key": key, "permissions": permissions, "mcpServers": servers, "native": native, "secrets": secrets}, errs
 }
 
 func permissionRule(raw string) (string, bool) {

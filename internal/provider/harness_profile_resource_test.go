@@ -44,6 +44,7 @@ resource "spotlight_harness_profile" "core_careful" {
     }
     codex = "model_verbosity = \"low\"\n"
   }
+  secrets = ["STAGING_VIEWER"]
 }
 `
 
@@ -72,6 +73,7 @@ func TestHarnessProfileExportedShapeRoundTrips(t *testing.T) {
 					statecheck.ExpectKnownValue(harnessProfileAddress, tfjsonpath.New("permissions").AtMapKey("deny"), knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("read(.env)")})),
 					statecheck.ExpectKnownValue(harnessProfileAddress, tfjsonpath.New("mcp_servers").AtSliceIndex(0).AtMapKey("env").AtMapKey("LINEAR_WORKSPACE"), knownvalue.StringExact("acme")),
 					statecheck.ExpectKnownValue(harnessProfileAddress, tfjsonpath.New("native").AtMapKey("claude-code").AtMapKey("includeCoAuthoredBy"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue(harnessProfileAddress, tfjsonpath.New("secrets"), knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("STAGING_VIEWER")})),
 				},
 			},
 			{
@@ -126,6 +128,7 @@ func TestHarnessProfileFillsWhatItLeavesOut(t *testing.T) {
 					statecheck.ExpectKnownValue(harnessProfileAddress, tfjsonpath.New("permissions").AtMapKey("allow"), knownvalue.ListSizeExact(0)),
 					statecheck.ExpectKnownValue(harnessProfileAddress, tfjsonpath.New("mcp_servers"), knownvalue.ListSizeExact(0)),
 					statecheck.ExpectKnownValue(harnessProfileAddress, tfjsonpath.New("native"), knownvalue.MapSizeExact(0)),
+					statecheck.ExpectKnownValue(harnessProfileAddress, tfjsonpath.New("secrets"), knownvalue.ListSizeExact(0)),
 				},
 			},
 			{
@@ -185,6 +188,7 @@ func TestHarnessProfileProblemsInsideMapsAndNativeNameTheirKeys(t *testing.T) {
 		strings.Replace(harnessProfileExported, "LINEAR_WORKSPACE", `"LINEAR WORKSPACE"`, 1):                                         `mcp_servers\[0\]\.env\["LINEAR WORKSPACE"\]: names an environment variable`,
 		strings.Replace(harnessProfileExported, "codex =", "gemini =", 1):                                                            `native\.gemini: names no harness Spotlight runs`,
 		strings.Replace(harnessProfileExported, `codex = "model_verbosity = \"low\"\n"`, "codex = { model_verbosity = \"low\" }", 1): `native\.codex: is the harness's own config\.toml, as text`,
+		strings.Replace(harnessProfileExported, `["STAGING_VIEWER"]`, `["STAGING_VIEWER", "STAGING_VIEWER"]`, 1):                     `secrets\[1\]: lists secret STAGING_VIEWER twice`,
 	} {
 		resource.UnitTest(t, resource.TestCase{
 			ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),

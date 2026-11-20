@@ -481,4 +481,5 @@ resource "spotlight_harness_profile" "core_careful" {
     }
     codex = "model_verbosity = \"low\"\n"
   }
+  secrets = [spotlight_secret.linear_signing.name]
 }
