@@ -592,10 +592,6 @@ func (s *Server) update(kind string) http.HandlerFunc {
 
 		s.storeWriteOnly(existing, value)
 
-		if kind == "secret" && objectOf(fields["source"])["kind"] != "built-in" {
-			delete(s.writeOnly, existing.id)
-		}
-
 		if kind == "inference-endpoint" && fields["apiKeyVersion"] == nil {
 			delete(s.writeOnly, existing.id)
 		}

@@ -18,17 +18,8 @@ func secretOf(dto apigen.SecretResourceResponseDto) Secret {
 		Meta:        meta(dto.Id, dto.Version, dto.Address, dto.Warnings),
 		WorkspaceID: dto.WorkspaceId,
 		Name:        dto.Name,
-		Source:      SecretSource{Kind: string(dto.Source.Kind)},
 		Bindings:    bindings,
 		RotatedAt:   dto.RotatedAt,
-	}
-
-	if dto.Source.SecretId != nil {
-		secret.Source.SecretID = *dto.Source.SecretId
-	}
-
-	if dto.Source.Field != nil {
-		secret.Source.Field = *dto.Source.Field
 	}
 
 	if dto.ValueWoVersion != nil {

@@ -159,25 +159,10 @@ type Secret struct {
 	Meta
 	WorkspaceID  string
 	Name         string
-	Source       SecretSource
 	Bindings     []SecretBinding
 	ValueVersion *int64
 	RotatedAt    string
 }
-
-// SecretSource tells where the value of a secret is. Spotlight stores the
-// value, or Spotlight reads it from AWS Secrets Manager each time it uses it.
-type SecretSource struct {
-	Kind     string `json:"kind"`
-	SecretID string `json:"secretId,omitempty"`
-	Field    string `json:"field,omitempty"`
-}
-
-// The places where the value of a secret can be.
-const (
-	SourceBuiltIn           = "built-in"
-	SourceAWSSecretsManager = "aws-secrets-manager"
-)
 
 // SecretBinding is a host that can receive a secret, and where Spotlight injects
 // the secret in the requests to that host.
@@ -192,7 +177,6 @@ type SecretBinding struct {
 // when Spotlight must store the value or a new value.
 type SecretInput struct {
 	Name         string          `json:"name"`
-	Source       SecretSource    `json:"source"`
 	Bindings     []SecretBinding `json:"bindings"`
 	Value        *string         `json:"valueWo,omitempty"`
 	ValueVersion *int64          `json:"valueWoVersion,omitempty"`

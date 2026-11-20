@@ -19,7 +19,6 @@ func seededSecrets(t *testing.T, seeded acctest.Seeded) (first, second acctest.L
 
 		created, err := seeded.Client.CreateSecret(t.Context(), workspace.ID, client.SecretInput{
 			Name:     name,
-			Source:   client.SecretSource{Kind: client.SourceAWSSecretsManager, SecretID: "acme/" + name},
 			Bindings: []client.SecretBinding{},
 		})
 		acctest.Must(t, err)

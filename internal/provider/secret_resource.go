@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -47,17 +46,10 @@ type SecretResourceModel struct {
 	Address      types.String    `tfsdk:"address"`
 	WorkspaceID  types.String    `tfsdk:"workspace_id"`
 	Name         types.String    `tfsdk:"name"`
-	Source       secretSource    `tfsdk:"source"`
 	Bindings     []secretBinding `tfsdk:"bindings"`
 	Value        types.String    `tfsdk:"value_wo"`
 	ValueVersion types.Int64     `tfsdk:"value_wo_version"`
 	RotatedAt    types.String    `tfsdk:"rotated_at"`
-}
-
-type secretSource struct {
-	Kind     types.String `tfsdk:"kind"`
-	SecretID types.String `tfsdk:"secret_id"`
-	Field    types.String `tfsdk:"field"`
 }
 
 type secretBinding struct {
@@ -67,19 +59,12 @@ type secretBinding struct {
 	Prefix   types.String `tfsdk:"prefix"`
 }
 
-var (
-	secretSourceType = map[string]attr.Type{
-		"kind":      types.StringType,
-		"secret_id": types.StringType,
-		"field":     types.StringType,
-	}
-	secretBindingType = types.ObjectType{AttrTypes: map[string]attr.Type{
-		"host":     types.StringType,
-		"location": types.StringType,
-		"name":     types.StringType,
-		"prefix":   types.StringType,
-	}}
-)
+var secretBindingType = types.ObjectType{AttrTypes: map[string]attr.Type{
+	"host":     types.StringType,
+	"location": types.StringType,
+	"name":     types.StringType,
+	"prefix":   types.StringType,
+}}
 
 const (
 	locationHeader = "header"
@@ -98,32 +83,13 @@ func (r *SecretResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 
 func secretSchema() schema.Schema {
 	attributes := writeonly.Value.Attributes("The value Spotlight stores, usually read from a sensitive variable. " +
-		"A secret read from AWS Secrets Manager takes none.")
+		"Leave it and `value_wo_version` out to set the value in the app or with `spotlight secret set` instead; " +
+		"removing both keeps the stored value until a person replaces it.")
 	attributes["id"] = idAttribute("secret")
 	attributes["version"] = versionAttribute("secret")
 	attributes["address"] = addressAttribute("LINEAR_API_KEY")
 	attributes["workspace_id"] = ownerAttribute("workspace", "secret")
 	attributes["name"] = immutableAttribute("What integrations call the secret, as in `LINEAR_API_KEY`, written `secret.LINEAR_API_KEY` where an integration or a harness profile names it.", "secret")
-	attributes["source"] = schema.SingleNestedAttribute{
-		Optional:            true,
-		Computed:            true,
-		Default:             objectdefault.StaticValue(types.ObjectValueMust(secretSourceType, map[string]attr.Value{"kind": types.StringValue(client.SourceBuiltIn), "secret_id": types.StringNull(), "field": types.StringNull()})),
-		MarkdownDescription: "Where the value lives: stored by Spotlight (`built-in`, the default) or read from AWS Secrets Manager whenever it is used.",
-		Attributes: map[string]schema.Attribute{
-			"kind": schema.StringAttribute{
-				Required:            true,
-				MarkdownDescription: "`built-in` or `aws-secrets-manager`.",
-			},
-			"secret_id": schema.StringAttribute{
-				Optional:            true,
-				MarkdownDescription: "The name or ARN of the secret in AWS Secrets Manager.",
-			},
-			"field": schema.StringAttribute{
-				Optional:            true,
-				MarkdownDescription: "The key to read when the AWS secret contains JSON.",
-			},
-		},
-	}
 	attributes["bindings"] = schema.ListNestedAttribute{
 		Optional:            true,
 		Computed:            true,
@@ -178,20 +144,9 @@ func (r *SecretResource) Configure(_ context.Context, req resource.ConfigureRequ
 	r.client = clientOf(req.ProviderData, &resp.Diagnostics)
 }
 
-// ValidateConfig rejects a value for a secret that Spotlight reads from AWS
-// Secrets Manager, because AWS Secrets Manager stores the value. It also rejects
-// a binding in a query parameter without a name. The plan checks values that
-// are not known yet.
+// ValidateConfig rejects a binding in a query parameter without a name. The
+// plan checks values that are not known yet.
 func (r *SecretResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var kind, value types.String
-	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("source").AtName("kind"), &kind)...)
-	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root(writeonly.Value.Name), &value)...)
-
-	if kind.ValueString() == client.SourceAWSSecretsManager && !value.IsNull() {
-		resp.Diagnostics.AddAttributeError(path.Root(writeonly.Value.Name), "A secret read from AWS takes no value",
-			"value_wo: is stored only by Spotlight; a secret read from AWS Secrets Manager is set there. Leave value_wo out, or store the secret in Spotlight with source.kind = \"built-in\".")
-	}
-
 	var listed types.List
 	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("bindings"), &listed)...)
 	if listed.IsNull() || listed.IsUnknown() {
@@ -356,12 +311,7 @@ func (r *SecretResource) ImportState(ctx context.Context, req resource.ImportSta
 
 func secretInput(plan SecretResourceModel) client.SecretInput {
 	in := client.SecretInput{
-		Name: plan.Name.ValueString(),
-		Source: client.SecretSource{
-			Kind:     plan.Source.Kind.ValueString(),
-			SecretID: plan.Source.SecretID.ValueString(),
-			Field:    plan.Source.Field.ValueString(),
-		},
+		Name:     plan.Name.ValueString(),
 		Bindings: make([]client.SecretBinding, 0, len(plan.Bindings)),
 	}
 
@@ -389,10 +339,7 @@ func sendSecretValue(ctx context.Context, config tfsdk.Config, plan tfsdk.Plan, 
 		rewritten, more := writeonly.Value.Rewritten(ctx, plan, *state)
 		diags.Append(more...)
 
-		storedFromNow, more := secretBecomesBuiltIn(ctx, *state, in.Source)
-		diags.Append(more...)
-
-		if !rewritten && !storedFromNow {
+		if !rewritten {
 			return diags
 		}
 	}
@@ -408,17 +355,9 @@ func sendSecretValue(ctx context.Context, config tfsdk.Config, plan tfsdk.Plan, 
 	return diags
 }
 
-func secretBecomesBuiltIn(ctx context.Context, state tfsdk.State, planned client.SecretSource) (bool, diag.Diagnostics) {
-	var prior types.String
-	diags := state.GetAttribute(ctx, path.Root("source").AtName("kind"), &prior)
-
-	return planned.Kind == client.SourceBuiltIn && prior.ValueString() != client.SourceBuiltIn, diags
-}
-
 func secretSettable(s client.Secret) any {
 	return map[string]any{
 		"name":           s.Name,
-		"source":         s.Source,
 		"bindings":       s.Bindings,
 		"valueWoVersion": s.ValueVersion,
 	}
@@ -426,16 +365,11 @@ func secretSettable(s client.Secret) any {
 
 func secretModel(secret client.Secret, prior *SecretResourceModel) SecretResourceModel {
 	model := SecretResourceModel{
-		ID:          types.StringValue(secret.ID),
-		Version:     types.Int64Value(secret.Version),
-		Address:     types.StringValue(secret.Address),
-		WorkspaceID: types.StringValue(secret.WorkspaceID),
-		Name:        types.StringValue(secret.Name),
-		Source: secretSource{
-			Kind:     types.StringValue(secret.Source.Kind),
-			SecretID: textOrNull(secret.Source.SecretID),
-			Field:    textOrNull(secret.Source.Field),
-		},
+		ID:           types.StringValue(secret.ID),
+		Version:      types.Int64Value(secret.Version),
+		Address:      types.StringValue(secret.Address),
+		WorkspaceID:  types.StringValue(secret.WorkspaceID),
+		Name:         types.StringValue(secret.Name),
 		Bindings:     make([]secretBinding, 0, len(secret.Bindings)),
 		Value:        types.StringNull(),
 		ValueVersion: types.Int64PointerValue(secret.ValueVersion),
@@ -453,7 +387,6 @@ func secretModel(secret client.Secret, prior *SecretResourceModel) SecretResourc
 
 	if prior != nil {
 		model.Name = prior.Name
-		model.Source = prior.Source
 		model.Bindings = prior.Bindings
 		model.ValueVersion = prior.ValueVersion
 	}

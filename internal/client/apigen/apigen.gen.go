@@ -408,24 +408,6 @@ func (e SecretBindingResponseDtoLocation) Valid() bool {
 	}
 }
 
-// Defines values for SecretSourceResponseDtoKind.
-const (
-	SecretSourceResponseDtoKindAwsSecretsManager SecretSourceResponseDtoKind = "aws-secrets-manager"
-	SecretSourceResponseDtoKindBuiltIn           SecretSourceResponseDtoKind = "built-in"
-)
-
-// Valid indicates whether the value is a known member of the SecretSourceResponseDtoKind enum.
-func (e SecretSourceResponseDtoKind) Valid() bool {
-	switch e {
-	case SecretSourceResponseDtoKindAwsSecretsManager:
-		return true
-	case SecretSourceResponseDtoKindBuiltIn:
-		return true
-	default:
-		return false
-	}
-}
-
 // Defines values for CheckExpressionParamsSpotlightApiVersion.
 const (
 	CheckExpressionParamsSpotlightApiVersionN20260923 CheckExpressionParamsSpotlightApiVersion = "2026-09-23"
@@ -966,24 +948,6 @@ func (e UpdateSecretJSONBodyBindingsLocation) Valid() bool {
 	case UpdateSecretJSONBodyBindingsLocationHeader:
 		return true
 	case UpdateSecretJSONBodyBindingsLocationQuery:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for UpdateSecretJSONBodySourceKind.
-const (
-	UpdateSecretJSONBodySourceKindAwsSecretsManager UpdateSecretJSONBodySourceKind = "aws-secrets-manager"
-	UpdateSecretJSONBodySourceKindBuiltIn           UpdateSecretJSONBodySourceKind = "built-in"
-)
-
-// Valid indicates whether the value is a known member of the UpdateSecretJSONBodySourceKind enum.
-func (e UpdateSecretJSONBodySourceKind) Valid() bool {
-	switch e {
-	case UpdateSecretJSONBodySourceKindAwsSecretsManager:
-		return true
-	case UpdateSecretJSONBodySourceKindBuiltIn:
 		return true
 	default:
 		return false
@@ -1725,24 +1689,6 @@ func (e CreateSecretJSONBodyBindingsLocation) Valid() bool {
 	case Header:
 		return true
 	case Query:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for CreateSecretJSONBodySourceKind.
-const (
-	AwsSecretsManager CreateSecretJSONBodySourceKind = "aws-secrets-manager"
-	BuiltIn           CreateSecretJSONBodySourceKind = "built-in"
-)
-
-// Valid indicates whether the value is a known member of the CreateSecretJSONBodySourceKind enum.
-func (e CreateSecretJSONBodySourceKind) Valid() bool {
-	switch e {
-	case AwsSecretsManager:
-		return true
-	case BuiltIn:
 		return true
 	default:
 		return false
@@ -2615,8 +2561,7 @@ type SecretResourceResponseDto struct {
 	Name string `json:"name"`
 
 	// RotatedAt When the value was last set; not settable
-	RotatedAt string                  `json:"rotatedAt"`
-	Source    SecretSourceResponseDto `json:"source"`
+	RotatedAt string `json:"rotatedAt"`
 
 	// ValueWoVersion Changing it rotates the value to the valueWo sent with it; the value itself is write-only and never returned
 	ValueWoVersion *float32 `json:"valueWoVersion"`
@@ -2630,21 +2575,6 @@ type SecretResourceResponseDto struct {
 	// WorkspaceId The workspace it belongs to
 	WorkspaceId string `json:"workspaceId"`
 }
-
-// SecretSourceResponseDto defines model for SecretSourceResponseDto.
-type SecretSourceResponseDto struct {
-	// Field The key to read when that secret contains JSON
-	Field *string `json:"field"`
-
-	// Kind Where the value lives: stored by Spotlight, or read from AWS Secrets Manager when it is used
-	Kind SecretSourceResponseDtoKind `json:"kind"`
-
-	// SecretId The name or ARN of the secret in AWS Secrets Manager
-	SecretId *string `json:"secretId"`
-}
-
-// SecretSourceResponseDtoKind Where the value lives: stored by Spotlight, or read from AWS Secrets Manager when it is used
-type SecretSourceResponseDtoKind string
 
 // SkillResourceListResponseDto defines model for SkillResourceListResponseDto.
 type SkillResourceListResponseDto struct {
@@ -3334,17 +3264,12 @@ type UpdateSecretJSONBody struct {
 		Name   *string `json:"name,omitempty"`
 		Prefix *string `json:"prefix,omitempty"`
 	} `json:"bindings,omitempty"`
-	Name   string `json:"name"`
-	Source *struct {
-		Field    *string                        `json:"field,omitempty"`
-		Kind     UpdateSecretJSONBodySourceKind `json:"kind"`
-		SecretId *string                        `json:"secretId,omitempty"`
-	} `json:"source,omitempty"`
+	Name string `json:"name"`
 
-	// ValueWo The value to store; accepted on create and whenever valueWoVersion changes, and never returned
+	// ValueWo The value to store, sent only together with valueWoVersion, and never returned. Leave out both to set the value outside Terraform
 	ValueWo *string `json:"valueWo,omitempty"`
 
-	// ValueWoVersion Change it to rotate the value to the valueWo sent with it
+	// ValueWoVersion Change it to rotate the value to the valueWo sent with it. Remove it to let a person set the value outside Terraform
 	ValueWoVersion *int `json:"valueWoVersion,omitempty"`
 }
 
@@ -3365,9 +3290,6 @@ type UpdateSecretParamsSpotlightApiVersion string
 
 // UpdateSecretJSONBodyBindingsLocation defines parameters for UpdateSecret.
 type UpdateSecretJSONBodyBindingsLocation string
-
-// UpdateSecretJSONBodySourceKind defines parameters for UpdateSecret.
-type UpdateSecretJSONBodySourceKind string
 
 // DeleteSkillParams defines parameters for DeleteSkill.
 type DeleteSkillParams struct {
@@ -4144,17 +4066,12 @@ type CreateSecretJSONBody struct {
 		Name   *string `json:"name,omitempty"`
 		Prefix *string `json:"prefix,omitempty"`
 	} `json:"bindings,omitempty"`
-	Name   string `json:"name"`
-	Source *struct {
-		Field    *string                        `json:"field,omitempty"`
-		Kind     CreateSecretJSONBodySourceKind `json:"kind"`
-		SecretId *string                        `json:"secretId,omitempty"`
-	} `json:"source,omitempty"`
+	Name string `json:"name"`
 
-	// ValueWo The value to store; accepted on create and whenever valueWoVersion changes, and never returned
+	// ValueWo The value to store, sent only together with valueWoVersion, and never returned. Leave out both to set the value outside Terraform
 	ValueWo *string `json:"valueWo,omitempty"`
 
-	// ValueWoVersion Change it to rotate the value to the valueWo sent with it
+	// ValueWoVersion Change it to rotate the value to the valueWo sent with it. Remove it to let a person set the value outside Terraform
 	ValueWoVersion *int `json:"valueWoVersion,omitempty"`
 }
 
@@ -4175,9 +4092,6 @@ type CreateSecretParamsSpotlightApiVersion string
 
 // CreateSecretJSONBodyBindingsLocation defines parameters for CreateSecret.
 type CreateSecretJSONBodyBindingsLocation string
-
-// CreateSecretJSONBodySourceKind defines parameters for CreateSecret.
-type CreateSecretJSONBodySourceKind string
 
 // ImportSecretParams defines parameters for ImportSecret.
 type ImportSecretParams struct {

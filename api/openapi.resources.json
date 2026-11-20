@@ -4490,28 +4490,6 @@
                     "type": "string",
                     "example": "LINEAR_API_KEY"
                   },
-                  "source": {
-                    "type": "object",
-                    "required": [
-                      "kind"
-                    ],
-                    "properties": {
-                      "kind": {
-                        "type": "string",
-                        "enum": [
-                          "built-in",
-                          "aws-secrets-manager"
-                        ],
-                        "default": "built-in"
-                      },
-                      "secretId": {
-                        "type": "string"
-                      },
-                      "field": {
-                        "type": "string"
-                      }
-                    }
-                  },
                   "bindings": {
                     "type": "array",
                     "items": {
@@ -4548,13 +4526,13 @@
                   "valueWo": {
                     "type": "string",
                     "writeOnly": true,
-                    "description": "The value to store; accepted on create and whenever valueWoVersion changes, and never returned"
+                    "description": "The value to store, sent only together with valueWoVersion, and never returned. Leave out both to set the value outside Terraform"
                   },
                   "valueWoVersion": {
                     "type": "integer",
                     "minimum": 0,
                     "example": 1,
-                    "description": "Change it to rotate the value to the valueWo sent with it"
+                    "description": "Change it to rotate the value to the valueWo sent with it. Remove it to let a person set the value outside Terraform"
                   }
                 }
               }
@@ -4920,28 +4898,6 @@
                     "type": "string",
                     "example": "LINEAR_API_KEY"
                   },
-                  "source": {
-                    "type": "object",
-                    "required": [
-                      "kind"
-                    ],
-                    "properties": {
-                      "kind": {
-                        "type": "string",
-                        "enum": [
-                          "built-in",
-                          "aws-secrets-manager"
-                        ],
-                        "default": "built-in"
-                      },
-                      "secretId": {
-                        "type": "string"
-                      },
-                      "field": {
-                        "type": "string"
-                      }
-                    }
-                  },
                   "bindings": {
                     "type": "array",
                     "items": {
@@ -4978,13 +4934,13 @@
                   "valueWo": {
                     "type": "string",
                     "writeOnly": true,
-                    "description": "The value to store; accepted on create and whenever valueWoVersion changes, and never returned"
+                    "description": "The value to store, sent only together with valueWoVersion, and never returned. Leave out both to set the value outside Terraform"
                   },
                   "valueWoVersion": {
                     "type": "integer",
                     "minimum": 0,
                     "example": 1,
-                    "description": "Change it to rotate the value to the valueWo sent with it"
+                    "description": "Change it to rotate the value to the valueWo sent with it. Remove it to let a person set the value outside Terraform"
                   }
                 }
               }
@@ -14036,37 +13992,6 @@
           "tools"
         ]
       },
-      "SecretSourceResponseDto": {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "type": "string",
-            "enum": [
-              "built-in",
-              "aws-secrets-manager"
-            ],
-            "example": "built-in",
-            "description": "Where the value lives: stored by Spotlight, or read from AWS Secrets Manager when it is used"
-          },
-          "secretId": {
-            "type": "string",
-            "nullable": true,
-            "example": null,
-            "description": "The name or ARN of the secret in AWS Secrets Manager"
-          },
-          "field": {
-            "type": "string",
-            "nullable": true,
-            "example": null,
-            "description": "The key to read when that secret contains JSON"
-          }
-        },
-        "required": [
-          "kind",
-          "secretId",
-          "field"
-        ]
-      },
       "SecretBindingResponseDto": {
         "type": "object",
         "properties": {
@@ -14137,9 +14062,6 @@
             "example": "LINEAR_API_KEY",
             "description": "What integrations call it. Immutable: changing it means replacing the secret"
           },
-          "source": {
-            "$ref": "#/components/schemas/SecretSourceResponseDto"
-          },
           "bindings": {
             "description": "The only hosts the secret is ever sent to, and how; a request anywhere else goes without it",
             "type": "array",
@@ -14166,7 +14088,6 @@
           "warnings",
           "workspaceId",
           "name",
-          "source",
           "bindings",
           "valueWoVersion",
           "rotatedAt"

@@ -30,8 +30,9 @@ type Field struct {
 	Paired   bool
 }
 
-// Value is the value that the provider writes to a secret.
-var Value = Field{Name: "value_wo", Version: "value_wo_version"}
+// Value is the value that the provider writes to a secret. A secret that
+// leaves out both takes its value from a person, outside Terraform.
+var Value = Field{Name: "value_wo", Version: "value_wo_version", Paired: true}
 
 // Token is the token that the hosts of a pull pool use to claim work.
 var Token = Field{Name: "token", Version: "token_version"}
