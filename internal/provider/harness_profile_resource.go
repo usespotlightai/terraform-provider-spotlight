@@ -46,6 +46,7 @@ type HarnessProfileResourceModel struct {
 	Permissions harnessProfilePermissions `tfsdk:"permissions"`
 	MCPServers  []harnessProfileMCPServer `tfsdk:"mcp_servers"`
 	Native      types.Dynamic             `tfsdk:"native"`
+	Secrets     types.List                `tfsdk:"secrets"`
 }
 
 type harnessProfilePermissions struct {
@@ -144,6 +145,9 @@ func harnessProfileSchema() schema.Schema {
 				Default:             dynamicdefault.StaticValue(harnessProfileNoNative),
 				MarkdownDescription: "Each harness's own settings by harness, passed through as it reads them: Claude Code settings as an object, Codex `config.toml` as text, Cursor CLI config as an object; as in `{ claude-code = { includeCoAuthoredBy = false } }`.",
 			},
+			"secrets": stringListAttribute("Workspace secrets that the runs of this profile get, by name, as in `[spotlight_secret.staging_viewer.name]`. " +
+				"Egress puts each value in place of its stand-in, `spotlight-egress:<NAME>`, in the requests a run sends to the hosts the secret is bound to, and the run never sees the value. The run's briefing says where to send each stand-in. " +
+				"Each secret must exist, and cannot be deleted while a profile names it. While a secret has no value, the answer warns, and runs with this profile do not start."),
 		},
 	}
 }
@@ -286,6 +290,7 @@ func harnessProfileInput(plan HarnessProfileResourceModel) (client.HarnessProfil
 		},
 		MCPServers: make([]client.MCPServer, 0, len(plan.MCPServers)),
 		Native:     map[string]any{},
+		Secrets:    stringsIn(plan.Secrets, &diags),
 	}
 
 	for _, each := range plan.MCPServers {
@@ -339,6 +344,7 @@ func harnessProfileModel(profile client.HarnessProfile, prior *HarnessProfileRes
 		},
 		MCPServers: make([]harnessProfileMCPServer, 0, len(profile.MCPServers)),
 		Native:     dynamic.FromJSON(profile.Native),
+		Secrets:    stringList(profile.Secrets),
 	}
 
 	for _, each := range profile.MCPServers {
@@ -360,6 +366,7 @@ func harnessProfileModel(profile client.HarnessProfile, prior *HarnessProfileRes
 		model.Permissions = prior.Permissions
 		model.MCPServers = prior.MCPServers
 		model.Native = dynamic.Resolve(prior.Native, profile.Native)
+		model.Secrets = prior.Secrets
 	}
 
 	return model

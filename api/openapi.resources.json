@@ -10539,6 +10539,16 @@
                         "includeCoAuthoredBy": false
                       }
                     }
+                  },
+                  "secrets": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "example": [
+                      "STAGING_VIEWER"
+                    ],
+                    "description": "Workspace secrets that the runs of this profile get, by name. Egress puts each value in place of its stand-in in the requests a run sends to the hosts the secret is bound to, and the run never sees the value. The run’s briefing says where to send each stand-in. Each name must be a secret the workspace has."
                   }
                 }
               }
@@ -10889,6 +10899,16 @@
                         "includeCoAuthoredBy": false
                       }
                     }
+                  },
+                  "secrets": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "example": [
+                      "STAGING_VIEWER"
+                    ],
+                    "description": "Workspace secrets that the runs of this profile get, by name. Egress puts each value in place of its stand-in in the requests a run sends to the hosts the secret is bound to, and the run never sees the value. The run’s briefing says where to send each stand-in. Each name must be a secret the workspace has."
                   }
                 }
               }
@@ -14847,6 +14867,16 @@
               }
             },
             "description": "Each harness’s own settings, passed through as it reads them: Claude Code settings JSON, Codex config.toml text, Cursor CLI config JSON"
+          },
+          "secrets": {
+            "example": [
+              "STAGING_VIEWER"
+            ],
+            "description": "Workspace secrets that the runs of this profile get, by name. Egress puts each value in place of its stand-in in the requests a run sends to the hosts the secret is bound to, and the run never sees the value. The run’s briefing says where to send each stand-in. Each name must be a secret the workspace has.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [
@@ -14858,7 +14888,8 @@
           "key",
           "permissions",
           "mcpServers",
-          "native"
+          "native",
+          "secrets"
         ]
       },
       "HarnessProfileResourceListResponseDto": {

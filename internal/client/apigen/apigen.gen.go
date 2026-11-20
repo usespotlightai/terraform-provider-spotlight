@@ -2028,6 +2028,9 @@ type HarnessProfileResourceResponseDto struct {
 	// Permissions Coarse rules every harness is told in its own terms; where one cannot say a rule, warnings name the approximation
 	Permissions PermissionsResponseDto `json:"permissions"`
 
+	// Secrets Workspace secrets that the runs of this profile get, by name. Egress puts each value in place of its stand-in in the requests a run sends to the hosts the secret is bound to, and the run never sees the value. The run’s briefing says where to send each stand-in. Each name must be a secret the workspace has.
+	Secrets []string `json:"secrets"`
+
 	// TeamId The team it belongs to
 	TeamId string `json:"teamId"`
 
@@ -2838,6 +2841,9 @@ type UpdateHarnessProfileJSONBody struct {
 		Ask   *[]string `json:"ask,omitempty"`
 		Deny  *[]string `json:"deny,omitempty"`
 	} `json:"permissions,omitempty"`
+
+	// Secrets Workspace secrets that the runs of this profile get, by name. Egress puts each value in place of its stand-in in the requests a run sends to the hosts the secret is bound to, and the run never sees the value. The run’s briefing says where to send each stand-in. Each name must be a secret the workspace has.
+	Secrets *[]string `json:"secrets,omitempty"`
 }
 
 // UpdateHarnessProfileParams defines parameters for UpdateHarnessProfile.
@@ -3404,6 +3410,9 @@ type CreateHarnessProfileJSONBody struct {
 		Ask   *[]string `json:"ask,omitempty"`
 		Deny  *[]string `json:"deny,omitempty"`
 	} `json:"permissions,omitempty"`
+
+	// Secrets Workspace secrets that the runs of this profile get, by name. Egress puts each value in place of its stand-in in the requests a run sends to the hosts the secret is bound to, and the run never sees the value. The run’s briefing says where to send each stand-in. Each name must be a secret the workspace has.
+	Secrets *[]string `json:"secrets,omitempty"`
 }
 
 // CreateHarnessProfileParams defines parameters for CreateHarnessProfile.
