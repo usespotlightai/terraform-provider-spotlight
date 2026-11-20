@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"strings"
 	"testing"
 
 	fwresource "github.com/hashicorp/terraform-plugin-framework/resource"
@@ -25,7 +26,7 @@ import (
 
 const secretAddress = "spotlight_secret.linear_api_key"
 
-func secretBuiltIn(name, value string, version int, bindings string) string {
+func secretFromTerraform(name, value string, version int, bindings string) string {
 	return acctest.Workspace + fmt.Sprintf(`
 resource "spotlight_secret" "linear_api_key" {
   workspace_id     = spotlight_workspace.acme.id
@@ -90,12 +91,11 @@ func TestSecretIsWrittenButItsValueNeverStored(t *testing.T) {
 		CheckDestroy:             acctest.NoneLeft(fake, "secret", "team", "workspace"),
 		Steps: []resource.TestStep{
 			{
-				Config: secretBuiltIn("LINEAR_API_KEY", "lin_first", 1, secretLinear),
+				Config: secretFromTerraform("LINEAR_API_KEY", "lin_first", 1, secretLinear),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("address"), knownvalue.StringExact("LINEAR_API_KEY")),
 					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("value_wo"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("value_wo_version"), knownvalue.Int64Exact(1)),
-					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("source").AtMapKey("kind"), knownvalue.StringExact("built-in")),
 					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("bindings").AtSliceIndex(0).AtMapKey("location"), knownvalue.StringExact("header")),
 					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("bindings").AtSliceIndex(0).AtMapKey("name"), knownvalue.StringExact("authorization")),
 					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("rotated_at"), knownvalue.NotNull()),
@@ -106,15 +106,15 @@ func TestSecretIsWrittenButItsValueNeverStored(t *testing.T) {
 				),
 			},
 			{
-				Config:   secretBuiltIn("LINEAR_API_KEY", "lin_first", 1, secretLinear),
+				Config:   secretFromTerraform("LINEAR_API_KEY", "lin_first", 1, secretLinear),
 				PlanOnly: true,
 			},
 			{
-				Config:   secretBuiltIn("LINEAR_API_KEY", "lin_changed_but_not_versioned", 1, secretLinear),
+				Config:   secretFromTerraform("LINEAR_API_KEY", "lin_changed_but_not_versioned", 1, secretLinear),
 				PlanOnly: true,
 			},
 			{
-				Config: secretBuiltIn("LINEAR_API_KEY", "lin_second", 2, secretLinear),
+				Config: secretFromTerraform("LINEAR_API_KEY", "lin_second", 2, secretLinear),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(secretAddress, plancheck.ResourceActionUpdate)},
 				},
@@ -124,7 +124,7 @@ func TestSecretIsWrittenButItsValueNeverStored(t *testing.T) {
 				),
 			},
 			{
-				Config: secretBuiltIn("LINEAR_API_KEY", "lin_second", 2, secretLinearAndGitHub),
+				Config: secretFromTerraform("LINEAR_API_KEY", "lin_second", 2, secretLinearAndGitHub),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(secretAddress, plancheck.ResourceActionUpdate)},
 				},
@@ -152,7 +152,7 @@ func TestSecretIsWrittenButItsValueNeverStored(t *testing.T) {
 						fields["bindings"] = []any{}
 					})
 				},
-				Config: secretBuiltIn("LINEAR_API_KEY", "lin_second", 2, secretLinearAndGitHub),
+				Config: secretFromTerraform("LINEAR_API_KEY", "lin_second", 2, secretLinearAndGitHub),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(secretAddress, plancheck.ResourceActionUpdate)},
 				},
@@ -161,7 +161,7 @@ func TestSecretIsWrittenButItsValueNeverStored(t *testing.T) {
 				},
 			},
 			{
-				Config: secretBuiltIn("LINEAR_TOKEN", "lin_third", 1, secretLinear),
+				Config: secretFromTerraform("LINEAR_TOKEN", "lin_third", 1, secretLinear),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(secretAddress, plancheck.ResourceActionDestroyBeforeCreate)},
 				},
@@ -179,15 +179,15 @@ func TestSecretIsInjectedInAQueryParameter(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
 		Steps: []resource.TestStep{
 			{
-				Config:      secretBuiltIn("GOOGLE_MAPS_KEY", "maps_first", 1, `{ host = "maps.googleapis.com", location = "query" }`),
+				Config:      secretFromTerraform("GOOGLE_MAPS_KEY", "maps_first", 1, `{ host = "maps.googleapis.com", location = "query" }`),
 				ExpectError: regexp.MustCompile(`(?s)A query parameter must be named`),
 			},
 			{
-				Config:      secretBuiltIn("GOOGLE_MAPS_KEY", "maps_first", 1, `{ host = "maps.googleapis.com", location = "cookie", name = "key" }`),
+				Config:      secretFromTerraform("GOOGLE_MAPS_KEY", "maps_first", 1, `{ host = "maps.googleapis.com", location = "cookie", name = "key" }`),
 				ExpectError: regexp.MustCompile(`(?s)value must be one of`),
 			},
 			{
-				Config: secretBuiltIn("GOOGLE_MAPS_KEY", "maps_first", 1, secretMaps),
+				Config: secretFromTerraform("GOOGLE_MAPS_KEY", "maps_first", 1, secretMaps),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("bindings").AtSliceIndex(0).AtMapKey("location"), knownvalue.StringExact("query")),
 					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("bindings").AtSliceIndex(0).AtMapKey("name"), knownvalue.StringExact("key")),
@@ -195,7 +195,7 @@ func TestSecretIsInjectedInAQueryParameter(t *testing.T) {
 				},
 			},
 			{
-				Config:           secretBuiltIn("GOOGLE_MAPS_KEY", "maps_first", 1, secretMaps),
+				Config:           secretFromTerraform("GOOGLE_MAPS_KEY", "maps_first", 1, secretMaps),
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}},
 			},
 			{
@@ -205,7 +205,7 @@ func TestSecretIsInjectedInAQueryParameter(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
-				Config: secretBuiltIn("GOOGLE_MAPS_KEY", "maps_first", 1, `{ host = "maps.googleapis.com" }`),
+				Config: secretFromTerraform("GOOGLE_MAPS_KEY", "maps_first", 1, `{ host = "maps.googleapis.com" }`),
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 					plancheck.ExpectResourceAction(secretAddress, plancheck.ResourceActionUpdate),
 					plancheck.ExpectKnownValue(secretAddress, tfjsonpath.New("bindings").AtSliceIndex(0).AtMapKey("name"), knownvalue.StringExact("authorization")),
@@ -215,7 +215,7 @@ func TestSecretIsInjectedInAQueryParameter(t *testing.T) {
 				},
 			},
 			{
-				Config:           secretBuiltIn("GOOGLE_MAPS_KEY", "maps_first", 1, `{ host = "maps.googleapis.com" }`),
+				Config:           secretFromTerraform("GOOGLE_MAPS_KEY", "maps_first", 1, `{ host = "maps.googleapis.com" }`),
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}},
 			},
 		},
@@ -232,13 +232,13 @@ func TestSecretKeepsAHeaderNameAsWritten(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
 		Steps: []resource.TestStep{
 			{
-				Config: secretBuiltIn("EXAMPLE_API_KEY", "ex_first", 1, secretMixedCaseHeader),
+				Config: secretFromTerraform("EXAMPLE_API_KEY", "ex_first", 1, secretMixedCaseHeader),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("bindings").AtSliceIndex(0).AtMapKey("name"), knownvalue.StringExact("X-Api-Key")),
 				},
 			},
 			{
-				Config:           secretBuiltIn("EXAMPLE_API_KEY", "ex_first", 1, secretMixedCaseHeader),
+				Config:           secretFromTerraform("EXAMPLE_API_KEY", "ex_first", 1, secretMixedCaseHeader),
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}},
 			},
 			{
@@ -326,20 +326,15 @@ func TestSecretValidatesABindingNotYetKnown(t *testing.T) {
 	}
 }
 
-const secretFromAWS = `
+const secretSetOutsideTerraform = `
 resource "spotlight_secret" "linear_api_key" {
   workspace_id = spotlight_workspace.acme.id
   name         = "LINEAR_API_KEY"
-  source = {
-    kind      = "aws-secrets-manager"
-    secret_id = "linear/api"
-    field     = "token"
-  }
-  bindings = [{ host = "api.linear.app" }]
+  bindings     = [{ host = "api.linear.app" }]
 }
 `
 
-func TestSecretReadFromAWSTakesNoValue(t *testing.T) {
+func TestSecretWithNoValueTakesItsValueOutsideTerraform(t *testing.T) {
 	fake := fakeapi.New(t)
 
 	resource.UnitTest(t, resource.TestCase{
@@ -347,15 +342,14 @@ func TestSecretReadFromAWSTakesNoValue(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
 		Steps: []resource.TestStep{
 			{
-				Config: acctest.Workspace + secretFromAWS,
+				Config: acctest.Workspace + secretSetOutsideTerraform,
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("source").AtMapKey("secret_id"), knownvalue.StringExact("linear/api")),
 					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("value_wo_version"), knownvalue.Null()),
 				},
 				Check: secretStores(fake, ""),
 			},
 			{
-				Config:   acctest.Workspace + secretFromAWS,
+				Config:   acctest.Workspace + secretSetOutsideTerraform,
 				PlanOnly: true,
 			},
 			{
@@ -365,15 +359,57 @@ func TestSecretReadFromAWSTakesNoValue(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
-				Config:      acctest.Workspace + regexp.MustCompile(`bindings = `).ReplaceAllString(secretFromAWS, "value_wo = \"lin_nope\"\n  bindings = "),
-				ExpectError: regexp.MustCompile(`(?s)value_wo: is stored only by Spotlight`),
+				Config:      acctest.Workspace + strings.Replace(secretSetOutsideTerraform, "bindings ", "value_wo     = \"lin_nope\"\n  bindings ", 1),
+				ExpectError: regexp.MustCompile(`(?s)"?value_wo_version"?\s+must be specified when\s+"?value_wo"?`),
 			},
 			{
-				Config: secretBuiltIn("LINEAR_API_KEY", "lin_stored_now", 1, secretLinear),
+				Config:      acctest.Workspace + strings.Replace(secretSetOutsideTerraform, "bindings ", "value_wo_version = 1\n  bindings ", 1),
+				ExpectError: regexp.MustCompile(`(?s)"?value_wo"?\s+must be specified when\s+"?value_wo_version"?`),
+			},
+			{
+				Config: secretFromTerraform("LINEAR_API_KEY", "lin_from_terraform", 1, secretLinear),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(secretAddress, plancheck.ResourceActionUpdate)},
 				},
-				Check: secretStores(fake, "lin_stored_now"),
+				Check: secretStores(fake, "lin_from_terraform"),
+			},
+			{
+				Config: acctest.Workspace + secretSetOutsideTerraform,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(secretAddress, plancheck.ResourceActionUpdate)},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("value_wo_version"), knownvalue.Null()),
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					secretStores(fake, "lin_from_terraform"),
+					func(*terraform.State) error {
+						if sent, last := secretSentValue(fake); sent != 1 || last {
+							return fmt.Errorf("the value was sent %d times, the hand-over sending it %v; want once, not on the hand-over", sent, last)
+						}
+
+						return nil
+					},
+				),
+			},
+			{
+				PreConfig: func() {
+					fake.Change(fake.IDOf("secret", "LINEAR_API_KEY"), func(fields map[string]any) {
+						fields["rotatedAt"] = "2026-11-20T12:00:00Z"
+					})
+				},
+				Config:   acctest.Workspace + secretSetOutsideTerraform,
+				PlanOnly: true,
+			},
+			{
+				Config: secretFromTerraform("LINEAR_API_KEY", "lin_taken_back", 2, secretLinear),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(secretAddress, plancheck.ResourceActionUpdate)},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("value_wo_version"), knownvalue.Int64Exact(2)),
+				},
+				Check: secretStores(fake, "lin_taken_back"),
 			},
 		},
 	})
@@ -388,7 +424,7 @@ func TestSecretWritesNeedTheSecretsScope(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig:   func() { fake.Grant("configure", "runners") },
-				Config:      secretBuiltIn("LINEAR_API_KEY", "lin_first", 1, secretLinear),
+				Config:      secretFromTerraform("LINEAR_API_KEY", "lin_first", 1, secretLinear),
 				ExpectError: regexp.MustCompile(`(?s)Not allowed to change the secret.*lacks the secrets scope.*configure, secrets,\s+runners\s+and\s+trusts`),
 			},
 		},
@@ -410,16 +446,11 @@ resource "spotlight_secret" "stored" {
   value_wo_version = %[4]d
 }
 
-resource "spotlight_secret" "aws" {
+resource "spotlight_secret" "unset" {
   workspace_id = local.workspace_id
   name         = %[2]q
-  source = {
-    kind      = "aws-secrets-manager"
-    secret_id = "tf-acc/%[2]s"
-    field     = "token"
-  }
 }
-`, k.Secret, k.AWSSecret, bindings, version)
+`, k.Secret, k.UnsetSecret, bindings, version)
 }
 
 func secretAccVariables(value string) config.Variables {
@@ -446,12 +477,11 @@ func TestAccSecret(t *testing.T) {
 				ConfigVariables: secretAccVariables(first),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("spotlight_secret.stored", "address", k.Secret),
-					resource.TestCheckResourceAttr("spotlight_secret.stored", "source.kind", "built-in"),
 					resource.TestCheckResourceAttr("spotlight_secret.stored", "bindings.0.location", "header"),
 					resource.TestCheckResourceAttr("spotlight_secret.stored", "bindings.0.name", "authorization"),
 					resource.TestCheckResourceAttr("spotlight_secret.stored", "value_wo_version", "1"),
 					resource.TestCheckNoResourceAttr("spotlight_secret.stored", "value_wo"),
-					resource.TestCheckResourceAttr("spotlight_secret.aws", "source.secret_id", "tf-acc/"+k.AWSSecret),
+					resource.TestCheckNoResourceAttr("spotlight_secret.unset", "value_wo_version"),
 					acctest.NothingContains(acctest.Value(first)),
 				),
 			},
@@ -485,9 +515,9 @@ func TestAccSecret(t *testing.T) {
 				ConfigVariables:   secretAccVariables(second),
 			},
 			{
-				ResourceName:      "spotlight_secret.aws",
+				ResourceName:      "spotlight_secret.unset",
 				ImportState:       true,
-				ImportStateId:     acctest.ImportID(id, k.AWSSecret),
+				ImportStateId:     acctest.ImportID(id, k.UnsetSecret),
 				ImportStateVerify: true,
 				ConfigVariables:   secretAccVariables(second),
 			},
@@ -511,7 +541,7 @@ func TestSecretImportsByIdentity(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
 		Steps: []resource.TestStep{
 			{
-				Config:            secretBuiltIn("LINEAR_API_KEY", "lin_first", 1, secretLinearAndGitHub),
+				Config:            secretFromTerraform("LINEAR_API_KEY", "lin_first", 1, secretLinearAndGitHub),
 				ConfigStateChecks: acctest.ExpectIdentity(secretAddress),
 			},
 			acctest.ImportedByIdentity(secretAddress),

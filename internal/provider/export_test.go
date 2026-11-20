@@ -208,7 +208,6 @@ func seedExported(t *testing.T, cp acctest.ControlPlane, k acctest.Keys) (declar
 	value := acctest.RandomToken()
 	_, err := cp.Client.CreateSecret(ctx, cp.Workspace.ID, client.SecretInput{
 		Name:         k.Secret,
-		Source:       client.SecretSource{Kind: client.SourceBuiltIn},
 		Bindings:     []client.SecretBinding{{Host: "api.linear.app", Location: "header", Name: "authorization", Prefix: "Bearer "}},
 		Value:        &value,
 		ValueVersion: &version,
@@ -216,8 +215,7 @@ func seedExported(t *testing.T, cp acctest.ControlPlane, k acctest.Keys) (declar
 	must(err)
 
 	_, err = cp.Client.CreateSecret(ctx, cp.Workspace.ID, client.SecretInput{
-		Name:     k.AWSSecret,
-		Source:   client.SecretSource{Kind: client.SourceAWSSecretsManager, SecretID: "tf-acc/" + k.AWSSecret},
+		Name:     k.UnsetSecret,
 		Bindings: []client.SecretBinding{},
 	})
 	must(err)
@@ -333,7 +331,7 @@ func deleteSeeded(t *testing.T, cp acctest.ControlPlane, k acctest.Keys, declare
 }
 
 func createdFromScratch(imports map[string]string, workspace client.Workspace, k acctest.Keys, declares bool) []string {
-	names := []string{k.Secret, k.AWSSecret, k.Trust, k.Egress, k.Pool, k.PushPool, k.Team}
+	names := []string{k.Secret, k.UnsetSecret, k.Trust, k.Egress, k.Pool, k.PushPool, k.Team}
 	if declares {
 		names = append(names, workspace.Slug)
 	}

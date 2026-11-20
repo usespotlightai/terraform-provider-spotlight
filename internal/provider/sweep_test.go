@@ -152,10 +152,8 @@ func TestSweepersDeleteOnlyWhatAcceptanceTestsCreate(t *testing.T) {
 		acctest.Must(t, err)
 	}
 
-	for _, name := range []string{k.Secret, k.AWSSecret, "LINEAR_API_KEY"} {
-		_, err = api.CreateSecret(ctx, seeded.Workspace.ID, client.SecretInput{
-			Name: name, Source: client.SecretSource{Kind: client.SourceAWSSecretsManager, SecretID: "acme/" + name}, Bindings: []client.SecretBinding{},
-		})
+	for _, name := range []string{k.Secret, k.UnsetSecret, "LINEAR_API_KEY"} {
+		_, err = api.CreateSecret(ctx, seeded.Workspace.ID, client.SecretInput{Name: name, Bindings: []client.SecretBinding{}})
 		acctest.Must(t, err)
 	}
 

@@ -101,7 +101,7 @@ func ControlPlaneAt(ctx context.Context, slug string) (ControlPlane, error) {
 type Keys struct {
 	Team, Line, Skill, Integration, Profile string
 	Hook                                    string
-	Secret, AWSSecret                       string
+	Secret, UnsetSecret                     string
 	Trust, Pool, PushPool                   string
 	Egress                                  string
 	OidcTrust                               string
@@ -120,7 +120,7 @@ func RandomKeys() Keys {
 		Profile:     "careful-" + suffix,
 		Hook:        "audit-" + suffix,
 		Secret:      SecretPrefix + upper,
-		AWSSecret:   SecretPrefix + "AWS_" + upper,
+		UnsetSecret: SecretPrefix + "UNSET_" + upper,
 		Trust:       KeyPrefix + "cluster-" + suffix,
 		Pool:        KeyPrefix + "pool-" + suffix,
 		PushPool:    KeyPrefix + "push-" + suffix,
@@ -243,7 +243,7 @@ func (cp ControlPlane) created(k Keys) []sweepable {
 		sweepableOf("harness profile", api.ImportHarnessProfile, func(p client.HarnessProfile) client.Meta { return p.Meta }, api.DeleteHarnessProfile, id, inTeam(k.Profile)),
 		sweepableOf("team", api.ImportTeam, func(t client.Team) client.Meta { return t.Meta }, api.DeleteTeam, id, k.Team),
 		sweepableOf("secret", api.ImportSecret, func(s client.Secret) client.Meta { return s.Meta }, api.DeleteSecret, id, k.Secret),
-		sweepableOf("secret", api.ImportSecret, func(s client.Secret) client.Meta { return s.Meta }, api.DeleteSecret, id, k.AWSSecret),
+		sweepableOf("secret", api.ImportSecret, func(s client.Secret) client.Meta { return s.Meta }, api.DeleteSecret, id, k.UnsetSecret),
 		sweepableOf("runner trust", api.ImportRunnerTrust, func(t client.RunnerTrust) client.Meta { return t.Meta }, api.DeleteRunnerTrust, id, k.Trust),
 		sweepableOf("runner pool", api.ImportRunnerPool, func(p client.RunnerPool) client.Meta { return p.Meta }, api.DeleteRunnerPool, id, k.Pool),
 		sweepableOf("runner pool", api.ImportRunnerPool, func(p client.RunnerPool) client.Meta { return p.Meta }, api.DeleteRunnerPool, id, k.PushPool),

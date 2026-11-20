@@ -94,14 +94,6 @@ func stringsIn(values collection, diags *diag.Diagnostics) []string {
 	return out
 }
 
-func textOrNull(text string) types.String {
-	if text == "" {
-		return types.StringNull()
-	}
-
-	return types.StringValue(text)
-}
-
 func float64AsWritten(number float64) types.Float64 {
 	written, _, err := big.ParseFloat(strconv.FormatFloat(number, 'g', -1, 64), 10, 512, big.ToNearestEven)
 	if err != nil {

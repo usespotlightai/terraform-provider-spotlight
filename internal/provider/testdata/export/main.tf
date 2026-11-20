@@ -25,9 +25,6 @@ import {
 resource "spotlight_secret" "linear_api_key" {
   workspace_id = spotlight_workspace.acme.id
   name         = "LINEAR_API_KEY"
-  source = {
-    kind = "built-in"
-  }
   bindings = [
     {
       host     = "api.linear.app"
@@ -48,12 +45,7 @@ import {
 resource "spotlight_secret" "linear_signing" {
   workspace_id = spotlight_workspace.acme.id
   name         = "LINEAR_SIGNING"
-  source = {
-    field     = "secret"
-    kind      = "aws-secrets-manager"
-    secret_id = "linear/signing"
-  }
-  bindings = []
+  bindings     = []
 }
 
 import {

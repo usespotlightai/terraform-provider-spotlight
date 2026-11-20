@@ -50,16 +50,29 @@ resource "spotlight_secret" "google_maps_key" {
   value_wo_version = 1
 }
 
-# This secret has no value because Spotlight reads it from AWS Secrets Manager
-# each time it uses it.
+# Terraform does not set this value. A person sets it on the Secrets settings
+# page or with spotlight secret set LINEAR_SIGNING. Until then, a run that
+# needs the secret does not start.
 resource "spotlight_secret" "linear_signing" {
   workspace_id = spotlight_workspace.acme.id
   name         = "LINEAR_SIGNING"
-  source = {
-    kind      = "aws-secrets-manager"
-    secret_id = "linear/signing"
-    field     = "secret"
-  }
+}
+
+# Terraform reads this value from AWS Secrets Manager. The value never enters
+# the plan or the state. Change value_wo_version after you rotate the value in
+# AWS, so Terraform sends the new value.
+ephemeral "aws_secretsmanager_secret_version" "sentry_auth_token" {
+  secret_id = "sentry/auth-token"
+}
+
+resource "spotlight_secret" "sentry_auth_token" {
+  workspace_id = spotlight_workspace.acme.id
+  name         = "SENTRY_AUTH_TOKEN"
+  bindings = [
+    { host = "sentry.io", prefix = "Bearer " },
+  ]
+  value_wo         = ephemeral.aws_secretsmanager_secret_version.sentry_auth_token.secret_string
+  value_wo_version = 1
 }
 ```
 
@@ -76,9 +89,8 @@ resource "spotlight_secret" "linear_signing" {
 > **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
 
 - `bindings` (Attributes List) The only hosts the secret is ever sent to, and where Spotlight injects it there; a request anywhere else goes without it. (see [below for nested schema](#nestedatt--bindings))
-- `source` (Attributes) Where the value lives: stored by Spotlight (`built-in`, the default) or read from AWS Secrets Manager whenever it is used. (see [below for nested schema](#nestedatt--source))
-- `value_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The value Spotlight stores, usually read from a sensitive variable. A secret read from AWS Secrets Manager takes none. It is sent to Spotlight and never stored in the plan or the state, so it needs Terraform 1.11 or later; change `value_wo_version` to send it again.
-- `value_wo_version` (Number) Any number; change it whenever `value_wo` changes, so Terraform sends the new value.
+- `value_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The value Spotlight stores, usually read from a sensitive variable. Leave it and `value_wo_version` out to set the value in the app or with `spotlight secret set` instead; removing both keeps the stored value until a person replaces it. It is sent to Spotlight and never stored in the plan or the state, so it needs Terraform 1.11 or later; change `value_wo_version` to send it again.
+- `value_wo_version` (Number) Any number, set exactly when `value_wo` is set; change it whenever `value_wo` changes, so Terraform sends the new value.
 
 ### Read-Only
 
@@ -99,19 +111,6 @@ Optional:
 - `location` (String) Whether Spotlight injects the secret in a request header or in a query parameter: `header` (the default) or `query`.
 - `name` (String) The header or query parameter that Spotlight injects the secret in. A header defaults to `authorization`; Spotlight stores a header name in lower case. A query parameter must be named.
 - `prefix` (String) The text that Spotlight writes before the value, as in `Bearer `.
-
-
-<a id="nestedatt--source"></a>
-### Nested Schema for `source`
-
-Required:
-
-- `kind` (String) `built-in` or `aws-secrets-manager`.
-
-Optional:
-
-- `field` (String) The key to read when the AWS secret contains JSON.
-- `secret_id` (String) The name or ARN of the secret in AWS Secrets Manager.
 
 ## Import
 

@@ -19,7 +19,6 @@ var (
 	rule          = regexp.MustCompile(`(?s)^([a-z]+)(?:\((.*)\))?$`)
 	envName       = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
 	bare          = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_-]*$`)
-	awsSecret     = regexp.MustCompile(`^[A-Za-z0-9/_+=.@:-]+$`)
 	hostShape     = regexp.MustCompile(`^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$`)
 	headerName    = regexp.MustCompile("^[!#$%&'*+.^_`|~0-9a-z-]{1,128}$")
 	queryName     = regexp.MustCompile(`^[A-Za-z0-9._~-]{1,128}$`)
@@ -81,23 +80,6 @@ func secret(body map[string]any) (map[string]any, []fieldError) {
 		errs = append(errs, fieldError{"name", "is upper case letters, digits and underscores, as in LINEAR_API_KEY"})
 	}
 
-	input, _ := body["source"].(map[string]any)
-	source := map[string]any{"kind": "built-in", "secretId": nil, "field": nil}
-	if kind, _ := input["kind"].(string); kind == "aws-secrets-manager" {
-		source["kind"] = kind
-		secretID, _ := input["secretId"].(string)
-		secretID = strings.TrimSpace(secretID)
-		if !awsSecret.MatchString(secretID) || len(secretID) > 2048 {
-			errs = append(errs, fieldError{"source.secretId", "is the name or ARN of the secret in AWS Secrets Manager, as in arn:aws:secretsmanager:eu-west-1:123456789012:secret:linear-api-key"})
-		}
-		source["secretId"] = secretID
-		if field, _ := input["field"].(string); field != "" {
-			source["field"] = field
-		}
-	} else if kind != "" && kind != "built-in" {
-		errs = append(errs, fieldError{"source.kind", "is built-in or aws-secrets-manager"})
-	}
-
 	listed, _ := body["bindings"].([]any)
 	if len(listed) > 32 {
 		errs = append(errs, fieldError{"bindings", "names more than 32 hosts; a secret goes to the few hosts that accept it"})
@@ -151,7 +133,7 @@ func secret(body map[string]any) (map[string]any, []fieldError) {
 		version = number
 	}
 
-	return map[string]any{"name": name, "source": source, "bindings": bindings, "valueWoVersion": version}, errs
+	return map[string]any{"name": name, "bindings": bindings, "valueWoVersion": version}, errs
 }
 
 func written(kind string, existing *resource, fields, body map[string]any) (string, []fieldError) {
@@ -173,22 +155,20 @@ func written(kind string, existing *resource, fields, body map[string]any) (stri
 
 func secretValue(existing *resource, fields, body map[string]any) (string, []fieldError) {
 	value, present := body["valueWo"].(string)
-	builtIn := objectOf(fields["source"])["kind"] == "built-in"
+	version := fields["valueWoVersion"]
 
-	switch {
-	case !builtIn && present:
-		return "", []fieldError{{"valueWo", "is stored only by Spotlight; a secret read from AWS Secrets Manager is set there"}}
-	case !builtIn:
-		fields["rotatedAt"] = rotatedAt(existing)
-		return "", nil
+	if present && version == nil {
+		return "", []fieldError{{"valueWo", "is set only together with valueWoVersion. Leave both out to set the value outside Terraform"}}
 	}
 
-	needed := existing == nil ||
-		objectOf(existing.fields["source"])["kind"] != "built-in" ||
-		existing.fields["valueWoVersion"] != fields["valueWoVersion"]
+	needed := version != nil && (existing == nil || existing.fields["valueWoVersion"] != version)
+
+	if needed && !present && existing == nil {
+		return "", []fieldError{{"valueWo", "is required when valueWoVersion is set"}}
+	}
 
 	if needed && !present {
-		return "", []fieldError{{"valueWo", "is the value Spotlight stores; it is written once and never read back"}}
+		return "", []fieldError{{"valueWo", "is required when valueWoVersion changes"}}
 	}
 
 	if !needed {
