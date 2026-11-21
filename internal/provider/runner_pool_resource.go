@@ -102,7 +102,7 @@ func runnerPoolSchema() schema.Schema {
 	provision["egress"] = schema.StringAttribute{
 		Optional: true,
 		MarkdownDescription: "The egress the pool's runners send their traffic through: `" + client.PlatformEgress + "` for the egress that Spotlight operates, " +
-			"or the `id` of a `spotlight_egress` in the workspace. Left out, the runners have no egress, and Spotlight does not send to the pool a run that uses secrets or the Spotlight API. " +
+			"or the `id` of a `spotlight_egress` in the workspace. Left out, the runners have no egress, and Spotlight does not send to the pool a run whose secrets egress injects, or that uses the Spotlight API. " +
 			"Changing it updates the pool in place.",
 	}
 	provision["egress_traffic"] = schema.StringAttribute{

@@ -199,7 +199,7 @@ func TestHarnessProfileProblemsInsideMapsAndNativeNameTheirKeys(t *testing.T) {
 	fake := fakeapi.New(t)
 
 	for written, says := range map[string]string{
-		strings.Replace(harnessProfileExported, "LINEAR_WORKSPACE", `"LINEAR WORKSPACE"`, 1):                                         `mcp_servers\[0\]\.env\["LINEAR WORKSPACE"\]: names an environment variable`,
+		strings.Replace(harnessProfileExported, "LINEAR_WORKSPACE", `"LINEAR WORKSPACE"`, 1):                                         `mcp_servers\[0\]\.env\["LINEAR WORKSPACE"\]: environment variable names must use`,
 		strings.Replace(harnessProfileExported, "codex =", "gemini =", 1):                                                            `native\.gemini: names no harness Spotlight runs`,
 		strings.Replace(harnessProfileExported, `codex = "model_verbosity = \"low\"\n"`, "codex = { model_verbosity = \"low\" }", 1): `native\.codex: is the harness's own config\.toml, as text`,
 		strings.Replace(harnessProfileExported, `["STAGING_VIEWER"]`, `["STAGING_VIEWER", "STAGING_VIEWER"]`, 1):                     `secrets\[1\]: lists secret STAGING_VIEWER twice`,

@@ -2067,7 +2067,7 @@ type HarnessProfileResourceResponseDto struct {
 	// Address Names the resource within its workspace; terraform import takes it
 	Address string `json:"address"`
 
-	// Env Environment variables that the runs of this profile get, each the real value of a workspace secret, as in GITHUB_APP_PRIVATE_KEY = DEV_GITHUB_APP_KEY. The agent and every process in the sandbox can read the value, so name only secrets made for this. Each secret must have sandbox = "env". PATH, HOME, SPOTLIGHT_ variables, the proxy variables and the CA variables are set by the runner and are refused.
+	// Env Environment variables that the runs of this profile get, each the real value of a workspace secret, as in GITHUB_APP_PRIVATE_KEY = DEV_GITHUB_APP_KEY. The agent and every process in the sandbox can read the value, so name only secrets made for this. Each secret must have sandbox = "env". The runner sets PATH, HOME, USER, LOGNAME, SHELL, TERM, COLORTERM, the SPOTLIGHT_ variables, the proxy variables and the CA variables, so these are refused, in any case. A variable that a harness sets itself, such as ANTHROPIC_API_KEY, and TRACEPARENT, which the harness command sets on every run, are refused too.
 	Env map[string]string `json:"env"`
 
 	// Id Issued by Spotlight when the resource is created, and never changed
@@ -2623,7 +2623,7 @@ type SecretResourceResponseDto struct {
 	// RotatedAt When the value was last set; not settable
 	RotatedAt string `json:"rotatedAt"`
 
-	// Sandbox Whether a run can get the value itself: stand-in (the default) keeps the value out of every sandbox, and egress puts it only in requests to the bound hosts; env lets a harness profile give the value to its runs as an environment variable, where the agent and every process in the sandbox can read it
+	// Sandbox Whether a run can get the value itself: stand-in (the default) keeps the value out of every sandbox, and egress puts it only in requests to the bound hosts; env lets a harness profile give the value to its runs as an environment variable, where the agent and every process in the sandbox can read it. With env, the value must have at least 8 characters that are not whitespace and no NUL byte, and the secret cannot go back to stand-in while a harness profile names it in env
 	Sandbox SecretSandbox `json:"sandbox"`
 
 	// ValueWoVersion Changing it rotates the value to the valueWo sent with it; the value itself is write-only and never returned
@@ -2639,7 +2639,7 @@ type SecretResourceResponseDto struct {
 	WorkspaceId string `json:"workspaceId"`
 }
 
-// SecretSandbox Whether a run can get the value itself: stand-in (the default) keeps the value out of every sandbox, and egress puts it only in requests to the bound hosts; env lets a harness profile give the value to its runs as an environment variable, where the agent and every process in the sandbox can read it
+// SecretSandbox Whether a run can get the value itself: stand-in (the default) keeps the value out of every sandbox, and egress puts it only in requests to the bound hosts; env lets a harness profile give the value to its runs as an environment variable, where the agent and every process in the sandbox can read it. With env, the value must have at least 8 characters that are not whitespace and no NUL byte, and the secret cannot go back to stand-in while a harness profile names it in env
 type SecretSandbox string
 
 // SkillResourceListResponseDto defines model for SkillResourceListResponseDto.
@@ -2889,7 +2889,7 @@ type ReadHarnessProfileParamsSpotlightApiVersion string
 
 // UpdateHarnessProfileJSONBody defines parameters for UpdateHarnessProfile.
 type UpdateHarnessProfileJSONBody struct {
-	// Env Environment variables that the runs of this profile get, each the real value of a workspace secret, as in GITHUB_APP_PRIVATE_KEY = DEV_GITHUB_APP_KEY. The agent and every process in the sandbox can read the value, so name only secrets made for this. Each secret must have sandbox = "env". PATH, HOME, SPOTLIGHT_ variables, the proxy variables and the CA variables are set by the runner and are refused.
+	// Env Environment variables that the runs of this profile get, each the real value of a workspace secret, as in GITHUB_APP_PRIVATE_KEY = DEV_GITHUB_APP_KEY. The agent and every process in the sandbox can read the value, so name only secrets made for this. Each secret must have sandbox = "env". The runner sets PATH, HOME, USER, LOGNAME, SHELL, TERM, COLORTERM, the SPOTLIGHT_ variables, the proxy variables and the CA variables, so these are refused, in any case. A variable that a harness sets itself, such as ANTHROPIC_API_KEY, and TRACEPARENT, which the harness command sets on every run, are refused too.
 	Env        *map[string]string `json:"env,omitempty"`
 	Key        string             `json:"key"`
 	McpServers *[]struct {
@@ -3208,7 +3208,7 @@ type UpdateRunnerPoolJSONBody struct {
 
 	// Provision Makes the pool push: Spotlight calls url with each run it is to serve, and the pool has no token. Immutable
 	Provision *struct {
-		// Egress The egress the pool’s runners send their traffic through: spotlight for the platform egress, or the id of an egress in the workspace. Left out, the runners have no egress, and runs that use secrets or the Spotlight API do not go to the pool
+		// Egress The egress the pool’s runners send their traffic through: spotlight for the platform egress, or the id of an egress in the workspace. Left out, the runners have no egress, and runs whose secrets egress injects, or that use the Spotlight API, do not go to the pool
 		Egress *string `json:"egress,omitempty"`
 
 		// EgressTraffic Which traffic of a run goes through the egress. all: every connection, so egress records every host and its allow-list applies to all of them. bound: only the traffic to hosts that a secret of the run is bound to; other traffic goes directly. Only with egress
@@ -3337,7 +3337,7 @@ type UpdateSecretJSONBody struct {
 	} `json:"bindings,omitempty"`
 	Name string `json:"name"`
 
-	// Sandbox Whether a run can get the value itself: stand-in (the default) keeps the value out of every sandbox, and egress puts it only in requests to the bound hosts; env lets a harness profile give the value to its runs as an environment variable, where the agent and every process in the sandbox can read it
+	// Sandbox Whether a run can get the value itself: stand-in (the default) keeps the value out of every sandbox, and egress puts it only in requests to the bound hosts; env lets a harness profile give the value to its runs as an environment variable, where the agent and every process in the sandbox can read it. With env, the value must have at least 8 characters that are not whitespace and no NUL byte, and the secret cannot go back to stand-in while a harness profile names it in env
 	Sandbox *UpdateSecretJSONBodySandbox `json:"sandbox,omitempty"`
 
 	// ValueWo The value to store, sent only together with valueWoVersion, and never returned. Leave out both to set the value outside Terraform
@@ -3466,7 +3466,7 @@ type UpdateTeamParamsSpotlightApiVersion string
 
 // CreateHarnessProfileJSONBody defines parameters for CreateHarnessProfile.
 type CreateHarnessProfileJSONBody struct {
-	// Env Environment variables that the runs of this profile get, each the real value of a workspace secret, as in GITHUB_APP_PRIVATE_KEY = DEV_GITHUB_APP_KEY. The agent and every process in the sandbox can read the value, so name only secrets made for this. Each secret must have sandbox = "env". PATH, HOME, SPOTLIGHT_ variables, the proxy variables and the CA variables are set by the runner and are refused.
+	// Env Environment variables that the runs of this profile get, each the real value of a workspace secret, as in GITHUB_APP_PRIVATE_KEY = DEV_GITHUB_APP_KEY. The agent and every process in the sandbox can read the value, so name only secrets made for this. Each secret must have sandbox = "env". The runner sets PATH, HOME, USER, LOGNAME, SHELL, TERM, COLORTERM, the SPOTLIGHT_ variables, the proxy variables and the CA variables, so these are refused, in any case. A variable that a harness sets itself, such as ANTHROPIC_API_KEY, and TRACEPARENT, which the harness command sets on every run, are refused too.
 	Env        *map[string]string `json:"env,omitempty"`
 	Key        string             `json:"key"`
 	McpServers *[]struct {
@@ -4021,7 +4021,7 @@ type CreateRunnerPoolJSONBody struct {
 
 	// Provision Makes the pool push: Spotlight calls url with each run it is to serve, and the pool has no token. Immutable
 	Provision *struct {
-		// Egress The egress the pool’s runners send their traffic through: spotlight for the platform egress, or the id of an egress in the workspace. Left out, the runners have no egress, and runs that use secrets or the Spotlight API do not go to the pool
+		// Egress The egress the pool’s runners send their traffic through: spotlight for the platform egress, or the id of an egress in the workspace. Left out, the runners have no egress, and runs whose secrets egress injects, or that use the Spotlight API, do not go to the pool
 		Egress *string `json:"egress,omitempty"`
 
 		// EgressTraffic Which traffic of a run goes through the egress. all: every connection, so egress records every host and its allow-list applies to all of them. bound: only the traffic to hosts that a secret of the run is bound to; other traffic goes directly. Only with egress
@@ -4150,7 +4150,7 @@ type CreateSecretJSONBody struct {
 	} `json:"bindings,omitempty"`
 	Name string `json:"name"`
 
-	// Sandbox Whether a run can get the value itself: stand-in (the default) keeps the value out of every sandbox, and egress puts it only in requests to the bound hosts; env lets a harness profile give the value to its runs as an environment variable, where the agent and every process in the sandbox can read it
+	// Sandbox Whether a run can get the value itself: stand-in (the default) keeps the value out of every sandbox, and egress puts it only in requests to the bound hosts; env lets a harness profile give the value to its runs as an environment variable, where the agent and every process in the sandbox can read it. With env, the value must have at least 8 characters that are not whitespace and no NUL byte, and the secret cannot go back to stand-in while a harness profile names it in env
 	Sandbox *CreateSecretJSONBodySandbox `json:"sandbox,omitempty"`
 
 	// ValueWo The value to store, sent only together with valueWoVersion, and never returned. Leave out both to set the value outside Terraform

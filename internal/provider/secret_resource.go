@@ -136,7 +136,7 @@ func secretSchema() schema.Schema {
 		Default:  stringdefault.StaticString(sandboxStandIn),
 		MarkdownDescription: "Whether a run can get the value itself. `stand-in` (the default) keeps the value out of every sandbox, and egress puts it only in the requests to the bound hosts. " +
 			"`env` lets a harness profile give the value to its runs as an environment variable, through its `env`, where the agent and every process in the sandbox can read it. " +
-			"A secret cannot go back to `stand-in` while a harness profile names it in `env`.",
+			"With `env`, the value must have at least 8 characters that are not whitespace, and no NUL byte. A secret cannot go back to `stand-in` while a harness profile names it in `env`.",
 		Validators: []validator.String{stringvalidator.OneOf(sandboxStandIn, sandboxEnv)},
 	}
 	attributes["rotated_at"] = schema.StringAttribute{

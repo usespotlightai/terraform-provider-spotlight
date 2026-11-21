@@ -151,7 +151,8 @@ func harnessProfileSchema() schema.Schema {
 				"Each secret must exist, and cannot be deleted while a profile names it. While a secret has no value, the answer warns, and runs with this profile do not start."),
 			"env": stringMapAttribute("Environment variables that the runs of this profile get, each set to the value of a workspace secret, by name, as in `{ GITHUB_APP_PRIVATE_KEY = spotlight_secret.dev_github_app_key.name }`. " +
 				"The agent and every process in the sandbox can read the value, so name only secrets made for this. Each secret must exist and have `sandbox = \"env\"`, and cannot be deleted while a profile names it. " +
-				"`PATH`, `HOME`, `SPOTLIGHT_` variables, the proxy variables and the CA variables are set by the runner and are refused."),
+				"The runner sets `PATH`, `HOME`, `USER`, `LOGNAME`, `SHELL`, `TERM`, `COLORTERM`, the `SPOTLIGHT_` variables, the proxy variables and the CA variables, so these are refused, in any case. " +
+				"A variable that a harness sets itself, such as `ANTHROPIC_API_KEY`, and `TRACEPARENT`, which the harness command sets on every run, are refused too."),
 		},
 	}
 }
