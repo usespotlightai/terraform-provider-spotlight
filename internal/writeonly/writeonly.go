@@ -47,10 +47,6 @@ var ProvisionSecret = Field{Within: "provision", Name: "secret", Version: "secre
 // SigningSecret is the HMAC secret that a hook signs its requests with.
 var SigningSecret = Field{Within: "signing", Name: "secret_wo", Version: "secret_wo_version", FromOne: true}
 
-// InferenceAPIKey is the API key that Spotlight sends to an inference
-// endpoint. Spotlight holds a key exactly when it holds a version.
-var InferenceAPIKey = Field{Name: "api_key_wo", Version: "api_key_wo_version", Paired: true}
-
 // Path returns the Terraform path of the write-only attribute.
 func (f Field) Path() path.Path {
 	return f.at(f.Name)
