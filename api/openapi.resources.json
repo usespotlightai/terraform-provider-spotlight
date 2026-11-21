@@ -4253,16 +4253,6 @@
               }
             }
           },
-          "403": {
-            "description": "The workspace’s plan does not include the catalog-tool; the detail names the plan that it requires",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemResponseDto"
-                }
-              }
-            }
-          },
           "404": {
             "description": "No such catalog-tool, or no workspace here that you may see",
             "content": {
@@ -4289,7 +4279,7 @@
             "bearer": []
           }
         ],
-        "summary": "Resolve a catalog tool by name and version constraint, if the workspace’s plan includes it",
+        "summary": "Resolve a catalog tool by name and version constraint",
         "tags": [
           "catalog"
         ],
@@ -4384,16 +4374,6 @@
               }
             }
           },
-          "403": {
-            "description": "The workspace’s plan does not include the catalog-skill; the detail names the plan that it requires",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemResponseDto"
-                }
-              }
-            }
-          },
           "404": {
             "description": "No such catalog-skill, or no workspace here that you may see",
             "content": {
@@ -4420,7 +4400,7 @@
             "bearer": []
           }
         ],
-        "summary": "Resolve a catalog skill by name and version constraint, if the workspace’s plan includes it",
+        "summary": "Resolve a catalog skill by name and version constraint",
         "tags": [
           "catalog"
         ],
@@ -13968,16 +13948,6 @@
             "example": "~> 1.0",
             "description": "The constraint it was resolved against"
           },
-          "plan": {
-            "type": "string",
-            "example": "team",
-            "enum": [
-              "free",
-              "team",
-              "enterprise"
-            ],
-            "description": "The lowest plan that includes the item"
-          },
           "description": {
             "type": "string",
             "example": "Search the web, and answer with the pages…"
@@ -13988,7 +13958,6 @@
           "name",
           "version",
           "constraint",
-          "plan",
           "description"
         ]
       },
@@ -14014,16 +13983,6 @@
             "example": "~> 1.0",
             "description": "The constraint it was resolved against"
           },
-          "plan": {
-            "type": "string",
-            "example": "team",
-            "enum": [
-              "free",
-              "team",
-              "enterprise"
-            ],
-            "description": "The lowest plan that includes the item"
-          },
           "description": {
             "type": "string",
             "example": "Search the web, and answer with the pages…"
@@ -14045,7 +14004,6 @@
           "name",
           "version",
           "constraint",
-          "plan",
           "description",
           "tools"
         ]

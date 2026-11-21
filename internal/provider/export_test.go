@@ -252,6 +252,8 @@ func seedExported(t *testing.T, cp acctest.ControlPlane, k acctest.Keys) (declar
 		Permissions: client.Permissions{Allow: []string{"read"}, Ask: []string{}, Deny: []string{"read(.env)"}},
 		MCPServers:  []client.MCPServer{{Name: "linear", Command: "npx", Args: []string{"-y", "linear-mcp"}, Env: map[string]string{"LINEAR_WORKSPACE": "tf-acc"}}},
 		Native:      map[string]any{"claude-code": map[string]any{"includeCoAuthoredBy": false}},
+		Secrets:     []string{},
+		Env:         map[string]string{},
 	})
 	must(err)
 
