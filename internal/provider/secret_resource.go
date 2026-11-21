@@ -47,6 +47,7 @@ type SecretResourceModel struct {
 	WorkspaceID  types.String    `tfsdk:"workspace_id"`
 	Name         types.String    `tfsdk:"name"`
 	Bindings     []secretBinding `tfsdk:"bindings"`
+	Sandbox      types.String    `tfsdk:"sandbox"`
 	Value        types.String    `tfsdk:"value_wo"`
 	ValueVersion types.Int64     `tfsdk:"value_wo_version"`
 	RotatedAt    types.String    `tfsdk:"rotated_at"`
@@ -69,6 +70,11 @@ var secretBindingType = types.ObjectType{AttrTypes: map[string]attr.Type{
 const (
 	locationHeader = "header"
 	locationQuery  = "query"
+)
+
+const (
+	sandboxStandIn = "stand-in"
+	sandboxEnv     = "env"
 )
 
 var secretFields = fieldpath.Locator{Schema: secretSchema().Type()}
@@ -123,6 +129,15 @@ func secretSchema() schema.Schema {
 				},
 			},
 		},
+	}
+	attributes["sandbox"] = schema.StringAttribute{
+		Optional: true,
+		Computed: true,
+		Default:  stringdefault.StaticString(sandboxStandIn),
+		MarkdownDescription: "Whether a run can get the value itself. `stand-in` (the default) keeps the value out of every sandbox, and egress puts it only in the requests to the bound hosts. " +
+			"`env` lets a harness profile give the value to its runs as an environment variable, through its `env`, where the agent and every process in the sandbox can read it. " +
+			"With `env`, the value must have at least 8 characters that are not whitespace, and no NUL byte. A secret cannot go back to `stand-in` while a harness profile names it in `env`.",
+		Validators: []validator.String{stringvalidator.OneOf(sandboxStandIn, sandboxEnv)},
 	}
 	attributes["rotated_at"] = schema.StringAttribute{
 		Computed:            true,
@@ -313,6 +328,7 @@ func secretInput(plan SecretResourceModel) client.SecretInput {
 	in := client.SecretInput{
 		Name:     plan.Name.ValueString(),
 		Bindings: make([]client.SecretBinding, 0, len(plan.Bindings)),
+		Sandbox:  plan.Sandbox.ValueString(),
 	}
 
 	for _, each := range plan.Bindings {
@@ -359,6 +375,7 @@ func secretSettable(s client.Secret) any {
 	return map[string]any{
 		"name":           s.Name,
 		"bindings":       s.Bindings,
+		"sandbox":        s.Sandbox,
 		"valueWoVersion": s.ValueVersion,
 	}
 }
@@ -371,6 +388,7 @@ func secretModel(secret client.Secret, prior *SecretResourceModel) SecretResourc
 		WorkspaceID:  types.StringValue(secret.WorkspaceID),
 		Name:         types.StringValue(secret.Name),
 		Bindings:     make([]secretBinding, 0, len(secret.Bindings)),
+		Sandbox:      types.StringValue(secret.Sandbox),
 		Value:        types.StringNull(),
 		ValueVersion: types.Int64PointerValue(secret.ValueVersion),
 		RotatedAt:    types.StringValue(secret.RotatedAt),
@@ -388,6 +406,7 @@ func secretModel(secret client.Secret, prior *SecretResourceModel) SecretResourc
 	if prior != nil {
 		model.Name = prior.Name
 		model.Bindings = prior.Bindings
+		model.Sandbox = prior.Sandbox
 		model.ValueVersion = prior.ValueVersion
 	}
 

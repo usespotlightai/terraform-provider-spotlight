@@ -13,18 +13,19 @@ import (
 )
 
 var (
-	wordsShape    = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
-	secretName    = regexp.MustCompile(`^[A-Z][A-Z0-9_]{0,63}$`)
-	runnerKey     = regexp.MustCompile(`^[A-Za-z0-9._~-]{32,255}$`)
-	rule          = regexp.MustCompile(`(?s)^([a-z]+)(?:\((.*)\))?$`)
-	envName       = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
-	bare          = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_-]*$`)
-	hostShape     = regexp.MustCompile(`^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$`)
-	headerName    = regexp.MustCompile("^[!#$%&'*+.^_`|~0-9a-z-]{1,128}$")
-	queryName     = regexp.MustCompile(`^[A-Za-z0-9._~-]{1,128}$`)
-	prefixText    = regexp.MustCompile(`^[\x20-\x7e]{0,64}$`)
-	neverInjected = []string{"host", "content-length", "content-type", "transfer-encoding", "connection", "upgrade", "te", "trailer"}
-	harnesses     = map[string]string{"claude-code": "json", "cursor": "json", "codex": "toml"}
+	wordsShape      = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
+	secretName      = regexp.MustCompile(`^[A-Z][A-Z0-9_]{0,63}$`)
+	runnerKey       = regexp.MustCompile(`^[A-Za-z0-9._~-]{32,255}$`)
+	rule            = regexp.MustCompile(`(?s)^([a-z]+)(?:\((.*)\))?$`)
+	envName         = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
+	bare            = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_-]*$`)
+	hostShape       = regexp.MustCompile(`^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$`)
+	headerName      = regexp.MustCompile("^[!#$%&'*+.^_`|~0-9a-z-]{1,128}$")
+	queryName       = regexp.MustCompile(`^[A-Za-z0-9._~-]{1,128}$`)
+	prefixText      = regexp.MustCompile(`^[\x20-\x7e]{0,64}$`)
+	neverInjected   = []string{"host", "content-length", "content-type", "transfer-encoding", "connection", "upgrade", "te", "trailer"}
+	harnesses       = map[string]string{"claude-code": "json", "cursor": "json", "codex": "toml"}
+	runnerVariables = []string{"ALL_PROXY", "COLORTERM", "CURL_CA_BUNDLE", "GIT_SSL_CAINFO", "HOME", "HTTPS_PROXY", "HTTP_PROXY", "LOGNAME", "NODE_EXTRA_CA_CERTS", "NODE_USE_ENV_PROXY", "NO_PROXY", "PATH", "REQUESTS_CA_BUNDLE", "SHELL", "SSL_CERT_DIR", "SSL_CERT_FILE", "TERM", "USER"}
 )
 
 const longestWords = 64
@@ -77,7 +78,7 @@ func secret(body map[string]any) (map[string]any, []fieldError) {
 
 	name, _ := body["name"].(string)
 	if !secretName.MatchString(name) {
-		errs = append(errs, fieldError{"name", "is upper case letters, digits and underscores, as in LINEAR_API_KEY"})
+		errs = append(errs, fieldError{"name", "must use only capitals, digits and underscores, such as LINEAR_WEBHOOK_SECRET"})
 	}
 
 	listed, _ := body["bindings"].([]any)
@@ -128,12 +129,20 @@ func secret(body map[string]any) (map[string]any, []fieldError) {
 		bindings = append(bindings, map[string]any{"host": host, "location": location, "name": name, "prefix": prefix})
 	}
 
+	sandbox, ok := body["sandbox"].(string)
+	if !ok {
+		sandbox = "stand-in"
+	}
+	if sandbox != "stand-in" && sandbox != "env" {
+		errs = append(errs, fieldError{"sandbox", "is stand-in or env"})
+	}
+
 	var version any
 	if number, ok := body["valueWoVersion"].(float64); ok {
 		version = number
 	}
 
-	return map[string]any{"name": name, "bindings": bindings, "valueWoVersion": version}, errs
+	return map[string]any{"name": name, "bindings": bindings, "sandbox": sandbox, "valueWoVersion": version}, errs
 }
 
 func written(kind string, existing *resource, fields, body map[string]any) (string, []fieldError) {
@@ -583,7 +592,7 @@ func harnessProfile(body map[string]any) (map[string]any, []fieldError) {
 		orDefault(server, "env", map[string]any{})
 		for variable := range objectOf(server["env"]) {
 			if !envName.MatchString(variable) {
-				errs = append(errs, fieldError{keyed(at+".env", variable), "names an environment variable in letters, digits and underscores"})
+				errs = append(errs, fieldError{keyed(at+".env", variable), "environment variable names must use letters, digits and underscores"})
 			}
 		}
 		server["name"], server["command"], server["args"] = name, strings.TrimSpace(command), texts(server["args"])
@@ -601,14 +610,32 @@ func harnessProfile(body map[string]any) (map[string]any, []fieldError) {
 	for at, each := range secrets {
 		path := fmt.Sprintf("secrets[%d]", at)
 		if !secretName.MatchString(textOf(each)) {
-			errs = append(errs, fieldError{path, fmt.Sprintf("names secret %s, but a secret name is upper case letters, digits and underscores, as in LINEAR_API_KEY", textOf(each))})
+			errs = append(errs, fieldError{path, fmt.Sprintf("names secret %s, but a secret name must use only capitals, digits and underscores, such as LINEAR_WEBHOOK_SECRET", textOf(each))})
 		}
 		if slices.Contains(secrets[:at], each) {
 			errs = append(errs, fieldError{path, fmt.Sprintf("lists secret %s twice", textOf(each))})
 		}
 	}
 
-	return map[string]any{"key": key, "permissions": permissions, "mcpServers": servers, "native": native, "secrets": secrets}, errs
+	env := objectOf(body["env"])
+	if env == nil {
+		env = map[string]any{}
+	}
+	for _, variable := range slices.Sorted(maps.Keys(env)) {
+		path := keyed("env", variable)
+		named := textOf(env[variable])
+		upper := strings.ToUpper(variable)
+		switch {
+		case !envName.MatchString(variable):
+			errs = append(errs, fieldError{path, "environment variable names must use letters, digits and underscores"})
+		case !secretName.MatchString(named):
+			errs = append(errs, fieldError{path, fmt.Sprintf("names secret %s, but a secret name must use only capitals, digits and underscores, such as LINEAR_WEBHOOK_SECRET", named)})
+		case slices.Contains(runnerVariables, upper) || strings.HasPrefix(upper, "SPOTLIGHT_"):
+			errs = append(errs, fieldError{path, fmt.Sprintf("sets %s, which the runner sets in every sandbox", variable)})
+		}
+	}
+
+	return map[string]any{"key": key, "permissions": permissions, "mcpServers": servers, "native": native, "secrets": secrets, "env": env}, errs
 }
 
 func permissionRule(raw string) (string, bool) {

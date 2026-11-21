@@ -160,6 +160,7 @@ type Secret struct {
 	WorkspaceID  string
 	Name         string
 	Bindings     []SecretBinding
+	Sandbox      string
 	ValueVersion *int64
 	RotatedAt    string
 }
@@ -178,6 +179,7 @@ type SecretBinding struct {
 type SecretInput struct {
 	Name         string          `json:"name"`
 	Bindings     []SecretBinding `json:"bindings"`
+	Sandbox      string          `json:"sandbox,omitempty"`
 	Value        *string         `json:"valueWo,omitempty"`
 	ValueVersion *int64          `json:"valueWoVersion,omitempty"`
 }
@@ -319,11 +321,12 @@ type HarnessProfile struct {
 
 // HarnessProfileInput is the input to write a harness profile.
 type HarnessProfileInput struct {
-	Key         string         `json:"key"`
-	Permissions Permissions    `json:"permissions"`
-	MCPServers  []MCPServer    `json:"mcpServers"`
-	Native      map[string]any `json:"native"`
-	Secrets     []string       `json:"secrets"`
+	Key         string            `json:"key"`
+	Permissions Permissions       `json:"permissions"`
+	MCPServers  []MCPServer       `json:"mcpServers"`
+	Native      map[string]any    `json:"native"`
+	Secrets     []string          `json:"secrets"`
+	Env         map[string]string `json:"env"`
 }
 
 // Permissions tell what a harness can do, what it must ask a person about

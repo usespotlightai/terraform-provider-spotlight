@@ -415,6 +415,90 @@ func TestSecretWithNoValueTakesItsValueOutsideTerraform(t *testing.T) {
 	})
 }
 
+func secretSentSandbox(fake *fakeapi.Server, want string) resource.TestCheckFunc {
+	return func(*terraform.State) error {
+		var last any
+		for _, each := range fake.Requests() {
+			if each.Method == http.MethodPost || each.Method == http.MethodPut {
+				if strings.Contains(each.Path, "/secrets") {
+					last = each.Body["sandbox"]
+				}
+			}
+		}
+		if last != want {
+			return fmt.Errorf("the last write sent sandbox %v, want %q", last, want)
+		}
+
+		return nil
+	}
+}
+
+func TestSecretSandboxDefaultsToStandInAndChangesInPlace(t *testing.T) {
+	fake := fakeapi.New(t)
+	inSandbox := strings.Replace(secretSetOutsideTerraform, "bindings ", "sandbox      = \"env\"\n  bindings ", 1)
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),
+		Steps: []resource.TestStep{
+			{
+				Config:      acctest.Workspace + strings.Replace(inSandbox, `"env"`, `"file"`, 1),
+				ExpectError: regexp.MustCompile(`(?s)value must be one of`),
+			},
+			{
+				Config: acctest.Workspace + secretSetOutsideTerraform,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("sandbox"), knownvalue.StringExact("stand-in")),
+				},
+				Check: secretSentSandbox(fake, "stand-in"),
+			},
+			{
+				Config: acctest.Workspace + inSandbox,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(secretAddress, plancheck.ResourceActionUpdate)},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("sandbox"), knownvalue.StringExact("env")),
+				},
+				Check: secretSentSandbox(fake, "env"),
+			},
+			{
+				Config:   acctest.Workspace + inSandbox,
+				PlanOnly: true,
+			},
+			{
+				ResourceName:      secretAddress,
+				ImportState:       true,
+				ImportStateIdFunc: secretImportID,
+				ImportStateVerify: true,
+			},
+			{
+				PreConfig: func() {
+					fake.Change(fake.IDOf("secret", "LINEAR_API_KEY"), func(fields map[string]any) {
+						fields["sandbox"] = "stand-in"
+					})
+				},
+				Config: acctest.Workspace + inSandbox,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(secretAddress, plancheck.ResourceActionUpdate)},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("sandbox"), knownvalue.StringExact("env")),
+				},
+			},
+			{
+				Config: acctest.Workspace + secretSetOutsideTerraform,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(secretAddress, plancheck.ResourceActionUpdate)},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(secretAddress, tfjsonpath.New("sandbox"), knownvalue.StringExact("stand-in")),
+				},
+				Check: secretSentSandbox(fake, "stand-in"),
+			},
+		},
+	})
+}
+
 func TestSecretWritesNeedTheSecretsScope(t *testing.T) {
 	fake := fakeapi.New(t)
 
