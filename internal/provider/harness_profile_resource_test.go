@@ -45,6 +45,9 @@ resource "spotlight_harness_profile" "core_careful" {
     codex = "model_verbosity = \"low\"\n"
   }
   secrets = ["STAGING_VIEWER"]
+  env = {
+    GITHUB_APP_PRIVATE_KEY = "DEV_GITHUB_APP_KEY"
+  }
 }
 `
 
@@ -74,6 +77,7 @@ func TestHarnessProfileExportedShapeRoundTrips(t *testing.T) {
 					statecheck.ExpectKnownValue(harnessProfileAddress, tfjsonpath.New("mcp_servers").AtSliceIndex(0).AtMapKey("env").AtMapKey("LINEAR_WORKSPACE"), knownvalue.StringExact("acme")),
 					statecheck.ExpectKnownValue(harnessProfileAddress, tfjsonpath.New("native").AtMapKey("claude-code").AtMapKey("includeCoAuthoredBy"), knownvalue.Bool(false)),
 					statecheck.ExpectKnownValue(harnessProfileAddress, tfjsonpath.New("secrets"), knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("STAGING_VIEWER")})),
+					statecheck.ExpectKnownValue(harnessProfileAddress, tfjsonpath.New("env"), knownvalue.MapExact(map[string]knownvalue.Check{"GITHUB_APP_PRIVATE_KEY": knownvalue.StringExact("DEV_GITHUB_APP_KEY")})),
 				},
 			},
 			{
@@ -98,6 +102,15 @@ func TestHarnessProfileExportedShapeRoundTrips(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(harnessProfileAddress, tfjsonpath.New("native").AtMapKey("codex"), knownvalue.StringExact("model_verbosity = \"low\"\n")),
+				},
+			},
+			{
+				Config: acctest.Workspace + strings.Replace(harnessProfileExported, `"DEV_GITHUB_APP_KEY"`, `"PROD_GITHUB_APP_KEY"`, 1),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(harnessProfileAddress, plancheck.ResourceActionUpdate)},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(harnessProfileAddress, tfjsonpath.New("env").AtMapKey("GITHUB_APP_PRIVATE_KEY"), knownvalue.StringExact("PROD_GITHUB_APP_KEY")),
 				},
 			},
 			{
@@ -129,6 +142,7 @@ func TestHarnessProfileFillsWhatItLeavesOut(t *testing.T) {
 					statecheck.ExpectKnownValue(harnessProfileAddress, tfjsonpath.New("mcp_servers"), knownvalue.ListSizeExact(0)),
 					statecheck.ExpectKnownValue(harnessProfileAddress, tfjsonpath.New("native"), knownvalue.MapSizeExact(0)),
 					statecheck.ExpectKnownValue(harnessProfileAddress, tfjsonpath.New("secrets"), knownvalue.ListSizeExact(0)),
+					statecheck.ExpectKnownValue(harnessProfileAddress, tfjsonpath.New("env"), knownvalue.MapSizeExact(0)),
 				},
 			},
 			{
@@ -189,6 +203,8 @@ func TestHarnessProfileProblemsInsideMapsAndNativeNameTheirKeys(t *testing.T) {
 		strings.Replace(harnessProfileExported, "codex =", "gemini =", 1):                                                            `native\.gemini: names no harness Spotlight runs`,
 		strings.Replace(harnessProfileExported, `codex = "model_verbosity = \"low\"\n"`, "codex = { model_verbosity = \"low\" }", 1): `native\.codex: is the harness's own config\.toml, as text`,
 		strings.Replace(harnessProfileExported, `["STAGING_VIEWER"]`, `["STAGING_VIEWER", "STAGING_VIEWER"]`, 1):                     `secrets\[1\]: lists secret STAGING_VIEWER twice`,
+		strings.Replace(harnessProfileExported, "GITHUB_APP_PRIVATE_KEY", "PATH", 1):                                                 `env\["PATH"\]: sets PATH, which the runner sets in every sandbox`,
+		strings.Replace(harnessProfileExported, `"DEV_GITHUB_APP_KEY"`, `"dev-github-app-key"`, 1):                                   `env\["GITHUB_APP_PRIVATE_KEY"\]: names secret dev-github-app-key`,
 	} {
 		resource.UnitTest(t, resource.TestCase{
 			ProtoV6ProviderFactories: acctest.FakeProviderFactories(fake),

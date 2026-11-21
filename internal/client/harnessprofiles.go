@@ -11,17 +11,7 @@ import (
 func harnessProfileOf(dto apigen.HarnessProfileResourceResponseDto) HarnessProfile {
 	servers := make([]MCPServer, 0, len(dto.McpServers))
 	for _, each := range dto.McpServers {
-		env := each.Env
-		if env == nil {
-			env = map[string]string{}
-		}
-
-		servers = append(servers, MCPServer{Name: each.Name, Command: each.Command, Args: orNone(each.Args), Env: env})
-	}
-
-	native := dto.Native
-	if native == nil {
-		native = map[string]any{}
+		servers = append(servers, MCPServer{Name: each.Name, Command: each.Command, Args: orNone(each.Args), Env: orNoEntries(each.Env)})
 	}
 
 	return HarnessProfile{
@@ -35,8 +25,9 @@ func harnessProfileOf(dto apigen.HarnessProfileResourceResponseDto) HarnessProfi
 				Deny:  orNone(dto.Permissions.Deny),
 			},
 			MCPServers: servers,
-			Native:     native,
+			Native:     orNoEntries(dto.Native),
 			Secrets:    orNone(dto.Secrets),
+			Env:        orNoEntries(dto.Env),
 		},
 	}
 }

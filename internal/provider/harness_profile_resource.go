@@ -47,6 +47,7 @@ type HarnessProfileResourceModel struct {
 	MCPServers  []harnessProfileMCPServer `tfsdk:"mcp_servers"`
 	Native      types.Dynamic             `tfsdk:"native"`
 	Secrets     types.List                `tfsdk:"secrets"`
+	Env         types.Map                 `tfsdk:"env"`
 }
 
 type harnessProfilePermissions struct {
@@ -148,6 +149,9 @@ func harnessProfileSchema() schema.Schema {
 			"secrets": stringListAttribute("Workspace secrets that the runs of this profile get, by name, as in `[spotlight_secret.staging_viewer.name]`. " +
 				"Egress puts each value in place of its stand-in, `spotlight-egress:<NAME>`, in the requests a run sends to the hosts the secret is bound to, and the run never sees the value. The run's briefing says where to send each stand-in. " +
 				"Each secret must exist, and cannot be deleted while a profile names it. While a secret has no value, the answer warns, and runs with this profile do not start."),
+			"env": stringMapAttribute("Environment variables that the runs of this profile get, each set to the value of a workspace secret, by name, as in `{ GITHUB_APP_PRIVATE_KEY = spotlight_secret.dev_github_app_key.name }`. " +
+				"The agent and every process in the sandbox can read the value, so name only secrets made for this. Each secret must exist and have `sandbox = \"env\"`, and cannot be deleted while a profile names it. " +
+				"`PATH`, `HOME`, `SPOTLIGHT_` variables, the proxy variables and the CA variables are set by the runner and are refused."),
 		},
 	}
 }
@@ -291,6 +295,7 @@ func harnessProfileInput(plan HarnessProfileResourceModel) (client.HarnessProfil
 		MCPServers: make([]client.MCPServer, 0, len(plan.MCPServers)),
 		Native:     map[string]any{},
 		Secrets:    stringsIn(plan.Secrets, &diags),
+		Env:        stringMapIn(plan.Env, &diags),
 	}
 
 	for _, each := range plan.MCPServers {
@@ -345,6 +350,7 @@ func harnessProfileModel(profile client.HarnessProfile, prior *HarnessProfileRes
 		MCPServers: make([]harnessProfileMCPServer, 0, len(profile.MCPServers)),
 		Native:     dynamic.FromJSON(profile.Native),
 		Secrets:    stringList(profile.Secrets),
+		Env:        stringMap(profile.Env),
 	}
 
 	for _, each := range profile.MCPServers {
@@ -367,6 +373,7 @@ func harnessProfileModel(profile client.HarnessProfile, prior *HarnessProfileRes
 		model.MCPServers = prior.MCPServers
 		model.Native = dynamic.Resolve(prior.Native, profile.Native)
 		model.Secrets = prior.Secrets
+		model.Env = prior.Env
 	}
 
 	return model

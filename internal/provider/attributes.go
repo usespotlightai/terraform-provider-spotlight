@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/defaults"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -77,6 +78,16 @@ func stringListAttribute(description string) schema.ListAttribute {
 	}
 }
 
+func stringMapAttribute(description string) schema.MapAttribute {
+	return schema.MapAttribute{
+		Optional:            true,
+		Computed:            true,
+		ElementType:         types.StringType,
+		Default:             mapdefault.StaticValue(stringMap(nil)),
+		MarkdownDescription: description,
+	}
+}
+
 type collection interface {
 	IsNull() bool
 	IsUnknown() bool
@@ -85,6 +96,17 @@ type collection interface {
 
 func stringsIn(values collection, diags *diag.Diagnostics) []string {
 	out := []string{}
+	if values.IsNull() || values.IsUnknown() {
+		return out
+	}
+
+	diags.Append(values.ElementsAs(context.Background(), &out, false)...)
+
+	return out
+}
+
+func stringMapIn(values collection, diags *diag.Diagnostics) map[string]string {
+	out := map[string]string{}
 	if values.IsNull() || values.IsUnknown() {
 		return out
 	}

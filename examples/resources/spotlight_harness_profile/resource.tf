@@ -21,4 +21,5 @@ resource "spotlight_harness_profile" "core_careful" {
     codex = "model_verbosity = \"low\"\n"
   }
   secrets = [spotlight_secret.staging_viewer.name]
+  env     = { GITHUB_APP_PRIVATE_KEY = spotlight_secret.dev_github_app_key.name }
 }

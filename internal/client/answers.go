@@ -153,3 +153,11 @@ func orNone[T any](items []T) []T {
 
 	return items
 }
+
+func orNoEntries[V any](entries map[string]V) map[string]V {
+	if entries == nil {
+		return map[string]V{}
+	}
+
+	return entries
+}

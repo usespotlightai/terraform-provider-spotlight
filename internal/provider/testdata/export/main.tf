@@ -49,6 +49,18 @@ resource "spotlight_secret" "linear_signing" {
 }
 
 import {
+  to = spotlight_secret.dev_github_app_key
+  id = "00000000-0000-4000-8000-00000000a0a0/DEV_GITHUB_APP_KEY"
+}
+
+resource "spotlight_secret" "dev_github_app_key" {
+  workspace_id = spotlight_workspace.acme.id
+  name         = "DEV_GITHUB_APP_KEY"
+  bindings     = []
+  sandbox      = "env"
+}
+
+import {
   to = spotlight_oidc_trust.github-main
   id = "00000000-0000-4000-8000-00000000a0a0/github-main"
 }
@@ -482,4 +494,7 @@ resource "spotlight_harness_profile" "core_careful" {
     codex = "model_verbosity = \"low\"\n"
   }
   secrets = [spotlight_secret.linear_signing.name]
+  env = {
+    GITHUB_APP_PRIVATE_KEY = spotlight_secret.dev_github_app_key.name
+  }
 }

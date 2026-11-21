@@ -408,6 +408,24 @@ func (e SecretBindingResponseDtoLocation) Valid() bool {
 	}
 }
 
+// Defines values for SecretSandbox.
+const (
+	SecretSandboxEnv     SecretSandbox = "env"
+	SecretSandboxStandIn SecretSandbox = "stand-in"
+)
+
+// Valid indicates whether the value is a known member of the SecretSandbox enum.
+func (e SecretSandbox) Valid() bool {
+	switch e {
+	case SecretSandboxEnv:
+		return true
+	case SecretSandboxStandIn:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for CheckExpressionParamsSpotlightApiVersion.
 const (
 	CheckExpressionParamsSpotlightApiVersionN20260923 CheckExpressionParamsSpotlightApiVersion = "2026-09-23"
@@ -948,6 +966,24 @@ func (e UpdateSecretJSONBodyBindingsLocation) Valid() bool {
 	case UpdateSecretJSONBodyBindingsLocationHeader:
 		return true
 	case UpdateSecretJSONBodyBindingsLocationQuery:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateSecretJSONBodySandbox.
+const (
+	UpdateSecretJSONBodySandboxEnv     UpdateSecretJSONBodySandbox = "env"
+	UpdateSecretJSONBodySandboxStandIn UpdateSecretJSONBodySandbox = "stand-in"
+)
+
+// Valid indicates whether the value is a known member of the UpdateSecretJSONBodySandbox enum.
+func (e UpdateSecretJSONBodySandbox) Valid() bool {
+	switch e {
+	case UpdateSecretJSONBodySandboxEnv:
+		return true
+	case UpdateSecretJSONBodySandboxStandIn:
 		return true
 	default:
 		return false
@@ -1695,6 +1731,24 @@ func (e CreateSecretJSONBodyBindingsLocation) Valid() bool {
 	}
 }
 
+// Defines values for CreateSecretJSONBodySandbox.
+const (
+	Env     CreateSecretJSONBodySandbox = "env"
+	StandIn CreateSecretJSONBodySandbox = "stand-in"
+)
+
+// Valid indicates whether the value is a known member of the CreateSecretJSONBodySandbox enum.
+func (e CreateSecretJSONBodySandbox) Valid() bool {
+	switch e {
+	case Env:
+		return true
+	case StandIn:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ImportSecretParamsSpotlightApiVersion.
 const (
 	ImportSecretParamsSpotlightApiVersionN20260923 ImportSecretParamsSpotlightApiVersion = "2026-09-23"
@@ -2012,6 +2066,9 @@ type HarnessProfileResourceListResponseDto struct {
 type HarnessProfileResourceResponseDto struct {
 	// Address Names the resource within its workspace; terraform import takes it
 	Address string `json:"address"`
+
+	// Env Environment variables that the runs of this profile get, each the real value of a workspace secret, as in GITHUB_APP_PRIVATE_KEY = DEV_GITHUB_APP_KEY. The agent and every process in the sandbox can read the value, so name only secrets made for this. Each secret must have sandbox = "env". PATH, HOME, SPOTLIGHT_ variables, the proxy variables and the CA variables are set by the runner and are refused.
+	Env map[string]string `json:"env"`
 
 	// Id Issued by Spotlight when the resource is created, and never changed
 	Id string `json:"id"`
@@ -2566,6 +2623,9 @@ type SecretResourceResponseDto struct {
 	// RotatedAt When the value was last set; not settable
 	RotatedAt string `json:"rotatedAt"`
 
+	// Sandbox Whether a run can get the value itself: stand-in (the default) keeps the value out of every sandbox, and egress puts it only in requests to the bound hosts; env lets a harness profile give the value to its runs as an environment variable, where the agent and every process in the sandbox can read it
+	Sandbox SecretSandbox `json:"sandbox"`
+
 	// ValueWoVersion Changing it rotates the value to the valueWo sent with it; the value itself is write-only and never returned
 	ValueWoVersion *float32 `json:"valueWoVersion"`
 
@@ -2578,6 +2638,9 @@ type SecretResourceResponseDto struct {
 	// WorkspaceId The workspace it belongs to
 	WorkspaceId string `json:"workspaceId"`
 }
+
+// SecretSandbox Whether a run can get the value itself: stand-in (the default) keeps the value out of every sandbox, and egress puts it only in requests to the bound hosts; env lets a harness profile give the value to its runs as an environment variable, where the agent and every process in the sandbox can read it
+type SecretSandbox string
 
 // SkillResourceListResponseDto defines model for SkillResourceListResponseDto.
 type SkillResourceListResponseDto struct {
@@ -2826,7 +2889,9 @@ type ReadHarnessProfileParamsSpotlightApiVersion string
 
 // UpdateHarnessProfileJSONBody defines parameters for UpdateHarnessProfile.
 type UpdateHarnessProfileJSONBody struct {
-	Key        string `json:"key"`
+	// Env Environment variables that the runs of this profile get, each the real value of a workspace secret, as in GITHUB_APP_PRIVATE_KEY = DEV_GITHUB_APP_KEY. The agent and every process in the sandbox can read the value, so name only secrets made for this. Each secret must have sandbox = "env". PATH, HOME, SPOTLIGHT_ variables, the proxy variables and the CA variables are set by the runner and are refused.
+	Env        *map[string]string `json:"env,omitempty"`
+	Key        string             `json:"key"`
 	McpServers *[]struct {
 		Args    *[]string `json:"args,omitempty"`
 		Command string    `json:"command"`
@@ -3272,6 +3337,9 @@ type UpdateSecretJSONBody struct {
 	} `json:"bindings,omitempty"`
 	Name string `json:"name"`
 
+	// Sandbox Whether a run can get the value itself: stand-in (the default) keeps the value out of every sandbox, and egress puts it only in requests to the bound hosts; env lets a harness profile give the value to its runs as an environment variable, where the agent and every process in the sandbox can read it
+	Sandbox *UpdateSecretJSONBodySandbox `json:"sandbox,omitempty"`
+
 	// ValueWo The value to store, sent only together with valueWoVersion, and never returned. Leave out both to set the value outside Terraform
 	ValueWo *string `json:"valueWo,omitempty"`
 
@@ -3296,6 +3364,9 @@ type UpdateSecretParamsSpotlightApiVersion string
 
 // UpdateSecretJSONBodyBindingsLocation defines parameters for UpdateSecret.
 type UpdateSecretJSONBodyBindingsLocation string
+
+// UpdateSecretJSONBodySandbox defines parameters for UpdateSecret.
+type UpdateSecretJSONBodySandbox string
 
 // DeleteSkillParams defines parameters for DeleteSkill.
 type DeleteSkillParams struct {
@@ -3395,7 +3466,9 @@ type UpdateTeamParamsSpotlightApiVersion string
 
 // CreateHarnessProfileJSONBody defines parameters for CreateHarnessProfile.
 type CreateHarnessProfileJSONBody struct {
-	Key        string `json:"key"`
+	// Env Environment variables that the runs of this profile get, each the real value of a workspace secret, as in GITHUB_APP_PRIVATE_KEY = DEV_GITHUB_APP_KEY. The agent and every process in the sandbox can read the value, so name only secrets made for this. Each secret must have sandbox = "env". PATH, HOME, SPOTLIGHT_ variables, the proxy variables and the CA variables are set by the runner and are refused.
+	Env        *map[string]string `json:"env,omitempty"`
+	Key        string             `json:"key"`
 	McpServers *[]struct {
 		Args    *[]string `json:"args,omitempty"`
 		Command string    `json:"command"`
@@ -4077,6 +4150,9 @@ type CreateSecretJSONBody struct {
 	} `json:"bindings,omitempty"`
 	Name string `json:"name"`
 
+	// Sandbox Whether a run can get the value itself: stand-in (the default) keeps the value out of every sandbox, and egress puts it only in requests to the bound hosts; env lets a harness profile give the value to its runs as an environment variable, where the agent and every process in the sandbox can read it
+	Sandbox *CreateSecretJSONBodySandbox `json:"sandbox,omitempty"`
+
 	// ValueWo The value to store, sent only together with valueWoVersion, and never returned. Leave out both to set the value outside Terraform
 	ValueWo *string `json:"valueWo,omitempty"`
 
@@ -4101,6 +4177,9 @@ type CreateSecretParamsSpotlightApiVersion string
 
 // CreateSecretJSONBodyBindingsLocation defines parameters for CreateSecret.
 type CreateSecretJSONBodyBindingsLocation string
+
+// CreateSecretJSONBodySandbox defines parameters for CreateSecret.
+type CreateSecretJSONBodySandbox string
 
 // ImportSecretParams defines parameters for ImportSecret.
 type ImportSecretParams struct {

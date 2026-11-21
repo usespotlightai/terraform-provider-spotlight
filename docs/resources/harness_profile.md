@@ -36,6 +36,7 @@ resource "spotlight_harness_profile" "core_careful" {
     codex = "model_verbosity = \"low\"\n"
   }
   secrets = [spotlight_secret.staging_viewer.name]
+  env     = { GITHUB_APP_PRIVATE_KEY = spotlight_secret.dev_github_app_key.name }
 }
 ```
 
@@ -49,6 +50,7 @@ resource "spotlight_harness_profile" "core_careful" {
 
 ### Optional
 
+- `env` (Map of String) Environment variables that the runs of this profile get, each set to the value of a workspace secret, by name, as in `{ GITHUB_APP_PRIVATE_KEY = spotlight_secret.dev_github_app_key.name }`. The agent and every process in the sandbox can read the value, so name only secrets made for this. Each secret must exist and have `sandbox = "env"`, and cannot be deleted while a profile names it. `PATH`, `HOME`, `SPOTLIGHT_` variables, the proxy variables and the CA variables are set by the runner and are refused.
 - `mcp_servers` (Attributes List) Stdio MCP servers, handed to each harness in its own format. (see [below for nested schema](#nestedatt--mcp_servers))
 - `native` (Dynamic) Each harness's own settings by harness, passed through as it reads them: Claude Code settings as an object, Codex `config.toml` as text, Cursor CLI config as an object; as in `{ claude-code = { includeCoAuthoredBy = false } }`.
 - `permissions` (Attributes) What the harness may do, what it asks a person about first, and what it may never do. (see [below for nested schema](#nestedatt--permissions))

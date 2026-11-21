@@ -59,3 +59,13 @@ resource "spotlight_secret" "sentry_auth_token" {
   value_wo         = ephemeral.aws_secretsmanager_secret_version.sentry_auth_token.secret_string
   value_wo_version = 1
 }
+
+# A harness profile can give this value to its runs as an environment
+# variable, through its env. The agent and every process in the sandbox can
+# read it, so use this only for a value made for the sandbox, such as a
+# development key.
+resource "spotlight_secret" "dev_github_app_key" {
+  workspace_id = spotlight_workspace.acme.id
+  name         = "DEV_GITHUB_APP_KEY"
+  sandbox      = "env"
+}

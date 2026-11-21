@@ -19,6 +19,7 @@ func secretOf(dto apigen.SecretResourceResponseDto) Secret {
 		WorkspaceID: dto.WorkspaceId,
 		Name:        dto.Name,
 		Bindings:    bindings,
+		Sandbox:     string(dto.Sandbox),
 		RotatedAt:   dto.RotatedAt,
 	}
 

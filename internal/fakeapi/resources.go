@@ -25,6 +25,7 @@ var (
 	prefixText    = regexp.MustCompile(`^[\x20-\x7e]{0,64}$`)
 	neverInjected = []string{"host", "content-length", "content-type", "transfer-encoding", "connection", "upgrade", "te", "trailer"}
 	harnesses     = map[string]string{"claude-code": "json", "cursor": "json", "codex": "toml"}
+	setByRunner   = []string{"ALL_PROXY", "COLORTERM", "CURL_CA_BUNDLE", "GIT_SSL_CAINFO", "HOME", "HTTPS_PROXY", "HTTP_PROXY", "LOGNAME", "NODE_EXTRA_CA_CERTS", "NODE_USE_ENV_PROXY", "NO_PROXY", "PATH", "REQUESTS_CA_BUNDLE", "SHELL", "SSL_CERT_DIR", "SSL_CERT_FILE", "TERM", "USER"}
 )
 
 const longestWords = 64
@@ -128,12 +129,20 @@ func secret(body map[string]any) (map[string]any, []fieldError) {
 		bindings = append(bindings, map[string]any{"host": host, "location": location, "name": name, "prefix": prefix})
 	}
 
+	sandbox, ok := body["sandbox"].(string)
+	if !ok {
+		sandbox = "stand-in"
+	}
+	if sandbox != "stand-in" && sandbox != "env" {
+		errs = append(errs, fieldError{"sandbox", "is whether a run can get the value itself: stand-in or env"})
+	}
+
 	var version any
 	if number, ok := body["valueWoVersion"].(float64); ok {
 		version = number
 	}
 
-	return map[string]any{"name": name, "bindings": bindings, "valueWoVersion": version}, errs
+	return map[string]any{"name": name, "bindings": bindings, "sandbox": sandbox, "valueWoVersion": version}, errs
 }
 
 func written(kind string, existing *resource, fields, body map[string]any) (string, []fieldError) {
@@ -608,7 +617,25 @@ func harnessProfile(body map[string]any) (map[string]any, []fieldError) {
 		}
 	}
 
-	return map[string]any{"key": key, "permissions": permissions, "mcpServers": servers, "native": native, "secrets": secrets}, errs
+	env := objectOf(body["env"])
+	if env == nil {
+		env = map[string]any{}
+	}
+	for _, variable := range slices.Sorted(maps.Keys(env)) {
+		path := keyed("env", variable)
+		named := textOf(env[variable])
+		upper := strings.ToUpper(variable)
+		switch {
+		case !envName.MatchString(variable):
+			errs = append(errs, fieldError{path, "environment variable names must use letters, digits and underscores"})
+		case slices.Contains(setByRunner, upper) || strings.HasPrefix(upper, "SPOTLIGHT_"):
+			errs = append(errs, fieldError{path, fmt.Sprintf("sets %s, which the runner sets in every sandbox", variable)})
+		case !secretName.MatchString(named):
+			errs = append(errs, fieldError{path, fmt.Sprintf("names secret %s, but a secret name is upper case letters, digits and underscores, as in LINEAR_API_KEY", named)})
+		}
+	}
+
+	return map[string]any{"key": key, "permissions": permissions, "mcpServers": servers, "native": native, "secrets": secrets, "env": env}, errs
 }
 
 func permissionRule(raw string) (string, bool) {
