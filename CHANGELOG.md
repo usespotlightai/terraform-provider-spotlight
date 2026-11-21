@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.1.0-rc.10](https://github.com/usespotlightai/terraform-provider-spotlight/compare/v0.1.0-rc.9...v0.1.0-rc.10) (2026-11-21)
+
+
+### ⚠ BREAKING CHANGES
+
+* drop the secret source, and take value_wo only with value_wo_version ([#78](https://github.com/usespotlightai/terraform-provider-spotlight/issues/78))
+
+### Features
+
+* drop the secret source, and take value_wo only with value_wo_version ([#78](https://github.com/usespotlightai/terraform-provider-spotlight/issues/78)) ([cf0f4d5](https://github.com/usespotlightai/terraform-provider-spotlight/commit/cf0f4d5df42581134eeb8a2209f67bd61284e286))
+* let spotlight_harness_profile name workspace secrets that egress injects into its runs ([#80](https://github.com/usespotlightai/terraform-provider-spotlight/issues/80)) ([60b56bf](https://github.com/usespotlightai/terraform-provider-spotlight/commit/60b56bf7823a860316b4bc9de9d44daad24cbc23))
+* let spotlight_secret allow its value in a sandbox and spotlight_harness_profile put it in env ([#81](https://github.com/usespotlightai/terraform-provider-spotlight/issues/81)) ([851c076](https://github.com/usespotlightai/terraform-provider-spotlight/commit/851c07672a5dcb128123c0140c4fce230de561a8))
+
+
+### Bug Fixes
+
+* sync the resource API after the plan tiers removal, and send empty secrets and env in the export test ([#85](https://github.com/usespotlightai/terraform-provider-spotlight/issues/85)) ([e91c9c5](https://github.com/usespotlightai/terraform-provider-spotlight/commit/e91c9c5be8d72e89a3a3d6e6316629811b11a0f5))
+
 ## [0.1.0-rc.9](https://github.com/usespotlightai/terraform-provider-spotlight/compare/v0.1.0-rc.8...v0.1.0-rc.9) (2026-11-16)
 
 
