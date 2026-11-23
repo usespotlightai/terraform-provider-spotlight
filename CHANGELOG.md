@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.0-rc.11](https://github.com/usespotlightai/terraform-provider-spotlight/compare/v0.1.0-rc.10...v0.1.0-rc.11) (2026-11-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* spotlight_inference_endpoint is removed. Remove it from your configuration, and from state with a removed block or terraform state rm.
+
+### Features
+
+* remove spotlight_inference_endpoint ([#86](https://github.com/usespotlightai/terraform-provider-spotlight/issues/86)) ([8170a2d](https://github.com/usespotlightai/terraform-provider-spotlight/commit/8170a2df2eca8903fb77c552e00e6416234a7cc3))
+
 ## [0.1.0-rc.10](https://github.com/usespotlightai/terraform-provider-spotlight/compare/v0.1.0-rc.9...v0.1.0-rc.10) (2026-11-21)
 
 
