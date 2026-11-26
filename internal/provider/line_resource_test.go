@@ -1756,15 +1756,16 @@ resource "spotlight_line" "core_delivery" {
 `
 }
 
-func lineSearch(enabled bool, monthlyCeiling float64, currency string, ceiling float64, period string, onAlert bool, cooldown string) knownvalue.Check {
+func lineSearch(enabled bool, monthlyCeiling float64, currency string, ceiling float64, period string, onAlert bool, cooldown string, requestsPerDay int64) knownvalue.Check {
 	return knownvalue.ObjectExact(map[string]knownvalue.Check{
-		"enabled":         knownvalue.Bool(enabled),
-		"monthly_ceiling": knownvalue.Float64Exact(monthlyCeiling),
-		"currency":        knownvalue.StringExact(currency),
-		"ceiling":         knownvalue.Float64Exact(ceiling),
-		"period":          knownvalue.StringExact(period),
-		"on_alert":        knownvalue.Bool(onAlert),
-		"cooldown":        knownvalue.StringExact(cooldown),
+		"enabled":          knownvalue.Bool(enabled),
+		"monthly_ceiling":  knownvalue.Float64Exact(monthlyCeiling),
+		"currency":         knownvalue.StringExact(currency),
+		"ceiling":          knownvalue.Float64Exact(ceiling),
+		"period":           knownvalue.StringExact(period),
+		"on_alert":         knownvalue.Bool(onAlert),
+		"cooldown":         knownvalue.StringExact(cooldown),
+		"requests_per_day": knownvalue.Int64Exact(requestsPerDay),
 	})
 }
 
@@ -1776,11 +1777,12 @@ func TestLineSearchPolicy(t *testing.T) {
 `)
 	tuned := lineSearchedAt(`
     search {
-      enabled    = false
-      ceiling    = 25
-      cooldown   = "12h"
-      iterations = 4
-      objective  = "cost"
+      enabled          = false
+      ceiling          = 25
+      cooldown         = "12h"
+      iterations       = 4
+      objective        = "cost"
+      requests_per_day = 5
 
       agent {
         harness = "claude-code"
@@ -1789,13 +1791,14 @@ func TestLineSearchPolicy(t *testing.T) {
     }
 `, `
   search {
-    enabled         = false
-    monthly_ceiling = 120
-    ceiling         = 15
-    currency        = "EUR"
-    period          = "36h"
-    on_alert        = false
-    cooldown        = "1d"
+    enabled          = false
+    monthly_ceiling  = 120
+    ceiling          = 15
+    currency         = "EUR"
+    period           = "36h"
+    on_alert         = false
+    cooldown         = "1d"
+    requests_per_day = 8
   }
 `)
 	unset := lineSearchedAt("", "")
@@ -1807,7 +1810,7 @@ func TestLineSearchPolicy(t *testing.T) {
 			{
 				Config: defaulted,
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("search"), lineSearch(true, 50, "USD", 10, "7d", true, "3d")),
+					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("search"), lineSearch(true, 50, "USD", 10, "7d", true, "3d", 3)),
 					statecheck.ExpectKnownValue(lineAddress, lineStation(1, "search"), knownvalue.Null()),
 				},
 			},
@@ -1827,16 +1830,17 @@ func TestLineSearchPolicy(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(lineAddress, plancheck.ResourceActionUpdate)},
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("search"), lineSearch(false, 120, "EUR", 15, "36h", false, "1d")),
+					statecheck.ExpectKnownValue(lineAddress, tfjsonpath.New("search"), lineSearch(false, 120, "EUR", 15, "36h", false, "1d", 8)),
 					statecheck.ExpectKnownValue(lineAddress, lineStation(1, "search"), knownvalue.ObjectExact(map[string]knownvalue.Check{
-						"enabled":    knownvalue.Bool(false),
-						"ceiling":    knownvalue.Float64Exact(25),
-						"period":     knownvalue.Null(),
-						"on_alert":   knownvalue.Null(),
-						"cooldown":   knownvalue.StringExact("12h"),
-						"iterations": knownvalue.Int64Exact(4),
-						"repeats":    knownvalue.Null(),
-						"objective":  knownvalue.StringExact("cost"),
+						"enabled":          knownvalue.Bool(false),
+						"ceiling":          knownvalue.Float64Exact(25),
+						"period":           knownvalue.Null(),
+						"on_alert":         knownvalue.Null(),
+						"cooldown":         knownvalue.StringExact("12h"),
+						"iterations":       knownvalue.Int64Exact(4),
+						"repeats":          knownvalue.Null(),
+						"objective":        knownvalue.StringExact("cost"),
+						"requests_per_day": knownvalue.Int64Exact(5),
 						"agent": knownvalue.ObjectExact(map[string]knownvalue.Check{
 							"harness": knownvalue.StringExact("claude-code"),
 							"model":   knownvalue.Null(),
@@ -1951,15 +1955,27 @@ func TestLineStationEffortIsALevel(t *testing.T) {
 
 func TestLineStationSearchCountsAreInRange(t *testing.T) {
 	for setting, want := range map[string]string{
-		"iterations = 11":     `station\[1\]\.search\.iterations`,
-		"repeats = 6":         `station\[1\]\.search\.repeats`,
-		`objective = "speed"`: `station\[1\]\.search\.objective`,
+		"iterations = 11":       `station\[1\]\.search\.iterations`,
+		"repeats = 6":           `station\[1\]\.search\.repeats`,
+		`objective = "speed"`:   `station\[1\]\.search\.objective`,
+		"requests_per_day = 0":  `station\[1\]\.search\.requests_per_day`,
+		"requests_per_day = 21": `station\[1\]\.search\.requests_per_day`,
 	} {
 		lineSearchInvalid(t, fmt.Sprintf(`
     search {
       %s
     }
 `, setting), "", regexp.MustCompile(`(?s)`+want))
+	}
+}
+
+func TestLineSearchRequestsPerDayIsFromOneToTwenty(t *testing.T) {
+	for _, perDay := range []int{0, 21} {
+		lineSearchInvalid(t, "", fmt.Sprintf(`
+  search {
+    requests_per_day = %d
+  }
+`, perDay), regexp.MustCompile(`(?s)search\.requests_per_day.*between 1 and 20`))
 	}
 }
 
@@ -2017,7 +2033,7 @@ func TestAccLineSearchPolicy(t *testing.T) {
 			{
 				Config: written,
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue("spotlight_line.delivery", tfjsonpath.New("search"), lineSearch(true, 50, "USD", 10, "7d", true, "3d")),
+					statecheck.ExpectKnownValue("spotlight_line.delivery", tfjsonpath.New("search"), lineSearch(true, 50, "USD", 10, "7d", true, "3d", 3)),
 				},
 			},
 			{
@@ -2036,7 +2052,7 @@ func TestAccLineSearchPolicy(t *testing.T) {
 					plancheck.ExpectResourceAction("spotlight_line.delivery", plancheck.ResourceActionUpdate),
 				}},
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue("spotlight_line.delivery", tfjsonpath.New("search"), lineSearch(true, 120, "EUR", 10, "36h", false, "1d")),
+					statecheck.ExpectKnownValue("spotlight_line.delivery", tfjsonpath.New("search"), lineSearch(true, 120, "EUR", 10, "36h", false, "1d", 3)),
 				},
 			},
 			{

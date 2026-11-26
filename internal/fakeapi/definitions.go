@@ -315,6 +315,7 @@ var (
 		"period":         "7d",
 		"onAlert":        true,
 		"cooldown":       "3d",
+		"requestsPerDay": float64(3),
 	}
 )
 
@@ -358,6 +359,9 @@ func lineSearched(definition map[string]any, errs *[]fieldError) {
 		if !isDuration(search[field]) {
 			*errs = append(*errs, fieldError{"search." + field, "must be a whole number of minutes, hours or days from 1h to 365d, as in 90m, 12h or 7d"})
 		}
+	}
+	if perDay, _ := search["requestsPerDay"].(float64); perDay < 1 || perDay > 20 || perDay != float64(int64(perDay)) {
+		*errs = append(*errs, fieldError{"search.requestsPerDay", "must be a whole number from 1 to 20"})
 	}
 	if longer(search["cooldown"], search["period"]) {
 		*errs = append(*errs, fieldError{"search.cooldown", fmt.Sprintf("must be at most the period, %s", textOf(search["period"]))})
@@ -414,7 +418,7 @@ func stationSearched(station map[string]any, at int, errs *[]fieldError) {
 			*errs = append(*errs, fieldError{field + "." + each, "must be a whole number of minutes, hours or days from 1h to 365d, as in 90m, 12h or 7d"})
 		}
 	}
-	for each, most := range map[string]float64{"iterations": 10, "repeats": 5} {
+	for each, most := range map[string]float64{"iterations": 10, "repeats": 5, "requestsPerDay": 20} {
 		if count, ok := search[each].(float64); ok && (count < 1 || count > most || count != float64(int64(count))) {
 			*errs = append(*errs, fieldError{field + "." + each, fmt.Sprintf("must be a whole number from 1 to %g", most)})
 		}

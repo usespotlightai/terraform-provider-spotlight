@@ -95,6 +95,8 @@ func TestAnExportAppliesFromScratchAndAdoptsWithNoDiff(t *testing.T) {
 					resource.TestCheckResourceAttr("spotlight_line.core_delivery", "station.1.alert.1.falls_by", "0.1"),
 					resource.TestCheckResourceAttr("spotlight_line.core_delivery", "station.1.alert.2.below", "0.4"),
 					resource.TestCheckResourceAttr("spotlight_line.core_delivery", "replay_check.ceiling", "12.5"),
+					resource.TestCheckResourceAttr("spotlight_line.core_delivery", "search.requests_per_day", "4"),
+					resource.TestCheckResourceAttr("spotlight_line.core_delivery", "station.1.search.requests_per_day", "5"),
 					resource.TestCheckResourceAttr("spotlight_line.core_delivery", "source.path", "teams/core/delivery.tf"),
 					resource.TestCheckResourceAttr("spotlight_workspace_runners.acme", "trusts.0", "production-cluster"),
 					resource.TestCheckResourceAttr("spotlight_workspace_runners.acme", "pools.#", "2"),

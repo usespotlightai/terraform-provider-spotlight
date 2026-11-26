@@ -107,12 +107,13 @@ resource "spotlight_line" "core_delivery" {
   }
 
   search {
-    monthly_ceiling = 100
-    currency        = "USD"
-    ceiling         = 10
-    period          = "7d"
-    on_alert        = true
-    cooldown        = "3d"
+    monthly_ceiling  = 100
+    currency         = "USD"
+    ceiling          = 10
+    period           = "7d"
+    on_alert         = true
+    cooldown         = "3d"
+    requests_per_day = 3
   }
 
   source {

@@ -122,12 +122,13 @@ resource "spotlight_line" "core_delivery" {
   }
 
   search {
-    monthly_ceiling = 100
-    currency        = "USD"
-    ceiling         = 10
-    period          = "7d"
-    on_alert        = true
-    cooldown        = "3d"
+    monthly_ceiling  = 100
+    currency         = "USD"
+    ceiling          = 10
+    period           = "7d"
+    on_alert         = true
+    cooldown         = "3d"
+    requests_per_day = 3
   }
 
   source {
@@ -236,6 +237,7 @@ Optional:
 - `monthly_ceiling` (Number) The most all automatic searches of the line may spend in one calendar month, in `currency`, above 0. 50 when left out.
 - `on_alert` (Boolean) Whether an alert that goes off on a station starts a search. `true` when left out.
 - `period` (String) The longest time between two scheduled searches of a station, as in `12h` or `7d`, from 1h to 365d. `7d` when left out.
+- `requests_per_day` (Number) How many requested tests of a station change Spotlight takes for each station in one UTC day, from 1 to 20. The count resets at 00:00 UTC. 3 when left out.
 
 
 <a id="nestedblock--source"></a>
@@ -319,6 +321,7 @@ Optional:
 - `on_alert` (Boolean) Whether an alert that goes off on this station starts a search.
 - `period` (String) The longest time between two scheduled searches of this station, as in `12h` or `7d`, from 1h to 365d.
 - `repeats` (Number) How many times a search replays each task, from 1 to 5.
+- `requests_per_day` (Number) How many requested tests of a change to this station Spotlight takes in one UTC day, from 1 to 20.
 
 <a id="nestedblock--station--search--agent"></a>
 ### Nested Schema for `station.search.agent`
