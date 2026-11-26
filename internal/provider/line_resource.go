@@ -69,6 +69,9 @@ const (
 	lineSearchMonthlyCeiling = 50
 	lineMostSearchIterations = 10
 	lineMostSearchRepeats    = 5
+
+	lineSearchRequestsPerDay     = 3
+	lineMostSearchRequestsPerDay = 20
 )
 
 var lineSearchObjectives = []string{"success", "cost"}
@@ -443,6 +446,11 @@ func lineSchema() schema.Schema {
 									Validators:          []validator.String{stringvalidator.OneOf(lineSearchObjectives...)},
 									MarkdownDescription: "What a search improves: `success` or `cost`. The station's health decides when left out.",
 								},
+								"requests_per_day": schema.Int64Attribute{
+									Optional:            true,
+									Validators:          []validator.Int64{int64validator.Between(1, lineMostSearchRequestsPerDay)},
+									MarkdownDescription: "How many requested tests of a change to this station Spotlight takes in one UTC day, from 1 to 20.",
+								},
 							},
 							Blocks: map[string]schema.Block{
 								"agent": schema.SingleNestedBlock{
@@ -573,6 +581,13 @@ func lineSchema() schema.Schema {
 					"period":   lineDurationAttribute("The longest time between two scheduled searches of a station, as in `12h` or `7d`, from 1h to 365d. `7d` when left out.", lineSearchPeriod),
 					"on_alert": lineFlag("Whether an alert that goes off on a station starts a search. `true` when left out.", true),
 					"cooldown": lineDurationAttribute("The shortest time between two automatic searches of a station, as in `12h` or `3d`, from 1h to 365d, and at most `period`. `3d` when left out.", lineSearchCooldown),
+					"requests_per_day": schema.Int64Attribute{
+						Optional:            true,
+						Computed:            true,
+						Default:             int64default.StaticInt64(lineSearchRequestsPerDay),
+						Validators:          []validator.Int64{int64validator.Between(1, lineMostSearchRequestsPerDay)},
+						MarkdownDescription: "How many requested tests of a station change Spotlight takes for each station in one UTC day, from 1 to 20. The count resets at 00:00 UTC. 3 when left out.",
+					},
 				},
 			},
 			"source": schema.SingleNestedBlock{

@@ -112,18 +112,20 @@ type lineSearch struct {
 	Period         types.String  `tfsdk:"period"`
 	OnAlert        types.Bool    `tfsdk:"on_alert"`
 	Cooldown       types.String  `tfsdk:"cooldown"`
+	RequestsPerDay types.Int64   `tfsdk:"requests_per_day"`
 }
 
 type lineStationSearch struct {
-	Enabled    types.Bool       `tfsdk:"enabled"`
-	Ceiling    types.Float64    `tfsdk:"ceiling"`
-	Period     types.String     `tfsdk:"period"`
-	OnAlert    types.Bool       `tfsdk:"on_alert"`
-	Cooldown   types.String     `tfsdk:"cooldown"`
-	Iterations types.Int64      `tfsdk:"iterations"`
-	Repeats    types.Int64      `tfsdk:"repeats"`
-	Objective  types.String     `tfsdk:"objective"`
-	Agent      *lineSearchAgent `tfsdk:"agent"`
+	Enabled        types.Bool       `tfsdk:"enabled"`
+	Ceiling        types.Float64    `tfsdk:"ceiling"`
+	Period         types.String     `tfsdk:"period"`
+	OnAlert        types.Bool       `tfsdk:"on_alert"`
+	Cooldown       types.String     `tfsdk:"cooldown"`
+	Iterations     types.Int64      `tfsdk:"iterations"`
+	Repeats        types.Int64      `tfsdk:"repeats"`
+	Objective      types.String     `tfsdk:"objective"`
+	RequestsPerDay types.Int64      `tfsdk:"requests_per_day"`
+	Agent          *lineSearchAgent `tfsdk:"agent"`
 }
 
 type lineSearchAgent struct {
@@ -262,6 +264,7 @@ func lineInput(plan LineResourceModel) (client.Definition, diag.Diagnostics) {
 			search.count("iterations", each.Search.Iterations)
 			search.count("repeats", each.Search.Repeats)
 			search.text("objective", each.Search.Objective)
+			search.count("requestsPerDay", each.Search.RequestsPerDay)
 
 			if each.Search.Agent != nil {
 				agent := lineWritten{}
@@ -323,6 +326,7 @@ func lineInput(plan LineResourceModel) (client.Definition, diag.Diagnostics) {
 		search.text("period", plan.Search.Period)
 		search.flag("onAlert", plan.Search.OnAlert)
 		search.text("cooldown", plan.Search.Cooldown)
+		search.count("requestsPerDay", plan.Search.RequestsPerDay)
 		line["search"] = map[string]any(search)
 	}
 
@@ -369,6 +373,15 @@ func (r lineRead) count(name string) types.Int64 {
 	}
 
 	return types.Int64Null()
+}
+
+// countOr reads a count that a Spotlight from before the setting leaves out as its default.
+func (r lineRead) countOr(name string, fallback int64) types.Int64 {
+	if value := r.count(name); !value.IsNull() {
+		return value
+	}
+
+	return types.Int64Value(fallback)
 }
 
 func (r lineRead) texts(name string) []attr.Value {
@@ -488,6 +501,7 @@ func lineAnswered(answer client.Line) LineResourceModel {
 			Period:         found.text("period"),
 			OnAlert:        found.flag("onAlert"),
 			Cooldown:       found.text("cooldown"),
+			RequestsPerDay: found.countOr("requestsPerDay", lineSearchRequestsPerDay),
 		}
 	}
 
@@ -533,14 +547,15 @@ func lineStationOf(read lineRead) lineStation {
 
 	if search, ok := read.object("search"); ok {
 		station.Search = &lineStationSearch{
-			Enabled:    search.flag("enabled"),
-			Ceiling:    search.number("ceiling"),
-			Period:     search.text("period"),
-			OnAlert:    search.flag("onAlert"),
-			Cooldown:   search.text("cooldown"),
-			Iterations: search.count("iterations"),
-			Repeats:    search.count("repeats"),
-			Objective:  search.text("objective"),
+			Enabled:        search.flag("enabled"),
+			Ceiling:        search.number("ceiling"),
+			Period:         search.text("period"),
+			OnAlert:        search.flag("onAlert"),
+			Cooldown:       search.text("cooldown"),
+			Iterations:     search.count("iterations"),
+			Repeats:        search.count("repeats"),
+			Objective:      search.text("objective"),
+			RequestsPerDay: search.count("requestsPerDay"),
 		}
 
 		if agent, ok := search.object("agent"); ok {
