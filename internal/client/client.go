@@ -77,7 +77,7 @@ func New(cfg Config) (*Client, error) {
 
 	generated, err := apigen.NewClientWithResponses(
 		base,
-		apigen.WithHTTPClient(&authenticating{next: doer, tokens: tokens}),
+		apigen.WithHTTPClient(&authenticating{next: doer, tokens: tokens, address: addressOf(base)}),
 		apigen.WithRequestEditorFn(identify(cfg.ProviderVersion)),
 	)
 	if err != nil {
@@ -102,6 +102,14 @@ func ClientName(version string) string {
 	}
 
 	return "terraform-provider/" + version
+}
+
+func addressOf(base string) string {
+	if address, err := Address(base); err == nil {
+		return address
+	}
+
+	return base
 }
 
 func baseURL(raw string) (string, error) {

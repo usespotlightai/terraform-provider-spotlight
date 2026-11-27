@@ -96,7 +96,17 @@ func StoredLogin(raw string) (Login, bool, error) {
 	return login, true, nil
 }
 
-func onlyLogin(logins map[string]Login) (Login, bool, error) {
+// StoredAddresses returns the Spotlight addresses that spotlight login keeps a login for, in order.
+func StoredAddresses() ([]string, error) {
+	logins, err := storedLogins()
+	if err != nil {
+		return nil, err
+	}
+
+	return addressesOf(logins), nil
+}
+
+func addressesOf(logins map[string]Login) []string {
 	var addresses []string
 	for address := range logins {
 		if secure(address) {
@@ -105,6 +115,12 @@ func onlyLogin(logins map[string]Login) (Login, bool, error) {
 	}
 
 	slices.Sort(addresses)
+
+	return addresses
+}
+
+func onlyLogin(logins map[string]Login) (Login, bool, error) {
+	addresses := addressesOf(logins)
 
 	switch len(addresses) {
 	case 0:

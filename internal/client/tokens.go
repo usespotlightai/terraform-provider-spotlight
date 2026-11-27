@@ -140,8 +140,21 @@ func (e *exchanging) exchange(ctx context.Context) (issued, error) {
 }
 
 type authenticating struct {
-	next   apigen.HttpRequestDoer
-	tokens TokenSource
+	next    apigen.HttpRequestDoer
+	tokens  TokenSource
+	address string
+}
+
+// refusedToken is a stored API token that the control plane did not accept.
+// Like a rejected login, it is not a Problem, so the provider shows all of it.
+type refusedToken struct {
+	address string
+	problem *Problem
+}
+
+func (r *refusedToken) Error() string {
+	return fmt.Sprintf("%s refused the API token: %v\nUse an API token from that Spotlight, or unset token and SPOTLIGHT_API_TOKEN and run spotlight login --url %s.",
+		r.address, r.problem, r.address)
 }
 
 func (a *authenticating) Do(req *http.Request) (*http.Response, error) {
@@ -163,6 +176,13 @@ func (a *authenticating) Do(req *http.Request) (*http.Response, error) {
 		_ = resp.Body.Close()
 
 		return nil, login.rejected()
+	}
+
+	if _, stored := a.tokens.(StaticToken); stored && err == nil && resp.StatusCode == http.StatusUnauthorized {
+		body, _ := io.ReadAll(resp.Body)
+		_ = resp.Body.Close()
+
+		return nil, &refusedToken{address: a.address, problem: problemOf(resp, body)}
 	}
 
 	if err != nil || resp.StatusCode != http.StatusUnauthorized || !a.tokens.Unauthorized(token) {

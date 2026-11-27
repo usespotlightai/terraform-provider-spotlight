@@ -6,6 +6,7 @@ package provider
 import (
 	"context"
 	"os"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -213,11 +214,15 @@ func (p *SpotlightProvider) Configure(ctx context.Context, req provider.Configur
 	}
 
 	if cfg.Token == "" && cfg.OIDC == nil && cfg.Login == nil {
-		resp.Diagnostics.AddAttributeError(path.Root("token"), "No API token",
-			"The provider has no API token, OIDC trust or login for this Spotlight. "+
-				"On your machine, run spotlight login. "+
-				"Or set token, or "+TokenEnv+", to a Spotlight API token. "+
-				"In CI, set oidc.trust, or "+OIDCTrustEnv+", to the id of an OIDC trust.")
+		if cfg.URL == "" {
+			resp.Diagnostics.AddAttributeError(path.Root("url"), "No Spotlight URL",
+				"url and "+URLEnv+" are not set, and spotlight login keeps no login. "+
+					"On your machine, run spotlight login --url https://spotlight.example.com with your Spotlight's URL, or set url, or "+URLEnv+", to it. "+noTokenWays)
+
+			return
+		}
+
+		resp.Diagnostics.AddAttributeError(path.Root("token"), "No API token", noToken(cfg.URL, urlSource(config.URL)))
 
 		return
 	}
@@ -298,6 +303,38 @@ func workloadTokens(configured types.String, diags *diag.Diagnostics) client.Wor
 			"Elsewhere, set oidc.token, or "+OIDCTokenEnv+", to the token the platform issues.")
 
 	return nil
+}
+
+const noTokenWays = "Or set token, or " + TokenEnv + ", to a Spotlight API token. " +
+	"In CI, set oidc.trust, or " + OIDCTrustEnv + ", to the id of an OIDC trust."
+
+// noToken says which Spotlight the provider found no credential for, and how to log in to it.
+func noToken(url, source string) string {
+	address, err := client.Address(url)
+	if err != nil {
+		address = url
+	}
+
+	detail := "The provider has no API token, OIDC trust or login for " + address + " (from " + source + "). " +
+		"On your machine, run spotlight login --url " + address + ". "
+
+	if others, err := client.StoredAddresses(); err == nil && len(others) > 0 {
+		set := "url, or " + URLEnv + ","
+		if source == "url" {
+			set = "url"
+		}
+		detail += "spotlight login keeps a login for " + strings.Join(others, ", ") + "; to use one, set " + set + " to it. "
+	}
+
+	return detail + noTokenWays
+}
+
+func urlSource(configured types.String) string {
+	if !configured.IsNull() && configured.ValueString() != "" {
+		return "url"
+	}
+
+	return URLEnv
 }
 
 func orEnv(value types.String, env string) string {
