@@ -168,7 +168,7 @@ func TestTheProviderSaysWhenItHasNoURL(t *testing.T) {
 			{
 				Config: providerWorkspace,
 				ExpectError: regexp.MustCompile(`(?s)No\s+Spotlight\s+URL.*url\s+and\s+SPOTLIGHT_URL\s+are\s+not\s+set.*` +
-					`run\s+spotlight\s+login\s+--url\s+https://spotlight\.example\.com,\s+with\s+your\s+Spotlight's\s+URL`),
+					`run\s+spotlight\s+login\s+--url\s+https://spotlight\.example\.com\s+with\s+your\s+Spotlight's\s+URL,\s+or\s+set\s+url,\s+or\s+SPOTLIGHT_URL,\s+to\s+it\.`),
 			},
 		},
 	})
@@ -209,10 +209,15 @@ func withoutCredentials(t *testing.T) {
 	withoutLogin(t)
 }
 
+// withoutLogin points HOME, XDG_CONFIG_HOME and SPOTLIGHT_CONFIG_DIR at an
+// empty directory, so no login on the machine that runs the tests is read.
 func withoutLogin(t *testing.T) {
 	t.Helper()
 
-	t.Setenv(client.ConfigDirEnv, t.TempDir())
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv(client.XDGConfigHomeEnv, home)
+	t.Setenv(client.ConfigDirEnv, home)
 }
 
 func trustedGitHub(t *testing.T, fake *fakeapi.Server) string {
@@ -649,7 +654,7 @@ func TestWithNoURLAndNoLoginTheProviderSaysToRunSpotlightLogin(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      providerWorkspace,
-				ExpectError: regexp.MustCompile(`(?s)No API token.*run\s+spotlight\s+login`),
+				ExpectError: regexp.MustCompile(`(?s)No\s+Spotlight\s+URL.*run\s+spotlight\s+login.*set\s+url,\s+or\s+SPOTLIGHT_URL`),
 			},
 		},
 	})

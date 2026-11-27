@@ -217,7 +217,7 @@ func (p *SpotlightProvider) Configure(ctx context.Context, req provider.Configur
 		if cfg.URL == "" {
 			resp.Diagnostics.AddAttributeError(path.Root("url"), "No Spotlight URL",
 				"url and "+URLEnv+" are not set, and spotlight login keeps no login. "+
-					"On your machine, run spotlight login --url https://spotlight.example.com, with your Spotlight's URL. "+noTokenWays)
+					"On your machine, run spotlight login --url https://spotlight.example.com with your Spotlight's URL, or set url, or "+URLEnv+", to it. "+noTokenWays)
 
 			return
 		}
