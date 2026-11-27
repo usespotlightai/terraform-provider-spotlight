@@ -5371,6 +5371,27 @@
                     "example": [
                       "vpc-internal"
                     ]
+                  },
+                  "workingCopies": {
+                    "type": "object",
+                    "nullable": true,
+                    "required": [
+                      "store"
+                    ],
+                    "description": "Where the hosts keep the working copies of runs. Left out, Spotlight keeps them as archives in its own storage. Each host runs a working copy hook, the program that its working-copy-hook setting names, which opens each sandbox’s workspace from the store and saves each archive as a snapshot. Give every pool or trust that a line’s runs can go to the same store: a run on a host that reaches another store starts afresh",
+                    "properties": {
+                      "store": {
+                        "type": "string",
+                        "example": "s3://team-a",
+                        "description": "The name of the store, which Spotlight does not read: any host whose pool or trust names the same store restores its working copies"
+                      },
+                      "base": {
+                        "type": "string",
+                        "nullable": true,
+                        "example": "base-v1",
+                        "description": "The snapshot a new working copy starts from. A run that starts no session of its own also starts from it when the last working copy descends from another base"
+                      }
+                    }
                   }
                 }
               }
@@ -5758,6 +5779,27 @@
                     "example": [
                       "vpc-internal"
                     ]
+                  },
+                  "workingCopies": {
+                    "type": "object",
+                    "nullable": true,
+                    "required": [
+                      "store"
+                    ],
+                    "description": "Where the hosts keep the working copies of runs. Left out, Spotlight keeps them as archives in its own storage. Each host runs a working copy hook, the program that its working-copy-hook setting names, which opens each sandbox’s workspace from the store and saves each archive as a snapshot. Give every pool or trust that a line’s runs can go to the same store: a run on a host that reaches another store starts afresh",
+                    "properties": {
+                      "store": {
+                        "type": "string",
+                        "example": "s3://team-a",
+                        "description": "The name of the store, which Spotlight does not read: any host whose pool or trust names the same store restores its working copies"
+                      },
+                      "base": {
+                        "type": "string",
+                        "nullable": true,
+                        "example": "base-v1",
+                        "description": "The snapshot a new working copy starts from. A run that starts no session of its own also starts from it when the last working copy descends from another base"
+                      }
+                    }
                   }
                 }
               }
@@ -6236,6 +6278,27 @@
                         "description": "Which traffic of a run goes through the egress. all: every connection, so egress records every host and its allow-list applies to all of them. bound: only the traffic to hosts that a secret of the run is bound to; other traffic goes directly. Only with egress"
                       }
                     }
+                  },
+                  "workingCopies": {
+                    "type": "object",
+                    "nullable": true,
+                    "required": [
+                      "store"
+                    ],
+                    "description": "Where the hosts keep the working copies of runs. Left out, Spotlight keeps them as archives in its own storage. Each host runs a working copy hook, the program that its working-copy-hook setting names, which opens each sandbox’s workspace from the store and saves each archive as a snapshot. Give every pool or trust that a line’s runs can go to the same store: a run on a host that reaches another store starts afresh. Only for a pool without provision",
+                    "properties": {
+                      "store": {
+                        "type": "string",
+                        "example": "s3://team-a",
+                        "description": "The name of the store, which Spotlight does not read: any host whose pool or trust names the same store restores its working copies"
+                      },
+                      "base": {
+                        "type": "string",
+                        "nullable": true,
+                        "example": "base-v1",
+                        "description": "The snapshot a new working copy starts from. A run that starts no session of its own also starts from it when the last working copy descends from another base"
+                      }
+                    }
                   }
                 }
               }
@@ -6673,6 +6736,27 @@
                         ],
                         "default": "all",
                         "description": "Which traffic of a run goes through the egress. all: every connection, so egress records every host and its allow-list applies to all of them. bound: only the traffic to hosts that a secret of the run is bound to; other traffic goes directly. Only with egress"
+                      }
+                    }
+                  },
+                  "workingCopies": {
+                    "type": "object",
+                    "nullable": true,
+                    "required": [
+                      "store"
+                    ],
+                    "description": "Where the hosts keep the working copies of runs. Left out, Spotlight keeps them as archives in its own storage. Each host runs a working copy hook, the program that its working-copy-hook setting names, which opens each sandbox’s workspace from the store and saves each archive as a snapshot. Give every pool or trust that a line’s runs can go to the same store: a run on a host that reaches another store starts afresh. Only for a pool without provision",
+                    "properties": {
+                      "store": {
+                        "type": "string",
+                        "example": "s3://team-a",
+                        "description": "The name of the store, which Spotlight does not read: any host whose pool or trust names the same store restores its working copies"
+                      },
+                      "base": {
+                        "type": "string",
+                        "nullable": true,
+                        "example": "base-v1",
+                        "description": "The snapshot a new working copy starts from. A run that starts no session of its own also starts from it when the last working copy descends from another base"
                       }
                     }
                   }
@@ -13191,6 +13275,26 @@
           "items"
         ]
       },
+      "WorkingCopiesResponseDto": {
+        "type": "object",
+        "properties": {
+          "store": {
+            "type": "string",
+            "example": "s3://team-a",
+            "description": "The store that the working copy hook of each host keeps working copies in. Spotlight does not read it: any pool or trust with the same store restores the working copies that another one saved. The hook holds what the store needs to be reached; Spotlight never does"
+          },
+          "base": {
+            "type": "string",
+            "nullable": true,
+            "example": "base-v1",
+            "description": "The snapshot that a new working copy starts from, such as a workspace with its repositories cloned and set up. With null, the hook starts a new working copy as it sees fit, such as an empty disk"
+          }
+        },
+        "required": [
+          "store",
+          "base"
+        ]
+      },
       "RunnerTrustResourceResponseDto": {
         "type": "object",
         "properties": {
@@ -13250,6 +13354,16 @@
             "items": {
               "type": "string"
             }
+          },
+          "workingCopies": {
+            "nullable": true,
+            "description": "Where the hosts keep the working copies of runs: a store that the working copy hook of each host reaches, which saves each archive as a snapshot. With null, Spotlight keeps them as archives in its own storage",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/WorkingCopiesResponseDto"
+              }
+            ]
           }
         },
         "required": [
@@ -13262,7 +13376,8 @@
           "issuer",
           "subject",
           "audience",
-          "labels"
+          "labels",
+          "workingCopies"
         ]
       },
       "RunnerTrustResourceListResponseDto": {
@@ -13392,6 +13507,16 @@
                 "$ref": "#/components/schemas/PoolProvisionResponseDto"
               }
             ]
+          },
+          "workingCopies": {
+            "nullable": true,
+            "description": "Where the hosts keep the working copies of runs: a store that the working copy hook of each host reaches, which saves each archive as a snapshot. With null, Spotlight keeps them as archives in its own storage",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/WorkingCopiesResponseDto"
+              }
+            ]
           }
         },
         "required": [
@@ -13405,7 +13530,8 @@
           "maxRuns",
           "mode",
           "tokenVersion",
-          "provision"
+          "provision",
+          "workingCopies"
         ]
       },
       "RunnerPoolResourceListResponseDto": {
