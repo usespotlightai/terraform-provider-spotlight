@@ -2410,6 +2410,9 @@ type RunnerPoolResourceResponseDto struct {
 	// Warnings What would work better, though nothing stops it working; not settable
 	Warnings []FieldErrorResponseDto `json:"warnings"`
 
+	// WorkingCopies Where the hosts keep the working copies of runs: a store that the working copy hook of each host reaches, which saves each archive as a snapshot. With null, Spotlight keeps them as archives in its own storage
+	WorkingCopies *WorkingCopiesResponseDto `json:"workingCopies"`
+
 	// WorkspaceId The workspace it belongs to
 	WorkspaceId string `json:"workspaceId"`
 }
@@ -2451,6 +2454,9 @@ type RunnerTrustResourceResponseDto struct {
 
 	// Warnings What would work better, though nothing stops it working; not settable
 	Warnings []FieldErrorResponseDto `json:"warnings"`
+
+	// WorkingCopies Where the hosts keep the working copies of runs: a store that the working copy hook of each host reaches, which saves each archive as a snapshot. With null, Spotlight keeps them as archives in its own storage
+	WorkingCopies *WorkingCopiesResponseDto `json:"workingCopies"`
 
 	// WorkspaceId The workspace it belongs to
 	WorkspaceId string `json:"workspaceId"`
@@ -2589,6 +2595,15 @@ type TeamResourceResponseDto struct {
 
 	// WorkspaceId The workspace it belongs to
 	WorkspaceId string `json:"workspaceId"`
+}
+
+// WorkingCopiesResponseDto defines model for WorkingCopiesResponseDto.
+type WorkingCopiesResponseDto struct {
+	// Base The snapshot that a new working copy starts from, such as a workspace with its repositories cloned and set up. With null, the hook starts a new working copy as it sees fit, such as an empty disk
+	Base *string `json:"base"`
+
+	// Store The store that the working copy hook of each host keeps working copies in. Spotlight does not read it: any pool or trust with the same store restores the working copies that another one saved. The hook holds what the store needs to be reached; Spotlight never does
+	Store string `json:"store"`
 }
 
 // WorkspaceResourceListResponseDto defines model for WorkspaceResourceListResponseDto.
@@ -3048,6 +3063,15 @@ type UpdateRunnerPoolJSONBody struct {
 
 	// TokenVersion Changed, with a new token, to rotate the pool token in place: the old token stops working at once, while runs already claimed keep their own one-run credentials
 	TokenVersion *int `json:"tokenVersion,omitempty"`
+
+	// WorkingCopies Where the hosts keep the working copies of runs. Left out, Spotlight keeps them as archives in its own storage. Each host runs a working copy hook, the program that its working-copy-hook setting names, which opens each sandbox’s workspace from the store and saves each archive as a snapshot. Give every pool or trust that a line’s runs can go to the same store: a run on a host that reaches another store starts afresh. Only for a pool without provision
+	WorkingCopies *struct {
+		// Base The snapshot a new working copy starts from. A run that starts no session of its own also starts from it when the last working copy descends from another base
+		Base *string `json:"base,omitempty"`
+
+		// Store The name of the store, which Spotlight does not read: any host whose pool or trust names the same store restores its working copies
+		Store string `json:"store"`
+	} `json:"workingCopies,omitempty"`
 }
 
 // UpdateRunnerPoolParams defines parameters for UpdateRunnerPool.
@@ -3102,6 +3126,15 @@ type UpdateRunnerTrustJSONBody struct {
 	Key      string    `json:"key"`
 	Labels   *[]string `json:"labels,omitempty"`
 	Subject  string    `json:"subject"`
+
+	// WorkingCopies Where the hosts keep the working copies of runs. Left out, Spotlight keeps them as archives in its own storage. Each host runs a working copy hook, the program that its working-copy-hook setting names, which opens each sandbox’s workspace from the store and saves each archive as a snapshot. Give every pool or trust that a line’s runs can go to the same store: a run on a host that reaches another store starts afresh
+	WorkingCopies *struct {
+		// Base The snapshot a new working copy starts from. A run that starts no session of its own also starts from it when the last working copy descends from another base
+		Base *string `json:"base,omitempty"`
+
+		// Store The name of the store, which Spotlight does not read: any host whose pool or trust names the same store restores its working copies
+		Store string `json:"store"`
+	} `json:"workingCopies,omitempty"`
 }
 
 // UpdateRunnerTrustParams defines parameters for UpdateRunnerTrust.
@@ -3808,6 +3841,15 @@ type CreateRunnerPoolJSONBody struct {
 
 	// TokenVersion Changed, with a new token, to rotate the pool token in place: the old token stops working at once, while runs already claimed keep their own one-run credentials
 	TokenVersion *int `json:"tokenVersion,omitempty"`
+
+	// WorkingCopies Where the hosts keep the working copies of runs. Left out, Spotlight keeps them as archives in its own storage. Each host runs a working copy hook, the program that its working-copy-hook setting names, which opens each sandbox’s workspace from the store and saves each archive as a snapshot. Give every pool or trust that a line’s runs can go to the same store: a run on a host that reaches another store starts afresh. Only for a pool without provision
+	WorkingCopies *struct {
+		// Base The snapshot a new working copy starts from. A run that starts no session of its own also starts from it when the last working copy descends from another base
+		Base *string `json:"base,omitempty"`
+
+		// Store The name of the store, which Spotlight does not read: any host whose pool or trust names the same store restores its working copies
+		Store string `json:"store"`
+	} `json:"workingCopies,omitempty"`
 }
 
 // CreateRunnerPoolParams defines parameters for CreateRunnerPool.
@@ -3862,6 +3904,15 @@ type CreateRunnerTrustJSONBody struct {
 	Key      string    `json:"key"`
 	Labels   *[]string `json:"labels,omitempty"`
 	Subject  string    `json:"subject"`
+
+	// WorkingCopies Where the hosts keep the working copies of runs. Left out, Spotlight keeps them as archives in its own storage. Each host runs a working copy hook, the program that its working-copy-hook setting names, which opens each sandbox’s workspace from the store and saves each archive as a snapshot. Give every pool or trust that a line’s runs can go to the same store: a run on a host that reaches another store starts afresh
+	WorkingCopies *struct {
+		// Base The snapshot a new working copy starts from. A run that starts no session of its own also starts from it when the last working copy descends from another base
+		Base *string `json:"base,omitempty"`
+
+		// Store The name of the store, which Spotlight does not read: any host whose pool or trust names the same store restores its working copies
+		Store string `json:"store"`
+	} `json:"workingCopies,omitempty"`
 }
 
 // CreateRunnerTrustParams defines parameters for CreateRunnerTrust.
