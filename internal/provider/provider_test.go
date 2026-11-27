@@ -90,8 +90,9 @@ func TestTheProviderReportsATokenTheControlPlaneDoesNotAccept(t *testing.T) {
 		ProtoV6ProviderFactories: providerFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config:      providerWorkspace,
-				ExpectError: regexp.MustCompile(`Send a Spotlight API token as a bearer token`),
+				Config: providerWorkspace,
+				ExpectError: regexp.MustCompile(`(?s)` + regexp.QuoteMeta(fake.URL) + `\s+refused\s+the\s+API\s+token.*Send\s+a\s+Spotlight\s+API\s+token\s+as\s+a\s+bearer\s+token.*` +
+					`run\s+spotlight\s+login\s+--url\s+` + regexp.QuoteMeta(fake.URL)),
 			},
 		},
 	})
@@ -107,8 +108,67 @@ func TestTheProviderNeedsAToken(t *testing.T) {
 		ProtoV6ProviderFactories: providerFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config:      providerWorkspace,
-				ExpectError: regexp.MustCompile(`(?s)No API token.*run\s+spotlight\s+login`),
+				Config: providerWorkspace,
+				ExpectError: regexp.MustCompile(`(?s)No API token.*login\s+for\s+` + regexp.QuoteMeta(fake.URL) + `\s+\(from\s+SPOTLIGHT_URL\)\.` +
+					`.*run\s+spotlight\s+login\s+--url\s+` + regexp.QuoteMeta(fake.URL) + `\.`),
+			},
+		},
+	})
+}
+
+func TestTheProviderNamesTheURLItsBlockSets(t *testing.T) {
+	t.Setenv(provider.URLEnv, "https://elsewhere.example.com")
+	t.Setenv(provider.TokenEnv, "")
+	withoutLogin(t)
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: providerFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+provider "spotlight" {
+  url = "https://app.dev.example.com/"
+}
+` + providerWorkspace,
+				ExpectError: regexp.MustCompile(`(?s)login\s+for\s+https://app\.dev\.example\.com\s+\(from\s+url\)\.` +
+					`.*run\s+spotlight\s+login\s+--url\s+https://app\.dev\.example\.com\.`),
+			},
+		},
+	})
+}
+
+func TestALoginForAnotherSpotlightIsNamedBesideTheURLItsBlockSets(t *testing.T) {
+	signedIn(t, "https://app.usespotlight.ai", fakeapi.Token)
+	t.Setenv(provider.URLEnv, "")
+	t.Setenv(provider.TokenEnv, "")
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: providerFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+provider "spotlight" {
+  url = "https://app.dev.example.com"
+}
+` + providerWorkspace,
+				ExpectError: regexp.MustCompile(`(?s)keeps\s+a\s+login\s+for\s+https://app\.usespotlight\.ai;\s+to\s+use\s+one,\s+set\s+url\s+to\s+it\.`),
+			},
+		},
+	})
+}
+
+func TestTheProviderSaysWhenItHasNoURL(t *testing.T) {
+	t.Setenv(provider.URLEnv, "")
+	t.Setenv(provider.TokenEnv, "")
+	withoutLogin(t)
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: providerFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: providerWorkspace,
+				ExpectError: regexp.MustCompile(`(?s)No\s+Spotlight\s+URL.*url\s+and\s+SPOTLIGHT_URL\s+are\s+not\s+set.*` +
+					`run\s+spotlight\s+login\s+--url\s+https://spotlight\.example\.com,\s+with\s+your\s+Spotlight's\s+URL`),
 			},
 		},
 	})
@@ -130,7 +190,7 @@ resource "spotlight_integration" "linear" {
 }
 `,
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`No API token`),
+				ExpectError: regexp.MustCompile(`No Spotlight URL`),
 			},
 		},
 	})
@@ -486,8 +546,9 @@ func TestALoginForAnotherSpotlightIsNotUsed(t *testing.T) {
 		ProtoV6ProviderFactories: providerFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config:      providerWorkspace,
-				ExpectError: regexp.MustCompile(`(?s)No API token.*run\s+spotlight\s+login`),
+				Config: providerWorkspace,
+				ExpectError: regexp.MustCompile(`(?s)No API token.*login\s+for\s+` + regexp.QuoteMeta(fake.URL) + `.*run\s+spotlight\s+login\s+--url\s+` +
+					regexp.QuoteMeta(fake.URL) + `.*keeps\s+a\s+login\s+for\s+https://app\.usespotlight\.ai;\s+to\s+use\s+one,\s+set\s+url,\s+or\s+SPOTLIGHT_URL,\s+to\s+it`),
 			},
 		},
 	})

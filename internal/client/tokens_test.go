@@ -351,6 +351,27 @@ func TestAnUnauthorizedStoredTokenIsNotRetried(t *testing.T) {
 	}
 }
 
+func TestARefusedStoredTokenNamesTheSpotlightAndHowToLogIn(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		reply(w, http.StatusUnauthorized, "application/problem+json", map[string]any{
+			"type": "urn:spotlight:problem:unauthenticated", "title": "No valid credentials", "status": 401, "detail": "Send a Spotlight API token as a bearer token",
+		})
+	}))
+	t.Cleanup(server.Close)
+
+	api, err := client.New(client.Config{URL: server.URL + "/", Token: "from-another-spotlight"})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = api.ReadWorkspace(context.Background(), "ws-1")
+	want := server.URL + " refused the API token: 401 No valid credentials\nSend a Spotlight API token as a bearer token\n" +
+		"Use an API token from that Spotlight, or unset token and SPOTLIGHT_API_TOKEN and run spotlight login --url " + server.URL + "."
+	if err == nil || err.Error() != want {
+		t.Fatalf("got %v, want %q", err, want)
+	}
+}
+
 func TestAFailedExchangeNamesTheTrust(t *testing.T) {
 	api, issued := exchangingClient(t, fromGitHub)
 	issued.matches = "nothing"
